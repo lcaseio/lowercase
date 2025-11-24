@@ -42,11 +42,6 @@ export type ToolRuntimePolicy = {
 };
 
 // binds a spec to a factory function and runtime policy used by ToolRuntimeManager in a worker
-export type ToolBinding<ID extends ToolId = ToolId> = {
-  spec: ToolSpec<ID>;
-  // create: () => ToolMap[ID],
-  runtimePolicy: ToolRuntimePolicy;
-};
 
 export type ToolSpec<ID extends ToolId = ToolId> = {
   id: ID;
@@ -82,7 +77,6 @@ export interface ToolInstance<ID extends ToolId = ToolId> {
   id: ID;
   invoke(args: unknown, ctx: ToolContext): Promise<unknown>;
 }
-
 export type ToolSpecsById = {
   [ID in ToolId]: ToolSpec<ID>;
 };

@@ -8,13 +8,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./bus": {
+      "types": "./dist/bus/index.d.ts",
+      "import": "./dist/bus/index.js"
+    },
     "./events": {
       "types": "./dist/events/index.d.ts",
       "import": "./dist/events/index.js"
     },
-    "./bus": {
-      "types": "./dist/bus/index.d.ts",
-      "import": "./dist/bus/index.js"
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.js"
     },
     "./resource-manager": {
       "types": "./dist/resource-manager.port.d.ts",

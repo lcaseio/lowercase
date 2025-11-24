@@ -1,5 +1,5 @@
 import { JobEventData, JobEventType, JobRequestedType } from "@lcase/types";
-import { ConsumerStreamPort, ProducerStreamPort } from "./stream.port.js";
+import { ConsumerStreamPort, ProducerStreamPort } from "../stream.port.js";
 
 export type ToolContext<T extends JobRequestedType> = {
   data: JobEventData<T>;
