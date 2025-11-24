@@ -28,6 +28,7 @@ export type JobMcpQueuedData = JobDescriptor & {
 export type JobHttpJsonData = JobDescriptor &
   Omit<StepHttpJson, "pipe"> & {
     pipe: PipeData;
+    tree: "hi";
   };
 
 export type JobStartedData = JobDescriptor & {
@@ -51,3 +52,5 @@ export type JobQueuedData = JobDescriptor & {
 
 // job.http:json.queued
 // job.
+
+// cap.mcp.submitted

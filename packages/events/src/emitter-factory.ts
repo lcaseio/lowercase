@@ -1,4 +1,4 @@
-import type { EventBusPort } from "@lcase/ports";
+import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -48,7 +48,7 @@ import { SystemEmitter } from "./emitters/system.emitter.js";
  *
  */
 
-export class EmitterFactory {
+export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
   newSystemEmitter(
