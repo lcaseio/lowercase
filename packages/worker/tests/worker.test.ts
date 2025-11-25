@@ -1,7 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { EventBusPort, QueuePort, StreamRegistryPort } from "@lcase/ports";
+import {
+  EventBusPort,
+  QueuePort,
+  StreamRegistryPort,
+  ToolBinding,
+  ToolInstancePort,
+} from "@lcase/ports";
 import { Worker } from "../src/worker.js";
-import type { AnyEvent, Capability } from "@lcase/types";
+import type { AnyEvent, Capability, ToolId } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
 import { ToolRegistry } from "@lcase/tools";
 
@@ -12,54 +18,10 @@ const bus = {
 } as unknown as EventBusPort;
 
 describe("worker", () => {
-  it("should stop further waiters from starting when not allowed", async () => {
-    const event = {} as AnyEvent;
-    const reserve = vi
-      .fn()
-      .mockResolvedValueOnce(event)
-      .mockResolvedValue(null);
+  it("stops new waiters from starting ", async () => {
+    const event = { data: { job: "job-id" } } as unknown as AnyEvent;
+    const toolId = "mcp";
 
-    const queue = {
-      reserve,
-      abortAllForWorker: vi.fn(),
-    } as unknown as QueuePort;
-
-    const worker = new Worker("workerId", {
-      bus,
-      queue,
-      emitterFactory: {} as EmitterFactory,
-      streamRegistry: {} as StreamRegistryPort,
-      toolRegistry: {} as ToolRegistry,
-    });
-
-    const maxJobCount = 5;
-    const capId = "test-c";
-
-    const capability: Capability = {
-      name: capId,
-      queueId: "qid",
-      maxJobCount: maxJobCount,
-      tool: {
-        id: "mcp",
-        type: "inprocess",
-      },
-    };
-
-    worker.addCapability(capability);
-    worker.handleNewJob = vi.fn().mockImplementation(async () => {
-      worker.setCapabilityWaiterPolicy(capId, false);
-    });
-
-    await worker.startCapabilityJobWaiters(capId);
-
-    expect(reserve).toHaveBeenCalledTimes(1);
-    expect(worker.getCapabilityActiveJobCount(capId)).toBe(0);
-    expect(worker.getWaiterSize(capId)).toBe(0);
-    expect(worker.handleNewJob).toHaveBeenCalledWith(event);
-  });
-
-  it("should stop new waiters when not allowed", async () => {
-    const event = {} as AnyEvent;
     const reserve = vi.fn().mockResolvedValue(event);
 
     const queue = {
@@ -67,85 +29,140 @@ describe("worker", () => {
       abortAllForWorker: vi.fn(),
     } as unknown as QueuePort;
 
-    const worker = new Worker("workerId", {
-      bus,
-      queue,
-      emitterFactory: {} as EmitterFactory,
-      streamRegistry: {} as StreamRegistryPort,
-      toolRegistry: {} as ToolRegistry,
+    const newJobEmitterFromEvent = vi.fn().mockReturnValue({
+      emit: (arg: string, data: unknown) => {
+        console.log("emitting event");
+      },
     });
+    const ef = {
+      newJobEmitterFromEvent,
+    } as unknown as EmitterFactory;
 
-    const maxJobCount = 5;
-    const capId = "test-c";
-    const capability: Capability = {
-      name: capId,
-      queueId: "qid",
-      maxJobCount: maxJobCount,
-      tool: {
-        id: "mcp",
-        type: "inprocess",
+    const maxConcurrency = 2;
+    const binding: ToolBinding = {
+      spec: {
+        id: toolId,
+        maxConcurrency,
+        capabilities: [],
+        location: "internal",
+        rateLimit: undefined,
+      },
+      create: function (): ToolInstancePort<ToolId> {
+        throw new Error("Function not implemented.");
+      },
+      runtimePolicy: {
+        preferredScope: "stateless",
+        makeCacheKey: undefined,
       },
     };
 
-    worker.addCapability(capability);
+    const listToolIds = vi.fn().mockReturnValue([toolId]);
+    const getBinding = vi.fn().mockReturnValue(binding);
+    const toolRegistry = {
+      listToolIds,
+      getBinding,
+    } as unknown as ToolRegistry<ToolId>;
+
+    const worker = new Worker("workerId", {
+      bus,
+      queue,
+      emitterFactory: ef,
+      streamRegistry: {} as StreamRegistryPort,
+      toolRegistry,
+    });
+
+    worker.handleNewJob = vi.fn().mockImplementation(async () => {
+      expect(worker.getToolActiveJobCount(toolId)).toBeLessThanOrEqual(
+        maxConcurrency
+      );
+      return new Promise(() => {});
+    });
+
+    const p = worker.startToolJobWaiters(toolId);
+
+    Promise.resolve();
+    Promise.resolve();
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
+
+    const a = new Promise((r) => {
+      setTimeout(r, 20);
+    });
+
+    expect(worker.getToolWaitersSize(toolId)).toBe(2);
+    expect(reserve).toHaveBeenCalledTimes(2);
+    expect(worker.getToolActiveJobCount(toolId)).toBe(2);
+    expect(worker.handleNewJob).toHaveBeenCalledWith(event);
+    await worker.stopAllJobWaiters();
+  });
+
+  it("stops new waiters when they are disabled", async () => {
+    const event = { data: { job: "job-id" } } as unknown as AnyEvent;
+    const toolId = "mcp";
+
+    const reserve = vi.fn().mockResolvedValue(event);
+
+    const queue = {
+      reserve,
+      abortAllForWorker: vi.fn(),
+    } as unknown as QueuePort;
+
+    const newJobEmitterFromEvent = vi.fn().mockReturnValue({
+      emit: (arg: string, data: unknown) => {
+        console.log("emitting event2");
+      },
+    });
+    const ef = {
+      newJobEmitterFromEvent,
+    } as unknown as EmitterFactory;
+
+    const binding: ToolBinding = {
+      spec: {
+        id: "mcp",
+        maxConcurrency: 5,
+        capabilities: [],
+        location: "internal",
+        rateLimit: undefined,
+      },
+      create: function (): ToolInstancePort<ToolId> {
+        throw new Error("Function not implemented.");
+      },
+      runtimePolicy: {
+        preferredScope: "stateless",
+        makeCacheKey: undefined,
+      },
+    };
+
+    const listToolIds = vi.fn().mockReturnValue([toolId]);
+    const getBinding = vi.fn().mockReturnValue(binding);
+    const toolRegistry = {
+      listToolIds,
+      getBinding,
+    } as unknown as ToolRegistry<ToolId>;
+
+    const worker = new Worker("workerId", {
+      bus,
+      queue,
+      emitterFactory: ef,
+      streamRegistry: {} as StreamRegistryPort,
+      toolRegistry,
+    });
+
     worker.handleNewJob = vi.fn().mockImplementation(async () => {
       queueMicrotask(() => {
-        worker.setCapabilityWaiterPolicy(capId, false);
+        worker.setToolWaiterPolicy(toolId, false);
       });
+      return;
     });
 
-    await worker.startCapabilityJobWaiters(capId);
+    await worker.startToolJobWaiters(toolId);
 
     expect(reserve).toHaveBeenCalledTimes(2);
-    expect(worker.getCapabilityActiveJobCount(capId)).toBe(0);
-    expect(worker.getWaiterSize(capId)).toBe(0);
+    expect(worker.handleNewJob).toHaveBeenCalledTimes(2);
+    expect(worker.getToolActiveJobCount(toolId)).toBe(0);
+    expect(worker.getToolWaitersSize(toolId)).toBe(0);
     expect(worker.handleNewJob).toHaveBeenCalledWith(event);
-  });
-
-  it("busy workers should respect max job concurrency", async () => {
-    const event = {} as AnyEvent;
-    const reserve = vi.fn().mockResolvedValue(event);
-
-    const queue = {
-      reserve,
-      abortAllForWorker: vi.fn(),
-    } as unknown as QueuePort;
-
-    const worker = new Worker("workerId", {
-      bus,
-      queue,
-      emitterFactory: {} as EmitterFactory,
-      streamRegistry: {} as StreamRegistryPort,
-      toolRegistry: {} as ToolRegistry,
-    });
-
-    const maxJobCount = 5;
-    const capId = "test-c";
-    const capability: Capability = {
-      name: capId,
-      queueId: "qid",
-      maxJobCount: maxJobCount,
-      tool: {
-        id: "mcp",
-        type: "inprocess",
-      },
-    };
-
-    worker.addCapability(capability);
-    worker.handleNewJob = vi.fn().mockImplementation(async () => {
-      const p = await new Promise((r) => {
-        setTimeout(r, 20);
-      });
-      return event;
-    });
-
-    worker.startCapabilityJobWaiters(capId);
-
-    await new Promise((r) => {
-      setTimeout(r, 10);
-    });
-
-    expect(worker.getWaiterSize(capId)).toBe(maxJobCount);
-    worker.setCapabilityWaiterPolicy(capId, false);
+    await worker.stopAllJobWaiters();
   });
 });

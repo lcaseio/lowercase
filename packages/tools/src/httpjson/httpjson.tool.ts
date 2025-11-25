@@ -1,8 +1,8 @@
-import { ToolContext, ToolPort } from "@lcase/ports";
+import { ToolContext, ToolInstancePort } from "@lcase/ports/tools";
 import { JobRequestedType } from "@lcase/types";
 
-export class HttpJsonTool implements ToolPort {
-  id = "httpjson-internal";
+export class HttpJsonTool implements ToolInstancePort {
+  id = "httpjson" as const;
   name = "Internal Http Json Tool";
   async invoke(
     data: unknown,

@@ -1,10 +1,9 @@
 import type {
   ProducerStreamPort,
-  ToolContext,
-  ToolPort,
   InputChunk,
   ConsumerStreamPort,
 } from "@lcase/ports";
+import { ToolContext, ToolInstancePort } from "@lcase/ports/tools";
 import type { JobMcpQueuedData, JobRequestedType } from "@lcase/types";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
@@ -23,10 +22,10 @@ type McpToolContext = {
   notificationHandlers: Set<string>;
 };
 
-export class McpTool implements ToolPort {
-  id = "mcp-sse-tool";
+export class McpTool implements ToolInstancePort {
+  id = "mcp" as const;
   name = "Internal MCP SSE Tool";
-  version = "0.1.0-alpha.4";
+  version = "0.1.0-alpha.7";
   #context: McpToolContext = {
     isProducing: false,
     isConsuming: false,

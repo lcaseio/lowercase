@@ -6,4 +6,5 @@ export interface ToolRegistryPort {
   createInstance(id: ToolId): ToolInstancePort<ToolId>;
   addTool(binding: ToolBinding<ToolId>): void;
   removeTool(id: ToolId): void;
+  listToolIds(): ToolId[];
 }

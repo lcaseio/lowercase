@@ -5,10 +5,10 @@ import {
 } from "@lcase/ports";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "../types.js";
-import { JobEventType } from "@lcase/types";
+import { JobEventType, ToolId } from "@lcase/types";
 
 export type JobExecutorDeps = {
-  toolRegistry: ToolRegistry;
+  toolRegistry: ToolRegistry<ToolId>;
   streamRegistry: StreamRegistryPort;
 };
 
@@ -27,10 +27,11 @@ export class JobExecutor<T extends JobEventType> {
 
   async run(): Promise<unknown> {
     this.job.status = "running";
-    const tool = this.deps.toolRegistry.resolve(
-      this.job.capability,
-      this.job.description.key
-    );
+    // const tool = this.deps.toolRegistry.resolve(
+    //   this.job.capability,
+    //   this.job.description.key
+    // );
+    const tool = this.deps.toolRegistry.createInstance(this.job.capability);
 
     let consumer: ConsumerStreamPort | undefined;
     let producer: ProducerStreamPort | undefined;

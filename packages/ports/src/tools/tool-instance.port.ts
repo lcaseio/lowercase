@@ -16,6 +16,8 @@ export type ToolBinding<ID extends ToolId = ToolId> = {
   runtimePolicy: ToolRuntimePolicy;
 };
 
-export type ToolBindindObject = {
+export type ToolBindingMap = {
   [ID in ToolId]: ToolBinding<ID>;
 };
+
+export type PartialToolBindingMap = Partial<ToolBindingMap>;

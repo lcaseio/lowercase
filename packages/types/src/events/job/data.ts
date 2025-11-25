@@ -28,7 +28,6 @@ export type JobMcpQueuedData = JobDescriptor & {
 export type JobHttpJsonData = JobDescriptor &
   Omit<StepHttpJson, "pipe"> & {
     pipe: PipeData;
-    tree: "hi";
   };
 
 export type JobStartedData = JobDescriptor & {

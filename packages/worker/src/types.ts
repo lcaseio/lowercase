@@ -1,5 +1,4 @@
-import type { JobEventData, JobEventType } from "@lcase/types";
-import type { ToolId } from "@lcase/tools";
+import type { JobEventData, JobEventType, ToolId } from "@lcase/types";
 
 export type JobDescriptor<T extends JobEventType> = {
   id: string;

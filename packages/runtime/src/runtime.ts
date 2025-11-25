@@ -2,10 +2,9 @@ import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
 import { Worker } from "@lcase/worker";
 import {
-  McpTool,
-  ToolFactories,
+  allToolBindings,
+  allToolBindingsMap,
   ToolRegistry,
-  HttpJsonTool,
 } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
@@ -18,7 +17,8 @@ import {
 } from "@lcase/engine";
 
 import { EmitterFactory } from "@lcase/events";
-import { EventBusPort, StreamRegistryPort } from "@lcase/ports";
+import type { ToolId } from "@lcase/types";
+import { EventBusPort, StreamRegistryPort, ToolBinding } from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -154,11 +154,7 @@ export function createInProcessWorker(
   emitterFactory: EmitterFactory,
   config: WorkerConfig
 ): Worker {
-  const toolFactories: ToolFactories = {
-    mcp: () => new McpTool(),
-    httpjson: () => new HttpJsonTool(),
-  };
-  const toolRegistry = new ToolRegistry(toolFactories);
+  const toolRegistry = new ToolRegistry(allToolBindingsMap);
   const worker = new Worker(id, {
     bus,
     emitterFactory,
@@ -167,9 +163,12 @@ export function createInProcessWorker(
     toolRegistry,
   });
 
-  for (const cap of config.capabilities) {
-    worker.addCapability(cap);
-  }
+  // NOTE: add custom config for tools
+
+  // older capability based configs
+  // for (const cap of config.capabilities) {
+  //   worker.addCapability(cap);
+  // }
 
   return worker;
 }

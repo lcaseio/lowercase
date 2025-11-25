@@ -11,8 +11,10 @@ import type {
   Capability,
   JobEventType,
   WorkerMetadata,
+  ToolId,
+  ToolInstance,
 } from "@lcase/types";
-import { type ToolClass, ToolRegistry } from "@lcase/tools";
+import { ToolRegistry } from "@lcase/tools";
 import type { JobContext, JobDescriptor } from "./types.js";
 import { JobExecutor } from "./executor/job-executor.js";
 import { interpretJob } from "./interpreter/interpret-job.js";
@@ -22,6 +24,15 @@ export type WorkerCapability = Capability & {
   jobWaiters: Set<Promise<void>>;
   activeJobCount: number;
   capacityRelease?: Deferred<void>;
+};
+
+export type ToolWaitersCtx = {
+  maxConcurrency: number;
+  activeJobCount: number;
+  newJobWaitersAllowed: boolean;
+  jobWaiters: Set<Promise<void>>;
+  capacityRelease?: Deferred<void>;
+  startWaitersPromise?: Promise<void>;
 };
 export type WorkerContext = {
   workerId: string;
@@ -33,6 +44,7 @@ export type WorkerContext = {
   };
   isRegistered: boolean;
   jobs: Map<string, JobContext<JobEventType>>;
+  tools: Map<ToolId, ToolWaitersCtx>;
 };
 
 type PromiseResolve<T> = (value: T | PromiseLike<T>) => void;
@@ -46,35 +58,21 @@ type Deferred<T> = {
 export type WorkerDeps = {
   bus: EventBusPort;
   queue: QueuePort;
-  toolRegistry: ToolRegistry;
+  toolRegistry: ToolRegistry<ToolId>;
   emitterFactory: EmitterFactory;
   streamRegistry: StreamRegistryPort;
 };
-// export type WorkerCtx = {
-//   tools: {
-//     // registry of tools
-//     [toolid: string]: {
-//       //tool registry by id
-//       registry: ;
-//     };
-//   };
-//   jobs: {
-//     active: number;
-//   };
-//   registration: {};
-// };
+
 export class Worker {
-  // #ctx: WorkerCtx = {};
-  #context: WorkerContext = {
+  #ctx: WorkerContext = {
     workerId: "generic-worker",
     totalActiveJobCount: 0,
     capabilities: {},
     jobs: new Map(),
     maxConcurrency: 1,
     isRegistered: false,
+    tools: new Map(),
   };
-  #capabilityJobWaiters = new Map<string, Promise<void>>();
-  #tools = new Map<string, ToolPort>();
 
   // DI deps
   #bus;
@@ -82,16 +80,15 @@ export class Worker {
   #toolRegistry;
   #emitterFactory;
   #streamRegistry;
-  #capabilityManager;
 
   constructor(workerId: string, deps: WorkerDeps) {
-    this.#context.workerId = workerId;
+    this.#ctx.workerId = workerId;
     this.#bus = deps.bus;
     this.#queue = deps.queue;
     this.#toolRegistry = deps.toolRegistry;
-    this.#capabilityManager = deps.bus;
     this.#emitterFactory = deps.emitterFactory;
     this.#streamRegistry = deps.streamRegistry;
+    this.#buildToolCtx();
   }
 
   #subscribeToBus(): void {
@@ -99,10 +96,10 @@ export class Worker {
       if (e.type === "worker.registered") {
         const event = e as AnyEvent<"worker.registered">;
         if (
-          event.data.workerId === this.#context.workerId &&
+          event.data.workerId === this.#ctx.workerId &&
           event.data.status === "accepted"
         ) {
-          this.#context.isRegistered = true;
+          this.#ctx.isRegistered = true;
           const spanId = this.#emitterFactory.generateSpanId();
           const traceParent = this.#emitterFactory.makeTraceParent(
             e.traceid,
@@ -122,9 +119,25 @@ export class Worker {
     });
   }
 
+  #buildToolCtx() {
+    const toolIds = this.#toolRegistry.listToolIds();
+    for (const id of toolIds) {
+      const binding = this.#toolRegistry.getBinding(id);
+      if (!binding) continue;
+
+      this.#ctx.tools.set(id, {
+        activeJobCount: 0,
+        maxConcurrency: binding.spec.maxConcurrency,
+        newJobWaitersAllowed: true,
+        jobWaiters: new Set(),
+      });
+    }
+  }
+
   // may resolve with other factors in the future for multiple tools
-  resolveTool(capability: Capability, key?: string): ToolClass {
-    return this.#toolRegistry.resolve(capability.tool.id, key);
+  resolveTool(capability: Capability, key?: string): ToolInstance {
+    // return this.#toolRegistry.resolve(capability.tool.id, key);
+    return this.#toolRegistry.createInstance(capability.tool.id);
   }
 
   async handleNewJob(event: AnyEvent): Promise<void> {
@@ -154,7 +167,7 @@ export class Worker {
         runId: e.runid,
         stepId: e.stepid,
         stepType: e.entity!,
-        workerId: this.#context.workerId,
+        workerId: this.#ctx.workerId,
       },
       description: jobDescription,
       resolved: {},
@@ -162,7 +175,7 @@ export class Worker {
       startedAt: new Date().toISOString(),
       tool: jobDescription.capability,
     };
-    this.#context.jobs.set(jobContext.id, jobContext);
+    this.#ctx.jobs.set(jobContext.id, jobContext);
 
     const executor = new JobExecutor(jobContext, {
       toolRegistry: this.#toolRegistry,
@@ -247,26 +260,20 @@ export class Worker {
     }
   }
 
-  addCapability(profile: Capability) {
-    this.#context.capabilities[profile.name] = {
-      ...profile,
-      jobWaiters: new Set<Promise<void>>(),
-      newJobWaitersAreAllowed: true,
-      activeJobCount: 0,
-    };
+  setToolWaiterPolicy(toolId: ToolId, allowNew: boolean): void {
+    const waiterCtx = this.#ctx.tools.get(toolId);
+    if (!waiterCtx) return;
+    waiterCtx.newJobWaitersAllowed = allowNew;
   }
-  setCapabilityWaiterPolicy(capabilityId: string, allowNew: boolean) {
-    this.#context.capabilities[capabilityId].newJobWaitersAreAllowed = allowNew;
+  getToolWaitersSize(toolId: ToolId): number | undefined {
+    return this.#ctx.tools.get(toolId)?.jobWaiters.size;
   }
-  getWaiterSize(capabilityId: string) {
-    return this.#context.capabilities[capabilityId].jobWaiters.size;
-  }
-  getCapabilityActiveJobCount(capabilityId: string): number | undefined {
-    return this.#context.capabilities[capabilityId].activeJobCount;
+  getToolActiveJobCount(toolId: ToolId): number | undefined {
+    return this.#ctx.tools.get(toolId)?.activeJobCount;
   }
   getMetadata(): WorkerMetadata {
     const capabilities: Capability[] = [];
-    const caps = this.#context.capabilities;
+    const caps = this.#ctx.capabilities;
 
     // strip some fields from context and create new objects
     for (const id in caps) {
@@ -279,8 +286,8 @@ export class Worker {
       capabilities.push(cap);
     }
     const meta: WorkerMetadata = {
-      id: this.#context.workerId,
-      name: this.#context.workerId,
+      id: this.#ctx.workerId,
+      name: this.#ctx.workerId,
       type: "inprocess",
       capabilities,
     };
@@ -289,13 +296,15 @@ export class Worker {
 
   async requestRegistration(): Promise<void> {
     const meta = this.getMetadata();
+
+    const toolList = this.#toolRegistry.listToolIds();
     const spanId = this.#emitterFactory.generateSpanId();
     const traceId = this.#emitterFactory.generateTraceId();
     const traceParent = this.#emitterFactory.makeTraceParent(traceId, spanId);
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitter({
-      source: "lowercase://worker/" + this.#context.workerId,
-      workerid: this.#context.workerId,
+      source: "lowercase://worker/" + this.#ctx.workerId,
+      workerid: this.#ctx.workerId,
       traceId,
       spanId,
       traceParent,
@@ -314,9 +323,9 @@ export class Worker {
 
   async start(): Promise<void> {
     this.#subscribeToBus();
-    for (const id in this.#context.capabilities) {
-      const p = this.startCapabilityJobWaiters(id);
-      this.#capabilityJobWaiters.set(id, p);
+    for (const [id, waiterCtx] of this.#ctx.tools.entries()) {
+      const p = this.startToolJobWaiters(id);
+      waiterCtx.startWaitersPromise = p;
     }
     const spanId = this.#emitterFactory.generateSpanId();
     const traceId = this.#emitterFactory.generateTraceId();
@@ -324,7 +333,7 @@ export class Worker {
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitter({
       source: "lowercase://worker/start",
-      workerid: this.#context.workerId,
+      workerid: this.#ctx.workerId,
       traceId,
       spanId,
       traceParent,
@@ -332,7 +341,7 @@ export class Worker {
 
     await workerEmitter.emit("worker.started", {
       worker: {
-        id: this.#context.workerId,
+        id: this.#ctx.workerId,
       },
       status: "started",
     });
@@ -344,123 +353,79 @@ export class Worker {
    *
    * When a job waiter gets a job (deferred promised is resolved), then
    * make a new job waiter up to the max concurrency defined in the
-   * worker context for this capability.
+   * worker context for this tool.
    *
-   * Set newJobWatersAreAllowed = false to stop new waiters from being
+   * Set newJobWaitersAllowed = false to stop new waiters from being
    * created;
    *
    * @see WorkerContext for more on where that property exists.
    *
    * @param capabilityId id of the capability to start job waiters for
    */
-  async startCapabilityJobWaiters(capabilityId: string): Promise<void> {
-    const cap = this.#context.capabilities[capabilityId];
-    cap.newJobWaitersAreAllowed = true;
-    while (cap.newJobWaitersAreAllowed) {
-      if (cap.activeJobCount < cap.maxJobCount) {
+  async startToolJobWaiters(toolId: ToolId): Promise<void> {
+    const waiterCtx = this.#ctx.tools.get(toolId);
+    if (!waiterCtx) return;
+    while (waiterCtx.newJobWaitersAllowed) {
+      if (waiterCtx.activeJobCount < waiterCtx.maxConcurrency) {
         try {
-          const event = await this.#queue.reserve(
-            cap.queueId,
-            this.#context.workerId
-          );
+          const event = await this.#queue.reserve(toolId, this.#ctx.workerId);
 
           // TODO: change queue from null to rejected?
           if (event === null) {
-            if (!cap.newJobWaitersAreAllowed) break;
+            if (!waiterCtx.newJobWaitersAllowed) break;
             continue;
           }
 
           const e = event as AllJobEvents;
           const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
             e,
-            "lowercase://worker/waiters/job"
+            "lowercase://worker/tool-waiters/job"
           );
           await jobEmitter.emit("job.started", {
             job: e.data.job,
             status: "started",
           });
 
-          cap.activeJobCount++;
+          waiterCtx.activeJobCount++;
           const waiter = this.handleNewJob(event).finally(async () => {
-            cap.jobWaiters.delete(waiter);
-            cap.activeJobCount--;
-            if (cap.capacityRelease) {
-              cap.capacityRelease.resolve();
+            waiterCtx.jobWaiters.delete(waiter);
+            waiterCtx.activeJobCount--;
+            if (waiterCtx.capacityRelease) {
+              waiterCtx.capacityRelease.resolve();
             }
           });
-          cap.jobWaiters.add(waiter); // later implement graceful shutdown with this
+
+          waiterCtx.jobWaiters.add(waiter);
         } catch (err) {
-          if (!cap.newJobWaitersAreAllowed) break;
+          console.log(err);
+          if (!waiterCtx.newJobWaitersAllowed) break;
           continue;
         }
       } else {
-        cap.capacityRelease = this.#makeDeferred<void>();
-        await cap.capacityRelease.promise;
+        waiterCtx.capacityRelease = this.#makeDeferred<void>();
+        await waiterCtx.capacityRelease.promise;
       }
     }
   }
 
-  // async startJobWaiters(toolId: string): Promise<void> {
-  //   const cap = this.#context.capabilities[capabilityId];
-  //   cap.newJobWaitersAreAllowed = true;
-  //   while (cap.newJobWaitersAreAllowed) {
-  //     if (cap.activeJobCount < cap.maxJobCount) {
-  //       try {
-  //         const event = await this.#queue.reserve(
-  //           cap.queueId,
-  //           this.#context.workerId
-  //         );
-
-  //         // TODO: change queue from null to rejected?
-  //         if (event === null) {
-  //           if (!cap.newJobWaitersAreAllowed) break;
-  //           continue;
-  //         }
-
-  //         const e = event as AllJobEvents;
-  //         const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
-  //           e,
-  //           "lowercase://worker/waiters/job"
-  //         );
-  //         await jobEmitter.emit("job.started", {
-  //           job: e.data.job,
-  //           status: "started",
-  //         });
-
-  //         cap.activeJobCount++;
-  //         const waiter = this.handleNewJob(event).finally(async () => {
-  //           cap.jobWaiters.delete(waiter);
-  //           cap.activeJobCount--;
-  //           if (cap.capacityRelease) {
-  //             cap.capacityRelease.resolve();
-  //           }
-  //         });
-  //         cap.jobWaiters.add(waiter); // later implement graceful shutdown with this
-  //       } catch (err) {
-  //         if (!cap.newJobWaitersAreAllowed) break;
-  //         continue;
-  //       }
-  //     } else {
-  //       cap.capacityRelease = this.#makeDeferred<void>();
-  //       await cap.capacityRelease.promise;
-  //     }
-  //   }
-  // }
-
   /**
-   * Stops all job waiters in the queue and marks each capability to stop
+   * Stops all job waiters in the queue and marks each tool to stop
    * new job waiters.
+   *
+   * Also releases any capacity holder promises that may be pending after
+   * new waiters cannot be created.
    */
   async stopAllJobWaiters() {
-    const caps = this.#context.capabilities;
-    // need to stop each capability from making new ones first
-    for (const id in caps) {
-      caps[id].newJobWaitersAreAllowed = false;
-      caps[id].jobWaiters.clear();
-      caps[id].activeJobCount = 0;
-      if (caps[id].capacityRelease) caps[id].capacityRelease.resolve();
+    const tools = this.#ctx.tools;
+    // need to stop each tool from making new waiters first
+    for (const waiterCtx of tools.values()) {
+      waiterCtx.newJobWaitersAllowed = false;
+      waiterCtx.jobWaiters.clear();
+      waiterCtx.activeJobCount = 0;
+
+      if (waiterCtx.capacityRelease) waiterCtx.capacityRelease.resolve();
     }
-    this.#queue.abortAllForWorker(this.#context.workerId);
+    this.#queue.abortAllForWorker(this.#ctx.workerId);
   }
 
   #makeDeferred<T>(): Deferred<T> {
