@@ -41,7 +41,6 @@ import {
   JobHttpJsonSubmittedSchema,
   JobMcpQueuedSchema,
   JobMcpSchema,
-  JobQueuedSchema,
   JobStartedSchema,
 } from "./schemas/job.event.schema.js";
 import {
@@ -49,7 +48,6 @@ import {
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
   JobMcpQueuedDataSchema,
-  JobQueuedDataSchema,
   JobStartedDataSchema,
 } from "./schemas/job.data.schema.js";
 import {
@@ -86,7 +84,6 @@ export type EventTopic =
   | "runs.lifecycle"
   | "jobs.lifecycle"
   | "job.requested"
-  | "job.queued"
   | "job.httpjson.submitted"
   | "job.httpjson.queued"
   | "job.mcp.submitted"
@@ -178,13 +175,6 @@ export const registry = {
     schema: {
       event: JobMcpQueuedSchema,
       data: JobMcpQueuedDataSchema,
-    },
-  },
-  "job.queued": {
-    topic: "jobs.lifecycle",
-    schema: {
-      data: JobQueuedDataSchema,
-      event: JobQueuedSchema,
     },
   },
   "job.started": {

@@ -6,6 +6,7 @@ import { EmitterFactory } from "@lcase/events";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
 import { threadId } from "worker_threads";
+import { CapId } from "@lcase/types/flow";
 
 /**
  * Engine class runs flows as the orchestration center.
@@ -228,6 +229,8 @@ export class Engine {
         runid,
         stepid,
         jobid: jobId,
+        capid: stepType as CapId,
+        toolid: null,
       },
       context.traceId
     );

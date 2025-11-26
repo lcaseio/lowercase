@@ -1,0 +1,11 @@
+{
+  "name": "HTTP JSON Flow",
+  "version": "0.1.0-alpha.7",
+  "start": "first",
+  "steps": {
+    "first": {
+      "type": "httpjson",
+      "url": "http://localhost:3004/sse"
+    }
+  }
+}

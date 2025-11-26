@@ -1,4 +1,4 @@
-import type { ToolBinding } from "@lcase/ports/tools";
+import type { ToolBinding, ToolDeps } from "@lcase/ports/tools";
 import { HttpJsonTool } from "./httpjson.tool.js";
 
 export const httpJsonBinding = {
@@ -9,7 +9,7 @@ export const httpJsonBinding = {
     location: "internal",
     rateLimit: undefined,
   },
-  create: () => new HttpJsonTool(),
+  create: (deps: ToolDeps) => new HttpJsonTool(deps),
   runtimePolicy: {
     preferredScope: "stateless",
     makeCacheKey: undefined,

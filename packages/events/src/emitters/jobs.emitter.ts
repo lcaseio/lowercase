@@ -28,12 +28,12 @@ export class JobEmitter extends BaseEmitter {
     scope: OtelContext & JobScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, jobid } = scope;
+    const { flowid, runid, stepid, jobid, capid, toolid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#jobScope = { flowid, runid, stepid, jobid };
+    this.#jobScope = { flowid, runid, stepid, jobid, capid, toolid };
     this.jobOtelAttributesMap = jobOtelAttributesMap;
     this.bus = bus;
   }

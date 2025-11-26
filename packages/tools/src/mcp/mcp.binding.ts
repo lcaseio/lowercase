@@ -1,5 +1,6 @@
-import { ToolBinding } from "@lcase/ports/tools";
+import { ToolBinding, ToolDeps } from "@lcase/ports/tools";
 import { McpTool } from "./mcp.tool.js";
+import { ToolId } from "@lcase/types";
 
 export const mcpBinding = {
   spec: {
@@ -9,7 +10,7 @@ export const mcpBinding = {
     location: "internal",
     rateLimit: undefined,
   },
-  create: () => new McpTool(),
+  create: (deps: ToolDeps) => new McpTool(deps),
   runtimePolicy: {
     preferredScope: "stateless",
     makeCacheKey: undefined,

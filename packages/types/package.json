@@ -6,6 +6,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
+    },
+    "./flow": {
+      "types": "./dist/flow/index.d.ts"
     }
   },
   "scripts": {

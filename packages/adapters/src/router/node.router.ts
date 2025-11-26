@@ -21,16 +21,6 @@ export class NodeRouter implements RouterPort {
       console.error("[router] event or event type is undefined; event:", event);
       return;
     }
-    if (event.domain === "job") {
-      const e = event as AnyJobEvent;
-      this.queue.enqueue(e.data.job.toolid, event);
-      const source = "lowercase://router/route/job";
-      const jobEmitter = this.ef.newJobEmitterFromEvent(e, source);
-      await jobEmitter.emit("job.queued", {
-        job: e.data.job,
-        status: "queued",
-      });
-    }
   }
 
   async start() {

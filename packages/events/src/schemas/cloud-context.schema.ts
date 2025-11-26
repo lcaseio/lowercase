@@ -20,7 +20,6 @@ export const eventTypes = [
   "step.failed",
   "job.httpjson.submitted",
   "job.httpjson.queued",
-  "job.queued",
   "job.mcp.submitted",
   "job.mcp.queued",
   "job.completed",

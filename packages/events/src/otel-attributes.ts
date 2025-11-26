@@ -107,11 +107,6 @@ export const jobOtelAttributesMap = {
     domain: "job",
     entity: "httpjson",
   },
-  "job.queued": {
-    action: "queued",
-    domain: "job",
-    entity: undefined,
-  },
 } satisfies JobOtelAttributesMap;
 
 export const toolOtelAttributesMap = {

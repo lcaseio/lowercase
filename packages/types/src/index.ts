@@ -1,7 +1,6 @@
 export * from "./events/shared/index.js";
 
 export * from "./events/flow/data.js";
-export * from "./worker.types.js";
 
 export * from "./events/any-event.js";
 export * from "./events/event-map.js";
@@ -33,3 +32,5 @@ export * from "./events/system/map.js";
 
 export * from "./flow/http-json.step.js";
 export * from "./tool/tool.types.js";
+
+export * from "./worker/metadata.js";

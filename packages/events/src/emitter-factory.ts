@@ -129,6 +129,8 @@ export class EmitterFactory implements EmitterFactoryPort {
       traceId: event.traceid,
       spanId,
       traceParent,
+      capid: event.capid,
+      toolid: event.toolid,
     });
   }
   newToolEmitter(scope: CloudScope & ToolScope & OtelContext): ToolEmitter {

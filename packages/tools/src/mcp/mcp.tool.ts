@@ -2,13 +2,10 @@ import type {
   ProducerStreamPort,
   InputChunk,
   ConsumerStreamPort,
+  ToolDeps,
 } from "@lcase/ports";
-import { ToolContext, ToolInstancePort } from "@lcase/ports/tools";
-import type {
-  AnyEvent,
-  JobMcpQueuedData,
-  JobRequestedType,
-} from "@lcase/types";
+import { ToolInstancePort } from "@lcase/ports/tools";
+import type { AnyEvent } from "@lcase/types";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { LoggingMessageNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -26,10 +23,11 @@ type McpToolContext = {
   notificationHandlers: Set<string>;
 };
 
-export class McpTool implements ToolInstancePort {
+export class McpTool implements ToolInstancePort<"mcp"> {
   id = "mcp" as const;
   name = "Internal MCP SSE Tool";
   version = "0.1.0-alpha.7";
+  #deps: ToolDeps;
   #context: McpToolContext = {
     isProducing: false,
     isConsuming: false,
@@ -37,23 +35,21 @@ export class McpTool implements ToolInstancePort {
     notificationHandlers: new Set(),
   };
   #client: Client;
-  constructor() {
+  constructor(deps: ToolDeps) {
     this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.4" });
     this.#addShutdownHooks();
+    this.#deps = deps;
   }
-  async invoke(
-    input: AnyEvent<"job.mcp.queued">,
-    context: ToolContext<JobRequestedType>
-  ): Promise<unknown> {
+  async invoke(input: AnyEvent<"job.mcp.queued">): Promise<unknown> {
     console.log(`[tool-mcp] ${input}`);
     const data = input.data;
     await this.connect(data.url);
 
     // NOTE: currently does not support duplex streaming
-    if (context.producer && !context.consumer) {
+    if (this.#deps.producer && data.pipe?.to?.payload && !this.#deps.consumer) {
       console.log("[tool-mcp] producer streaming");
       const [producerResult, toolResult] = await Promise.all([
-        this.#produceStream(context.producer, data.pipe.to?.payload),
+        this.#produceStream(this.#deps.producer, data.pipe.to.payload),
         this.#client.callTool({
           name: data.feature.name,
           ...(data.args ? { arguments: data.args } : {}),
@@ -69,13 +65,17 @@ export class McpTool implements ToolInstancePort {
       }
       await this.disconnect();
       return toolResult;
-    } else if (context.consumer && !context.producer) {
+    } else if (
+      this.#deps.consumer &&
+      !this.#deps.producer &&
+      data.pipe?.from?.buffer
+    ) {
       console.log("[tool-mcp] consumer streaming");
       const consumerResult = await this.#consumeStream(
-        context.consumer,
+        this.#deps.consumer,
         data.feature.name,
         data.args,
-        data.pipe.from?.buffer
+        data.pipe.from.buffer
       );
       await this.disconnect();
       return consumerResult;

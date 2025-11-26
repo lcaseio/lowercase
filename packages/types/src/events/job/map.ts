@@ -1,3 +1,4 @@
+import { CapId } from "../../flow/map.js";
 import type {
   DomainEntityActionDescriptor,
   DomainActionDescriptor,
@@ -6,23 +7,35 @@ import {
   JobCompletedData,
   JobFailedData,
   JobHttpJsonData,
-  JobMcpQueuedData,
   JobStartedData,
   JobQueuedData,
+  JobMcpData,
 } from "./data.js";
 
+export type DomainCapActionDescriptor<
+  Domain extends string,
+  Id extends CapId,
+  Action extends string,
+  Data
+> = {
+  domain: Domain;
+  entity: Id;
+  action: Action;
+  data: Data;
+};
+
 export type JobEventMap = {
-  "job.mcp.submitted": DomainEntityActionDescriptor<
+  "job.mcp.submitted": DomainCapActionDescriptor<
     "job",
     "mcp",
     "submitted",
-    JobMcpQueuedData
+    JobMcpData
   >;
   "job.mcp.queued": DomainEntityActionDescriptor<
     "job",
     "mcp",
     "queued",
-    JobMcpQueuedData
+    JobMcpData
   >;
   "job.httpjson.submitted": DomainEntityActionDescriptor<
     "job",
@@ -39,15 +52,13 @@ export type JobEventMap = {
   "job.started": DomainActionDescriptor<"job", "started", JobStartedData>;
   "job.completed": DomainActionDescriptor<"job", "completed", JobCompletedData>;
   "job.failed": DomainActionDescriptor<"job", "failed", JobFailedData>;
-  "job.queued": DomainActionDescriptor<"job", "queued", JobQueuedData>;
 };
 
 export type JobEventType = keyof JobEventMap;
 
 export type JobEventData<T extends JobEventType> = JobEventMap[T]["data"];
-export type JobDataFor<T extends JobRequestedType> = JobEventMap[T]["data"];
 export type JobOtelAttributesMap = {
   [T in JobEventType]: Omit<JobEventMap[T], "data">;
 };
 
-export type JobRequestedType = Extract<JobEventType, `${string}.requested`>;
+export type JobQueuedType = Extract<JobEventType, `${string}.queued`>;

@@ -1,32 +1,24 @@
 import { StepHttpJson } from "../../flow/http-json.step.js";
-import { PipeData } from "../shared/pipe.js";
+import { CapId } from "../../flow/map.js";
+import { StepMcp } from "../../flow/mcp.step.js";
+import { PipeData, PipeDataObject } from "../shared/pipe.js";
 
 export type JobDescriptor = {
   job: {
     id: string;
-    toolid: string;
+    capid: CapId;
+    toolid: string | null;
   };
 };
 
-export type JobMcpQueuedData = JobDescriptor & {
-  url: string;
-  transport: "sse" | "stdio" | "streamable-http" | "http";
-  feature: {
-    primitive:
-      | "resource"
-      | "prompt"
-      | "tool"
-      | "sampling"
-      | "roots"
-      | "elicitation";
-    name: string;
-  };
-  args?: Record<string, unknown>;
-  pipe: PipeData;
-};
+export type JobMcpData = JobDescriptor &
+  Omit<StepMcp, "pipe" | "type"> &
+  PipeDataObject;
+
+export type JobMcpQueuedData = JobMcpData;
 
 export type JobHttpJsonData = JobDescriptor &
-  Omit<StepHttpJson, "pipe"> & {
+  Omit<StepHttpJson, "pipe" | "type"> & {
     pipe: PipeData;
   };
 
@@ -48,8 +40,3 @@ export type JobFailedData = JobDescriptor & {
 export type JobQueuedData = JobDescriptor & {
   status: "queued";
 };
-
-// job.http:json.queued
-// job.
-
-// cap.mcp.submitted

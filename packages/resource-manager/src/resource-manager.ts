@@ -10,7 +10,25 @@ export type ResourceManagerDeps = {
   ef: EmitterFactoryPort;
   queue: QueuePort;
 };
-
+/**
+ * this resource manager is designed to map step capabilities to
+ * tools based on policies / table lookups, queue them if the worker
+ * concurrency / availability is ready, or place them in a waiting queue
+ * until thresholds for queueing the job are met.
+ *
+ * currently this class does not implement all this functionality.
+ *
+ * still left to implement:
+ * - tool resolution
+ * - generic queue logic
+ * - worker availability
+ * - policy based tool decisions
+ * - capability maps to tools
+ * - respond to job completed/failed to decrement system concurrency
+ *
+ * This current version wires up in the runtime and works, but needs
+ * further generalization.
+ */
 export class ResourceManager implements ResourceManagerPort {
   #bus: EventBusPort;
   #ef: EmitterFactoryPort;

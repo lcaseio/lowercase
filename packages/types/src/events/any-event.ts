@@ -7,7 +7,7 @@ import type { StepEventType } from "./step/map.js";
 import type { EngineEventType } from "./engine/map.js";
 import type { EngineScope } from "./engine/event.js";
 import type { RunScope, RunEventType } from "./run/index.js";
-import type { JobEventType } from "./job/map.js";
+import type { JobEventType, JobQueuedType } from "./job/map.js";
 import type { JobScope } from "./job/event.js";
 import type { ToolEventType } from "./tool/map.js";
 import type { ToolScope } from "./tool/event.js";
@@ -49,3 +49,5 @@ export type lowercaseFlowEvent = AnyEvent<FlowEventType>;
 export type AnyJobEvent = AnyEvent<JobEventType>;
 export type AllJobEvents = AnyEvent<JobEventType>;
 export type LowercaseEvent = AnyEvent<EventType>;
+
+export type JobQueuedEvent = AnyEvent<JobQueuedType>;

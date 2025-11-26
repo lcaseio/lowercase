@@ -9,13 +9,6 @@ export type PipeData = {
   };
 };
 
-export type PipeStepFields = {
-  to?: {
-    step: string;
-    payload: string;
-  };
-  from?: {
-    step: string;
-    buffer?: number;
-  };
+export type PipeDataObject = {
+  pipe?: PipeData;
 };

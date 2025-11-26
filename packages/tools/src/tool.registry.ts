@@ -4,6 +4,7 @@ import type {
   ToolRegistryPort,
   ToolBinding,
   ToolBindingMap,
+  ToolDeps,
 } from "@lcase/ports/tools";
 
 export type ObjectKey = {};
@@ -20,12 +21,12 @@ export class ToolRegistry<ID extends ToolId> implements ToolRegistryPort {
   getBinding(id: ID): ToolBinding<ID> | undefined {
     return this.#bindings.get(id);
   }
-  createInstance(id: ID): ToolInstancePort<ID> {
+  createInstance(id: ID, deps: ToolDeps): ToolInstancePort<ID> {
     const binding = this.#bindings.get(id);
     if (!binding) {
       throw new Error(`No binding registered for tool:${id}`);
     }
-    return binding.create();
+    return binding.create(deps);
   }
   addTool(binding: ToolBinding<ID>): void {
     this.#bindings.set(binding.spec.id, binding);

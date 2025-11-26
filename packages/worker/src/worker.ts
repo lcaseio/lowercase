@@ -3,24 +3,18 @@ import type {
   EventBusPort,
   QueuePort,
   StreamRegistryPort,
+  ToolDeps,
 } from "@lcase/ports";
 import type {
-  AllJobEvents,
   AnyEvent,
-  Capability,
   WorkerMetadata,
   ToolId,
-  ToolInstance,
+  PipeData,
+  JobQueuedEvent,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
-
-export type WorkerCapability = Capability & {
-  newJobWaitersAreAllowed: boolean;
-  jobWaiters: Set<Promise<void>>;
-  activeJobCount: number;
-  capacityRelease?: Deferred<void>;
-};
+import { eventParser } from "@lcase/events";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -34,10 +28,6 @@ export type WorkerContext = {
   workerId: string;
   totalActiveJobCount: number;
   maxConcurrency: number;
-  capabilities: {
-    // capabilities
-    [id: string]: WorkerCapability;
-  };
   isRegistered: boolean;
   jobs: Map<string, JobContext>;
   tools: Map<ToolId, ToolWaitersCtx>;
@@ -63,7 +53,6 @@ export class Worker {
   #ctx: WorkerContext = {
     workerId: "generic-worker",
     totalActiveJobCount: 0,
-    capabilities: {},
     jobs: new Map(),
     maxConcurrency: 1,
     isRegistered: false,
@@ -126,18 +115,12 @@ export class Worker {
     }
   }
 
-  // may resolve with other factors in the future for multiple tools
-  resolveTool(capability: Capability, key?: string): ToolInstance {
-    // return this.#toolRegistry.resolve(capability.tool.id, key);
-    return this.#toolRegistry.createInstance(capability.tool.id);
-  }
-
-  async handleNewJob(event: AllJobEvents): Promise<void> {
-    const e = event as AllJobEvents;
+  async handleNewJob(event: JobQueuedEvent): Promise<void> {
+    const e = eventParser(event, event.type);
 
     const jobContext: JobContext = {
       jobId: e.data.job.id,
-      toolId: e.data.job.toolid,
+      toolId: e.data.job.toolid ?? "",
       capability: e.stepid,
       flowId: e.flowid,
       runId: e.runid,
@@ -165,15 +148,21 @@ export class Worker {
       status: "started",
     });
 
+    const deps = this.#makeTookDeps(
+      event.data.pipe ?? {},
+      this.#emitterFactory,
+      this.#streamRegistry
+    );
     const tool = this.#toolRegistry.createInstance(
-      event.data.job.toolid as ToolId
+      event.data.job.toolid as ToolId,
+      deps
     );
 
     this.#ctx.jobs.set(jobContext.jobId, jobContext);
 
     let toolResult;
     try {
-      toolResult = await tool.invoke(event, {});
+      toolResult = await tool.invoke(event);
     } catch (err) {
       const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
         e,
@@ -205,6 +194,21 @@ export class Worker {
         reason: "tool returned undefined results",
       });
     }
+  }
+
+  #makeTookDeps(
+    pipe: PipeData,
+    ef: EmitterFactoryPort,
+    sr: StreamRegistryPort
+  ): ToolDeps {
+    const deps: ToolDeps = { ef };
+    if (pipe.to?.id) {
+      deps.producer = sr.getProducer(pipe.to.id);
+    }
+    if (pipe.from?.id) {
+      deps.consumer = sr.getConsumer(pipe.from.id);
+    }
+    return deps;
   }
 
   setToolWaiterPolicy(toolId: ToolId, allowNew: boolean): void {
@@ -292,7 +296,7 @@ export class Worker {
             continue;
           }
 
-          const e = event as AllJobEvents;
+          const e = event as JobQueuedEvent;
           const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
             e,
             "lowercase://worker/tool-waiters/job"

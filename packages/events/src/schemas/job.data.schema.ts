@@ -9,12 +9,18 @@ import type {
   JobStartedData,
   PipeData,
 } from "@lcase/types";
+import type { CapId } from "@lcase/types/flow";
 
+export const CapIdSchema = z.enum([
+  "mcp",
+  "httpjson",
+]) satisfies z.ZodType<CapId>;
 const JobDescriptorDataSchema = z
   .object({
     job: z.object({
       id: z.string(),
-      toolid: z.string(),
+      toolid: z.string().nullable(),
+      capid: CapIdSchema,
     }),
   })
   .strict() satisfies z.ZodType<JobDescriptor>;
@@ -58,7 +64,6 @@ export const JobMcpQueuedDataSchema = JobDescriptorDataSchema.merge(
 
 export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
   z.object({
-    type: z.literal("httpjson"),
     url: z.string(),
     method: z
       .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])

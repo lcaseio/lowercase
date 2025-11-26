@@ -4,6 +4,7 @@ import type { AnyEvent, StepHttpJson } from "@lcase/types";
 import type { RunContext, Flow } from "@lcase/specs";
 import type { JobEmitter } from "@lcase/events";
 import { PipeResolver } from "../pipe-resolver.js";
+import { CapId } from "@lcase/types/flow";
 
 export class HttpJsonHandler implements StepHandler {
   constructor(
@@ -33,9 +34,9 @@ export class HttpJsonHandler implements StepHandler {
         job: {
           id: String(crypto.randomUUID()),
           toolid: "httpjson",
+          capid: step.type as CapId,
         },
         url: step.url,
-        type: "httpjson",
         pipe: {
           to: undefined,
           from: undefined,

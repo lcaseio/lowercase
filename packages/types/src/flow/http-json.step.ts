@@ -1,4 +1,4 @@
-import { PipeStepFields } from "../events/shared/pipe.js";
+import { PipeFields } from "./pipe.fields.js";
 
 export type StepHttpJson = {
   type: "httpjson";
@@ -6,5 +6,6 @@ export type StepHttpJson = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
   headers?: Record<string, unknown>;
   body?: Record<string, unknown>;
-  pipe?: PipeStepFields;
+  pipe?: PipeFields;
+  args?: Record<string, unknown>;
 };
