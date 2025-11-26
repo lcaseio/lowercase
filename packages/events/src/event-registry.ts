@@ -37,12 +37,16 @@ import {
 import {
   JobCompletedSchema,
   JobFailedSchema,
+  JobHttpJsonQueuedSchema,
+  JobHttpJsonSubmittedSchema,
   JobMcpQueuedSchema,
+  JobMcpSchema,
   JobStartedSchema,
 } from "./schemas/job.event.schema.js";
 import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
+  JobHttpJsonDataSchema,
   JobMcpQueuedDataSchema,
   JobStartedDataSchema,
 } from "./schemas/job.data.schema.js";
@@ -75,9 +79,14 @@ export type EventTopic =
   | "steps.lifecycle"
   | "flows.lifecycle"
   | "workers.lifecycle"
+  | "worker.registration.requested"
   | "engines.lifecycle"
   | "runs.lifecycle"
   | "jobs.lifecycle"
+  | "job.requested"
+  | "job.httpjson.submitted"
+  | "job.httpjson.queued"
+  | "job.mcp.submitted"
   | "tools.lifecycle"
   | "system";
 
@@ -154,6 +163,13 @@ export const registry = {
       data: StepCompletedDataSchema,
     },
   },
+  "job.mcp.submitted": {
+    topic: "job.mcp.submitted",
+    schema: {
+      event: JobMcpSchema,
+      data: JobMcpQueuedDataSchema,
+    },
+  },
   "job.mcp.queued": {
     topic: "jobs.lifecycle",
     schema: {
@@ -180,6 +196,20 @@ export const registry = {
     schema: {
       event: JobFailedSchema,
       data: JobFailedDataSchema,
+    },
+  },
+  "job.httpjson.submitted": {
+    topic: "job.httpjson.submitted",
+    schema: {
+      event: JobHttpJsonSubmittedSchema,
+      data: JobHttpJsonDataSchema,
+    },
+  },
+  "job.httpjson.queued": {
+    topic: "job.httpjson.queued",
+    schema: {
+      event: JobHttpJsonQueuedSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
   "tool.started": {
@@ -225,7 +255,7 @@ export const registry = {
     },
   },
   "worker.registration.requested": {
-    topic: "workers.lifecycle",
+    topic: "worker.registration.requested",
     schema: {
       event: WorkerRegistrationRequestedSchema,
       data: WorkerRegistrationRequestedDataSchema,

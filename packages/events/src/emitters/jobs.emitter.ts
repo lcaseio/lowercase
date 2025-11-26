@@ -28,12 +28,12 @@ export class JobEmitter extends BaseEmitter {
     scope: OtelContext & JobScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, jobid } = scope;
+    const { flowid, runid, stepid, jobid, capid, toolid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#jobScope = { flowid, runid, stepid, jobid };
+    this.#jobScope = { flowid, runid, stepid, jobid, capid, toolid };
     this.jobOtelAttributesMap = jobOtelAttributesMap;
     this.bus = bus;
   }
@@ -41,7 +41,7 @@ export class JobEmitter extends BaseEmitter {
   async emit<T extends JobEventType>(
     type: T,
     data: JobEventData<T>
-  ): Promise<void> {
+  ): Promise<JobEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#jobScope,
@@ -63,5 +63,6 @@ export class JobEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(entry.topic, event);
+    return event;
   }
 }

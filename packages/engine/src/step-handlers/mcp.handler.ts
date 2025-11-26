@@ -4,6 +4,7 @@ import type { AnyEvent, JobMcpQueuedData } from "@lcase/types";
 import type { RunContext, Flow, McpStep } from "@lcase/specs";
 import type { JobEmitter } from "@lcase/events";
 import { PipeResolver } from "../pipe-resolver.js";
+import { CapId } from "@lcase/types/flow";
 
 export class McpStepHandler implements StepHandler {
   constructor(
@@ -32,7 +33,8 @@ export class McpStepHandler implements StepHandler {
       const data: JobMcpQueuedData = {
         job: {
           id: String(crypto.randomUUID()),
-          capability: step.type,
+          toolid: "mcp",
+          capid: step.type as CapId,
         },
         args,
         pipe: pipes,
@@ -41,8 +43,9 @@ export class McpStepHandler implements StepHandler {
         feature: step.feature,
       };
 
-      await emitter.emit("job.mcp.queued", data);
-      context.steps[stepName].status = "queued";
+      await emitter.emit("job.mcp.submitted", data);
+
+      context.steps[stepName].status = "submitted";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`

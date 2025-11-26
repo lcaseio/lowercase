@@ -18,6 +18,9 @@ export const eventTypes = [
   "step.started",
   "step.completed",
   "step.failed",
+  "job.httpjson.submitted",
+  "job.httpjson.queued",
+  "job.mcp.submitted",
   "job.mcp.queued",
   "job.completed",
   "job.started",
@@ -65,6 +68,7 @@ export const actionTypes = [
   "stopped",
   "failed",
   "logged",
+  "submitted",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [
@@ -81,6 +85,7 @@ export const domainTypes = [
 export const entityTypes = [
   "mcp",
   "registration",
+  "httpjson",
 ] as const satisfies readonly EventEntities[];
 
 export const CloudEventContextSchema = z

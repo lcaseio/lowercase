@@ -1,5 +1,6 @@
 import { CloudScope } from "@lcase/types";
-import { OtelContext, EnvelopeHeader } from "../types.js";
+import { BaseEmitterPort, EnvelopeHeader } from "@lcase/ports";
+import { OtelContext } from "../types.js";
 
 /**
  * NOTE: This current design of the emitters has a few loose ends:
@@ -21,7 +22,7 @@ import { OtelContext, EnvelopeHeader } from "../types.js";
  * be refactored for better DX and Otel features.
  *
  */
-export class BaseEmitter {
+export class BaseEmitter implements BaseEmitterPort {
   protected otel: OtelContext;
   protected cloudScope: CloudScope;
   constructor(otel: OtelContext, cloudScope: CloudScope) {

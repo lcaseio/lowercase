@@ -8,7 +8,7 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EventBusPort, SystemEmitterPort } from "@lcase/ports";
 import { systemOtelAttributesMap } from "../otel-attributes.js";
 import { registry } from "../event-registry.js";
 
@@ -18,7 +18,7 @@ import { registry } from "../event-registry.js";
  *
  * registry should move out.
  */
-export class SystemEmitter extends BaseEmitter {
+export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
   protected otel: OtelContext;
   protected systemOtelAttributesMap: SystemOtelAttributesMap;
   #systemScope: SystemScope;

@@ -1,19 +1,19 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
-import { Worker } from "@lcase/adapters/worker";
-import { McpTool, ToolFactories, ToolRegistry } from "@lcase/adapters/tools";
+import { Worker } from "@lcase/worker";
+import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import {
   Engine,
   PipeResolver,
   resolveStepArgs,
-  ResourceRegistry,
   wireStepHandlers,
 } from "@lcase/engine";
 
 import { EmitterFactory } from "@lcase/events";
-import { EventBusPort, StreamRegistryPort } from "@lcase/ports";
+import type { ToolId } from "@lcase/types";
+import { EventBusPort, StreamRegistryPort, ToolBinding } from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -31,6 +31,7 @@ import {
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
+import { ResourceManager } from "@lcase/resource-manager";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -58,23 +59,25 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   );
   const queue = queueFactory();
 
-  const router = new NodeRouter(bus, queue);
+  const ef = new EmitterFactory(bus);
+  const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
-  const emitterFactory = new EmitterFactory(bus);
   const flowStore = new FlowStore();
 
-  const engine = createInProcessEngine(
-    flowStore,
+  const engine = createInProcessEngine(flowStore, bus, streamRegistry, ef);
+
+  const rm = new ResourceManager({
     bus,
-    streamRegistry,
-    emitterFactory
-  );
+    ef,
+    queue,
+  });
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
     queue,
     streamRegistry,
-    emitterFactory,
+    ef,
     config.worker
   );
 
@@ -89,6 +92,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     flowStore,
     tap,
     sinks,
+    ef,
+    rm,
   };
 }
 
@@ -131,14 +136,12 @@ export function createInProcessEngine(
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
   const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
-  const resourceRegistry = new ResourceRegistry();
 
   const engine = new Engine(
     flowDb,
     bus,
     streamRegistry,
     stepHandlerRegistry,
-    resourceRegistry,
     emitterFactory
   );
 
@@ -153,10 +156,7 @@ export function createInProcessWorker(
   emitterFactory: EmitterFactory,
   config: WorkerConfig
 ): Worker {
-  const toolFactories: ToolFactories = {
-    mcp: () => new McpTool(),
-  };
-  const toolRegistry = new ToolRegistry(toolFactories);
+  const toolRegistry = new ToolRegistry(allToolBindingsMap);
   const worker = new Worker(id, {
     bus,
     emitterFactory,
@@ -165,9 +165,12 @@ export function createInProcessWorker(
     toolRegistry,
   });
 
-  for (const cap of config.capabilities) {
-    worker.addCapability(cap);
-  }
+  // NOTE: add custom config for tools
+
+  // older capability based configs
+  // for (const cap of config.capabilities) {
+  //   worker.addCapability(cap);
+  // }
 
   return worker;
 }

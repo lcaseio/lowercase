@@ -72,6 +72,11 @@ export const runOtelAttributesMap = {
 } satisfies RunOtelAttributesMap;
 
 export const jobOtelAttributesMap = {
+  "job.mcp.submitted": {
+    action: "submitted",
+    domain: "job",
+    entity: "mcp",
+  },
   "job.mcp.queued": {
     action: "queued",
     domain: "job",
@@ -91,6 +96,16 @@ export const jobOtelAttributesMap = {
     action: "failed",
     domain: "job",
     entity: undefined,
+  },
+  "job.httpjson.submitted": {
+    action: "submitted",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.queued": {
+    action: "queued",
+    domain: "job",
+    entity: "httpjson",
   },
 } satisfies JobOtelAttributesMap;
 

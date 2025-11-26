@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./parser": {
+      "types": "./dist/parser/parser.d.ts",
+      "import": "./dist/parser/parser.js"
     }
   },
   "scripts": {

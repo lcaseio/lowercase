@@ -9,6 +9,20 @@ async function main(): Promise<void> {
   program.description("cli tool for lowercase workflows");
   registerCommands(program, controller);
   program.parseAsync();
+
+  let isRunning = false;
+  process.once("SIGINT", async () => {
+    if (isRunning) await controller.stopRuntime();
+    isRunning = false;
+  });
+  process.once("SIGTERM", async () => {
+    if (isRunning) await controller.stopRuntime();
+    isRunning = false;
+  });
+  process.once("exit", async () => {
+    if (isRunning) await controller.stopRuntime();
+    isRunning = false;
+  });
 }
 
 (async () => await main())();

@@ -28,12 +28,12 @@ export class ToolEmitter extends BaseEmitter {
     scope: OtelContext & ToolScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, jobid, toolid } = scope;
+    const { flowid, runid, stepid, jobid, capid, toolid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#toolScope = { flowid, runid, stepid, jobid, toolid };
+    this.#toolScope = { flowid, runid, stepid, jobid, capid, toolid };
     this.toolOtelAttributesMap = toolOtelAttributesMap;
     this.bus = bus;
   }
