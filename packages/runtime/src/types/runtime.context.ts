@@ -8,6 +8,7 @@ import {
   WebSocketServerSink,
 } from "@lcase/observability";
 import { EmitterFactory } from "@lcase/events";
+import { ResourceManager } from "@lcase/resource-manager";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
@@ -24,4 +25,5 @@ export type RuntimeContext = {
   tap: ObservabilityTap;
   sinks: SinkMap;
   ef: EmitterFactory;
+  rm: ResourceManager;
 };

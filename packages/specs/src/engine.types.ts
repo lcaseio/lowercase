@@ -12,6 +12,7 @@ export const StatusSchema = z.enum([
   "failure",
   "error",
   "requested",
+  "submitted",
 ]);
 
 export type Status = z.infer<typeof StatusSchema>;

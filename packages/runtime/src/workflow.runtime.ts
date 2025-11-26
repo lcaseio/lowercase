@@ -20,6 +20,8 @@ export class WorkflowRuntime {
       await this.ctx.engine.start();
       await this.ctx.worker.start();
 
+      this.ctx.rm.start();
+
       await this.ctx.worker.requestRegistration();
 
       return "running";
@@ -48,7 +50,9 @@ export class WorkflowRuntime {
       for (const sink of Object.values(this.ctx.sinks)) {
         await sink.stop();
       }
+
       this.ctx.tap.stop();
+      this.ctx.rm.stop();
       await this.ctx.router.stop();
       await this.ctx.bus.close();
       return "stopped";

@@ -1,3 +1,4 @@
+import type { ToolId } from "./tool/tool.types.js";
 /**
  * data structure is preliminary and subject to changes
  */
@@ -32,8 +33,8 @@ export type Capability = {
 export type WorkerMetadata = {
   id: string;
   name: string;
-  type: "inprocess" | "remote";
-  capabilities: Capability[];
+  type: "internal" | "external";
+  tools: ToolId[];
 };
 
 type ToolMetadata = {};

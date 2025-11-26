@@ -32,7 +32,7 @@ export class McpStepHandler implements StepHandler {
       const data: JobMcpQueuedData = {
         job: {
           id: String(crypto.randomUUID()),
-          capability: step.type,
+          toolid: step.type,
         },
         args,
         pipe: pipes,
@@ -41,21 +41,9 @@ export class McpStepHandler implements StepHandler {
         feature: step.feature,
       };
 
-      await emitter.emit("job.mcp.queued", data);
+      await emitter.emit("job.mcp.submitted", data);
 
-      emitter.emit("job.httpjson.requested", {
-        job: {
-          id: "",
-          capability: "",
-        },
-        url: "",
-        type: "httpjson",
-        pipe: {
-          to: undefined,
-          from: undefined,
-        },
-      });
-      context.steps[stepName].status = "queued";
+      context.steps[stepName].status = "submitted";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`

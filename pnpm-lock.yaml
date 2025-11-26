@@ -364,6 +364,9 @@ importers:
       '@lcase/observability':
         specifier: workspace:*
         version: link:../observability
+      '@lcase/resource-manager':
+        specifier: workspace:*
+        version: link:../resource-manager
       '@lcase/services':
         specifier: workspace:*
         version: link:../services

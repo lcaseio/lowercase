@@ -1,18 +1,18 @@
-import type { ToolSpecsById } from "@lcase/types";
+import type { InternalToolsMap } from "@lcase/types";
 
 export const internalToolConfig = {
   mcp: {
     id: "mcp",
-    maxConcurrency: 0,
+    maxConcurrency: 2,
     capabilities: [],
     location: "internal",
     rateLimit: undefined,
   },
   httpjson: {
     id: "httpjson",
-    maxConcurrency: 0,
+    maxConcurrency: 1,
     capabilities: [],
     location: "internal",
     rateLimit: undefined,
   },
-} satisfies ToolSpecsById;
+} satisfies InternalToolsMap;

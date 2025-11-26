@@ -1,23 +1,19 @@
 import type {
+  EmitterFactoryPort,
   EventBusPort,
   QueuePort,
   StreamRegistryPort,
-  ToolPort,
 } from "@lcase/ports";
-import { EmitterFactory } from "@lcase/events";
 import type {
   AllJobEvents,
   AnyEvent,
   Capability,
-  JobEventType,
   WorkerMetadata,
   ToolId,
   ToolInstance,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
-import type { JobContext, JobDescriptor } from "./types.js";
-import { JobExecutor } from "./executor/job-executor.js";
-import { interpretJob } from "./interpreter/interpret-job.js";
+import type { JobContext } from "./types.js";
 
 export type WorkerCapability = Capability & {
   newJobWaitersAreAllowed: boolean;
@@ -43,7 +39,7 @@ export type WorkerContext = {
     [id: string]: WorkerCapability;
   };
   isRegistered: boolean;
-  jobs: Map<string, JobContext<JobEventType>>;
+  jobs: Map<string, JobContext>;
   tools: Map<ToolId, ToolWaitersCtx>;
 };
 
@@ -59,7 +55,7 @@ export type WorkerDeps = {
   bus: EventBusPort;
   queue: QueuePort;
   toolRegistry: ToolRegistry<ToolId>;
-  emitterFactory: EmitterFactory;
+  emitterFactory: EmitterFactoryPort;
   streamRegistry: StreamRegistryPort;
 };
 
@@ -100,17 +96,13 @@ export class Worker {
           event.data.status === "accepted"
         ) {
           this.#ctx.isRegistered = true;
-          const spanId = this.#emitterFactory.generateSpanId();
-          const traceParent = this.#emitterFactory.makeTraceParent(
-            e.traceid,
-            spanId
+
+          const logEmitter = this.#emitterFactory.newSystemEmitterNewSpan(
+            {
+              source: "lowercase://worker/subscribe-to-bus/worker-registered",
+            },
+            e.traceid
           );
-          const logEmitter = this.#emitterFactory.newSystemEmitter({
-            source: "lowercase://worker/subscribe-to-bus/worker-registered",
-            traceId: e.traceid,
-            spanId,
-            traceParent,
-          });
           await logEmitter.emit("system.logged", {
             log: "[worker] received registration accepted",
           });
@@ -140,78 +132,48 @@ export class Worker {
     return this.#toolRegistry.createInstance(capability.tool.id);
   }
 
-  async handleNewJob(event: AnyEvent): Promise<void> {
+  async handleNewJob(event: AllJobEvents): Promise<void> {
     const e = event as AllJobEvents;
 
-    let jobDescription: JobDescriptor<typeof e.type>;
-    try {
-      jobDescription = interpretJob(e);
-    } catch (err) {
-      const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
-        e,
-        "lowercase://worker/handle-new-job/interpret-job"
-      );
-      await jobEmitter.emit("job.failed", {
-        job: e.data.job,
-        status: "failed",
-        reason: `"Error interpretting job.  ${err}`,
-      });
-      return;
-    }
-
-    const jobContext: JobContext<typeof e.type> = {
-      id: jobDescription.id,
-      capability: jobDescription.capability,
-      metadata: {
-        flowId: e.flowid,
-        runId: e.runid,
-        stepId: e.stepid,
-        stepType: e.entity!,
-        workerId: this.#ctx.workerId,
-      },
-      description: jobDescription,
-      resolved: {},
-      status: "preparing",
+    const jobContext: JobContext = {
+      jobId: e.data.job.id,
+      toolId: e.data.job.toolid,
+      capability: e.stepid,
+      flowId: e.flowid,
+      runId: e.runid,
+      stepId: e.stepid,
+      stepType: e.entity!,
+      workerId: this.#ctx.workerId,
       startedAt: new Date().toISOString(),
-      tool: jobDescription.capability,
     };
-    this.#ctx.jobs.set(jobContext.id, jobContext);
-
-    const executor = new JobExecutor(jobContext, {
-      toolRegistry: this.#toolRegistry,
-      streamRegistry: this.#streamRegistry,
-    });
-
-    const toolSpanId = this.#emitterFactory.generateSpanId();
-    const toolTraceParent = this.#emitterFactory.makeTraceParent(
-      e.traceid,
-      toolSpanId
+    const toolEmitter = this.#emitterFactory.newToolEmitterNewSpan(
+      {
+        ...e,
+        source: "localhost://worker/handle-new-job/186",
+        toolid: jobContext.toolId,
+      },
+      e.traceid
     );
-    const toolEmitter = this.#emitterFactory.newToolEmitter({
-      source: "lowercase://worker/job-done",
-      flowid: e.flowid,
-      runid: e.runid,
-      stepid: e.stepid,
-      jobid: e.jobid,
-      toolid: jobContext.tool,
-      traceId: e.traceid,
-      spanId: toolSpanId,
-      traceParent: toolTraceParent,
-    });
 
     await toolEmitter.emit("tool.started", {
       tool: {
-        id: jobContext.tool,
-        name: "unknown",
+        id: jobContext.toolId,
+        name: jobContext.toolId,
         version: "unknown",
       },
       log: "about to execute a tool",
       status: "started",
     });
 
-    let result;
+    const tool = this.#toolRegistry.createInstance(
+      event.data.job.toolid as ToolId
+    );
+
+    this.#ctx.jobs.set(jobContext.jobId, jobContext);
+
+    let toolResult;
     try {
-      result = await executor.run();
+      toolResult = await tool.invoke(event, {});
     } catch (err) {
       const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
         e,
@@ -225,35 +187,20 @@ export class Worker {
       return;
     }
 
-    const spanId = this.#emitterFactory.generateSpanId();
-    const traceParent = this.#emitterFactory.makeTraceParent(e.traceid, spanId);
+    const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
+      e,
+      "lowercase://worker/handle-new-job/221"
+    );
 
-    const jobEmitter = this.#emitterFactory.newJobEmitter({
-      source: "lowercase://worker/job-done",
-      flowid: e.flowid,
-      runid: e.runid,
-      stepid: e.stepid,
-      jobid: e.jobid,
-      traceId: e.traceid,
-      spanId,
-      traceParent,
-    });
-
-    if (result) {
+    if (toolResult) {
       await jobEmitter.emit("job.completed", {
-        job: {
-          id: e.jobid,
-          capability: e.data.job.capability,
-        },
+        job: e.data.job,
         status: "completed",
-        result: result,
+        result: toolResult,
       });
     } else {
       await jobEmitter.emit("job.failed", {
-        job: {
-          id: e.jobid,
-          capability: e.data.job.capability,
-        },
+        job: e.data.job,
         status: "failed",
         reason: "tool returned undefined results",
       });
@@ -272,24 +219,11 @@ export class Worker {
     return this.#ctx.tools.get(toolId)?.activeJobCount;
   }
   getMetadata(): WorkerMetadata {
-    const capabilities: Capability[] = [];
-    const caps = this.#ctx.capabilities;
-
-    // strip some fields from context and create new objects
-    for (const id in caps) {
-      const cap: Capability = {
-        name: caps[id].name,
-        queueId: caps[id].queueId,
-        maxJobCount: caps[id].maxJobCount,
-        tool: { ...caps[id].tool },
-      };
-      capabilities.push(cap);
-    }
     const meta: WorkerMetadata = {
       id: this.#ctx.workerId,
       name: this.#ctx.workerId,
-      type: "inprocess",
-      capabilities,
+      type: "internal",
+      tools: this.#toolRegistry.listToolIds(),
     };
     return meta;
   }
@@ -297,27 +231,15 @@ export class Worker {
   async requestRegistration(): Promise<void> {
     const meta = this.getMetadata();
 
-    const toolList = this.#toolRegistry.listToolIds();
-    const spanId = this.#emitterFactory.generateSpanId();
-    const traceId = this.#emitterFactory.generateTraceId();
-    const traceParent = this.#emitterFactory.makeTraceParent(traceId, spanId);
-
-    const workerEmitter = this.#emitterFactory.newWorkerEmitter({
+    const workerEmitter = this.#emitterFactory.newWorkerEmitterNewTrace({
       source: "lowercase://worker/" + this.#ctx.workerId,
       workerid: this.#ctx.workerId,
-      traceId,
-      spanId,
-      traceParent,
     });
-
     await workerEmitter.emit("worker.registration.requested", {
+      ...meta,
       worker: {
         id: meta.id,
       },
-      id: meta.id,
-      name: meta.name,
-      type: "inprocess",
-      capabilities: meta.capabilities,
     });
   }
 
@@ -327,16 +249,10 @@ export class Worker {
       const p = this.startToolJobWaiters(id);
       waiterCtx.startWaitersPromise = p;
     }
-    const spanId = this.#emitterFactory.generateSpanId();
-    const traceId = this.#emitterFactory.generateTraceId();
-    const traceParent = this.#emitterFactory.makeTraceParent(traceId, spanId);
 
-    const workerEmitter = this.#emitterFactory.newWorkerEmitter({
+    const workerEmitter = this.#emitterFactory.newWorkerEmitterNewTrace({
       source: "lowercase://worker/start",
       workerid: this.#ctx.workerId,
-      traceId,
-      spanId,
-      traceParent,
     });
 
     await workerEmitter.emit("worker.started", {
@@ -387,7 +303,7 @@ export class Worker {
           });
 
           waiterCtx.activeJobCount++;
-          const waiter = this.handleNewJob(event).finally(async () => {
+          const waiter = this.handleNewJob(e).finally(async () => {
             waiterCtx.jobWaiters.delete(waiter);
             waiterCtx.activeJobCount--;
             if (waiterCtx.capacityRelease) {

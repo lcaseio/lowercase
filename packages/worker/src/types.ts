@@ -11,21 +11,14 @@ export type JobDescriptor<T extends JobEventType> = {
 };
 
 // created for each dequeued job; lives until job completes or fails
-export type JobContext<T extends JobEventType> = {
-  id: string;
-  capability: ToolId;
-  tool: string;
-  status: "preparing" | "running";
+export type JobContext = {
+  jobId: string;
+  capability: string;
   startedAt: string;
-  metadata: {
-    flowId: string;
-    runId: string;
-    stepId: string;
-    stepType: string;
-    workerId: string;
-  };
-  description: JobDescriptor<T>;
-  resolved: {
-    // resolved dependencies (input files, tokens, session handles)
-  };
+  flowId: string;
+  runId: string;
+  stepId: string;
+  stepType: string;
+  toolId: string;
+  workerId: string;
 };

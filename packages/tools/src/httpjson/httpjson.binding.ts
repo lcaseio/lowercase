@@ -4,7 +4,7 @@ import { HttpJsonTool } from "./httpjson.tool.js";
 export const httpJsonBinding = {
   spec: {
     id: "httpjson",
-    maxConcurrency: 0,
+    maxConcurrency: 1,
     capabilities: [],
     location: "internal",
     rateLimit: undefined,

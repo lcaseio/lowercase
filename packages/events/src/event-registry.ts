@@ -37,15 +37,17 @@ import {
 import {
   JobCompletedSchema,
   JobFailedSchema,
-  JobHttpJsonRequested,
+  JobHttpJsonQueuedSchema,
+  JobHttpJsonSubmittedSchema,
   JobMcpQueuedSchema,
+  JobMcpSchema,
   JobQueuedSchema,
   JobStartedSchema,
 } from "./schemas/job.event.schema.js";
 import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
-  JobHttpJsonRequestedData,
+  JobHttpJsonDataSchema,
   JobMcpQueuedDataSchema,
   JobQueuedDataSchema,
   JobStartedDataSchema,
@@ -79,11 +81,15 @@ export type EventTopic =
   | "steps.lifecycle"
   | "flows.lifecycle"
   | "workers.lifecycle"
+  | "worker.registration.requested"
   | "engines.lifecycle"
   | "runs.lifecycle"
   | "jobs.lifecycle"
   | "job.requested"
   | "job.queued"
+  | "job.httpjson.submitted"
+  | "job.httpjson.queued"
+  | "job.mcp.submitted"
   | "tools.lifecycle"
   | "system";
 
@@ -160,6 +166,13 @@ export const registry = {
       data: StepCompletedDataSchema,
     },
   },
+  "job.mcp.submitted": {
+    topic: "job.mcp.submitted",
+    schema: {
+      event: JobMcpSchema,
+      data: JobMcpQueuedDataSchema,
+    },
+  },
   "job.mcp.queued": {
     topic: "jobs.lifecycle",
     schema: {
@@ -195,11 +208,18 @@ export const registry = {
       data: JobFailedDataSchema,
     },
   },
-  "job.httpjson.requested": {
-    topic: "job.requested",
+  "job.httpjson.submitted": {
+    topic: "job.httpjson.submitted",
     schema: {
-      event: JobHttpJsonRequested,
-      data: JobHttpJsonRequestedData,
+      event: JobHttpJsonSubmittedSchema,
+      data: JobHttpJsonDataSchema,
+    },
+  },
+  "job.httpjson.queued": {
+    topic: "job.httpjson.queued",
+    schema: {
+      event: JobHttpJsonQueuedSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
   "tool.started": {
@@ -245,7 +265,7 @@ export const registry = {
     },
   },
   "worker.registration.requested": {
-    topic: "workers.lifecycle",
+    topic: "worker.registration.requested",
     schema: {
       event: WorkerRegistrationRequestedSchema,
       data: WorkerRegistrationRequestedDataSchema,

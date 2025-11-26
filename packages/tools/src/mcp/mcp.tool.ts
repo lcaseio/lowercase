@@ -4,7 +4,11 @@ import type {
   ConsumerStreamPort,
 } from "@lcase/ports";
 import { ToolContext, ToolInstancePort } from "@lcase/ports/tools";
-import type { JobMcpQueuedData, JobRequestedType } from "@lcase/types";
+import type {
+  AnyEvent,
+  JobMcpQueuedData,
+  JobRequestedType,
+} from "@lcase/types";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { LoggingMessageNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -38,11 +42,11 @@ export class McpTool implements ToolInstancePort {
     this.#addShutdownHooks();
   }
   async invoke(
-    input: unknown,
+    input: AnyEvent<"job.mcp.queued">,
     context: ToolContext<JobRequestedType>
   ): Promise<unknown> {
     console.log(`[tool-mcp] ${input}`);
-    const data = input as JobMcpQueuedData;
+    const data = input.data;
     await this.connect(data.url);
 
     // NOTE: currently does not support duplex streaming

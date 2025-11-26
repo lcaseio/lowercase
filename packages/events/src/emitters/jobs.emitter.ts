@@ -41,7 +41,7 @@ export class JobEmitter extends BaseEmitter {
   async emit<T extends JobEventType>(
     type: T,
     data: JobEventData<T>
-  ): Promise<void> {
+  ): Promise<JobEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#jobScope,
@@ -63,5 +63,6 @@ export class JobEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(entry.topic, event);
+    return event;
   }
 }

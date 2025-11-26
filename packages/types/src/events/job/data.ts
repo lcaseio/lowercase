@@ -4,7 +4,7 @@ import { PipeData } from "../shared/pipe.js";
 export type JobDescriptor = {
   job: {
     id: string;
-    capability: string;
+    toolid: string;
   };
 };
 

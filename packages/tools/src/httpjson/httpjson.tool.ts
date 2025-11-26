@@ -1,13 +1,13 @@
 import { ToolContext, ToolInstancePort } from "@lcase/ports/tools";
-import { JobRequestedType } from "@lcase/types";
+import { AnyEvent, JobRequestedType } from "@lcase/types";
 
 export class HttpJsonTool implements ToolInstancePort {
   id = "httpjson" as const;
   name = "Internal Http Json Tool";
   async invoke(
-    data: unknown,
+    event: AnyEvent<"job.httpjson.queued">,
     context: ToolContext<JobRequestedType>
   ): Promise<void> {
-    throw new Error("Not Yet Implemented");
+    console.log("[httpjson-tool] executing with event:", event);
   }
 }

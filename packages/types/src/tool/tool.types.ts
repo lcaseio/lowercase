@@ -77,6 +77,6 @@ export interface ToolInstance<ID extends ToolId = ToolId> {
   id: ID;
   invoke(args: unknown, ctx: ToolContext): Promise<unknown>;
 }
-export type ToolSpecsById = {
+export type InternalToolsMap = {
   [ID in ToolId]: ToolSpec<ID>;
 };

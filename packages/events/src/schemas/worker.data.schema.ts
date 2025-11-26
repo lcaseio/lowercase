@@ -31,30 +31,8 @@ export const WorkerRegistrationRequestedDataSchema =
     z.object({
       id: z.string(),
       name: z.string(),
-      type: z.enum(["inprocess", "remote"]),
-      capabilities: z.array(
-        z.object({
-          name: z.string(),
-          queueId: z.string(),
-          maxJobCount: z.number(),
-          tool: z.object({
-            id: z.enum(["mcp", "httpjson"]),
-            type: z.enum(["inprocess", "remote", "dynamic"]),
-          }),
-          concurrencty: z
-            .object({
-              activeJobCount: z.number(),
-              maxJobCount: z.number(),
-            })
-            .optional(),
-          metadata: z
-            .object({
-              version: z.string().optional(),
-              description: z.string().optional(),
-            })
-            .optional(),
-        })
-      ),
+      type: z.enum(["internal", "external"]),
+      tools: z.array(z.enum(["mcp", "httpjson"])),
     })
   ).strict() satisfies z.ZodType<WorkerRegistrationRequestedData>;
 

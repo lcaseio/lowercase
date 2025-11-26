@@ -4,7 +4,7 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
-  JobHttpJsonRequestedData,
+  JobHttpJsonDataSchema,
   JobMcpQueuedDataSchema,
   JobQueuedDataSchema,
   JobStartedDataSchema,
@@ -31,18 +31,42 @@ export const JobMcpQueuedSchema = CloudEventContextSchema.merge(JobScopeSchema)
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
 
-export const JobHttpJsonRequested = CloudEventContextSchema.merge(
+export const JobMcpSchema = CloudEventContextSchema.merge(JobScopeSchema)
+  .merge(
+    z.object({
+      type: z.literal("job.mcp.submitted"),
+      entity: z.literal("mcp"),
+      action: z.literal("submitted"),
+      data: JobMcpQueuedDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"job.mcp.submitted">>;
+
+export const JobHttpJsonSubmittedSchema = CloudEventContextSchema.merge(
   JobScopeSchema
 )
   .merge(
     z.object({
-      type: z.literal("job.httpjson.requested"),
+      type: z.literal("job.httpjson.submitted"),
       entity: z.literal("httpjson"),
-      action: z.literal("requested"),
-      data: JobHttpJsonRequestedData,
+      action: z.literal("submitted"),
+      data: JobHttpJsonDataSchema,
     })
   )
-  .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.requested">>;
+  .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.submitted">>;
+
+export const JobHttpJsonQueuedSchema = CloudEventContextSchema.merge(
+  JobScopeSchema
+)
+  .merge(
+    z.object({
+      type: z.literal("job.httpjson.queued"),
+      entity: z.literal("httpjson"),
+      action: z.literal("queued"),
+      data: JobHttpJsonDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.queued">>;
 
 export const JobQueuedSchema = CloudEventContextSchema.merge(JobScopeSchema)
   .merge(

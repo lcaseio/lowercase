@@ -1,15 +1,11 @@
 import fs from "fs";
 import type { RunContext, Flow } from "@lcase/specs";
-import type {
-  EventBusPort,
-  StartFlowInput,
-  StreamRegistryPort,
-} from "@lcase/ports";
-import type { AnyEvent, FlowQueuedData } from "@lcase/types";
+import type { EventBusPort, StreamRegistryPort } from "@lcase/ports";
+import type { AnyEvent } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
-import { ResourceRegistry } from "./resource-registry.js";
+import { threadId } from "worker_threads";
 
 /**
  * Engine class runs flows as the orchestration center.
@@ -19,13 +15,14 @@ import { ResourceRegistry } from "./resource-registry.js";
  */
 export class Engine {
   #runs = new Map<string, RunContext>();
+  id = "internal-engine";
+  version = "0.1.0-alpha.7";
 
   constructor(
     private readonly flowDb: FlowStore,
     private readonly bus: EventBusPort,
     private readonly streamRegistry: StreamRegistryPort,
     private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly resourceRegistry: ResourceRegistry,
     private readonly emitterFactory: EmitterFactory
   ) {}
 
@@ -66,35 +63,7 @@ export class Engine {
       }
     });
 
-    this.bus.subscribe("workers.lifecycle", async (e: AnyEvent) => {
-      if (e.type === "worker.registration.requested") {
-        const event = e as AnyEvent<"worker.registration.requested">;
-        this.resourceRegistry.registerWorker(event.data);
-
-        const spanId = this.emitterFactory.generateSpanId();
-        const traceParent = this.emitterFactory.makeTraceParent(
-          e.traceid,
-          spanId
-        );
-
-        const workerEmitter = this.emitterFactory.newWorkerEmitter({
-          source: "lowercase://engine/resource-registry",
-          workerid: event.data.worker.id,
-          traceId: event.traceid,
-          spanId,
-          traceParent,
-        });
-
-        await workerEmitter.emit("worker.registered", {
-          worker: {
-            id: event.data.worker.id,
-          },
-          workerId: event.data.worker.id,
-          status: "accepted",
-          registeredAt: new Date().toISOString(),
-        });
-      }
-    });
+    this.bus.subscribe("workers.lifecycle", async (e: AnyEvent) => {});
   }
 
   async start() {
@@ -103,7 +72,7 @@ export class Engine {
     const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
     const emitter = this.emitterFactory.newEngineEmitter({
       source: "lowercase://engine/start",
-      engineid: "default-engine",
+      engineid: this.id,
       traceId,
       spanId,
       traceParent,
@@ -111,8 +80,8 @@ export class Engine {
 
     emitter.emit("engine.started", {
       engine: {
-        id: "default-engine",
-        version: "0.1.0-alpha.4",
+        id: this.id,
+        version: this.version,
       },
       status: "started",
     });
@@ -124,7 +93,7 @@ export class Engine {
     const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
     const emitter = this.emitterFactory.newEngineEmitter({
       source: "lowercase://engine/stop/",
-      engineid: "default-engine",
+      engineid: this.id,
       traceId,
       spanId,
       traceParent,
@@ -132,8 +101,8 @@ export class Engine {
 
     emitter.emit("engine.stopped", {
       engine: {
-        id: "default-engine",
-        version: "0.1.0-alpha.6",
+        id: this.id,
+        version: this.version,
       },
       status: "stopped",
       reason: "SIGINT called",
@@ -262,32 +231,6 @@ export class Engine {
       },
       context.traceId
     );
-
-    const capName = flow.steps[stepName].type;
-    const caps = this.resourceRegistry.getCapability(capName);
-    if (caps === undefined) {
-      const systemEmitter = this.emitterFactory.newStepEmitterNewSpan(
-        {
-          source: "lowercase://engine/start-step/caps-undefined",
-          flowid,
-          runid,
-          stepid,
-          steptype,
-        },
-        context.traceId
-      );
-      await systemEmitter.emit("step.failed", {
-        step: {
-          id: stepid,
-          name: stepName,
-          type: steptype,
-        },
-        status: "failed",
-        reason: `[engine] no capability in local resource registry for ${capName}`,
-      });
-      context.steps[stepid].status = "failure";
-      return;
-    }
 
     const handler = this.stepHandlerRegistry[stepType];
     await handler.queue(flow, context, stepName, jobEmitter);

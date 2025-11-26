@@ -4,7 +4,7 @@ import { McpTool } from "./mcp.tool.js";
 export const mcpBinding = {
   spec: {
     id: "mcp",
-    maxConcurrency: 0,
+    maxConcurrency: 1,
     capabilities: [],
     location: "internal",
     rateLimit: undefined,

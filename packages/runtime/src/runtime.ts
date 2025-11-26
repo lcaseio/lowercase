@@ -1,18 +1,13 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
 import { Worker } from "@lcase/worker";
-import {
-  allToolBindings,
-  allToolBindingsMap,
-  ToolRegistry,
-} from "@lcase/tools";
+import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import {
   Engine,
   PipeResolver,
   resolveStepArgs,
-  ResourceRegistry,
   wireStepHandlers,
 } from "@lcase/engine";
 
@@ -36,6 +31,7 @@ import {
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
+import { ResourceManager } from "@lcase/resource-manager";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -69,6 +65,13 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const flowStore = new FlowStore();
 
   const engine = createInProcessEngine(flowStore, bus, streamRegistry, ef);
+
+  const rm = new ResourceManager({
+    bus,
+    ef,
+    queue,
+  });
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -90,6 +93,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     tap,
     sinks,
     ef,
+    rm,
   };
 }
 
@@ -132,14 +136,12 @@ export function createInProcessEngine(
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
   const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
-  const resourceRegistry = new ResourceRegistry();
 
   const engine = new Engine(
     flowDb,
     bus,
     streamRegistry,
     stepHandlerRegistry,
-    resourceRegistry,
     emitterFactory
   );
 

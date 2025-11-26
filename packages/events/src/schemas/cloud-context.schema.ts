@@ -18,8 +18,10 @@ export const eventTypes = [
   "step.started",
   "step.completed",
   "step.failed",
-  "job.httpjson.requested",
+  "job.httpjson.submitted",
+  "job.httpjson.queued",
   "job.queued",
+  "job.mcp.submitted",
   "job.mcp.queued",
   "job.completed",
   "job.started",
@@ -67,6 +69,7 @@ export const actionTypes = [
   "stopped",
   "failed",
   "logged",
+  "submitted",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [

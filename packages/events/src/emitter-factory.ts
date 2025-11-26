@@ -56,6 +56,13 @@ export class EmitterFactory implements EmitterFactoryPort {
   ): SystemEmitter {
     return new SystemEmitter(this.bus, scope);
   }
+  newSystemEmitterNewSpan(
+    scope: CloudScope & WorkerScope,
+    traceId: string
+  ): SystemEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new SystemEmitter(this.bus, combinedScope);
+  }
 
   newEngineEmitter(
     scope: CloudScope & EngineScope & OtelContext
@@ -66,6 +73,17 @@ export class EmitterFactory implements EmitterFactoryPort {
     scope: CloudScope & WorkerScope & OtelContext
   ): WorkerEmitter {
     return new WorkerEmitter(this.bus, scope);
+  }
+  newWorkerEmitterNewTrace(scope: CloudScope & WorkerScope): WorkerEmitter {
+    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new WorkerEmitter(this.bus, combinedScope);
+  }
+  newWorkerEmitterNewSpan(
+    scope: CloudScope & WorkerScope,
+    traceId: string
+  ): WorkerEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new WorkerEmitter(this.bus, combinedScope);
   }
   newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitter {
     return new FlowEmitter(this.bus, scope);
@@ -115,6 +133,13 @@ export class EmitterFactory implements EmitterFactoryPort {
   }
   newToolEmitter(scope: CloudScope & ToolScope & OtelContext): ToolEmitter {
     return new ToolEmitter(this.bus, scope);
+  }
+  newToolEmitterNewSpan(
+    scope: CloudScope & ToolScope,
+    traceId: string
+  ): ToolEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new ToolEmitter(this.bus, combinedScope);
   }
 
   makeNewSpan(traceId: string): { spanId: string; traceParent: string } {

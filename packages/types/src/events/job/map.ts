@@ -12,16 +12,28 @@ import {
 } from "./data.js";
 
 export type JobEventMap = {
+  "job.mcp.submitted": DomainEntityActionDescriptor<
+    "job",
+    "mcp",
+    "submitted",
+    JobMcpQueuedData
+  >;
   "job.mcp.queued": DomainEntityActionDescriptor<
     "job",
     "mcp",
     "queued",
     JobMcpQueuedData
   >;
-  "job.httpjson.requested": DomainEntityActionDescriptor<
+  "job.httpjson.submitted": DomainEntityActionDescriptor<
     "job",
     "httpjson",
-    "requested",
+    "submitted",
+    JobHttpJsonData
+  >;
+  "job.httpjson.queued": DomainEntityActionDescriptor<
+    "job",
+    "httpjson",
+    "queued",
     JobHttpJsonData
   >;
   "job.started": DomainActionDescriptor<"job", "started", JobStartedData>;

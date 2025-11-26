@@ -8,21 +8,6 @@ export async function cliRunAction(
 ): Promise<void> {
   console.log("[cli] running run command");
   await controller.startRuntime();
-
-  let isRunning = false;
-  process.once("SIGINT", async () => {
-    if (isRunning) await controller.stopRuntime();
-    isRunning = false;
-  });
-  process.once("SIGTERM", async () => {
-    if (isRunning) await controller.stopRuntime();
-    isRunning = false;
-  });
-  process.once("exit", async () => {
-    if (isRunning) await controller.stopRuntime();
-    isRunning = false;
-  });
-
   const resolvedFlowPath = resolveCliPath(flowPath);
   await controller.startFlow({ absoluteFilePath: resolvedFlowPath });
 }

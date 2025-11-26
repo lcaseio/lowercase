@@ -29,10 +29,10 @@ export class HttpJsonHandler implements StepHandler {
         args = this.resolveArgs(context, args);
       }
 
-      emitter.emit("job.httpjson.requested", {
+      emitter.emit("job.httpjson.submitted", {
         job: {
           id: String(crypto.randomUUID()),
-          capability: "httpjson",
+          toolid: "httpjson",
         },
         url: step.url,
         type: "httpjson",
@@ -41,7 +41,7 @@ export class HttpJsonHandler implements StepHandler {
           from: undefined,
         },
       });
-      context.steps[stepName].status = "waiting";
+      context.steps[stepName].status = "submitted";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`

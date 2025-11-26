@@ -23,7 +23,7 @@ export class NodeRouter implements RouterPort {
     }
     if (event.domain === "job") {
       const e = event as AnyJobEvent;
-      this.queue.enqueue(e.data.job.capability, event);
+      this.queue.enqueue(e.data.job.toolid, event);
       const source = "lowercase://router/route/job";
       const jobEmitter = this.ef.newJobEmitterFromEvent(e, source);
       await jobEmitter.emit("job.queued", {
@@ -34,7 +34,7 @@ export class NodeRouter implements RouterPort {
   }
 
   async start() {
-    this.bus.subscribe("job.requested", async (e) => await this.route(e));
+    this.bus.subscribe("nothing", async (e) => await this.route(e));
   }
   async stop() {
     this.bus.close();

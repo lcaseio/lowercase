@@ -14,7 +14,7 @@ const JobDescriptorDataSchema = z
   .object({
     job: z.object({
       id: z.string(),
-      capability: z.string(),
+      toolid: z.string(),
     }),
   })
   .strict() satisfies z.ZodType<JobDescriptor>;
@@ -56,7 +56,7 @@ export const JobMcpQueuedDataSchema = JobDescriptorDataSchema.merge(
   })
 ).strict() satisfies z.ZodType<JobMcpQueuedData>;
 
-export const JobHttpJsonRequestedData = JobDescriptorDataSchema.merge(
+export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
   z.object({
     type: z.literal("httpjson"),
     url: z.string(),
