@@ -62,6 +62,6 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
         `[flow-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
   }
 }

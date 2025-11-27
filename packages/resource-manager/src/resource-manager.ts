@@ -48,11 +48,7 @@ export class ResourceManager implements ResourceManagerPort {
       async (event) => await this.handleRequest(event)
     );
     this.#bus.subscribe(
-      "job.httpjson.submitted",
-      async (event) => await this.handleRequest(event)
-    );
-    this.#bus.subscribe(
-      "job.mcp.submitted",
+      "job.*.submitted",
       async (event) => await this.handleRequest(event)
     );
   }

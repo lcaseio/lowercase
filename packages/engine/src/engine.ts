@@ -2,10 +2,9 @@ import fs from "fs";
 import type { RunContext, Flow } from "@lcase/specs";
 import type { EventBusPort, StreamRegistryPort } from "@lcase/ports";
 import type { AnyEvent } from "@lcase/types";
-import { EmitterFactory } from "@lcase/events";
+import { EmitterFactory, eventParser } from "@lcase/events";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
-import { threadId } from "worker_threads";
 import { CapId } from "@lcase/types/flow";
 
 /**
@@ -28,7 +27,7 @@ export class Engine {
   ) {}
 
   async subscribeToTopics(): Promise<void> {
-    this.bus.subscribe("flows.lifecycle", async (e: AnyEvent) => {
+    this.bus.subscribe("flow.queued", async (e: AnyEvent) => {
       if (e.type === "flow.queued") {
         const event = e as AnyEvent<"flow.queued">;
 
@@ -57,14 +56,12 @@ export class Engine {
       }
     });
 
-    this.bus.subscribe("jobs.lifecycle", async (e: AnyEvent) => {
+    this.bus.subscribe("job.completed", async (e: AnyEvent) => {
       if (e.type === "job.completed") {
         const jobCompletedEvent = e as AnyEvent<"job.completed">;
         await this.handleWorkerDone(jobCompletedEvent);
       }
     });
-
-    this.bus.subscribe("workers.lifecycle", async (e: AnyEvent) => {});
   }
 
   async start() {
