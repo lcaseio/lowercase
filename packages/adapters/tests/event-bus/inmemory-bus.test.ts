@@ -2,6 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import { InMemoryEventBus } from "../../src/event-bus/inmemory.event-bus.js";
 
 describe("[inmemory-event-bus]", () => {
+  it("generates no patterns for a one element topic ", () => {
+    const bus = new InMemoryEventBus();
+
+    const patterns = bus.generatePatterns("job");
+    expect(patterns).toBeDefined();
+    expect(patterns?.length).toEqual(0);
+  });
   it("generates two patterns for a valid two element topic ", () => {
     const bus = new InMemoryEventBus();
 

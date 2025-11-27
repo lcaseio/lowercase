@@ -29,15 +29,13 @@ export class InMemoryEventBus implements EventBusPort {
     event: AnyEvent,
     options?: PublishOptions
   ): Promise<void> {
-    let topics = this.getTopics(topic, options);
+    const topics = this.getTopics(topic, options);
 
     const payload = Object.freeze(event);
 
     queueMicrotask(() => {
       try {
-        for (const topic of topics) {
-          this.#ee.emit(topic, payload);
-        }
+        for (const topic of topics) this.#ee.emit(topic, payload);
       } catch (err) {
         console.error(`[bus.publish]: emit error '${topic}', event:${payload}`);
         console.error(err);
@@ -77,7 +75,7 @@ export class InMemoryEventBus implements EventBusPort {
     }
 
     topics.push(this.wildcard); // otherwise add wildcard
-    topics.push(topic); // add the raw topic... next get permutations
+    topics.push(topic); // add the raw topic... next get patterns
 
     if (this.#patterns.has(topic)) {
       const patterns = this.#patterns.get(topic);

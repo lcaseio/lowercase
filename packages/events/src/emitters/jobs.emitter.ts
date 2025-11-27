@@ -62,7 +62,7 @@ export class JobEmitter extends BaseEmitter {
         `[flow-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
     return event;
   }
 }

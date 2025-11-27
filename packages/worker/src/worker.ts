@@ -77,7 +77,7 @@ export class Worker {
   }
 
   #subscribeToBus(): void {
-    this.#bus.subscribe("workers.lifecycle", async (e: AnyEvent) => {
+    this.#bus.subscribe("worker.registered", async (e: AnyEvent) => {
       if (e.type === "worker.registered") {
         const event = e as AnyEvent<"worker.registered">;
         if (
