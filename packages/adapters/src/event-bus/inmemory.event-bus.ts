@@ -4,13 +4,17 @@ import type { AnyEvent } from "@lcase/types";
 
 export class InMemoryEventBus implements EventBusPort {
   #ee = new EventEmitter().setMaxListeners(0);
-  #hasObservability = false;
+  #patterns = new Map<string, string[]>();
   observabilityTopic = "observability";
+  wildcard = "*";
 
   constructor() {}
 
   /**
-   * publish an event to a specific channel
+   * publish an event to a specific channel.
+   *
+   * also publishes to prefixes and suffixes of wildcard channels
+   *
    * @param topic bus channel "string" to publish to
    * @param event EventEnvelope to send on that channel
    * @returns Promise<void>
@@ -23,22 +27,16 @@ export class InMemoryEventBus implements EventBusPort {
   async publish(
     topic: string,
     event: AnyEvent,
-    options: PublishOptions
+    options?: PublishOptions
   ): Promise<void> {
-    if (event == undefined || event.type == undefined) {
-      console.error(
-        "[inmemory-bus] cannot publish event. event or event.kind is undefined"
-      );
-      return;
-    }
+    let topics = this.getTopics(topic, options);
+
     const payload = Object.freeze(event);
 
     queueMicrotask(() => {
       try {
-        this.#ee.emit(topic, payload);
-
-        if (this.observabilityTopic && !options?.internal) {
-          this.#ee.emit(this.observabilityTopic, payload);
+        for (const topic of topics) {
+          this.#ee.emit(topic, payload);
         }
       } catch (err) {
         console.error(`[bus.publish]: emit error '${topic}', event:${payload}`);
@@ -51,7 +49,6 @@ export class InMemoryEventBus implements EventBusPort {
     topic: string,
     handler: (e: AnyEvent, t?: string) => Promise<void>
   ): () => unknown {
-    if (topic === this.observabilityTopic) this.#hasObservability = true;
     const safeHandler = (e: AnyEvent, t: string) => {
       try {
         handler(e, t ?? topic);
@@ -61,12 +58,52 @@ export class InMemoryEventBus implements EventBusPort {
     };
     this.#ee.on(topic, safeHandler);
     return () => {
-      if (topic === this.observabilityTopic) this.#hasObservability = false;
       this.#ee.off(topic, safeHandler);
     };
   }
   async close(): Promise<unknown> {
-    this.#hasObservability = false;
     return this.#ee.removeAllListeners();
+  }
+  getTopics(topic: string, options?: PublishOptions): string[] {
+    const topics: string[] = [];
+    // add in observability topic if set
+    if (this.observabilityTopic && !options?.internal) {
+      topics.push(this.observabilityTopic);
+    }
+    // early return if this is wildcard.
+    if (topic === this.wildcard) {
+      topics.push(this.wildcard);
+      return topics;
+    }
+
+    topics.push(this.wildcard); // otherwise add wildcard
+    topics.push(topic); // add the raw topic... next get permutations
+
+    if (this.#patterns.has(topic)) {
+      const patterns = this.#patterns.get(topic);
+      if (!patterns) return topics;
+      return topics.concat(patterns);
+    }
+    const patterns = this.generatePatterns(topic);
+    this.#patterns.set(topic, patterns);
+    return topics.concat(patterns);
+  }
+
+  generatePatterns(topic: string): string[] {
+    if (topic === this.wildcard) return [];
+    const parts = topic.split(".");
+    const patterns: string[] = [];
+    for (let i = 1; i < parts.length; i++) {
+      const prefixPattern = parts.slice(0, i);
+      const suffixPattern = parts.slice(parts.length - i);
+
+      patterns.push(prefixPattern.join(".") + "." + this.wildcard);
+      patterns.push(this.wildcard + "." + suffixPattern.join("."));
+    }
+
+    if (parts.length === 3) {
+      patterns.push(parts[0] + "." + this.wildcard + "." + parts[2]);
+    }
+    return patterns;
   }
 }
