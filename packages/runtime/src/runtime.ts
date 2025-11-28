@@ -77,7 +77,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     bus,
     ef,
     queue,
-    parser: eventParser,
     jobParser,
   });
 

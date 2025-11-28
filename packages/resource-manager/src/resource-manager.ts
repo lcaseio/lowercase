@@ -2,13 +2,21 @@ import type { EventBusPort } from "@lcase/ports/bus";
 import type {
   EmitterFactoryPort,
   EventParserPort,
+  JobCompletedParsed,
+  JobFailedParsed,
   JobParserPort,
+  JobSubmittedParsed,
 } from "@lcase/ports/events";
 import type { ResourceManagerPort } from "../../ports/dist/rm/resource-manager.port.js";
 import type { QueuePort } from "@lcase/ports";
 import type {
   AnyEvent,
   InternalToolsMap,
+  JobDelayedType,
+  JobEvent,
+  JobEventType,
+  JobQueuedType,
+  JobSubmittedEvent,
   JobSubmittedType,
   ToolId,
 } from "@lcase/types";
@@ -19,13 +27,18 @@ export type ResourceManagerDeps = {
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   queue: QueuePort;
-  parser: EventParserPort;
   jobParser: JobParserPort;
 };
 
 export type CapToolMap = {
   [T in CapId]?: Set<string>;
 };
+
+export type JobParsedAny =
+  | JobSubmittedParsed
+  | JobCompletedParsed
+  | JobFailedParsed;
+
 /**
  * this resource manager is designed to map step capabilities to
  * tools based on policies / table lookups, queue them if the worker
@@ -59,7 +72,6 @@ export class ResourceManager implements ResourceManagerPort {
   #bus: EventBusPort;
   #ef: EmitterFactoryPort;
   #queue: QueuePort;
-  #parser: EventParserPort;
   #jobParser: JobParserPort;
   #internalTools: InternalToolsMap;
   #availableTools = new Set<ToolId>();
@@ -69,7 +81,6 @@ export class ResourceManager implements ResourceManagerPort {
     this.#bus = deps.bus;
     this.#ef = deps.ef;
     this.#queue = deps.queue;
-    this.#parser = deps.parser;
     this.#jobParser = deps.jobParser;
     this.#internalTools = internalToolConfig;
     this.mapInternalTools();
@@ -89,116 +100,123 @@ export class ResourceManager implements ResourceManagerPort {
   start() {
     this.#bus.subscribe(
       "worker.registration.requested",
-      async (event) => await this.handleRequest(event)
+      async (event) => await this.handleWorkerRequest(event)
     );
     this.#bus.subscribe(
       "job.*.submitted",
-      async (event) => await this.handleGeneric(event)
+      async (event) => await this.handleSubmitted(event)
+    );
+    this.#bus.subscribe("job.*.completed", async (event) =>
+      this.handleCompletedOrFailed(event)
+    );
+    this.#bus.subscribe("job.*.failed", async (event) =>
+      this.handleCompletedOrFailed(event)
     );
   }
   stop() {
     this.#bus.close();
   }
 
-  async handleRequest(event: AnyEvent) {
+  async handleWorkerRequest(event: AnyEvent) {
     if (event.type === "worker.registration.requested") {
       const e = event as AnyEvent<"worker.registration.requested">;
       this.registerWorkerTools(e);
     }
   }
 
-  async handleGeneric(event: AnyEvent) {
+  async handleCompletedOrFailed(event: AnyEvent) {
+    let job;
+    if (event.type.endsWith(".completed")) {
+      job = this.#jobParser.parseJobCompleted(event);
+    } else if (event.type.endsWith(".failed")) {
+      job = this.#jobParser.parseJobFailed(event);
+    }
+
+    if (await this.jobHasErrors(event, job)) return;
+    const active = Math.max(0, this.#activeTools.get(event.type) ?? 0 - 1);
+    this.#activeTools.set(event.type, active);
+  }
+
+  async handleSubmitted(event: AnyEvent): Promise<void> {
     const job = this.#jobParser.parseJobSubmitted(event);
+    if (await this.jobHasErrors(event, job)) return;
+    const e = job!.event;
+
+    const tool = this.resolveToolPolicy(e);
+    if (!tool) {
+      this.emitError(event, "Could not resolve tool");
+      return;
+    }
+    e.data.job.toolid = tool;
+    e.toolid = tool;
+
+    await this.queueOrDelaySubmitted(e);
+    return;
+  }
+  async jobHasErrors<T extends JobParsedAny>(
+    event: AnyEvent,
+    job: T | undefined
+  ): Promise<boolean> {
     if (!job) {
-      throw new Error("[rm] must have correct event type");
+      await this.emitError(event, "Error parssing job", job);
+      return true;
     }
     if (job.capId in this.#capMap === false) {
-      throw new Error("[rm] must get a known cap");
+      await this.emitError(event, "No matching tool for capability", job);
+      return true;
     }
+    return false;
+  }
+  async emitError(
+    event: AnyEvent,
+    message: string,
+    data?: unknown
+  ): Promise<void> {
+    await this.#ef
+      .newSystemEmitterNewSpan(
+        {
+          source: "lowercase://rm/job-has-errors",
+        },
+        event.traceid
+      )
+      .emit("system.logged", {
+        log: message,
+        payload: data,
+      });
+  }
 
-    const e = job.event;
-    // const e = this.#parser.parse(event, event.type) as JobSubmittedEvent;
+  resolveToolPolicy(event: JobEvent<JobEventType>): string | undefined {
+    if (event.data.job.toolid) return event.data.job.toolid;
+    // NOTE: future policy based tool resolvers
+    // next look up capability default mapping (1:1) right now
 
-    let toolId = e.data.job.toolid ?? "";
-    console.log("toolId:", toolId);
+    // this.getDefaultTool(event.data.job.capid);
+  }
 
+  getDefaultTool(capId: string) {
+    throw new Error("Not Yet Implemented");
+  }
+
+  async queueOrDelaySubmitted(e: JobSubmittedEvent) {
+    const toolId = e.data.job.toolid!;
+    const capId = e.data.job.capid;
     const max = this.#internalTools[toolId].maxConcurrency;
     let current = this.#activeTools.get(toolId) ?? 0;
 
-    e.toolid = toolId;
-    e.data.job.toolid = toolId;
     const jobEmitter = this.#ef.newJobEmitterFromEvent(
       e,
-      "rm://handle-generic"
+      "lowercase://rm/queue-or-delay-submitted"
     );
-
     if (current < max) {
-      const type = `job.${job.capId}.queued`;
-      e.type = type as JobSubmittedType;
-      const newEvent = await jobEmitter.emit(e.type, e.data);
+      const type = `job.${capId}.queued` as JobQueuedType;
+      const newEvent = await jobEmitter.emit(type, e.data);
       this.#queue.enqueue(toolId, newEvent);
       this.#activeTools.set(toolId, ++current);
     } else {
-      const type = `job.${job.capId}.throttled`;
-      e.type = type as JobSubmittedType;
-      const newEvent = await jobEmitter.emit(e.type, e.data);
+      const type = `job.${capId}.delayed` as JobDelayedType;
+      const newEvent = await jobEmitter.emit(type, e.data);
+      this.#queue.enqueue(`${toolId}.delayed`, newEvent);
     }
-  }
-
-  resolveTool(capId: CapId): string {
-    if (this.#capMap[capId] === undefined) {
-      throw new Error(`[rm] no tool available for cap: ${capId}`);
-    }
-    const toolSet = this.#capMap[capId];
-    for (const [tool] of toolSet.entries()) {
-      const max = this.#internalTools[tool].maxConcurrency;
-      const current = this.#activeTools.get(tool);
-      if (current && current < max) {
-        return tool;
-      }
-    }
-    throw new Error("[rm] no tool found with capacity");
-  }
-
-  async queueHttpJsonJob(event: AnyEvent<"job.httpjson.submitted">) {
-    const toolId = event.data.job.toolid as ToolId;
-
-    if (!this.isAvailable(event.data.job.toolid as ToolId)) {
-      console.log("[rm] tool can't be queued:", event);
-      const logEmitter = this.#ef.newSystemEmitterNewSpan(
-        {
-          source: "lowercase://rm/queue-job/not-available",
-        },
-        event.traceid
-      );
-      await logEmitter.emit("system.logged", {
-        log: "[rm] tool can't be queued",
-        payload: event,
-      });
-      return;
-    }
-    let active = this.#activeTools.get(toolId) ?? 0;
-    this.#activeTools.set(toolId, ++active);
-
-    const jobEmitter = this.#ef.newJobEmitterFromEvent(
-      event,
-      "lowercase://rm/queue-job"
-    );
-
-    const jobQueued = await jobEmitter.emit("job.httpjson.queued", event.data);
-
-    this.#queue.enqueue(toolId, jobQueued);
-  }
-
-  isAvailable(toolId: ToolId): boolean {
-    if (!this.#availableTools.has(toolId)) return false;
-    const active = this.#activeTools.get(toolId);
-
-    if (active && active >= this.#internalTools[toolId].maxConcurrency) {
-      return false;
-    }
-
-    return true;
   }
 
   async registerWorkerTools(event: AnyEvent<"worker.registration.requested">) {

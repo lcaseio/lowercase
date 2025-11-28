@@ -1,11 +1,13 @@
 import { AnyEvent, JobEvent, JobEventType } from "@lcase/types";
 import {
   jobCompletedTypeSchema,
+  jobFailedTypeSchema,
   jobQueuedTypeSchema,
   jobSubmittedTypeSchema,
 } from "../schemas/job/job.category.schema.js";
 import {
   JobCompletedParsed,
+  JobFailedParsed,
   JobParserPort,
   JobQueuedParsed,
   JobSubmittedParsed,
@@ -51,6 +53,21 @@ export class JobParser implements JobParserPort {
   }
   parseJobCompleted(event: AnyEvent): JobCompletedParsed | undefined {
     const type = jobCompletedTypeSchema.safeParse(event.type);
+    if (type.error) {
+      return;
+    }
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type.data>);
+    if (!parsedEvent) return;
+    const capId = this.#getCapId(type.data);
+    return {
+      type: type.data,
+      capId,
+      event: parsedEvent,
+    };
+  }
+
+  parseJobFailed(event: AnyEvent): JobFailedParsed | undefined {
+    const type = jobFailedTypeSchema.safeParse(event.type);
     if (type.error) {
       return;
     }

@@ -191,10 +191,10 @@ export class Worker {
     );
 
     if (toolResult) {
-      await jobEmitter.emit(`job.${job.capId}.completed` as JobCompletedType, {
+      await jobEmitter.emit(`job.${job.capId}.failed` as JobFailedType, {
         job: e.data.job,
-        status: "completed",
-        result: toolResult,
+        status: "failed",
+        reason: "tool returned undefined results",
       });
     } else {
       await jobEmitter.emit(`job.${job.capId}.failed` as JobFailedType, {

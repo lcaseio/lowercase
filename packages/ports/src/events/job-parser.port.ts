@@ -35,5 +35,5 @@ export interface JobParserPort {
   parseJobSubmitted(event: AnyEvent): JobSubmittedParsed | undefined;
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined;
   parseJobCompleted(event: AnyEvent): JobCompletedParsed | undefined;
-  // parseJobFailed(event: AnyEvent): JobFailedParsed | undefined;
+  parseJobFailed(event: AnyEvent): JobFailedParsed | undefined;
 }

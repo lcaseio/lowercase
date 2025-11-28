@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   jobCompletedTypes,
+  jobFailedTypes,
   jobQueuedTypes,
   jobSubmittedTypes,
 } from "../../registries/category.registry.js";
@@ -8,3 +9,4 @@ import {
 export const jobSubmittedTypeSchema = z.enum(jobSubmittedTypes);
 export const jobQueuedTypeSchema = z.enum(jobQueuedTypes);
 export const jobCompletedTypeSchema = z.enum(jobCompletedTypes);
+export const jobFailedTypeSchema = z.enum(jobFailedTypes);

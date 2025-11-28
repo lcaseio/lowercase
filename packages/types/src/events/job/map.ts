@@ -37,7 +37,8 @@ export type JobOtelAttributesMap = {
   [T in JobEventType]: Omit<JobEventMap[T], "data">;
 };
 
-export type JobQueuedType = Extract<JobEventType, `${string}.queued`>;
 export type JobSubmittedType = Extract<JobEventType, `${string}.submitted`>;
+export type JobDelayedType = Extract<JobEventType, `${string}.delayed`>;
+export type JobQueuedType = Extract<JobEventType, `${string}.queued`>;
 export type JobCompletedType = Extract<JobEventType, `${string}.completed`>;
 export type JobFailedType = Extract<JobEventType, `${string}.failed`>;
