@@ -9,23 +9,32 @@ export type JobDescriptor = {
     toolid: string | null;
   };
 };
+export type JobDescriptorResolved = {
+  job: {
+    id: string;
+    capid: CapId;
+    toolid: string;
+  };
+};
 
 export type JobMcpData = JobDescriptor &
   Omit<StepMcp, "pipe" | "type"> &
   PipeDataObject;
 
-export type JobMcpQueuedData = JobMcpData;
+export type JobMcpResolvedData = JobDescriptorResolved &
+  Omit<StepMcp, "pipe" | "type"> &
+  PipeDataObject;
 
 export type JobStartedData = JobDescriptor & {
   status: "started";
 };
 
-export type JobCompletedData = JobDescriptor & {
+export type JobCompletedData = JobDescriptorResolved & {
   status: "completed";
   result?: unknown;
 };
 
-export type JobFailedData = JobDescriptor & {
+export type JobFailedData = JobDescriptorResolved & {
   status: "failed";
   result?: unknown;
   reason: string;

@@ -2,8 +2,10 @@ import type { EventBusPort } from "@lcase/ports/bus";
 import type {
   EmitterFactoryPort,
   JobCompletedParsed,
+  JobDelayedParsed,
   JobFailedParsed,
   JobParserPort,
+  JobQueuedParsed,
   JobSubmittedParsed,
 } from "@lcase/ports/events";
 import type { ResourceManagerPort } from "../../ports/dist/rm/resource-manager.port.js";
@@ -11,9 +13,11 @@ import type { QueuePort } from "@lcase/ports";
 import type {
   AnyEvent,
   InternalToolsMap,
+  JobDelayedEvent,
   JobDelayedType,
   JobEvent,
   JobEventType,
+  JobQueuedEvent,
   JobQueuedType,
   JobSubmittedEvent,
   ToolId,
@@ -49,7 +53,6 @@ export type JobParsedAny =
  * still left to implement:
  * - worker availability
  * - policy based tool decisions
- * - capability maps to toolscy
  */
 export class ResourceManager implements ResourceManagerPort {
   static contact = true;
@@ -131,16 +134,49 @@ export class ResourceManager implements ResourceManagerPort {
   }
 
   async handleCompletedOrFailed(event: AnyEvent) {
-    let job;
+    let job: JobCompletedParsed | JobFailedParsed | undefined;
     if (event.type.endsWith(".completed")) {
       job = this.#jobParser.parseJobCompleted(event);
     } else if (event.type.endsWith(".failed")) {
       job = this.#jobParser.parseJobFailed(event);
     }
 
-    if (await this.jobHasErrors(event, job)) return;
-    const active = Math.max(0, this.#activeTools.get(event.type) ?? 0 - 1);
-    this.#activeTools.set(event.type, active);
+    if ((await this.jobHasErrors(event, job)) || !job) return;
+
+    const active = Math.max(
+      0,
+      this.#activeTools.get(job.event.data.job.toolid) ?? 0 - 1
+    );
+    this.#activeTools.set(job.event.data.job.toolid, active);
+
+    await this.queueDelayedJob(job.event.data.job.toolid);
+  }
+
+  async queueDelayedJob(toolId: string) {
+    const anyEvent = await this.#queue.dequeue(`${toolId}.delayed`);
+    if (!anyEvent) return;
+
+    const job = this.#jobParser.parseJobDelayed(anyEvent);
+    if (!job) {
+      this.emitError(anyEvent, "Dequeued invalid job from delayed queue.", job);
+      return;
+    }
+    const max = this.#internalTools[toolId].maxConcurrency;
+    let current = this.#activeTools.get(toolId) ?? 0;
+
+    if (current < max) {
+      const type = `job.${job.capId}.queued` as JobQueuedType;
+      const jobQueued = await this.makeQueuedEventFromDelayed(job.event, type);
+      if (!jobQueued) return;
+      const jobEmitter = this.#ef.newJobEmitterFromEvent(
+        jobQueued.event,
+        "lowercase://rm/queue-delayed-job"
+      );
+
+      const newEvent = await jobEmitter.emit(type, jobQueued.event.data);
+      this.#queue.enqueue(newEvent.data.job.toolid, newEvent);
+      this.#activeTools.set(toolId, ++current);
+    }
   }
 
   async handleSubmitted(event: AnyEvent): Promise<void> {
@@ -229,14 +265,63 @@ export class ResourceManager implements ResourceManagerPort {
     );
     if (current < max) {
       const type = `job.${capId}.queued` as JobQueuedType;
-      const newEvent = await jobEmitter.emit(type, e.data);
+      const job = await this.makeQueuedEventFromSubmitted(e, type);
+      if (!job) return;
+
+      const newEvent = await jobEmitter.emit(type, job.event.data);
       this.#queue.enqueue(toolId, newEvent);
       this.#activeTools.set(toolId, ++current);
     } else {
       const type = `job.${capId}.delayed` as JobDelayedType;
-      const newEvent = await jobEmitter.emit(type, e.data);
+      const job = await this.makeDelayedEventFromSubmitted(e);
+      if (!job) return;
+
+      const newEvent = await jobEmitter.emit(type, job.event.data);
       this.#queue.enqueue(`${toolId}.delayed`, newEvent);
     }
+  }
+
+  async makeQueuedEventFromSubmitted(
+    event: JobSubmittedEvent,
+    type: JobQueuedType
+  ): Promise<JobQueuedParsed | undefined> {
+    const e = event as unknown as JobQueuedEvent;
+    e.type = type;
+    e.action = "queued";
+    const job = this.#jobParser.parseJobQueued(e);
+    if (!job) {
+      await this.emitError(event, "Unable to create queued event", event);
+    }
+    return job;
+  }
+
+  async makeDelayedEventFromSubmitted(
+    event: JobSubmittedEvent
+  ): Promise<JobDelayedParsed | undefined> {
+    const e = event as unknown as JobDelayedEvent;
+    e.action = "delayed";
+    const job = this.#jobParser.parseJobDelayed(e);
+    if (!job) {
+      await this.emitError(event, "Unable to create delayed event", event);
+    }
+    return job;
+  }
+  async makeQueuedEventFromDelayed(
+    event: JobDelayedEvent,
+    type: JobQueuedType
+  ): Promise<JobQueuedParsed | undefined> {
+    const e = event as unknown as JobQueuedEvent;
+    e.type = type;
+    e.action = "queued";
+    const job = this.#jobParser.parseJobQueued(e);
+    if (!job) {
+      await this.emitError(
+        event,
+        "Unable to create queued event from delayed",
+        event
+      );
+    }
+    return job;
   }
 
   async registerWorkerTools(event: AnyEvent<"worker.registration.requested">) {

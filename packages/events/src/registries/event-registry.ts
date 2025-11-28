@@ -38,7 +38,10 @@ import {
   JobMcpQueuedSchema,
   JobMcpSchema,
 } from "../schemas/job/job.event.schema.js";
-import { JobMcpQueuedDataSchema } from "../schemas/job/job.data.schema.js";
+import {
+  JobMcpDataSchema,
+  JobMcpResolvedDataSchema,
+} from "../schemas/job/job.data.schema.js";
 import {
   ToolCompletedSchema,
   ToolFailedSchema,
@@ -158,14 +161,14 @@ export const eventRegistry = {
     topic: "job.mcp.submitted",
     schema: {
       event: JobMcpSchema,
-      data: JobMcpQueuedDataSchema,
+      data: JobMcpDataSchema,
     },
   },
   "job.mcp.queued": {
     topic: "jobs.lifecycle",
     schema: {
       event: JobMcpQueuedSchema,
-      data: JobMcpQueuedDataSchema,
+      data: JobMcpResolvedDataSchema,
     },
   },
   "tool.started": {

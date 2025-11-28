@@ -6,6 +6,7 @@ import {
   JobDelayedDataSchema,
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
+  JobHttpJsonResolvedDataSchema,
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 
@@ -32,7 +33,7 @@ export const JobHttpJsonDelayedSchema = CloudEventContextSchema.merge(
       entity: z.literal("httpjson"),
       action: z.literal("delayed"),
       capid: z.literal("httpjson"),
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.delayed">>;
@@ -46,7 +47,7 @@ export const JobHttpJsonQueuedSchema = CloudEventContextSchema.merge(
       entity: z.literal("httpjson"),
       action: z.literal("queued"),
       capid: z.literal("httpjson"),
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.queued">>;
@@ -60,7 +61,7 @@ export const JobHttpJsonStartedSchema = CloudEventContextSchema.merge(
       entity: z.literal("httpjson"),
       action: z.literal("started"),
       capid: z.literal("httpjson"),
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.started">>;

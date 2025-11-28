@@ -159,6 +159,7 @@ export class JobParser implements JobParserPort {
     const schema = this.eventRegistry[event.type].schema.event;
     const parsedEvent = schema.safeParse(event);
     if (parsedEvent.error) {
+      console.log(parsedEvent.error);
       return;
     }
     return parsedEvent.data;

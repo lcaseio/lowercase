@@ -35,6 +35,11 @@ export class InMemoryQueue implements QueuePort {
     this.#queues.set(queue, q);
   }
 
+  async dequeue(queue: string): Promise<AnyEvent | void> {
+    const q = this.#queues.get(queue) ?? [];
+    if (q.length > 0) return q.shift();
+  }
+
   async reserve(
     queue: string,
     workerId: string,

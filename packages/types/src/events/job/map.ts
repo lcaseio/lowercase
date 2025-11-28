@@ -1,6 +1,6 @@
 import { CapId } from "../../flow/map.js";
 import type { DomainEntityActionDescriptor } from "../shared/otel-attributes.js";
-import { JobMcpData } from "./data.js";
+import { JobMcpData, JobMcpResolvedData } from "./data.js";
 import { JobHttpJsonEventMap } from "./httpjson/map.js";
 
 export type DomainCapActionDescriptor<
@@ -26,7 +26,7 @@ export type JobEventMap = JobHttpJsonEventMap & {
     "job",
     "mcp",
     "queued",
-    JobMcpData
+    JobMcpResolvedData
   >;
 };
 

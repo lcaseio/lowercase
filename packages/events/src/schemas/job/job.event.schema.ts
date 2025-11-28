@@ -1,7 +1,11 @@
 import { z } from "zod";
 import type { AnyEvent, JobScope } from "@lcase/types";
 import { CloudEventContextSchema } from "../cloud-context.schema.js";
-import { CapIdSchema, JobMcpQueuedDataSchema } from "./job.data.schema.js";
+import {
+  CapIdSchema,
+  JobMcpDataSchema,
+  JobMcpResolvedDataSchema,
+} from "./job.data.schema.js";
 
 export const JobScopeSchema = z
   .object({
@@ -22,7 +26,7 @@ export const JobMcpQueuedSchema = CloudEventContextSchema.merge(JobScopeSchema)
       entity: z.literal("mcp"),
       action: z.literal("queued"),
       capid: z.literal("mcp"),
-      data: JobMcpQueuedDataSchema,
+      data: JobMcpResolvedDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
@@ -34,7 +38,7 @@ export const JobMcpSchema = CloudEventContextSchema.merge(JobScopeSchema)
       entity: z.literal("mcp"),
       action: z.literal("submitted"),
       capid: z.literal("mcp"),
-      data: JobMcpQueuedDataSchema,
+      data: JobMcpDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.submitted">>;
