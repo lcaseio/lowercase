@@ -54,7 +54,6 @@ export class FlowEmitter extends BaseEmitter {
         : {}),
     } satisfies FlowEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
     const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {

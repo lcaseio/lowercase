@@ -1,7 +1,9 @@
 import {
   JobCompletedType,
+  JobDelayedType,
   JobFailedType,
   JobQueuedType,
+  JobStartedType,
   JobSubmittedType,
 } from "@lcase/types";
 
@@ -20,8 +22,19 @@ type _ListsAllSubmittedTypes = MissingSubmittedTypes extends never
   : never;
 const _checkSubmittedTypes: _ListsAllSubmittedTypes = true;
 
-// job.*.queued
+// job.*.delayed
+export const jobDelayedTypes = [
+  "job.httpjson.delayed",
+] as const satisfies readonly JobDelayedType[];
 
+type MissingDelayedTypes = Exclude<
+  JobDelayedType,
+  (typeof jobDelayedTypes)[number]
+>;
+type _ListsAllDelayedTypes = MissingDelayedTypes extends never ? true : never;
+const _checkDelayedTypes: _ListsAllDelayedTypes = true;
+
+// job.*.queued
 export const jobQueuedTypes = [
   "job.httpjson.queued",
   "job.mcp.queued",
@@ -33,6 +46,18 @@ type MissingQueuedTypes = Exclude<
 >;
 type _ListsAllQueuedTypes = MissingQueuedTypes extends never ? true : never;
 const _checkQueuedTypes: _ListsAllQueuedTypes = true;
+
+// job.*.started
+export const jobStartedTypes = [
+  "job.httpjson.started",
+] as const satisfies readonly JobStartedType[];
+
+type MissingStartedTypes = Exclude<
+  JobStartedType,
+  (typeof jobStartedTypes)[number]
+>;
+type _ListsAllStartedTypes = MissingStartedTypes extends never ? true : never;
+const _checkStartedTypes: _ListsAllStartedTypes = true;
 
 // job.*.completed
 export const jobCompletedTypes = [

@@ -54,12 +54,11 @@ export class EngineEmitter extends BaseEmitter {
         : {}),
     } satisfies EngineEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
     const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[engine-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
     await this.bus.publish(type, event);

@@ -53,14 +53,13 @@ export class StepEmitter extends BaseEmitter {
         : {}),
     } satisfies StepEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
     const entry = eventRegistry[type];
-    // const result = entry.schema.event.safeParse(event);
-    // if (result.error) {
-    //   throw new Error(
-    //     `[step-emitter] error parsing event; ${type}; ${result.error}`
-    //   );
-    // }
+    const result = entry.schema.event.safeParse(event);
+    if (result.error) {
+      throw new Error(
+        `[step-emitter] error parsing event; ${type}; ${result.error}`
+      );
+    }
     await this.bus.publish(type, event);
   }
 }

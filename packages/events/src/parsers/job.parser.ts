@@ -1,15 +1,30 @@
-import { AnyEvent, JobEvent, JobEventType } from "@lcase/types";
+import {
+  AnyEvent,
+  EventType,
+  JobCompletedType,
+  JobDelayedType,
+  JobEvent,
+  JobEventType,
+  JobFailedType,
+  JobQueuedType,
+  JobStartedType,
+  JobSubmittedType,
+} from "@lcase/types";
 import {
   jobCompletedTypeSchema,
+  jobDelayedTypeSchema,
   jobFailedTypeSchema,
   jobQueuedTypeSchema,
+  jobStartedTypeSchema,
   jobSubmittedTypeSchema,
 } from "../schemas/job/job.category.schema.js";
 import {
   JobCompletedParsed,
+  JobDelayedParsed,
   JobFailedParsed,
   JobParserPort,
   JobQueuedParsed,
+  JobStartedParsed,
   JobSubmittedParsed,
 } from "@lcase/ports";
 import { EventSchemaRegistry } from "../registries/event-registry.js";
@@ -17,70 +32,127 @@ import { EventSchemaRegistry } from "../registries/event-registry.js";
 export class JobParser implements JobParserPort {
   constructor(private readonly eventRegistry: EventSchemaRegistry) {}
 
+  /* type parsers */
+
+  parseJobSubmittedType(type: string): JobSubmittedType | undefined {
+    const result = jobSubmittedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobDelayedType(type: string): JobDelayedType | undefined {
+    const result = jobDelayedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobQueuedType(type: string): JobQueuedType | undefined {
+    const result = jobQueuedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobStartedType(type: string): JobStartedType | undefined {
+    const result = jobStartedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobCompletedType(type: string): JobCompletedType | undefined {
+    const result = jobCompletedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobFailedType(type: string): JobFailedType | undefined {
+    const result = jobFailedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+
+  /* full type and event parsers */
+
   parseJobSubmitted(event: AnyEvent): JobSubmittedParsed | undefined {
-    const type = jobSubmittedTypeSchema.safeParse(event.type);
-    if (type.error) {
+    const type = this.parseJobSubmittedType(event.type);
+    if (!type) {
       return;
     }
-    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type.data>);
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type.data);
+    const capId = this.#getCapId(type);
     return {
-      type: type.data,
+      type,
       capId,
       event: parsedEvent,
     };
   }
-
+  parseJobDelayed(event: AnyEvent): JobDelayedParsed | undefined {
+    const type = this.parseJobDelayedType(event.type);
+    if (!type) {
+      return;
+    }
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
+    if (!parsedEvent) return;
+    const capId = this.#getCapId(type);
+    return {
+      type,
+      capId,
+      event: parsedEvent,
+    };
+  }
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined {
-    const type = jobQueuedTypeSchema.safeParse(event.type);
-    if (type.error) {
+    const type = this.parseJobQueuedType(event.type);
+    if (!type) {
       return;
     }
-    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type.data>);
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type.data);
+    const capId = this.#getCapId(type);
     return {
-      type: type.data,
+      type,
       capId,
       event: parsedEvent,
     };
   }
-
-  #getCapId(type: JobEventType) {
-    const parts = type.split(".");
-    return parts[1];
+  parseJobStarted(event: AnyEvent): JobStartedParsed | undefined {
+    const type = this.parseJobStartedType(event.type);
+    if (!type) {
+      return;
+    }
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
+    if (!parsedEvent) return;
+    const capId = this.#getCapId(type);
+    return {
+      type,
+      capId,
+      event: parsedEvent,
+    };
   }
   parseJobCompleted(event: AnyEvent): JobCompletedParsed | undefined {
-    const type = jobCompletedTypeSchema.safeParse(event.type);
-    if (type.error) {
+    const type = this.parseJobCompletedType(event.type);
+    if (!type) {
       return;
     }
-    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type.data>);
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type.data);
+    const capId = this.#getCapId(type);
     return {
-      type: type.data,
+      type,
       capId,
       event: parsedEvent,
     };
   }
-
   parseJobFailed(event: AnyEvent): JobFailedParsed | undefined {
-    const type = jobFailedTypeSchema.safeParse(event.type);
-    if (type.error) {
+    const type = this.parseJobFailedType(event.type);
+    if (!type) {
       return;
     }
-    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type.data>);
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type.data);
+    const capId = this.#getCapId(type);
     return {
-      type: type.data,
+      type,
       capId,
       event: parsedEvent,
     };
   }
 
+  /** any job event parser */
   parseJobEvent<T extends JobEventType>(
     event: JobEvent<T>
   ): JobEvent<T> | undefined {
@@ -90,5 +162,11 @@ export class JobParser implements JobParserPort {
       return;
     }
     return parsedEvent.data;
+  }
+
+  /** utility to split and extract middle portion as capability */
+  #getCapId(type: JobEventType) {
+    const parts = type.split(".");
+    return parts[1];
   }
 }

@@ -171,13 +171,33 @@ export class Worker {
 
     let toolResult;
     try {
+      const manualType = `job.${job.capId}.started`;
+      const type = this.#jobParser.parseJobStartedType(manualType);
+
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
+      const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
+        e,
+        "lowercase://worker/handle-new-job"
+      );
+      await jobEmitter.emit(type, e.data);
+
       toolResult = await tool.invoke(event);
     } catch (err) {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
       const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
         e,
         "lowercase://worker/handle-new-job/job-executor/run"
       );
-      await jobEmitter.emit(`job.${job.capId}.failed` as JobEventType, {
+      await jobEmitter.emit(type, {
         job: e.data.job,
         status: "failed",
         reason: `"Error executing job.  ${err}`,
@@ -191,13 +211,23 @@ export class Worker {
     );
 
     if (toolResult) {
-      await jobEmitter.emit(`job.${job.capId}.failed` as JobFailedType, {
+      const manualType = `job.${job.capId}.completed`;
+      const type = this.#jobParser.parseJobCompletedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+      await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "failed",
-        reason: "tool returned undefined results",
+        status: "completed",
+        result: toolResult,
       });
     } else {
-      await jobEmitter.emit(`job.${job.capId}.failed` as JobFailedType, {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+      await jobEmitter.emit(type, {
         job: e.data.job,
         status: "failed",
         reason: "tool returned undefined results",

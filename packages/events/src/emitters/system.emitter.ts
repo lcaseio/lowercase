@@ -59,7 +59,7 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[system-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
     await this.bus.publish(type, event);

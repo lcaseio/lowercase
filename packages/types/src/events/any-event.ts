@@ -9,9 +9,11 @@ import type { EngineScope } from "./engine/event.js";
 import type { RunScope, RunEventType } from "./run/index.js";
 import type {
   JobCompletedType,
+  JobDelayedType,
   JobEventType,
   JobFailedType,
   JobQueuedType,
+  JobStartedType,
   JobSubmittedType,
 } from "./job/map.js";
 import type { JobScope } from "./job/event.js";
@@ -60,16 +62,17 @@ export type ScopeFor<T extends EventType> = T extends StepEventType
  *   data: { ... },
  * }
  */
-
 export type AnyEvent<T extends EventType = EventType> = CloudEvent<T> &
   ScopeFor<T>;
 
-export type lowercaseFlowEvent = AnyEvent<FlowEventType>;
+/* not yet utilized */
 export type AnyJobEvent = AnyEvent<JobEventType>;
 export type AllJobEvents = AnyEvent<JobEventType>;
-export type LowercaseEvent = AnyEvent<EventType>;
 
-export type JobQueuedEvent = AnyEvent<JobQueuedType>;
+/* job category types */
 export type JobSubmittedEvent = AnyEvent<JobSubmittedType>;
+export type JobQueuedEvent = AnyEvent<JobQueuedType>;
+export type JobDelayedEvent = AnyEvent<JobDelayedType>;
+export type JobStartedEvent = AnyEvent<JobStartedType>;
 export type JobCompletedEvent = AnyEvent<JobCompletedType>;
 export type JobFailedEvent = AnyEvent<JobFailedType>;

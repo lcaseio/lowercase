@@ -32,7 +32,7 @@ export const JobHttpJsonDelayedSchema = CloudEventContextSchema.merge(
       entity: z.literal("httpjson"),
       action: z.literal("delayed"),
       capid: z.literal("httpjson"),
-      data: JobHttpJsonDataSchema.extend(JobDelayedDataSchema.shape),
+      data: JobHttpJsonDataSchema,
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.delayed">>;

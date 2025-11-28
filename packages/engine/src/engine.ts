@@ -62,7 +62,7 @@ export class Engine {
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
-      await this.handleWorkerDone(e);
+      await this.handleJobCompleted(e);
     });
   }
 
@@ -288,7 +288,7 @@ export class Engine {
     return nextStepName;
   }
 
-  async handleWorkerDone(event: AnyEvent): Promise<void> {
+  async handleJobCompleted(event: AnyEvent): Promise<void> {
     const job = this.jobParser.parseJobCompleted(event);
     if (!job) throw new Error("[engine] not a job compelted event");
 

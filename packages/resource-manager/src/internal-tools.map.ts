@@ -1,5 +1,4 @@
-import type { InternalToolsMap, ToolSpec } from "@lcase/types";
-import { CapId } from "../../types/dist/flow/map.js";
+import type { InternalToolsMap } from "@lcase/types";
 
 export const internalToolConfig = {
   mcp: {
