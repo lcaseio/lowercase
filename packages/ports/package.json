@@ -20,9 +20,9 @@
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.js"
     },
-    "./resource-manager": {
-      "types": "./dist/resource-manager.port.d.ts",
-      "import": "./dist/resource-manager.port.js"
+    "./rm": {
+      "types": "./dist/rm/index.d.ts",
+      "import": "./dist/rm/index.js"
     }
   },
   "scripts": {

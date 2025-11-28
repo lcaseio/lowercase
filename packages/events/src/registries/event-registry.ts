@@ -4,76 +4,66 @@ import {
   FlowCompletedSchema,
   FlowQueuedSchema,
   FlowStartedSchema,
-} from "./schemas/flow-event.schema.js";
+} from "../schemas/flow-event.schema.js";
 import {
   FlowCompletedDataSchema,
   FlowQueuedDataSchema,
   FlowStartedDataSchema,
-} from "./schemas/flow-data.schema.js";
+} from "../schemas/flow-data.schema.js";
 import {
   EngineStartedSchema,
   EngineStoppedSchema,
-} from "./schemas/engine.event.schema.js";
+} from "../schemas/engine.event.schema.js";
 import {
   EngineStartedDataSchema,
   EngineStoppedDataSchema,
-} from "./schemas/engine.data.schema.js";
+} from "../schemas/engine.data.schema.js";
 import {
   RunCompletedSchema,
   RunStartedSchema,
-} from "./schemas/run.event.schema.js";
+} from "../schemas/run.event.schema.js";
 import {
   RunCompletedDataSchema,
   RunStartedDataSchema,
-} from "./schemas/run.data.schema.js";
+} from "../schemas/run.data.schema.js";
 import {
   StepCompletedSchema,
   StepStartedSchema,
-} from "./schemas/step.event.schema.js";
+} from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
   StepStartedDataSchema,
-} from "./schemas/step.data.schema.js";
+} from "../schemas/step.data.schema.js";
 import {
-  JobCompletedSchema,
-  JobFailedSchema,
-  JobHttpJsonQueuedSchema,
-  JobHttpJsonSubmittedSchema,
   JobMcpQueuedSchema,
   JobMcpSchema,
-  JobStartedSchema,
-} from "./schemas/job.event.schema.js";
-import {
-  JobCompletedDataSchema,
-  JobFailedDataSchema,
-  JobHttpJsonDataSchema,
-  JobMcpQueuedDataSchema,
-  JobStartedDataSchema,
-} from "./schemas/job.data.schema.js";
+} from "../schemas/job/job.event.schema.js";
+import { JobMcpQueuedDataSchema } from "../schemas/job/job.data.schema.js";
 import {
   ToolCompletedSchema,
   ToolFailedSchema,
   ToolStartedSchema,
-} from "./schemas/tool.event.schema.js";
+} from "../schemas/tool.event.schema.js";
 import {
   ToolCompletedDataSchema,
   ToolFailedDataSchema,
   ToolStartedDataSchema,
-} from "./schemas/tool.data.schema.js";
+} from "../schemas/tool.data.schema.js";
 import {
   WorkerRegisteredDataSchema,
   WorkerRegistrationRequestedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
-} from "./schemas/worker.data.schema.js";
+} from "../schemas/worker.data.schema.js";
 import {
   WorkerRegisteredSchema,
   WorkerRegistrationRequestedSchema,
   WorkerStartedSchema,
   WorkerStoppedSchema,
-} from "./schemas/worker.event.schema.js";
-import { SystemLoggedSchema } from "./schemas/system.event.schema.js";
-import { SystemLoggedDataSchema } from "./schemas/system.data.schema.js";
+} from "../schemas/worker.event.schema.js";
+import { SystemLoggedSchema } from "../schemas/system.event.schema.js";
+import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
+import { httpjsonRegistry } from "./job/httpjson.registry.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -92,7 +82,8 @@ export type EventTopic =
 
 // simple hardcoded registry mapping event types to schemas, as well as
 // topics to publish the event to
-export const registry = {
+export const eventRegistry = {
+  ...httpjsonRegistry,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {
@@ -177,41 +168,6 @@ export const registry = {
       data: JobMcpQueuedDataSchema,
     },
   },
-  "job.started": {
-    topic: "jobs.lifecycle",
-    schema: {
-      event: JobStartedSchema,
-      data: JobStartedDataSchema,
-    },
-  },
-  "job.completed": {
-    topic: "jobs.lifecycle",
-    schema: {
-      event: JobCompletedSchema,
-      data: JobCompletedDataSchema,
-    },
-  },
-  "job.failed": {
-    topic: "jobs.lifecycle",
-    schema: {
-      event: JobFailedSchema,
-      data: JobFailedDataSchema,
-    },
-  },
-  "job.httpjson.submitted": {
-    topic: "job.httpjson.submitted",
-    schema: {
-      event: JobHttpJsonSubmittedSchema,
-      data: JobHttpJsonDataSchema,
-    },
-  },
-  "job.httpjson.queued": {
-    topic: "job.httpjson.queued",
-    schema: {
-      event: JobHttpJsonQueuedSchema,
-      data: JobHttpJsonDataSchema,
-    },
-  },
   "tool.started": {
     topic: "tools.lifecycle",
     schema: {
@@ -270,5 +226,10 @@ export const registry = {
   },
 } satisfies Record<
   EventType,
-  { topic: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+>;
+
+export type EventSchemaRegistry = Record<
+  EventType,
+  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
 >;

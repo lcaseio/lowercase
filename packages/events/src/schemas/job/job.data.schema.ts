@@ -1,15 +1,15 @@
 import { z } from "zod";
 import type {
   JobCompletedData,
+  JobDelayedData,
   JobDescriptor,
   JobFailedData,
   JobHttpJsonData,
   JobMcpQueuedData,
-  JobQueuedData,
   JobStartedData,
   PipeData,
 } from "@lcase/types";
-import type { CapId } from "@lcase/types/flow";
+import type { CapId } from "@lcase/types";
 
 export const CapIdSchema = z.enum([
   "mcp",
@@ -41,6 +41,10 @@ const PipeDataSchema = z
       .optional(),
   })
   .strict() satisfies z.ZodType<PipeData>;
+
+export const JobDelayedDataSchema = z.object({
+  reason: z.string(),
+}) satisfies z.ZodType<JobDelayedData>;
 
 export const JobMcpQueuedDataSchema = JobDescriptorDataSchema.merge(
   z.object({
@@ -74,12 +78,6 @@ export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
     pipe: PipeDataSchema,
   })
 ).strict() satisfies z.ZodType<JobHttpJsonData>;
-
-export const JobQueuedDataSchema = JobDescriptorDataSchema.merge(
-  z.object({
-    status: z.literal("queued"),
-  })
-).strict() satisfies z.ZodType<JobQueuedData>;
 
 export const JobStartedDataSchema = JobDescriptorDataSchema.merge(
   z.object({

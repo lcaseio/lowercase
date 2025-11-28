@@ -82,28 +82,33 @@ export const jobOtelAttributesMap = {
     domain: "job",
     entity: "mcp",
   },
-  "job.completed": {
-    action: "completed",
-    domain: "job",
-    entity: undefined,
-  },
-  "job.started": {
-    action: "started",
-    domain: "job",
-    entity: undefined,
-  },
-  "job.failed": {
-    action: "failed",
-    domain: "job",
-    entity: undefined,
-  },
   "job.httpjson.submitted": {
     action: "submitted",
     domain: "job",
     entity: "httpjson",
   },
+  "job.httpjson.delayed": {
+    action: "delayed",
+    domain: "job",
+    entity: "httpjson",
+  },
   "job.httpjson.queued": {
     action: "queued",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.started": {
+    action: "started",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.completed": {
+    action: "completed",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.failed": {
+    action: "failed",
     domain: "job",
     entity: "httpjson",
   },

@@ -1,5 +1,5 @@
-export * from "./event-registry.js";
+export * from "./registries/event-registry.js";
 export * from "./emitters/step.emitter.js";
 export * from "./emitters/jobs.emitter.js";
 export * from "./emitter-factory.js";
-export * from "./parser/parser.js";
+export * from "./parsers/event-parser.js";

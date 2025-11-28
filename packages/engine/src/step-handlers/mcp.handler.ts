@@ -4,7 +4,7 @@ import type { AnyEvent, JobMcpQueuedData } from "@lcase/types";
 import type { RunContext, Flow, McpStep } from "@lcase/specs";
 import type { JobEmitter } from "@lcase/events";
 import { PipeResolver } from "../pipe-resolver.js";
-import { CapId } from "@lcase/types/flow";
+import { CapId } from "@lcase/types";
 
 export class McpStepHandler implements StepHandler {
   constructor(

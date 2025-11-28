@@ -3,7 +3,7 @@ import { StepEmitter } from "../src/emitters/step.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { AnyEvent } from "@lcase/types";
 import { afterEach } from "node:test";
-import { registry } from "../src/event-registry.js";
+
 describe("[step-emitter]", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -66,6 +66,6 @@ describe("[step-emitter]", () => {
     });
 
     expect(publish).toHaveBeenCalledOnce();
-    expect(publish).toHaveBeenCalledWith(registry["step.started"].topic, event);
+    expect(publish).toHaveBeenCalledWith("step.started", event);
   });
 });

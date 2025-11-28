@@ -1,11 +1,10 @@
-import { PipeFields } from "./pipe.fields.js";
+import { StepCapCommonFields, StepOnField } from "./common-fields.js";
 
-export type StepHttpJson = {
-  type: "httpjson";
-  url: string;
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
-  headers?: Record<string, unknown>;
-  body?: Record<string, unknown>;
-  pipe?: PipeFields;
-  args?: Record<string, unknown>;
-};
+export type StepHttpJson = StepCapCommonFields &
+  StepOnField & {
+    type: "httpjson";
+    url: string;
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
+    headers?: Record<string, unknown>;
+    body?: Record<string, unknown>;
+  };

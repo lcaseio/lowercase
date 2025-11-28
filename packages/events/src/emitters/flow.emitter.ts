@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { flowOtelAttributes } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly types scoped emitter for step events.
@@ -55,7 +55,7 @@ export class FlowEmitter extends BaseEmitter {
     } satisfies FlowEvent<T>;
 
     // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(

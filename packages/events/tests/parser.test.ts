@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { AnyEvent } from "../../types/src";
-import { eventParser } from "../src/parser/parser.js";
+import { EventParser } from "../src/parsers/event-parser.js";
+import { eventRegistry } from "../src/registries/event-registry.js";
 
 describe("parser", () => {
   it("should not throw for parsing valid event payloads", () => {
+    const ep = new EventParser(eventRegistry);
     const testEvent1 = {
       id: "",
       source: "",
@@ -34,10 +36,11 @@ describe("parser", () => {
     } as AnyEvent;
 
     expect(() => {
-      eventParser(testEvent1, "job.httpjson.submitted");
+      ep.parse(testEvent1, "job.httpjson.submitted");
     }).not.toThrow();
   });
   it("should throw when parsing mismatched event payloads", () => {
+    const ep = new EventParser(eventRegistry);
     const testEvent1 = {
       id: "",
       source: "",
@@ -68,7 +71,7 @@ describe("parser", () => {
     } as AnyEvent;
 
     const e = expect(() => {
-      eventParser(testEvent1, "job.httpjson.submitted");
+      ep.parse(testEvent1, "job.httpjson.submitted");
     }).toThrow();
   });
 });

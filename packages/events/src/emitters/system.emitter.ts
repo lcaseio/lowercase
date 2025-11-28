@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort, SystemEmitterPort } from "@lcase/ports";
 import { systemOtelAttributesMap } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -55,7 +55,7 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
     } satisfies SystemEvent<T>;
 
     // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(

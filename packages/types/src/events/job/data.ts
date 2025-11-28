@@ -1,7 +1,6 @@
-import { StepHttpJson } from "../../flow/http-json.step.js";
 import { CapId } from "../../flow/map.js";
 import { StepMcp } from "../../flow/mcp.step.js";
-import { PipeData, PipeDataObject } from "../shared/pipe.js";
+import { PipeDataObject } from "../shared/pipe.js";
 
 export type JobDescriptor = {
   job: {
@@ -16,11 +15,6 @@ export type JobMcpData = JobDescriptor &
   PipeDataObject;
 
 export type JobMcpQueuedData = JobMcpData;
-
-export type JobHttpJsonData = JobDescriptor &
-  Omit<StepHttpJson, "pipe" | "type"> & {
-    pipe: PipeData;
-  };
 
 export type JobStartedData = JobDescriptor & {
   status: "started";
@@ -37,6 +31,6 @@ export type JobFailedData = JobDescriptor & {
   reason: string;
 };
 
-export type JobQueuedData = JobDescriptor & {
-  status: "queued";
+export type JobDelayedData = {
+  reason: string;
 };

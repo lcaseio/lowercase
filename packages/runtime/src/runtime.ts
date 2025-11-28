@@ -11,9 +11,15 @@ import {
   wireStepHandlers,
 } from "@lcase/engine";
 
-import { EmitterFactory } from "@lcase/events";
+import { EmitterFactory, EventParser, eventRegistry } from "@lcase/events";
 import type { ToolId } from "@lcase/types";
-import { EventBusPort, StreamRegistryPort, ToolBinding } from "@lcase/ports";
+import {
+  EventBusPort,
+  EventParserPort,
+  JobParserPort,
+  StreamRegistryPort,
+  ToolBinding,
+} from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -32,6 +38,7 @@ import {
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
 import { ResourceManager } from "@lcase/resource-manager";
+import { JobParser } from "@lcase/events/parsers";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -64,13 +71,23 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const streamRegistry = new InMemoryStreamRegistry();
   const flowStore = new FlowStore();
 
-  const engine = createInProcessEngine(flowStore, bus, streamRegistry, ef);
-
+  const eventParser = new EventParser(eventRegistry);
+  const jobParser = new JobParser(eventRegistry);
   const rm = new ResourceManager({
     bus,
     ef,
     queue,
+    parser: eventParser,
+    jobParser,
   });
+
+  const engine = createInProcessEngine(
+    flowStore,
+    bus,
+    streamRegistry,
+    ef,
+    jobParser
+  );
 
   const worker = createInProcessWorker(
     config.worker.id,
@@ -78,6 +95,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     queue,
     streamRegistry,
     ef,
+    jobParser,
     config.worker
   );
 
@@ -132,7 +150,8 @@ export function createInProcessEngine(
   flowDb: FlowStore,
   bus: EventBusPort,
   streamRegistry: StreamRegistryPort,
-  emitterFactory: EmitterFactory
+  emitterFactory: EmitterFactory,
+  jobParser: JobParserPort
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
   const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
@@ -142,7 +161,8 @@ export function createInProcessEngine(
     bus,
     streamRegistry,
     stepHandlerRegistry,
-    emitterFactory
+    emitterFactory,
+    jobParser
   );
 
   return engine;
@@ -154,6 +174,7 @@ export function createInProcessWorker(
   queue: InMemoryQueue,
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
+  jobParser: JobParserPort,
   config: WorkerConfig
 ): Worker {
   const toolRegistry = new ToolRegistry(allToolBindingsMap);
@@ -163,14 +184,10 @@ export function createInProcessWorker(
     queue,
     streamRegistry,
     toolRegistry,
+    jobParser,
   });
 
   // NOTE: add custom config for tools
-
-  // older capability based configs
-  // for (const cap of config.capabilities) {
-  //   worker.addCapability(cap);
-  // }
 
   return worker;
 }
