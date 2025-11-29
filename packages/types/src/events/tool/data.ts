@@ -8,14 +8,17 @@ export type ToolDescriptorData = {
 
 export type ToolStartedData = ToolDescriptorData & {
   log: string;
-  status: "started";
 };
 
 export type ToolCompletedData = ToolDescriptorData & {
-  status: "completed";
+  status: ToolStatusString;
+  payload: Record<string, unknown>;
 };
 
 export type ToolFailedData = ToolDescriptorData & {
   reason: string;
-  status: "failed";
+  status: ToolStatusString;
+  payload?: Record<string, unknown>;
 };
+
+export type ToolStatusString = "success" | "failure";

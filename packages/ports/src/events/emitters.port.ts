@@ -20,6 +20,8 @@ import type {
   RunEventType,
   RunEventData,
   RunEvent,
+  AnyEvent,
+  ToolEvent,
 } from "@lcase/types";
 export type EnvelopeHeader = {
   id: string;
@@ -80,5 +82,8 @@ export interface WorkerEmitterPort {
 }
 
 export interface ToolEmitterPort {
-  emit<T extends ToolEventType>(type: T, data: ToolEventData<T>): Promise<void>;
+  emit<T extends ToolEventType>(
+    type: T,
+    data: ToolEventData<T>
+  ): Promise<ToolEvent<T>>;
 }

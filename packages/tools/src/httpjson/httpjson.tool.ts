@@ -1,5 +1,19 @@
 import { ToolDeps, ToolInstancePort } from "@lcase/ports/tools";
-import { AnyEvent } from "@lcase/types";
+import { AnyEvent, ToolEvent } from "@lcase/types";
+
+type ResponseObject =
+  | {
+      error: false;
+      response: Response;
+    }
+  | { error: true; event: AnyEvent<"tool.failed"> };
+
+type GetJsonObject =
+  | {
+      error: false;
+      json: unknown;
+    }
+  | { error: true; event: AnyEvent<"tool.failed"> };
 
 export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   id = "httpjson" as const;
@@ -12,7 +26,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
 
   async invoke(
     event: AnyEvent<"job.httpjson.started">
-  ): Promise<Record<string, unknown> | undefined> {
+  ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     await this.emitToolStarted(event);
 
     const headers = this.mapHeaders(event.data.headers);
@@ -28,24 +42,28 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
       event
     );
 
-    if (!response) throw new Error("response is undefined");
-    const json = await this.getJson(response, event);
+    if (response.error) return response.event;
 
-    if (!json) return { ok: false, status: "failure" };
+    const json = await this.getJson(response.response, event);
+    if (json.error) return json.event;
 
-    await this.emitToolCompleted(event);
-    return { json, ok: response.ok, status: response.status };
+    const e = await this.emitToolCompleted(event, { json: json.json });
+    return e;
   }
 
-  async getJson(response: Response, event: AnyEvent<"job.httpjson.started">) {
+  async getJson(
+    response: Response,
+    event: AnyEvent<"job.httpjson.started">
+  ): Promise<GetJsonObject> {
     try {
       const data = await response.json();
-      return data;
+      return { error: false, json: data };
     } catch (err) {
-      this.emitToolFailed(
+      const e = await this.emitToolFailed(
         event,
         `Could not parse response as json. respones: ${response}; error: ${err};`
       );
+      return { error: true, event: e };
     }
   }
 
@@ -57,7 +75,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
       body?: string;
     },
     event: AnyEvent<"job.httpjson.started">
-  ) {
+  ): Promise<ResponseObject> {
     try {
       const { url, method, headers, body } = args;
       const response = await fetch(url, {
@@ -65,12 +83,13 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
         ...(headers ? { headers } : {}),
         ...(body ? { body } : {}),
       });
-      return response;
+      return { error: false, response };
     } catch (err) {
-      await this.emitToolFailed(
+      const e = await this.emitToolFailed(
         event,
         `[httpjson-tool] error fetching ${args.url}: ${err}`
       );
+      return { error: true, event: e };
     }
   }
 
@@ -99,23 +118,27 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
         version: this.version,
       },
       log: "httpjson tool started",
-      status: "started",
     });
   }
 
-  async emitToolCompleted(event: AnyEvent<"job.httpjson.started">) {
+  async emitToolCompleted(
+    event: AnyEvent<"job.httpjson.started">,
+    payload: Record<string, unknown>
+  ): Promise<ToolEvent<"tool.completed">> {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       event,
       "lowercase://httpjson-tool/emit-tool-compelted"
     );
-    await emitter.emit("tool.completed", {
+    const e = await emitter.emit("tool.completed", {
       tool: {
         id: this.id,
         name: this.name,
         version: this.version,
       },
-      status: "completed",
+      status: "success",
+      payload,
     });
+    return e;
   }
   async emitToolFailed(
     event: AnyEvent<"job.httpjson.started">,
@@ -125,13 +148,13 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
       event,
       "lowercase://httpjson-tool/emit-tool-compelted"
     );
-    await emitter.emit("tool.failed", {
+    return await emitter.emit("tool.failed", {
       tool: {
         id: this.id,
         name: this.name,
         version: this.version,
       },
-      status: "failed",
+      status: "failure",
       reason,
     });
   }

@@ -5,7 +5,7 @@
   "steps": {
     "first": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/planeaats/1/",
+      "url": "https://swapi.dev/api/planets/1/",
       "headers": {
         "Content-Type": "application/json"
       }

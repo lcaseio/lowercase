@@ -2,6 +2,7 @@ import type {
   EmitterFactoryPort,
   EventBusPort,
   FlowEmitterPort,
+  ToolEmitterPort,
 } from "@lcase/ports";
 import type {
   StepScope,

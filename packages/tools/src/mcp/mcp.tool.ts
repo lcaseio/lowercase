@@ -5,7 +5,7 @@ import type {
   ToolDeps,
 } from "@lcase/ports";
 import { ToolInstancePort } from "@lcase/ports/tools";
-import type { AnyEvent } from "@lcase/types";
+import type { AnyEvent, ToolEvent } from "@lcase/types";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { LoggingMessageNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -42,7 +42,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   }
   async invoke(
     input: AnyEvent<"job.mcp.queued">
-  ): Promise<Record<string, unknown> | undefined> {
+  ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     console.log(`[tool-mcp] ${input}`);
     const data = input.data;
     await this.connect(data.url);
@@ -63,10 +63,10 @@ export class McpTool implements ToolInstancePort<"mcp"> {
           `[tool-mcp] result has error:${JSON.stringify(toolResult, null, 2)}`
         );
         await this.disconnect();
-        return;
+        return {} as ToolEvent<"tool.failed">;
       }
       await this.disconnect();
-      return toolResult;
+      return toolResult as unknown as ToolEvent<"tool.completed">;
     } else if (
       this.#deps.consumer &&
       !this.#deps.producer &&
@@ -80,7 +80,8 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         data.pipe.from.buffer
       );
       await this.disconnect();
-      return { streamResult: consumerResult };
+      // return { streamResult: consumerResult };
+      return {} as ToolEvent<"tool.failed">;
     } else {
       console.log("[tool-mcp] not streaming");
       const result = await this.#client.callTool({
@@ -92,10 +93,10 @@ export class McpTool implements ToolInstancePort<"mcp"> {
           `[tool-mcp] result has error:${JSON.stringify(result, null, 2)}`
         );
         await this.disconnect();
-        return;
+        return {} as ToolEvent<"tool.failed">;
       }
       await this.disconnect();
-      return result;
+      return result as unknown as ToolEvent<"tool.completed">;
     }
   }
 

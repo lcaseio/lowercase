@@ -6,7 +6,13 @@ import type {
   StreamRegistryPort,
   ToolDeps,
 } from "@lcase/ports";
-import type { AnyEvent, WorkerMetadata, ToolId, PipeData } from "@lcase/types";
+import type {
+  AnyEvent,
+  WorkerMetadata,
+  ToolId,
+  PipeData,
+  ToolEvent,
+} from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
 
@@ -140,7 +146,7 @@ export class Worker {
 
     this.#ctx.jobs.set(jobContext.jobId, jobContext);
 
-    let toolResult;
+    let toolEvent: ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">;
     try {
       const manualType = `job.${job.capId}.started`;
       const type = this.#jobParser.parseJobStartedType(manualType);
@@ -155,7 +161,7 @@ export class Worker {
       );
       await jobEmitter.emit(type, e.data);
 
-      toolResult = await tool.invoke(event);
+      toolEvent = await tool.invoke(event);
     } catch (err) {
       const manualType = `job.${job.capId}.failed`;
       const type = this.#jobParser.parseJobFailedType(manualType);
@@ -181,7 +187,7 @@ export class Worker {
       "lowercase://worker/handle-new-job/221"
     );
 
-    if (toolResult && toolResult.status === "success") {
+    if (toolEvent.type === "tool.completed") {
       const manualType = `job.${job.capId}.completed`;
       const type = this.#jobParser.parseJobCompletedType(manualType);
       if (!type) {
@@ -190,9 +196,9 @@ export class Worker {
       await jobEmitter.emit(type, {
         job: e.data.job,
         status: "success",
-        ...(toolResult ? { result: toolResult } : {}),
+        ...(toolEvent.data.payload ? { result: toolEvent.data.payload } : {}),
       });
-    } else {
+    } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
       const type = this.#jobParser.parseJobFailedType(manualType);
       if (!type) {
@@ -201,7 +207,7 @@ export class Worker {
       await jobEmitter.emit(type, {
         job: e.data.job,
         status: "failure",
-        reason: "tool returned undefined results",
+        reason: toolEvent.data.reason,
       });
     }
   }
