@@ -5,7 +5,8 @@
   "steps": {
     "first": {
       "type": "httpjson",
-      "url": "http://localhost:3004/sse"
+      "url": "http://localhost:3004/sse",
+      "tool": "httpjson"
     }
   }
 }

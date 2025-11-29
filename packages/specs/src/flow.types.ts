@@ -1,20 +1,61 @@
 import { z } from "zod";
-import type { StepHttpJson } from "@lcase/types";
+import type {
+  StepHttpJson,
+  StepMcp,
+  StepCapCommonFields,
+  StepOnField,
+} from "@lcase/types";
 
-export const OnSchema = z.object({
-  success: z.string().optional(),
-  failure: z.string().optional(),
-});
+export const StepOnSchema = z
+  .object({
+    on: z
+      .object({
+        success: z.string().optional(),
+        failure: z.string().optional(),
+      })
+      .optional(),
+  })
+  .strict() satisfies z.ZodType<StepOnField>;
 
 export const StepArgsSchema = z.record(z.string(), z.unknown());
+export const StepPipeSchema = z
+  .object({
+    to: z
+      .object({
+        step: z.string(),
+        payload: z.string(),
+      })
+      .optional(),
+    from: z
+      .object({
+        step: z.string(),
+        buffer: z.number().optional(),
+      })
+      .optional(),
+  })
+  .optional();
+export const StepCapCommonFieldsSchema = z
+  .object({
+    args: StepArgsSchema.optional(),
+    pipe: StepPipeSchema,
+    tool: z.string().optional(),
+  })
+  .strict() satisfies z.ZodType<StepCapCommonFields>;
+
 export type StepArgs = z.infer<typeof StepArgsSchema>;
 
-export const StepBaseSchema = z.object({
-  args: StepArgsSchema.optional(),
-  on: OnSchema.optional(),
-});
+export const StepBaseSchema = z
+  .object({
+    args: StepArgsSchema.optional(),
+  })
+  .merge(StepOnSchema);
+export const StepCapBaseSchema = StepCapCommonFieldsSchema.extend(
+  StepOnSchema.shape
+);
 
-export const StepMcpSchema = StepBaseSchema.extend({
+type a = z.infer<typeof StepCapBaseSchema>;
+
+export const StepMcpSchema = StepCapBaseSchema.extend({
   type: z.literal("mcp"),
   url: z.string(),
   transport: z.enum(["sse", "stdio", "streamable-http", "http"]),
@@ -29,25 +70,9 @@ export const StepMcpSchema = StepBaseSchema.extend({
     ]),
     name: z.string(),
   }),
-  pipe: z
-    .object({
-      to: z
-        .object({
-          step: z.string(),
-          payload: z.string(),
-        })
-        .optional(),
-      from: z
-        .object({
-          step: z.string(),
-          buffer: z.number().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
+}).strict() satisfies z.ZodType<StepMcp>;
 
-export const StepHttpJsonSchema = StepBaseSchema.extend({
+export const StepHttpJsonSchema = StepCapBaseSchema.extend({
   type: z.literal("httpjson"),
   url: z.string().url(),
   method: z
@@ -56,22 +81,6 @@ export const StepHttpJsonSchema = StepBaseSchema.extend({
 
   headers: z.record(z.string(), z.unknown()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
-  pipe: z
-    .object({
-      to: z
-        .object({
-          step: z.string(),
-          payload: z.string(),
-        })
-        .optional(),
-      from: z
-        .object({
-          step: z.string(),
-          buffer: z.number().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 
 export const StepSchema = z.discriminatedUnion("type", [

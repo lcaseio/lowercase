@@ -8,7 +8,6 @@ export * from "./observability.port.js";
 export * from "./controller.port.js";
 export * from "./flow/store.port.js";
 export * from "./flow/list.type.js";
-export * from "./resource-manager.port.js";
 
 // folder indexes
 export * from "./events/index.js";

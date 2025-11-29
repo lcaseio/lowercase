@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { runOtelAttributesMap } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -54,12 +54,11 @@ export class RunEmitter extends BaseEmitter {
         : {}),
     } satisfies RunEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[run-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
     await this.bus.publish(type, event);

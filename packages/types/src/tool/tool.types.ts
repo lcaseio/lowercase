@@ -1,3 +1,5 @@
+import { CapId } from "../flow/map.js";
+
 /**
  * NOTE: Tool types are in development.
  * Some are more detailed than what is currently implemented
@@ -8,7 +10,7 @@
  * are being shaped.  Thus, type will change over time to gradually
  * adopt more complex features and orchestration.
  */
-export type ToolId = "mcp" | "httpjson";
+export type ToolId = string;
 
 export type ToolContext = {};
 
@@ -46,37 +48,13 @@ export type ToolRuntimePolicy = {
 export type ToolSpec<ID extends ToolId = ToolId> = {
   id: ID;
   maxConcurrency: number;
-  capabilities: string[];
+  capabilities: CapId[];
   location: "internal" | "external";
   rateLimit?: RateLimitPolicy;
 };
 
-/**
- * args should not be unknown in the future.
- * they can map directly to event payloads for a job
- *
- * for example:
- *
- * event: job.llm.generate.submitted
- * event.data is the payload for args
- *
- * every job event with a middle portion is a tool entity.
- *
- *
- *
- * job.llm.generate.submitted
- *
- * job.llm.generate.assigned
- *
- * domain: job
- * entity: llm.generate
- * action: submitted
- *
- */
 export interface ToolInstance<ID extends ToolId = ToolId> {
   id: ID;
   invoke(args: unknown, ctx: ToolContext): Promise<unknown>;
 }
-export type InternalToolsMap = {
-  [ID in ToolId]: ToolSpec<ID>;
-};
+export type InternalToolsMap = Record<string, ToolSpec<CapId>>;

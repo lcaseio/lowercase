@@ -38,6 +38,7 @@ import { AnyEvent } from "@lcase/types";
  */
 export interface QueuePort {
   enqueue(queue: string, event: AnyEvent): Promise<void>;
+  dequeue(queue: string): Promise<AnyEvent | void>;
   reserve(
     queue: string,
     workerId: string,

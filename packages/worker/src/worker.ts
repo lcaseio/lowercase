@@ -1,6 +1,8 @@
 import type {
   EmitterFactoryPort,
   EventBusPort,
+  EventParserPort,
+  JobParserPort,
   QueuePort,
   StreamRegistryPort,
   ToolDeps,
@@ -11,10 +13,13 @@ import type {
   ToolId,
   PipeData,
   JobQueuedEvent,
+  JobEventType,
+  JobCompletedType,
+  JobFailedType,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
-import { eventParser } from "@lcase/events";
+import { EventParser } from "@lcase/events/parsers";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -47,6 +52,7 @@ export type WorkerDeps = {
   toolRegistry: ToolRegistry<ToolId>;
   emitterFactory: EmitterFactoryPort;
   streamRegistry: StreamRegistryPort;
+  jobParser: JobParserPort;
 };
 
 export class Worker {
@@ -65,7 +71,7 @@ export class Worker {
   #toolRegistry;
   #emitterFactory;
   #streamRegistry;
-
+  #jobParser;
   constructor(workerId: string, deps: WorkerDeps) {
     this.#ctx.workerId = workerId;
     this.#bus = deps.bus;
@@ -73,6 +79,7 @@ export class Worker {
     this.#toolRegistry = deps.toolRegistry;
     this.#emitterFactory = deps.emitterFactory;
     this.#streamRegistry = deps.streamRegistry;
+    this.#jobParser = deps.jobParser;
     this.#buildToolCtx();
   }
 
@@ -115,8 +122,10 @@ export class Worker {
     }
   }
 
-  async handleNewJob(event: JobQueuedEvent): Promise<void> {
-    const e = eventParser(event, event.type);
+  async handleNewJob(event: AnyEvent): Promise<void> {
+    const job = this.#jobParser.parseJobQueued(event);
+    if (!job) return;
+    const e = job.event;
 
     const jobContext: JobContext = {
       jobId: e.data.job.id,
@@ -149,12 +158,12 @@ export class Worker {
     });
 
     const deps = this.#makeTookDeps(
-      event.data.pipe ?? {},
+      e.data.pipe ?? {},
       this.#emitterFactory,
       this.#streamRegistry
     );
     const tool = this.#toolRegistry.createInstance(
-      event.data.job.toolid as ToolId,
+      e.data.job.toolid as ToolId,
       deps
     );
 
@@ -162,13 +171,33 @@ export class Worker {
 
     let toolResult;
     try {
+      const manualType = `job.${job.capId}.started`;
+      const type = this.#jobParser.parseJobStartedType(manualType);
+
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
+      const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
+        e,
+        "lowercase://worker/handle-new-job"
+      );
+      await jobEmitter.emit(type, e.data);
+
       toolResult = await tool.invoke(event);
     } catch (err) {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
       const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
         e,
         "lowercase://worker/handle-new-job/job-executor/run"
       );
-      await jobEmitter.emit("job.failed", {
+      await jobEmitter.emit(type, {
         job: e.data.job,
         status: "failed",
         reason: `"Error executing job.  ${err}`,
@@ -182,13 +211,23 @@ export class Worker {
     );
 
     if (toolResult) {
-      await jobEmitter.emit("job.completed", {
+      const manualType = `job.${job.capId}.completed`;
+      const type = this.#jobParser.parseJobCompletedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+      await jobEmitter.emit(type, {
         job: e.data.job,
         status: "completed",
         result: toolResult,
       });
     } else {
-      await jobEmitter.emit("job.failed", {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+      await jobEmitter.emit(type, {
         job: e.data.job,
         status: "failed",
         reason: "tool returned undefined results",
@@ -296,18 +335,8 @@ export class Worker {
             continue;
           }
 
-          const e = event as JobQueuedEvent;
-          const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
-            e,
-            "lowercase://worker/tool-waiters/job"
-          );
-          await jobEmitter.emit("job.started", {
-            job: e.data.job,
-            status: "started",
-          });
-
           waiterCtx.activeJobCount++;
-          const waiter = this.handleNewJob(e).finally(async () => {
+          const waiter = this.handleNewJob(event).finally(async () => {
             waiterCtx.jobWaiters.delete(waiter);
             waiterCtx.activeJobCount--;
             if (waiterCtx.capacityRelease) {

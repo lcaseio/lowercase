@@ -6,7 +6,7 @@ import {
   ToolFailedDataSchema,
   ToolStartedDataSchema,
 } from "./tool.data.schema.js";
-import { CapIdSchema } from "./job.data.schema.js";
+import { CapIdSchema } from "./job/job.data.schema.js";
 
 export const ToolContextSchema = z
   .object({

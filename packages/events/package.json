@@ -8,9 +8,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./parser": {
-      "types": "./dist/parser/parser.d.ts",
-      "import": "./dist/parser/parser.js"
+    "./parsers": {
+      "types": "./dist/parsers/index.d.ts",
+      "import": "./dist/parsers/index.js"
     }
   },
   "scripts": {

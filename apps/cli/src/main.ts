@@ -8,7 +8,7 @@ async function main(): Promise<void> {
   const program = new Command();
   program.description("cli tool for lowercase workflows");
   registerCommands(program, controller);
-  program.parseAsync();
+  await program.parseAsync();
 
   let isRunning = false;
   process.once("SIGINT", async () => {

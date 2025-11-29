@@ -1,11 +1,15 @@
 import fs from "fs";
 import type { RunContext, Flow } from "@lcase/specs";
-import type { EventBusPort, StreamRegistryPort } from "@lcase/ports";
+import type {
+  EventBusPort,
+  JobParserPort,
+  StreamRegistryPort,
+} from "@lcase/ports";
 import type { AnyEvent } from "@lcase/types";
-import { EmitterFactory, eventParser } from "@lcase/events";
+import { EmitterFactory } from "@lcase/events";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
-import { CapId } from "@lcase/types/flow";
+import { CapId } from "@lcase/types";
 
 /**
  * Engine class runs flows as the orchestration center.
@@ -23,7 +27,8 @@ export class Engine {
     private readonly bus: EventBusPort,
     private readonly streamRegistry: StreamRegistryPort,
     private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly emitterFactory: EmitterFactory
+    private readonly emitterFactory: EmitterFactory,
+    private readonly jobParser: JobParserPort
   ) {}
 
   async subscribeToTopics(): Promise<void> {
@@ -56,11 +61,8 @@ export class Engine {
       }
     });
 
-    this.bus.subscribe("job.completed", async (e: AnyEvent) => {
-      if (e.type === "job.completed") {
-        const jobCompletedEvent = e as AnyEvent<"job.completed">;
-        await this.handleWorkerDone(jobCompletedEvent);
-      }
+    this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
+      await this.handleJobCompleted(e);
     });
   }
 
@@ -286,8 +288,11 @@ export class Engine {
     return nextStepName;
   }
 
-  async handleWorkerDone(event: AnyEvent): Promise<void> {
-    const e = event as AnyEvent<"job.completed">;
+  async handleJobCompleted(event: AnyEvent): Promise<void> {
+    const job = this.jobParser.parseJobCompleted(event);
+    if (!job) throw new Error("[engine] not a job compelted event");
+
+    const e = job.event;
     // update context based on completed event
     if (!this.#runs.has(e.runid)) {
       console.error(`[engine] invalid run id: ${e.runid}`);
