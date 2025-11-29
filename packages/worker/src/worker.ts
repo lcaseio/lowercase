@@ -1,25 +1,14 @@
 import type {
   EmitterFactoryPort,
   EventBusPort,
-  EventParserPort,
   JobParserPort,
   QueuePort,
   StreamRegistryPort,
   ToolDeps,
 } from "@lcase/ports";
-import type {
-  AnyEvent,
-  WorkerMetadata,
-  ToolId,
-  PipeData,
-  JobQueuedEvent,
-  JobEventType,
-  JobCompletedType,
-  JobFailedType,
-} from "@lcase/types";
+import type { AnyEvent, WorkerMetadata, ToolId, PipeData } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
-import { EventParser } from "@lcase/events/parsers";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -138,24 +127,6 @@ export class Worker {
       workerId: this.#ctx.workerId,
       startedAt: new Date().toISOString(),
     };
-    const toolEmitter = this.#emitterFactory.newToolEmitterNewSpan(
-      {
-        ...e,
-        source: "localhost://worker/handle-new-job/186",
-        toolid: jobContext.toolId,
-      },
-      e.traceid
-    );
-
-    await toolEmitter.emit("tool.started", {
-      tool: {
-        id: jobContext.toolId,
-        name: jobContext.toolId,
-        version: "unknown",
-      },
-      log: "about to execute a tool",
-      status: "started",
-    });
 
     const deps = this.#makeTookDeps(
       e.data.pipe ?? {},
@@ -210,7 +181,7 @@ export class Worker {
       "lowercase://worker/handle-new-job/221"
     );
 
-    if (toolResult) {
+    if (toolResult && toolResult.status === "success") {
       const manualType = `job.${job.capId}.completed`;
       const type = this.#jobParser.parseJobCompletedType(manualType);
       if (!type) {
@@ -219,6 +190,7 @@ export class Worker {
       await jobEmitter.emit(type, {
         job: e.data.job,
         status: "success",
+        ...(toolResult ? { result: toolResult } : {}),
       });
     } else {
       const manualType = `job.${job.capId}.failed`;

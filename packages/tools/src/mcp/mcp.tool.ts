@@ -36,11 +36,13 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   };
   #client: Client;
   constructor(deps: ToolDeps) {
-    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.4" });
+    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.7" });
     this.#addShutdownHooks();
     this.#deps = deps;
   }
-  async invoke(input: AnyEvent<"job.mcp.queued">): Promise<unknown> {
+  async invoke(
+    input: AnyEvent<"job.mcp.queued">
+  ): Promise<Record<string, unknown> | undefined> {
     console.log(`[tool-mcp] ${input}`);
     const data = input.data;
     await this.connect(data.url);
@@ -78,7 +80,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         data.pipe.from.buffer
       );
       await this.disconnect();
-      return consumerResult;
+      return { streamResult: consumerResult };
     } else {
       console.log("[tool-mcp] not streaming");
       const result = await this.#client.callTool({

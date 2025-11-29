@@ -18,6 +18,9 @@ import type {
   JobEventType,
   JobCompletedEvent,
   JobFailedEvent,
+  ToolEvent,
+  ToolEventType,
+  JobStartedType,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -59,6 +62,7 @@ import { SystemEmitter } from "./emitters/system.emitter.js";
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
+  /* system */
   newSystemEmitter(
     scope: CloudScope & SystemScope & OtelContext
   ): SystemEmitter {
@@ -72,11 +76,13 @@ export class EmitterFactory implements EmitterFactoryPort {
     return new SystemEmitter(this.bus, combinedScope);
   }
 
+  /* engine */
   newEngineEmitter(
     scope: CloudScope & EngineScope & OtelContext
   ): EngineEmitter {
     return new EngineEmitter(this.bus, scope);
   }
+  /* worker */
   newWorkerEmitter(
     scope: CloudScope & WorkerScope & OtelContext
   ): WorkerEmitter {
@@ -93,6 +99,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new WorkerEmitter(this.bus, combinedScope);
   }
+  /* flow */
   newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitter {
     return new FlowEmitter(this.bus, scope);
   }
@@ -103,11 +110,11 @@ export class EmitterFactory implements EmitterFactoryPort {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new FlowEmitter(this.bus, combinedScope);
   }
+  /* run */
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitter {
     const combinedScope = { ...scope, ...this.startNewTrace() };
     return new RunEmitter(this.bus, combinedScope);
   }
-
   newRunEmitterFromEvent(
     event: JobCompletedEvent | JobFailedEvent,
     source: string
@@ -123,6 +130,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     });
   }
 
+  /* step */
   newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitter {
     const combinedScope = { ...scope, ...this.startNewTrace() };
     return new StepEmitter(this.bus, combinedScope);
@@ -151,7 +159,7 @@ export class EmitterFactory implements EmitterFactoryPort {
       traceParent,
     });
   }
-
+  /* job */
   newJobEmitter(scope: CloudScope & JobScope & OtelContext): JobEmitter {
     return new JobEmitter(this.bus, scope);
   }
@@ -177,6 +185,8 @@ export class EmitterFactory implements EmitterFactoryPort {
       toolid: event.toolid,
     });
   }
+
+  /* tool */
   newToolEmitter(scope: CloudScope & ToolScope & OtelContext): ToolEmitter {
     return new ToolEmitter(this.bus, scope);
   }
@@ -186,6 +196,21 @@ export class EmitterFactory implements EmitterFactoryPort {
   ): ToolEmitter {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new ToolEmitter(this.bus, combinedScope);
+  }
+  newToolEmitterFromEvent(event: AnyEvent<JobStartedType>, source: string) {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newToolEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      stepid: event.stepid,
+      jobid: event.jobid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+      capid: event.data.job.capid,
+      toolid: event.data.job.toolid,
+    });
   }
 
   makeNewSpan(traceId: string): { spanId: string; traceParent: string } {

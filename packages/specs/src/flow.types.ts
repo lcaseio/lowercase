@@ -79,7 +79,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
     .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
     .optional(),
 
-  headers: z.record(z.string(), z.unknown()).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 

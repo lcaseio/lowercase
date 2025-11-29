@@ -3,7 +3,7 @@ import { ToolDeps } from "./tool-context.js";
 
 export interface ToolInstancePort<ID extends ToolId = ToolId> {
   id: ID;
-  invoke(event: unknown): Promise<unknown>;
+  invoke(event: unknown): Promise<Record<string, unknown> | undefined>;
 }
 
 export type ToolBinding<ID extends ToolId = ToolId> = {

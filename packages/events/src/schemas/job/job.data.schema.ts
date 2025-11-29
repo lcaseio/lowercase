@@ -58,71 +58,53 @@ export const JobDelayedDataSchema = z.object({
   reason: z.string(),
 }) satisfies z.ZodType<JobDelayedData>;
 
+/* Mcp */
+
+export const JobMcpBaseDataSchema = z.object({
+  url: z.string(),
+  transport: z.enum(["sse", "stdio", "streamable-http", "http"]),
+  feature: z.object({
+    primitive: z.enum([
+      "resource",
+      "prompt",
+      "tool",
+      "sampling",
+      "roots",
+      "elicitation",
+    ]),
+    name: z.string(),
+  }),
+  args: z.record(z.string(), z.unknown()).optional(),
+  pipe: PipeDataSchema,
+});
 export const JobMcpDataSchema = JobDescriptorDataSchema.merge(
-  z.object({
-    url: z.string(),
-    transport: z.enum(["sse", "stdio", "streamable-http", "http"]),
-    feature: z.object({
-      primitive: z.enum([
-        "resource",
-        "prompt",
-        "tool",
-        "sampling",
-        "roots",
-        "elicitation",
-      ]),
-      name: z.string(),
-    }),
-    args: z.record(z.string(), z.unknown()).optional(),
-    pipe: PipeDataSchema,
-  })
+  JobMcpBaseDataSchema
 ).strict() satisfies z.ZodType<JobMcpData>;
 
 export const JobMcpResolvedDataSchema = JobDescriptorResolvedDataSchema.merge(
-  z.object({
-    url: z.string(),
-    transport: z.enum(["sse", "stdio", "streamable-http", "http"]),
-    feature: z.object({
-      primitive: z.enum([
-        "resource",
-        "prompt",
-        "tool",
-        "sampling",
-        "roots",
-        "elicitation",
-      ]),
-      name: z.string(),
-    }),
-    args: z.record(z.string(), z.unknown()).optional(),
-    pipe: PipeDataSchema,
-  })
+  JobMcpBaseDataSchema
 ).strict() satisfies z.ZodType<JobMcpResolvedData>;
 
-export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
-  z.object({
-    url: z.string(),
-    method: z
-      .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
-      .optional(),
+/* HttpJson */
 
-    headers: z.record(z.string(), z.unknown()).optional(),
-    body: z.record(z.string(), z.unknown()).optional(),
-    pipe: PipeDataSchema,
-  })
+export const JobHttpJsonBaseData = z.object({
+  url: z.string(),
+  method: z
+    .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
+    .optional(),
+
+  headers: z.record(z.string(), z.string()).optional(),
+  body: z.record(z.string(), z.unknown()).optional(),
+  pipe: PipeDataSchema,
+});
+
+export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
+  JobHttpJsonBaseData
 ).strict() satisfies z.ZodType<JobHttpJsonData>;
 
 export const JobHttpJsonResolvedDataSchema =
   JobDescriptorResolvedDataSchema.merge(
-    z.object({
-      url: z.string(),
-      method: z
-        .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
-        .optional(),
-
-      headers: z.record(z.string(), z.unknown()).optional(),
-      body: z.record(z.string(), z.unknown()).optional(),
-      pipe: PipeDataSchema,
-    })
+    JobHttpJsonBaseData
   ).strict() satisfies z.ZodType<JobHttpJsonData>;
 
 export const JobStartedDataSchema = JobDescriptorResolvedDataSchema.merge(

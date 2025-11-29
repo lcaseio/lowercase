@@ -8,9 +8,12 @@ import {
   JobEventType,
   JobFailedEvent,
   JobScope,
+  JobStartedData,
+  JobStartedEvent,
   RunScope,
   StepScope,
   SystemScope,
+  ToolEventType,
   ToolScope,
   WorkerScope,
 } from "@lcase/types";
@@ -54,9 +57,14 @@ export interface EmitterFactoryPort {
   ): WorkerEmitterPort;
   newWorkerEmitterNewTrace(scope: CloudScope & WorkerScope): WorkerEmitterPort;
 
+  /* Tool */
   newToolEmitterNewSpan(
     scope: CloudScope & ToolScope,
     traceId: string
+  ): ToolEmitterPort;
+  newToolEmitterFromEvent(
+    event: AnyEvent<JobEventType>,
+    source: string
   ): ToolEmitterPort;
 
   newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitterPort;
