@@ -2,11 +2,13 @@ import type { ZodSchema } from "zod";
 import type { EventType } from "@lcase/types";
 import {
   FlowCompletedSchema,
+  FlowFailedSchema,
   FlowQueuedSchema,
   FlowStartedSchema,
 } from "../schemas/flow-event.schema.js";
 import {
   FlowCompletedDataSchema,
+  FlowFailedDataSchema,
   FlowQueuedDataSchema,
   FlowStartedDataSchema,
 } from "../schemas/flow-data.schema.js";
@@ -20,18 +22,22 @@ import {
 } from "../schemas/engine.data.schema.js";
 import {
   RunCompletedSchema,
+  RunFailedSchema,
   RunStartedSchema,
 } from "../schemas/run.event.schema.js";
 import {
   RunCompletedDataSchema,
+  RunFailedDataSchema,
   RunStartedDataSchema,
 } from "../schemas/run.data.schema.js";
 import {
   StepCompletedSchema,
+  StepFailedSchema,
   StepStartedSchema,
 } from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
+  StepFailedDataSchema,
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
@@ -102,6 +108,13 @@ export const eventRegistry = {
       data: FlowCompletedDataSchema,
     },
   },
+  "flow.failed": {
+    topic: "flows.lifecycle",
+    schema: {
+      event: FlowFailedSchema,
+      data: FlowFailedDataSchema,
+    },
+  },
   "engine.started": {
     topic: "engines.lifecycle",
     schema: {
@@ -130,6 +143,13 @@ export const eventRegistry = {
       data: RunCompletedDataSchema,
     },
   },
+  "run.failed": {
+    topic: "runs.lifecycle",
+    schema: {
+      event: RunFailedSchema,
+      data: RunFailedDataSchema,
+    },
+  },
   "step.started": {
     topic: "steps.lifecycle",
     schema: {
@@ -147,8 +167,8 @@ export const eventRegistry = {
   "step.failed": {
     topic: "steps.lifecycle",
     schema: {
-      event: StepCompletedSchema,
-      data: StepCompletedDataSchema,
+      event: StepFailedSchema,
+      data: StepFailedDataSchema,
     },
   },
   "tool.started": {

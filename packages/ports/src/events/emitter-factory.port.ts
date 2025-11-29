@@ -1,13 +1,25 @@
 import {
   AllJobEvents,
+  AnyEvent,
   CloudScope,
+  EngineScope,
+  FlowScope,
+  JobCompletedEvent,
+  JobEventType,
+  JobFailedEvent,
   JobScope,
+  RunScope,
+  StepScope,
   SystemScope,
   ToolScope,
   WorkerScope,
 } from "@lcase/types";
 import {
+  EngineEmitterPort,
+  FlowEmitterPort,
   JobEmitterPort,
+  RunEmitterPort,
+  StepEmitterPort,
   SystemEmitterPort,
   ToolEmitterPort,
   WorkerEmitterPort,
@@ -46,4 +58,33 @@ export interface EmitterFactoryPort {
     scope: CloudScope & ToolScope,
     traceId: string
   ): ToolEmitterPort;
+
+  newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitterPort;
+  newStepEmitterFromJobEvent(
+    event: AnyEvent<JobEventType>,
+    source: string
+  ): StepEmitterPort;
+  newStepEmitterNewSpan(
+    scope: CloudScope & StepScope,
+    traceId: string
+  ): StepEmitterPort;
+
+  newEngineEmitter(
+    scope: CloudScope & EngineScope & OtelContext
+  ): EngineEmitterPort;
+
+  newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitterPort;
+  newFlowEmitterNewSpan(
+    scope: CloudScope & FlowScope,
+    traceId: string
+  ): FlowEmitterPort;
+  newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitterPort;
+  newRunEmitterFromEvent(
+    event: JobCompletedEvent | JobFailedEvent,
+    source: string
+  ): RunEmitterPort;
+
+  generateTraceId(): string;
+  generateSpanId(): string;
+  makeTraceParent(traceId: string, spanId: string): string;
 }

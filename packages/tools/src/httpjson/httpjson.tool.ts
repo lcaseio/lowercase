@@ -9,8 +9,14 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
     this.#deps = deps;
   }
 
-  async invoke(event: AnyEvent<"job.httpjson.queued">): Promise<string> {
+  async invoke(event: AnyEvent<"job.httpjson.started">): Promise<unknown> {
     console.log("[httpjson-tool] executing with event:", event);
-    return "job done";
+
+    const { url, body, headers } = event.data;
+    const response = await fetch(url);
+
+    const data = JSON.parse(await response.json());
+
+    return data;
   }
 }

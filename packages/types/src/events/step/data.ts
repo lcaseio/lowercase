@@ -10,10 +10,10 @@ export type StepStartedData = StepDescriptor & {
 };
 
 export type StepCompletedData = StepDescriptor & {
-  status: "completed";
+  status: "success";
 };
 
 export type StepFailedData = StepDescriptor & {
-  status: "failed";
+  status: "failure";
   reason: string;
 };

@@ -5,8 +5,7 @@
   "steps": {
     "first": {
       "type": "httpjson",
-      "url": "http://localhost:3004/sse",
-      "tool": "httpjson"
+      "url": "https://api.weather.gov/points/39.7456,-97.0892"
     }
   }
 }

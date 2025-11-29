@@ -284,15 +284,13 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@lcase/events':
-        specifier: workspace:*
-        version: link:../events
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
       '@lcase/types':
         specifier: workspace:*
         version: link:../types

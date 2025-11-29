@@ -133,15 +133,15 @@ export const JobStartedDataSchema = JobDescriptorResolvedDataSchema.merge(
 
 export const JobCompletedDataSchema = JobDescriptorResolvedDataSchema.merge(
   z.object({
-    status: z.literal("completed"),
-    result: z.unknown(),
+    status: z.literal("success"),
+    result: z.record(z.string(), z.unknown()).optional(),
   })
 ).strict() satisfies z.ZodType<JobCompletedData>;
 
 export const JobFailedDataSchema = JobDescriptorResolvedDataSchema.merge(
   z.object({
-    status: z.literal("failed"),
-    result: z.unknown(),
+    status: z.literal("failure"),
+    result: z.record(z.string(), z.unknown()).optional(),
     reason: z.string(),
   })
 ).strict() satisfies z.ZodType<JobFailedData>;

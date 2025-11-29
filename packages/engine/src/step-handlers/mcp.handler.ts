@@ -2,8 +2,8 @@ import type { StepHandler } from "./step-handler.js";
 import type { ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent } from "@lcase/types";
 import type { RunContext, Flow, McpStep } from "@lcase/specs";
-import type { JobEmitter } from "@lcase/events";
 import { PipeResolver } from "../pipe-resolver.js";
+import { JobEmitterPort } from "@lcase/ports";
 
 export class McpStepHandler implements StepHandler {
   constructor(
@@ -15,7 +15,7 @@ export class McpStepHandler implements StepHandler {
     flow: Flow,
     context: RunContext,
     stepName: string,
-    emitter: JobEmitter
+    emitter: JobEmitterPort
   ): Promise<void> {
     const step: McpStep = flow.steps[stepName] as McpStep;
 

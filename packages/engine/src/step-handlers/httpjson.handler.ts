@@ -2,9 +2,9 @@ import type { StepHandler } from "./step-handler.js";
 import type { ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent, StepHttpJson } from "@lcase/types";
 import type { RunContext, Flow } from "@lcase/specs";
-import type { JobEmitter } from "@lcase/events";
 import { PipeResolver } from "../pipe-resolver.js";
 import { CapId } from "@lcase/types";
+import { JobEmitterPort } from "@lcase/ports";
 
 export class HttpJsonHandler implements StepHandler {
   constructor(
@@ -16,7 +16,7 @@ export class HttpJsonHandler implements StepHandler {
     flow: Flow,
     context: RunContext,
     stepName: string,
-    emitter: JobEmitter
+    emitter: JobEmitterPort
   ): Promise<void> {
     const step = flow.steps[stepName] as StepHttpJson;
     if (step.type !== "httpjson") {

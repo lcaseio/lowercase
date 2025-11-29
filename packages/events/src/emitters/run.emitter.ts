@@ -41,7 +41,7 @@ export class RunEmitter extends BaseEmitter {
   async emit<T extends RunEventType>(
     type: T,
     data: RunEventData<T>
-  ): Promise<void> {
+  ): Promise<RunEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#runScope,
@@ -62,5 +62,6 @@ export class RunEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(type, event);
+    return event;
   }
 }

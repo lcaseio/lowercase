@@ -8,7 +8,7 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EventBusPort, FlowEmitterPort } from "@lcase/ports";
 import { flowOtelAttributes } from "../otel-attributes.js";
 import { eventRegistry } from "../registries/event-registry.js";
 
@@ -18,7 +18,7 @@ import { eventRegistry } from "../registries/event-registry.js";
  *
  * registry should move out eventually
  */
-export class FlowEmitter extends BaseEmitter {
+export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
   protected otel: OtelContext;
   protected flowOtelAttributes: FlowOtelAttributesMap;
   #flowScope: FlowScope;
@@ -41,7 +41,7 @@ export class FlowEmitter extends BaseEmitter {
   async emit<T extends FlowEventType>(
     type: T,
     data: FlowEventData<T>
-  ): Promise<void> {
+  ): Promise<FlowEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#flowScope,
@@ -62,5 +62,6 @@ export class FlowEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(type, event);
+    return event;
   }
 }

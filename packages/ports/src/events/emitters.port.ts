@@ -9,6 +9,17 @@ import type {
   ToolEventType,
   ToolEventData,
   JobEvent,
+  StepEventType,
+  StepEventData,
+  EngineEventType,
+  EngineEventData,
+  EngineEvent,
+  FlowEventData,
+  FlowEventType,
+  FlowEvent,
+  RunEventType,
+  RunEventData,
+  RunEvent,
 } from "@lcase/types";
 export type EnvelopeHeader = {
   id: string;
@@ -22,6 +33,10 @@ export type EnvelopeHeader = {
 
 export interface BaseEmitterPort {}
 
+export interface StepEmitterPort {
+  emit<T extends StepEventType>(type: T, data: StepEventData<T>): Promise<void>;
+}
+
 export interface SystemEmitterPort {
   emit<T extends SystemEventType>(
     type: T,
@@ -34,6 +49,27 @@ export interface JobEmitterPort {
     type: T,
     data: JobEventData<T>
   ): Promise<JobEvent<T>>;
+}
+
+export interface EngineEmitterPort {
+  emit<T extends EngineEventType>(
+    type: T,
+    data: EngineEventData<T>
+  ): Promise<EngineEvent<T>>;
+}
+
+export interface FlowEmitterPort {
+  emit<T extends FlowEventType>(
+    type: T,
+    data: FlowEventData<T>
+  ): Promise<FlowEvent<T>>;
+}
+
+export interface RunEmitterPort {
+  emit<T extends RunEventType>(
+    type: T,
+    data: RunEventData<T>
+  ): Promise<RunEvent<T>>;
 }
 
 export interface WorkerEmitterPort {

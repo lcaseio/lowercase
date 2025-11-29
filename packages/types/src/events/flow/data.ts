@@ -15,4 +15,9 @@ export type FlowQueuedData = FlowDescriptor & {
 };
 
 export type FlowStartedData = FlowDescriptor & {};
-export type FlowCompletedData = FlowDescriptor & {};
+export type FlowCompletedData = FlowDescriptor & {
+  status: "success";
+};
+export type FlowFailedData = FlowDescriptor & {
+  status: "failure";
+};

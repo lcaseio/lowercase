@@ -3,38 +3,37 @@ import type {
   ToolInstancePort,
   ToolRegistryPort,
   ToolBinding,
-  ToolBindingMap,
   ToolDeps,
 } from "@lcase/ports/tools";
 
 export type ObjectKey = {};
 
-export class ToolRegistry<ID extends ToolId> implements ToolRegistryPort {
-  #bindings: Map<ID, ToolBinding<ID>>;
-  constructor(toolBindings?: Map<ID, ToolBinding<ID>>) {
+export class ToolRegistry<Id extends ToolId> implements ToolRegistryPort {
+  #bindings: Map<Id, ToolBinding<Id>>;
+  constructor(toolBindings?: Map<Id, ToolBinding<Id>>) {
     if (toolBindings) {
-      this.#bindings = new Map<ID, ToolBinding<ID>>([...toolBindings]);
+      this.#bindings = new Map<Id, ToolBinding<Id>>([...toolBindings]);
     } else {
-      this.#bindings = new Map<ID, ToolBinding<ID>>();
+      this.#bindings = new Map<Id, ToolBinding<Id>>();
     }
   }
-  getBinding(id: ID): ToolBinding<ID> | undefined {
+  getBinding(id: Id): ToolBinding<Id> | undefined {
     return this.#bindings.get(id);
   }
-  createInstance(id: ID, deps: ToolDeps): ToolInstancePort<ID> {
+  createInstance(id: Id, deps: ToolDeps): ToolInstancePort<Id> {
     const binding = this.#bindings.get(id);
     if (!binding) {
       throw new Error(`No binding registered for tool:${id}`);
     }
     return binding.create(deps);
   }
-  addTool(binding: ToolBinding<ID>): void {
+  addTool(binding: ToolBinding<Id>): void {
     this.#bindings.set(binding.spec.id, binding);
   }
-  removeTool(id: ID): void {
+  removeTool(id: Id): void {
     this.#bindings.delete(id);
   }
-  listToolIds(): ID[] {
+  listToolIds(): Id[] {
     return [...this.#bindings.keys()];
   }
 }

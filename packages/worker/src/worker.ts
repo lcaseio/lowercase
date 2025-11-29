@@ -199,7 +199,7 @@ export class Worker {
       );
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "failed",
+        status: "failure",
         reason: `"Error executing job.  ${err}`,
       });
       return;
@@ -218,8 +218,7 @@ export class Worker {
       }
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "completed",
-        result: toolResult,
+        status: "success",
       });
     } else {
       const manualType = `job.${job.capId}.failed`;
@@ -229,7 +228,7 @@ export class Worker {
       }
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "failed",
+        status: "failure",
         reason: "tool returned undefined results",
       });
     }

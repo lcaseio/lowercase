@@ -8,7 +8,7 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EngineEmitterPort, EventBusPort } from "@lcase/ports";
 import { engineOtelAttributesMap } from "../otel-attributes.js";
 import { eventRegistry } from "../registries/event-registry.js";
 
@@ -18,7 +18,7 @@ import { eventRegistry } from "../registries/event-registry.js";
  *
  * registry should move out.
  */
-export class EngineEmitter extends BaseEmitter {
+export class EngineEmitter extends BaseEmitter implements EngineEmitterPort {
   protected otel: OtelContext;
   protected engineOtelAttributes: EngineOtelAttributesMap;
   #engineScope: EngineScope;
@@ -41,7 +41,7 @@ export class EngineEmitter extends BaseEmitter {
   async emit<T extends EngineEventType>(
     type: T,
     data: EngineEventData<T>
-  ): Promise<void> {
+  ): Promise<EngineEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#engineScope,
@@ -62,5 +62,6 @@ export class EngineEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(type, event);
+    return event;
   }
 }

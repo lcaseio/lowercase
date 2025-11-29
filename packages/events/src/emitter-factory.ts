@@ -1,4 +1,8 @@
-import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
+import type {
+  EmitterFactoryPort,
+  EventBusPort,
+  FlowEmitterPort,
+} from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -10,6 +14,10 @@ import type {
   WorkerScope,
   SystemScope,
   AllJobEvents,
+  AnyEvent,
+  JobEventType,
+  JobCompletedEvent,
+  JobFailedEvent,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -88,8 +96,31 @@ export class EmitterFactory implements EmitterFactoryPort {
   newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitter {
     return new FlowEmitter(this.bus, scope);
   }
+  newFlowEmitterNewSpan(
+    scope: CloudScope & FlowScope,
+    traceId: string
+  ): FlowEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new FlowEmitter(this.bus, combinedScope);
+  }
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitter {
-    return new RunEmitter(this.bus, scope);
+    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new RunEmitter(this.bus, combinedScope);
+  }
+
+  newRunEmitterFromEvent(
+    event: JobCompletedEvent | JobFailedEvent,
+    source: string
+  ): RunEmitter {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newRunEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
   }
 
   newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitter {
@@ -106,6 +137,19 @@ export class EmitterFactory implements EmitterFactoryPort {
   ): StepEmitter {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new StepEmitter(this.bus, combinedScope);
+  }
+  newStepEmitterFromJobEvent(event: AnyEvent<JobEventType>, source: string) {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newStepEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      stepid: event.stepid,
+      steptype: event.capid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
   }
 
   newJobEmitter(scope: CloudScope & JobScope & OtelContext): JobEmitter {
