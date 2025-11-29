@@ -1,7 +1,6 @@
 import { CapId } from "../../flow/map.js";
-import type { DomainEntityActionDescriptor } from "../shared/otel-attributes.js";
-import { JobMcpData, JobMcpResolvedData } from "./data.js";
 import { JobHttpJsonEventMap } from "./httpjson/map.js";
+import { JobMcpEventMap } from "./mcp/map.js";
 
 export type DomainCapActionDescriptor<
   Domain extends string,
@@ -15,20 +14,7 @@ export type DomainCapActionDescriptor<
   data: Data;
 };
 
-export type JobEventMap = JobHttpJsonEventMap & {
-  "job.mcp.submitted": DomainCapActionDescriptor<
-    "job",
-    "mcp",
-    "submitted",
-    JobMcpData
-  >;
-  "job.mcp.queued": DomainEntityActionDescriptor<
-    "job",
-    "mcp",
-    "queued",
-    JobMcpResolvedData
-  >;
-};
+export type JobEventMap = JobHttpJsonEventMap & JobMcpEventMap;
 
 export type JobEventType = keyof JobEventMap;
 

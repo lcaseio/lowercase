@@ -25,6 +25,7 @@ const _checkSubmittedTypes: _ListsAllSubmittedTypes = true;
 // job.*.delayed
 export const jobDelayedTypes = [
   "job.httpjson.delayed",
+  "job.mcp.delayed",
 ] as const satisfies readonly JobDelayedType[];
 
 type MissingDelayedTypes = Exclude<
@@ -50,6 +51,7 @@ const _checkQueuedTypes: _ListsAllQueuedTypes = true;
 // job.*.started
 export const jobStartedTypes = [
   "job.httpjson.started",
+  "job.mcp.started",
 ] as const satisfies readonly JobStartedType[];
 
 type MissingStartedTypes = Exclude<
@@ -62,6 +64,7 @@ const _checkStartedTypes: _ListsAllStartedTypes = true;
 // job.*.completed
 export const jobCompletedTypes = [
   "job.httpjson.completed",
+  "job.mcp.completed",
 ] as const satisfies readonly JobCompletedType[];
 
 type MissingCompletedTypes = Exclude<
@@ -76,6 +79,7 @@ const _checkCompletedTypes: _ListsAllCompletedTypes = true;
 // job.*.failed
 export const jobFailedTypes = [
   "job.httpjson.failed",
+  "job.mcp.failed",
 ] as const satisfies readonly JobFailedType[];
 
 type MissingFailedTypes = Exclude<

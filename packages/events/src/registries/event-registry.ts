@@ -35,14 +35,6 @@ import {
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
-  JobMcpQueuedSchema,
-  JobMcpSchema,
-} from "../schemas/job/job.event.schema.js";
-import {
-  JobMcpDataSchema,
-  JobMcpResolvedDataSchema,
-} from "../schemas/job/job.data.schema.js";
-import {
   ToolCompletedSchema,
   ToolFailedSchema,
   ToolStartedSchema,
@@ -67,6 +59,7 @@ import {
 import { SystemLoggedSchema } from "../schemas/system.event.schema.js";
 import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
 import { httpjsonRegistry } from "./job/httpjson.registry.js";
+import { mcpRegistry } from "./job/mcp.registry.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -87,6 +80,7 @@ export type EventTopic =
 // topics to publish the event to
 export const eventRegistry = {
   ...httpjsonRegistry,
+  ...mcpRegistry,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {
@@ -155,20 +149,6 @@ export const eventRegistry = {
     schema: {
       event: StepCompletedSchema,
       data: StepCompletedDataSchema,
-    },
-  },
-  "job.mcp.submitted": {
-    topic: "job.mcp.submitted",
-    schema: {
-      event: JobMcpSchema,
-      data: JobMcpDataSchema,
-    },
-  },
-  "job.mcp.queued": {
-    topic: "jobs.lifecycle",
-    schema: {
-      event: JobMcpQueuedSchema,
-      data: JobMcpResolvedDataSchema,
     },
   },
   "tool.started": {

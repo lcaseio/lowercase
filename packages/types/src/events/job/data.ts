@@ -17,14 +17,6 @@ export type JobDescriptorResolved = {
   };
 };
 
-export type JobMcpData = JobDescriptor &
-  Omit<StepMcp, "pipe" | "type"> &
-  PipeDataObject;
-
-export type JobMcpResolvedData = JobDescriptorResolved &
-  Omit<StepMcp, "pipe" | "type"> &
-  PipeDataObject;
-
 export type JobStartedData = JobDescriptor & {
   status: "started";
 };

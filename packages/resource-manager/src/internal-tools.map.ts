@@ -3,7 +3,7 @@ import type { InternalToolsMap } from "@lcase/types";
 export const internalToolConfig = {
   mcp: {
     id: "mcp",
-    maxConcurrency: 2,
+    maxConcurrency: 1,
     capabilities: ["mcp"],
     location: "internal",
     rateLimit: undefined,

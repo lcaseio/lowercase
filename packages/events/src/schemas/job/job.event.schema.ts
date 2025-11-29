@@ -18,27 +18,3 @@ export const JobScopeSchema = z
     domain: z.literal("job"),
   })
   .strict() satisfies z.ZodType<JobScope>;
-
-export const JobMcpQueuedSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.queued"),
-      entity: z.literal("mcp"),
-      action: z.literal("queued"),
-      capid: z.literal("mcp"),
-      data: JobMcpResolvedDataSchema,
-    })
-  )
-  .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
-
-export const JobMcpSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.submitted"),
-      entity: z.literal("mcp"),
-      action: z.literal("submitted"),
-      capid: z.literal("mcp"),
-      data: JobMcpDataSchema,
-    })
-  )
-  .strict() satisfies z.ZodType<AnyEvent<"job.mcp.submitted">>;

@@ -6,9 +6,11 @@ import type {
   EventEntities,
 } from "@lcase/types";
 import { httpjsonEventTypes } from "./job/httpjson.types.js";
+import { mcpEventTypes } from "./job/mcp.types.js";
 
 export const eventTypes = [
   ...httpjsonEventTypes,
+  ...mcpEventTypes,
   "flow.queued",
   "flow.started",
   "flow.completed",

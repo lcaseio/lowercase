@@ -145,11 +145,16 @@ export class ResourceManager implements ResourceManagerPort {
 
     const active = Math.max(
       0,
-      this.#activeTools.get(job.event.data.job.toolid) ?? 0 - 1
+      (this.#activeTools.get(job.event.data.job.toolid) ?? 0) - 1
     );
     this.#activeTools.set(job.event.data.job.toolid, active);
 
-    await this.queueDelayedJob(job.event.data.job.toolid);
+    const max = this.#internalTools[job.event.data.job.toolid].maxConcurrency;
+    let current = this.#activeTools.get(job.event.data.job.toolid) ?? 0;
+
+    if (current < max) {
+      await this.queueDelayedJob(job.event.data.job.toolid);
+    }
   }
 
   async queueDelayedJob(toolId: string) {
@@ -273,7 +278,7 @@ export class ResourceManager implements ResourceManagerPort {
       this.#activeTools.set(toolId, ++current);
     } else {
       const type = `job.${capId}.delayed` as JobDelayedType;
-      const job = await this.makeDelayedEventFromSubmitted(e);
+      const job = await this.makeDelayedEventFromSubmitted(e, type);
       if (!job) return;
 
       const newEvent = await jobEmitter.emit(type, job.event.data);
@@ -296,9 +301,11 @@ export class ResourceManager implements ResourceManagerPort {
   }
 
   async makeDelayedEventFromSubmitted(
-    event: JobSubmittedEvent
+    event: JobSubmittedEvent,
+    type: JobDelayedType
   ): Promise<JobDelayedParsed | undefined> {
     const e = event as unknown as JobDelayedEvent;
+    e.type = type;
     e.action = "delayed";
     const job = this.#jobParser.parseJobDelayed(e);
     if (!job) {
