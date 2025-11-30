@@ -284,18 +284,19 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@lcase/events':
-        specifier: workspace:*
-        version: link:../events
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
   packages/events:
     dependencies:

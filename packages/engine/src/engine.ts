@@ -1,12 +1,12 @@
 import fs from "fs";
 import type { RunContext, Flow } from "@lcase/specs";
 import type {
+  EmitterFactoryPort,
   EventBusPort,
   JobParserPort,
   StreamRegistryPort,
 } from "@lcase/ports";
-import type { AnyEvent } from "@lcase/types";
-import { EmitterFactory } from "@lcase/events";
+import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
 import { CapId } from "@lcase/types";
@@ -27,7 +27,7 @@ export class Engine {
     private readonly bus: EventBusPort,
     private readonly streamRegistry: StreamRegistryPort,
     private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly emitterFactory: EmitterFactory,
+    private readonly ef: EmitterFactoryPort,
     private readonly jobParser: JobParserPort
   ) {}
 
@@ -36,12 +36,9 @@ export class Engine {
       if (e.type === "flow.queued") {
         const event = e as AnyEvent<"flow.queued">;
 
-        const spanId = this.emitterFactory.generateSpanId();
-        const traceParent = this.emitterFactory.makeTraceParent(
-          event.traceid,
-          spanId
-        );
-        const flowEmitter = this.emitterFactory.newFlowEmitter({
+        const spanId = this.ef.generateSpanId();
+        const traceParent = this.ef.makeTraceParent(event.traceid, spanId);
+        const flowEmitter = this.ef.newFlowEmitter({
           source: "lowercase://engine/flow/queued",
           flowid: event.flowid,
           traceId: event.traceid,
@@ -64,13 +61,16 @@ export class Engine {
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
       await this.handleJobCompleted(e);
     });
+    this.bus.subscribe("job.*.failed", async (e: AnyEvent) => {
+      await this.handleJobFailed(e);
+    });
   }
 
   async start() {
-    const traceId = this.emitterFactory.generateTraceId();
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
-    const emitter = this.emitterFactory.newEngineEmitter({
+    const traceId = this.ef.generateTraceId();
+    const spanId = this.ef.generateSpanId();
+    const traceParent = this.ef.makeTraceParent(traceId, spanId);
+    const emitter = this.ef.newEngineEmitter({
       source: "lowercase://engine/start",
       engineid: this.id,
       traceId,
@@ -88,10 +88,10 @@ export class Engine {
     await this.subscribeToTopics();
   }
   async stop() {
-    const traceId = this.emitterFactory.generateTraceId();
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
-    const emitter = this.emitterFactory.newEngineEmitter({
+    const traceId = this.ef.generateTraceId();
+    const spanId = this.ef.generateSpanId();
+    const traceParent = this.ef.makeTraceParent(traceId, spanId);
+    const emitter = this.ef.newEngineEmitter({
       source: "lowercase://engine/stop/",
       engineid: this.id,
       traceId,
@@ -122,12 +122,12 @@ export class Engine {
     let context = this.#buildRunContext(event);
     context = this.#initStepContext(context, flow.start);
 
-    const systemSpanId = this.emitterFactory.generateSpanId();
-    const systemTraceParent = this.emitterFactory.makeTraceParent(
+    const systemSpanId = this.ef.generateSpanId();
+    const systemTraceParent = this.ef.makeTraceParent(
       event.traceid,
       systemSpanId
     );
-    const logEmitter = this.emitterFactory.newSystemEmitter({
+    const logEmitter = this.ef.newSystemEmitter({
       source: "lowercase://engine/start-flow",
       traceId: event.traceid,
       spanId: systemSpanId,
@@ -137,12 +137,9 @@ export class Engine {
       log: "[engine] made RunContext",
     });
 
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(
-      event.traceid,
-      spanId
-    );
-    const emitter = this.emitterFactory.newRunEmitter({
+    const spanId = this.ef.generateSpanId();
+    const traceParent = this.ef.makeTraceParent(event.traceid, spanId);
+    const emitter = this.ef.newRunEmitter({
       source: "lowercase://engine/start-flow",
       flowid: flow.name,
       runid: context.runId,
@@ -201,7 +198,7 @@ export class Engine {
     const stepid = stepName;
     const steptype = stepType;
 
-    const stepEmitter = this.emitterFactory.newStepEmitterNewSpan(
+    const stepEmitter = this.ef.newStepEmitterNewSpan(
       {
         source: "lowercase://engine/start-step",
         flowid,
@@ -221,7 +218,7 @@ export class Engine {
     });
 
     const jobId = String(crypto.randomUUID());
-    const jobEmitter = this.emitterFactory.newJobEmitterNewSpan(
+    const jobEmitter = this.ef.newJobEmitterNewSpan(
       {
         source: "lowercase://engine/queue-step",
         flowid,
@@ -288,133 +285,176 @@ export class Engine {
     return nextStepName;
   }
 
-  async handleJobCompleted(event: AnyEvent): Promise<void> {
-    const job = this.jobParser.parseJobCompleted(event);
-    if (!job) throw new Error("[engine] not a job compelted event");
+  async handleJobFailed(event: AnyEvent): Promise<void> {
+    const job = this.jobParser.parseJobFailed(event);
+    if (!job) throw new Error("[engine] not a job failed event");
 
     const e = job.event;
-    // update context based on completed event
-    if (!this.#runs.has(e.runid)) {
-      console.error(`[engine] invalid run id: ${e.runid}`);
-      return;
-    }
+
+    this.isValidRunId(e.runid);
     const context = this.#runs.get(e.runid)!;
 
-    const result = e.data.result
-      ? (e.data.result as Array<Record<string, unknown>>)
-      : [{ data: null }];
-    if (e.data.result) {
-      context.steps[e.stepid].result = { result };
-    }
-    context.steps[e.stepid].status = "success";
+    context.steps[e.stepid].result = e.data.result ?? {};
+    context.steps[e.stepid].status = e.data.status;
 
-    const stepSpanId = this.emitterFactory.generateSpanId();
-    const stepTraceParent = this.emitterFactory.makeTraceParent(
-      context.traceId,
-      stepSpanId
-    );
     const flow = context.definition;
 
-    if (!flow) return;
-    flow.steps[e.stepid].type;
-
-    const stepEmitter = this.emitterFactory.newStepEmitter({
-      source: "lowercase://engine/handle-worker-done",
-      flowid: context.flowName,
-      runid: context.runId,
-      stepid: e.stepid,
-      steptype: flow.steps[e.stepid].type,
-      traceId: context.traceId,
-      spanId: stepSpanId,
-      traceParent: stepTraceParent,
-    });
-    stepEmitter.emit("step.completed", {
-      step: {
-        id: e.stepid,
-        name: e.stepid,
-        type: flow.steps[e.stepid].type,
-      },
-      status: "completed",
-    });
-
-    context.queuedSteps.delete(e.stepid);
-    context.runningSteps.delete(e.stepid);
-    context.doneSteps.add(e.stepid);
-    context.outstandingSteps--;
-
+    this.markStepAsFailed(e, context);
+    this.markStepAsDone(e.runid, context);
     this.writeRunContext(e.runid);
 
-    if (!flow) {
-      console.log(`[engine] executeStep(): no flow for ${context.flowName}`);
-      return;
-    }
     const nextStep = this.#getNextStepName(flow, context, e.stepid);
 
     if (nextStep) {
       this.startStreamingSteps(flow, context, nextStep);
     } else if (context.outstandingSteps === 0) {
-      const logEmitter = this.emitterFactory.newSystemEmitter({
-        source: "lowercase://engine/handle-work-done",
-        traceId: "",
-        spanId: "",
-        traceParent: "",
-      });
-      await logEmitter.emit("system.logged", {
-        log: "[engine] no next step; no outstanding steps; run ended;",
-      });
-
-      const runSpanId = this.emitterFactory.generateSpanId();
-      const flowSpanId = this.emitterFactory.generateSpanId();
-      const runTraceParent = this.emitterFactory.makeTraceParent(
-        runSpanId,
-        e.traceid
-      );
-      const flowTraceParent = this.emitterFactory.makeTraceParent(
-        flowSpanId,
-        e.traceid
-      );
-
-      const runEmitter = this.emitterFactory.newRunEmitter({
-        source: "lowercase://worker/run/ended",
-        flowid: e.flowid,
-        runid: e.runid,
-        traceId: e.traceid,
-        spanId: runSpanId,
-        traceParent: runTraceParent,
-      });
-
-      runEmitter.emit("run.completed", {
-        run: {
-          id: e.runid,
-          status: "completed",
-        },
-        engine: {
-          id: "default-engine",
-        },
-        status: "completed",
-        message: "run is over",
-      });
-
-      const flowEmitter = this.emitterFactory.newFlowEmitter({
-        source: "lowercase://worker/run/ended",
-        flowid: e.flowid,
-        traceId: e.traceid,
-        spanId: runSpanId,
-        traceParent: runTraceParent,
-      });
-
-      const flow = this.flowDb.get(e.flowid);
-      if (!flow) return;
-      await flowEmitter.emit("flow.completed", {
-        flow: {
-          id: e.flowid,
-          name: flow.name,
-          version: flow.version,
-        },
-      });
-
+      this.markRunAsFailed(e, context);
       return;
     }
+  }
+
+  isValidRunId(runId: string) {
+    if (this.#runs.has(runId)) return true;
+    throw new Error(`[engine] invalid run id ${runId}`);
+  }
+
+  markStepAsDone(stepId: string, run: RunContext) {
+    run.queuedSteps.delete(stepId);
+    run.runningSteps.delete(stepId);
+    run.doneSteps.add(stepId);
+    run.outstandingSteps--;
+  }
+
+  async handleJobCompleted(event: AnyEvent): Promise<void> {
+    // parse event
+    const job = this.jobParser.parseJobCompleted(event);
+    if (!job) throw new Error("[engine] not a job completed event");
+
+    const e = job.event;
+
+    this.isValidRunId(e.runid);
+    const context = this.#runs.get(e.runid)!;
+
+    context.steps[e.stepid].result = e.data.result ?? {};
+    context.steps[e.stepid].status = e.data.status;
+
+    const flow = context.definition;
+
+    this.markStepAsCompleted(e, context);
+    this.markStepAsDone(e.runid, context);
+    this.writeRunContext(e.runid);
+
+    const nextStep = this.#getNextStepName(flow, context, e.stepid);
+
+    if (nextStep) {
+      this.startStreamingSteps(flow, context, nextStep);
+    } else if (context.outstandingSteps === 0) {
+      this.markRunAsCompleted(e, context);
+      return;
+    }
+  }
+
+  async markStepAsCompleted(e: JobCompletedEvent, run: RunContext) {
+    const stepEmitter = this.ef.newStepEmitterFromJobEvent(
+      e,
+      "lowercase://engine/handle-worker-done"
+    );
+    stepEmitter.emit("step.completed", {
+      step: {
+        id: e.stepid,
+        name: e.stepid,
+        type: run.definition.steps[e.stepid].type,
+      },
+      status: "success",
+    });
+    run.steps[e.stepid].status = e.data.status;
+  }
+
+  async markStepAsFailed(e: JobFailedEvent, run: RunContext) {
+    const stepEmitter = this.ef.newStepEmitterFromJobEvent(
+      e,
+      "lowercase://engine/handle-worker-done"
+    );
+    await stepEmitter.emit("step.failed", {
+      step: {
+        id: e.stepid,
+        name: e.stepid,
+        type: run.definition.steps[e.stepid].type,
+      },
+      status: "failure",
+      reason: e.data.reason,
+    });
+    run.steps[e.stepid].status = e.data.status;
+  }
+
+  async markRunAsCompleted(event: JobCompletedEvent, run: RunContext) {
+    const runEmitter = this.ef.newRunEmitterFromEvent(
+      event,
+      "lowercase://engine/mark-run-as-completed"
+    );
+    const e = await runEmitter.emit("run.completed", {
+      run: {
+        id: event.runid,
+        status: event.data.status,
+      },
+      engine: {
+        id: this.id,
+      },
+      status: "success",
+      message: "run completed",
+    });
+
+    const flowEmitter = this.ef.newFlowEmitterNewSpan(
+      {
+        source: "lowercase://engine/mark-run-as-done",
+        flowid: e.flowid,
+      },
+      e.traceid
+    );
+    await flowEmitter.emit("flow.completed", {
+      flow: {
+        id: e.flowid,
+        name: run.definition.name,
+        version: run.definition.version,
+      },
+      status: "success",
+    });
+    run.status = "success";
+  }
+
+  async markRunAsFailed(event: JobFailedEvent, run: RunContext) {
+    const runEmitter = this.ef.newRunEmitterFromEvent(
+      event,
+      "lowercase://engine/mark-run-as-completed"
+    );
+    const e = await runEmitter.emit("run.failed", {
+      run: {
+        id: event.runid,
+        status: event.data.status,
+      },
+      engine: {
+        id: this.id,
+      },
+      status: "failure",
+      message: "run completed",
+    });
+
+    const flowEmitter = this.ef.newFlowEmitterNewSpan(
+      {
+        source: "lowercase://engine/mark-run-as-done",
+        flowid: e.flowid,
+      },
+      e.traceid
+    );
+    await flowEmitter.emit("flow.failed", {
+      flow: {
+        id: e.flowid,
+        name: run.definition.name,
+        version: run.definition.version,
+      },
+      status: "failure",
+    });
+    run.status = "success";
   }
 
   writeRunContext(runId: string): void {
@@ -424,7 +464,7 @@ export class Engine {
 
     fs.writeFileSync(file, JSON.stringify(context, null, 2));
 
-    const logEmitter = this.emitterFactory.newSystemEmitter({
+    const logEmitter = this.ef.newSystemEmitter({
       source: "lowercase://engine/write-run-context",
       traceId: "",
       spanId: "",

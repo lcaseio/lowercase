@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type {
   FlowCompletedData,
+  FlowFailedData,
   FlowQueuedData,
   FlowStartedData,
 } from "@lcase/types";
@@ -37,5 +38,17 @@ export const FlowCompletedDataSchema = z
       name: z.string(),
       version: z.string(),
     }),
+    status: z.literal("success"),
   })
   .strict() satisfies z.ZodType<FlowCompletedData>;
+
+export const FlowFailedDataSchema = z
+  .object({
+    flow: z.object({
+      id: z.string(),
+      name: z.string(),
+      version: z.string(),
+    }),
+    status: z.literal("failure"),
+  })
+  .strict() satisfies z.ZodType<FlowFailedData>;

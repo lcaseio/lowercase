@@ -41,7 +41,7 @@ export class ToolEmitter extends BaseEmitter {
   async emit<T extends ToolEventType>(
     type: T,
     data: ToolEventData<T>
-  ): Promise<void> {
+  ): Promise<ToolEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#toolScope,
@@ -62,5 +62,6 @@ export class ToolEmitter extends BaseEmitter {
       );
     }
     await this.bus.publish(type, event);
+    return event;
   }
 }

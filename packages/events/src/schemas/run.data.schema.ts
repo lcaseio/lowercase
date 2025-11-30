@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { RunStartedData, RunCompletedData } from "@lcase/types";
+import type {
+  RunStartedData,
+  RunCompletedData,
+  RunFailedData,
+} from "@lcase/types";
 
 const RunDescriptorSchema = z.object({
   run: z.object({
@@ -18,7 +22,14 @@ export const RunStartedDataSchema = RunDescriptorSchema.merge(
 
 export const RunCompletedDataSchema = RunDescriptorSchema.merge(
   z.object({
-    status: z.literal("completed"),
+    status: z.literal("success"),
     message: z.string(),
   })
 ).strict() satisfies z.ZodType<RunCompletedData>;
+
+export const RunFailedDataSchema = RunDescriptorSchema.merge(
+  z.object({
+    status: z.literal("failure"),
+    message: z.string(),
+  })
+).strict() satisfies z.ZodType<RunFailedData>;

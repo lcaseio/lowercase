@@ -74,12 +74,12 @@ export const StepMcpSchema = StepCapBaseSchema.extend({
 
 export const StepHttpJsonSchema = StepCapBaseSchema.extend({
   type: z.literal("httpjson"),
-  url: z.string().url(),
+  url: z.string(),
   method: z
     .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
     .optional(),
 
-  headers: z.record(z.string(), z.unknown()).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 

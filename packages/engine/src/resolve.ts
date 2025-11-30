@@ -5,19 +5,49 @@ export function split(path: string): string[] {
   return path ? path.split(".") : [];
 }
 
+export function resolveSelector(
+  selector: string,
+  object: Record<string, unknown>
+) {
+  const path = getSelector(selector);
+  if (!path) return;
+  const parts = parsePath(path);
+  return resolvePathParts(parts, object);
+}
+
 // dig through object to see if we can get a data type from context
-export function resolvePath<T = unknown>(
-  obj: Record<string, any>,
-  parts: string[]
+export function resolvePathParts<T = unknown>(
+  parts: Part[],
+  obj: Record<string, unknown>
 ): T | unknown {
-  let current: unknown = obj; // any or unknown here?
+  let current: unknown = obj;
+
   for (const p of parts) {
-    if (current === null || typeof current !== "object" || !(p in current)) {
-      return undefined;
+    if (current === null) return null;
+
+    if (Array.isArray(current) && p.type === "arrayIndex") {
+      current = (current as unknown[])[Number(p.id)];
+    } else if (
+      p.type === "objectKey" &&
+      typeof current === "object" &&
+      p.id in current
+    ) {
+      current = (current as Record<string, unknown>)[p.id];
     }
-    current = (current as Record<string, unknown>)[p];
   }
+
   return current;
+}
+
+export function parseArray(part: string): { key?: string; index?: string[] } {
+  // pull out the name and any array index
+  // not robust, just easy.
+
+  const regex = /([a-zA-Z0-9\-\_]+)/gm;
+  const match = part.match(regex);
+  if (!match) return {};
+
+  return { key: match[0], index: match.slice(1) };
 }
 
 export function resolveStepArgs(
@@ -25,7 +55,6 @@ export function resolveStepArgs(
   stepArgs: StepArgs
 ): Record<string, unknown> {
   if (!stepArgs) return {};
-
   // one level deep not recursive
   for (const [k, v] of Object.entries(stepArgs)) {
     if (typeof v === "string") {
@@ -33,8 +62,6 @@ export function resolveStepArgs(
       const selector = getSelector(v);
       if (selector) {
         const contextValue = getContextValue(context, selector);
-        // console.log(`[resolver] arg key ${k} had value ${v}`);
-        // console.log(`[resolver] now it has ${contextValue}`);
         stepArgs[k] = contextValue;
       }
     }
@@ -44,7 +71,7 @@ export function resolveStepArgs(
 
 // see if a string is a selector
 export function getSelector(arg: string): string | false {
-  const regex = /^\${([a-zA-Z\.]+)}$/; // ${text.like.this}
+  const regex = /^\${([a-zA-Z0-9\-\[\]_\.]+)}$/; // ${text.like.this[3][3].ok}
   const match = arg.match(regex);
 
   if (!match) return false;
@@ -75,4 +102,20 @@ export function getContextValue(
     c = c[k] as Record<string, unknown>;
   }
   return c;
+}
+export type Part = { id: string; type: "objectKey" | "arrayIndex" };
+export function parsePath(path: string): Part[] {
+  const partArray: Part[] = [];
+  const parts = path.split(".");
+  for (const part of parts) {
+    const { key, index } = parseArray(part);
+    if (key && index) {
+      partArray.push({ id: key, type: "objectKey" });
+      for (const i of index) {
+        partArray.push({ id: i, type: "arrayIndex" });
+      }
+    }
+  }
+  console.log("parseArray", parseArray);
+  return partArray;
 }

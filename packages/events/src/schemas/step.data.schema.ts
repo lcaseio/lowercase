@@ -20,13 +20,13 @@ export const StepStartedDataSchema = RunDescriptorSchema.merge(
 
 export const StepCompletedDataSchema = RunDescriptorSchema.merge(
   z.object({
-    status: z.literal("completed"),
+    status: z.literal("success"),
   })
 ).strict() satisfies z.ZodType<StepCompletedData>;
 
 export const StepFailedDataSchema = RunDescriptorSchema.merge(
   z.object({
-    status: z.literal("failed"),
+    status: z.literal("failure"),
     reason: z.string(),
   })
 ).strict() satisfies z.ZodType<StepFailedData>;

@@ -1,4 +1,9 @@
-import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
+import type {
+  EmitterFactoryPort,
+  EventBusPort,
+  FlowEmitterPort,
+  ToolEmitterPort,
+} from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -10,6 +15,13 @@ import type {
   WorkerScope,
   SystemScope,
   AllJobEvents,
+  AnyEvent,
+  JobEventType,
+  JobCompletedEvent,
+  JobFailedEvent,
+  ToolEvent,
+  ToolEventType,
+  JobStartedType,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -51,6 +63,7 @@ import { SystemEmitter } from "./emitters/system.emitter.js";
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
+  /* system */
   newSystemEmitter(
     scope: CloudScope & SystemScope & OtelContext
   ): SystemEmitter {
@@ -64,11 +77,13 @@ export class EmitterFactory implements EmitterFactoryPort {
     return new SystemEmitter(this.bus, combinedScope);
   }
 
+  /* engine */
   newEngineEmitter(
     scope: CloudScope & EngineScope & OtelContext
   ): EngineEmitter {
     return new EngineEmitter(this.bus, scope);
   }
+  /* worker */
   newWorkerEmitter(
     scope: CloudScope & WorkerScope & OtelContext
   ): WorkerEmitter {
@@ -85,13 +100,38 @@ export class EmitterFactory implements EmitterFactoryPort {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new WorkerEmitter(this.bus, combinedScope);
   }
+  /* flow */
   newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitter {
     return new FlowEmitter(this.bus, scope);
   }
+  newFlowEmitterNewSpan(
+    scope: CloudScope & FlowScope,
+    traceId: string
+  ): FlowEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new FlowEmitter(this.bus, combinedScope);
+  }
+  /* run */
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitter {
-    return new RunEmitter(this.bus, scope);
+    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new RunEmitter(this.bus, combinedScope);
+  }
+  newRunEmitterFromEvent(
+    event: JobCompletedEvent | JobFailedEvent,
+    source: string
+  ): RunEmitter {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newRunEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
   }
 
+  /* step */
   newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitter {
     const combinedScope = { ...scope, ...this.startNewTrace() };
     return new StepEmitter(this.bus, combinedScope);
@@ -107,7 +147,20 @@ export class EmitterFactory implements EmitterFactoryPort {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new StepEmitter(this.bus, combinedScope);
   }
-
+  newStepEmitterFromJobEvent(event: AnyEvent<JobEventType>, source: string) {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newStepEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      stepid: event.stepid,
+      steptype: event.capid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
+  }
+  /* job */
   newJobEmitter(scope: CloudScope & JobScope & OtelContext): JobEmitter {
     return new JobEmitter(this.bus, scope);
   }
@@ -133,6 +186,8 @@ export class EmitterFactory implements EmitterFactoryPort {
       toolid: event.toolid,
     });
   }
+
+  /* tool */
   newToolEmitter(scope: CloudScope & ToolScope & OtelContext): ToolEmitter {
     return new ToolEmitter(this.bus, scope);
   }
@@ -142,6 +197,21 @@ export class EmitterFactory implements EmitterFactoryPort {
   ): ToolEmitter {
     const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new ToolEmitter(this.bus, combinedScope);
+  }
+  newToolEmitterFromEvent(event: AnyEvent<JobStartedType>, source: string) {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return this.newToolEmitter({
+      source,
+      flowid: event.flowid,
+      runid: event.runid,
+      stepid: event.stepid,
+      jobid: event.jobid,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+      capid: event.data.job.capid,
+      toolid: event.data.job.toolid,
+    });
   }
 
   makeNewSpan(traceId: string): { spanId: string; traceParent: string } {

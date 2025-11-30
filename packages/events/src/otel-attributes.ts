@@ -43,6 +43,11 @@ export const flowOtelAttributes = {
     domain: "flow",
     entity: undefined,
   },
+  "flow.failed": {
+    action: "failed",
+    domain: "flow",
+    entity: undefined,
+  },
 } satisfies FlowOtelAttributesMap;
 
 export const engineOtelAttributesMap = {
@@ -66,6 +71,11 @@ export const runOtelAttributesMap = {
   },
   "run.started": {
     action: "started",
+    domain: "run",
+    entity: undefined,
+  },
+  "run.failed": {
+    action: "failed",
     domain: "run",
     entity: undefined,
   },

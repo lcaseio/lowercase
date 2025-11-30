@@ -124,7 +124,14 @@ export function createObservability(
     for (const sink of config.sinks) {
       switch (sink) {
         case "console-log-sink":
-          const consoleSink = new ConsoleSink();
+          const consoleSink = new ConsoleSink({
+            allVerbose: false,
+            verboseEvents: new Set([
+              "job.httpjson.started",
+              "tool.failed",
+              "tool.completed",
+            ]),
+          });
           sinks["console-log-sink"] = consoleSink;
           tap.attachSink(consoleSink);
           break;

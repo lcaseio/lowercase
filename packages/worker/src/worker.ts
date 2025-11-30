@@ -1,7 +1,6 @@
 import type {
   EmitterFactoryPort,
   EventBusPort,
-  EventParserPort,
   JobParserPort,
   QueuePort,
   StreamRegistryPort,
@@ -12,14 +11,11 @@ import type {
   WorkerMetadata,
   ToolId,
   PipeData,
-  JobQueuedEvent,
-  JobEventType,
-  JobCompletedType,
-  JobFailedType,
+  ToolEvent,
+  RateLimitPolicy,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
-import { EventParser } from "@lcase/events/parsers";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -28,6 +24,9 @@ export type ToolWaitersCtx = {
   jobWaiters: Set<Promise<void>>;
   capacityRelease?: Deferred<void>;
   startWaitersPromise?: Promise<void>;
+  inQueue: number;
+  rateLimitPolicy?: RateLimitPolicy;
+  rateLimitTs?: number;
 };
 export type WorkerContext = {
   workerId: string;
@@ -118,6 +117,8 @@ export class Worker {
         maxConcurrency: binding.spec.maxConcurrency,
         newJobWaitersAllowed: true,
         jobWaiters: new Set(),
+        inQueue: 0,
+        rateLimitPolicy: binding.spec.rateLimit,
       });
     }
   }
@@ -138,24 +139,6 @@ export class Worker {
       workerId: this.#ctx.workerId,
       startedAt: new Date().toISOString(),
     };
-    const toolEmitter = this.#emitterFactory.newToolEmitterNewSpan(
-      {
-        ...e,
-        source: "localhost://worker/handle-new-job/186",
-        toolid: jobContext.toolId,
-      },
-      e.traceid
-    );
-
-    await toolEmitter.emit("tool.started", {
-      tool: {
-        id: jobContext.toolId,
-        name: jobContext.toolId,
-        version: "unknown",
-      },
-      log: "about to execute a tool",
-      status: "started",
-    });
 
     const deps = this.#makeTookDeps(
       e.data.pipe ?? {},
@@ -169,7 +152,7 @@ export class Worker {
 
     this.#ctx.jobs.set(jobContext.jobId, jobContext);
 
-    let toolResult;
+    let toolEvent: ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">;
     try {
       const manualType = `job.${job.capId}.started`;
       const type = this.#jobParser.parseJobStartedType(manualType);
@@ -184,7 +167,7 @@ export class Worker {
       );
       await jobEmitter.emit(type, e.data);
 
-      toolResult = await tool.invoke(event);
+      toolEvent = await tool.invoke(event);
     } catch (err) {
       const manualType = `job.${job.capId}.failed`;
       const type = this.#jobParser.parseJobFailedType(manualType);
@@ -199,7 +182,7 @@ export class Worker {
       );
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "failed",
+        status: "failure",
         reason: `"Error executing job.  ${err}`,
       });
       return;
@@ -210,7 +193,7 @@ export class Worker {
       "lowercase://worker/handle-new-job/221"
     );
 
-    if (toolResult) {
+    if (toolEvent.type === "tool.completed") {
       const manualType = `job.${job.capId}.completed`;
       const type = this.#jobParser.parseJobCompletedType(manualType);
       if (!type) {
@@ -218,10 +201,10 @@ export class Worker {
       }
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "completed",
-        result: toolResult,
+        status: "success",
+        ...(toolEvent.data.payload ? { result: toolEvent.data.payload } : {}),
       });
-    } else {
+    } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
       const type = this.#jobParser.parseJobFailedType(manualType);
       if (!type) {
@@ -229,8 +212,8 @@ export class Worker {
       }
       await jobEmitter.emit(type, {
         job: e.data.job,
-        status: "failed",
-        reason: "tool returned undefined results",
+        status: "failure",
+        reason: toolEvent.data.reason,
       });
     }
   }
@@ -322,38 +305,62 @@ export class Worker {
    * @param capabilityId id of the capability to start job waiters for
    */
   async startToolJobWaiters(toolId: ToolId): Promise<void> {
-    const waiterCtx = this.#ctx.tools.get(toolId);
-    if (!waiterCtx) return;
-    while (waiterCtx.newJobWaitersAllowed) {
-      if (waiterCtx.activeJobCount < waiterCtx.maxConcurrency) {
+    const ctx = this.#ctx.tools.get(toolId);
+    if (!ctx) return;
+    while (ctx.newJobWaitersAllowed) {
+      if (ctx.activeJobCount < ctx.maxConcurrency && ctx.inQueue === 0) {
         try {
+          ctx.inQueue++;
           const event = await this.#queue.reserve(toolId, this.#ctx.workerId);
+          ctx.inQueue--;
 
           // TODO: change queue from null to rejected?
           if (event === null) {
-            if (!waiterCtx.newJobWaitersAllowed) break;
+            if (!ctx.newJobWaitersAllowed) break;
             continue;
           }
 
-          waiterCtx.activeJobCount++;
+          ctx.activeJobCount++;
+          await this.handleRateLimit(ctx);
           const waiter = this.handleNewJob(event).finally(async () => {
-            waiterCtx.jobWaiters.delete(waiter);
-            waiterCtx.activeJobCount--;
-            if (waiterCtx.capacityRelease) {
-              waiterCtx.capacityRelease.resolve();
+            ctx.jobWaiters.delete(waiter);
+            ctx.activeJobCount--;
+            if (ctx.capacityRelease) {
+              ctx.capacityRelease.resolve();
             }
           });
 
-          waiterCtx.jobWaiters.add(waiter);
+          ctx.jobWaiters.add(waiter);
         } catch (err) {
           console.log(err);
-          if (!waiterCtx.newJobWaitersAllowed) break;
-          continue;
+          if (!ctx.newJobWaitersAllowed) break;
         }
       } else {
-        waiterCtx.capacityRelease = this.#makeDeferred<void>();
-        await waiterCtx.capacityRelease.promise;
+        ctx.capacityRelease = this.#makeDeferred<void>();
+        await ctx.capacityRelease.promise;
       }
+    }
+  }
+
+  async handleRateLimit(ctx: ToolWaitersCtx) {
+    if (!ctx.rateLimitPolicy) return;
+
+    const now = Date.now();
+    if (!ctx.rateLimitTs) {
+      ctx.rateLimitTs = now;
+      return;
+    } else {
+      const elapsed = Math.abs(now - ctx.rateLimitTs);
+      if (elapsed >= ctx.rateLimitPolicy.perMs) {
+        ctx.rateLimitTs = now;
+        return;
+      }
+      const delayMs = Math.abs(ctx.rateLimitPolicy!.perMs - elapsed);
+      ctx.rateLimitTs = now;
+      console.log("[worker] waiting ms:", delayMs);
+      await new Promise((res) => {
+        setTimeout(res, delayMs);
+      });
     }
   }
 

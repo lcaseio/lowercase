@@ -9,6 +9,19 @@ import type {
   ToolEventType,
   ToolEventData,
   JobEvent,
+  StepEventType,
+  StepEventData,
+  EngineEventType,
+  EngineEventData,
+  EngineEvent,
+  FlowEventData,
+  FlowEventType,
+  FlowEvent,
+  RunEventType,
+  RunEventData,
+  RunEvent,
+  AnyEvent,
+  ToolEvent,
 } from "@lcase/types";
 export type EnvelopeHeader = {
   id: string;
@@ -21,6 +34,10 @@ export type EnvelopeHeader = {
 } & CloudScope;
 
 export interface BaseEmitterPort {}
+
+export interface StepEmitterPort {
+  emit<T extends StepEventType>(type: T, data: StepEventData<T>): Promise<void>;
+}
 
 export interface SystemEmitterPort {
   emit<T extends SystemEventType>(
@@ -36,6 +53,27 @@ export interface JobEmitterPort {
   ): Promise<JobEvent<T>>;
 }
 
+export interface EngineEmitterPort {
+  emit<T extends EngineEventType>(
+    type: T,
+    data: EngineEventData<T>
+  ): Promise<EngineEvent<T>>;
+}
+
+export interface FlowEmitterPort {
+  emit<T extends FlowEventType>(
+    type: T,
+    data: FlowEventData<T>
+  ): Promise<FlowEvent<T>>;
+}
+
+export interface RunEmitterPort {
+  emit<T extends RunEventType>(
+    type: T,
+    data: RunEventData<T>
+  ): Promise<RunEvent<T>>;
+}
+
 export interface WorkerEmitterPort {
   emit<T extends WorkerEventType>(
     type: T,
@@ -44,5 +82,8 @@ export interface WorkerEmitterPort {
 }
 
 export interface ToolEmitterPort {
-  emit<T extends ToolEventType>(type: T, data: ToolEventData<T>): Promise<void>;
+  emit<T extends ToolEventType>(
+    type: T,
+    data: ToolEventData<T>
+  ): Promise<ToolEvent<T>>;
 }

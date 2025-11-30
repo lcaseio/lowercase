@@ -5,6 +5,6 @@ export type StepHttpJson = StepCapCommonFields &
     type: "httpjson";
     url: string;
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
-    headers?: Record<string, unknown>;
-    body?: Record<string, unknown>;
+    headers?: Record<string, string>;
+    body?: unknown;
   };

@@ -1,9 +1,16 @@
-import type { ToolId, ToolSpec, ToolRuntimePolicy } from "@lcase/types";
+import type {
+  ToolId,
+  ToolSpec,
+  ToolRuntimePolicy,
+  ToolEvent,
+} from "@lcase/types";
 import { ToolDeps } from "./tool-context.js";
 
 export interface ToolInstancePort<ID extends ToolId = ToolId> {
   id: ID;
-  invoke(event: unknown): Promise<unknown>;
+  invoke(
+    event: unknown
+  ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">>;
 }
 
 export type ToolBinding<ID extends ToolId = ToolId> = {

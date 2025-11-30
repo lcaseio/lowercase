@@ -1,12 +1,28 @@
 {
   "name": "HTTP JSON Flow",
   "version": "0.1.0-alpha.7",
-  "start": "first",
+  "start": "post",
   "steps": {
-    "first": {
+    "post": {
       "type": "httpjson",
-      "url": "http://localhost:3004/sse",
-      "tool": "httpjson"
+      "url": "https://httpbin.org/post",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": { "hello": "world", "n": 123 },
+      "on": {
+        "success": "delete"
+      }
+    },
+    "delete": {
+      "type": "httpjson",
+      "url": "https://httpbin.org/delete",
+      "method": "DELETE",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": { "hello": "world", "n": 123 }
     }
   }
 }

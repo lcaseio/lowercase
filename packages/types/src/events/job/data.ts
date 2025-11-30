@@ -1,6 +1,4 @@
 import { CapId } from "../../flow/map.js";
-import { StepMcp } from "../../flow/mcp.step.js";
-import { PipeDataObject } from "../shared/pipe.js";
 
 export type JobDescriptor = {
   job: {
@@ -22,13 +20,13 @@ export type JobStartedData = JobDescriptor & {
 };
 
 export type JobCompletedData = JobDescriptorResolved & {
-  status: "completed";
-  result?: unknown;
+  status: "success";
+  result?: Record<string, unknown>;
 };
 
 export type JobFailedData = JobDescriptorResolved & {
-  status: "failed";
-  result?: unknown;
+  status: "failure";
+  result?: Record<string, unknown>;
   reason: string;
 };
 
