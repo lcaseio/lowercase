@@ -310,8 +310,6 @@ export class Worker {
     while (ctx.newJobWaitersAllowed) {
       if (ctx.activeJobCount < ctx.maxConcurrency && ctx.inQueue === 0) {
         try {
-          await this.handleRateLimit(ctx);
-
           ctx.inQueue++;
           const event = await this.#queue.reserve(toolId, this.#ctx.workerId);
           ctx.inQueue--;
@@ -323,6 +321,7 @@ export class Worker {
           }
 
           ctx.activeJobCount++;
+          await this.handleRateLimit(ctx);
           const waiter = this.handleNewJob(event).finally(async () => {
             ctx.jobWaiters.delete(waiter);
             ctx.activeJobCount--;
@@ -352,8 +351,12 @@ export class Worker {
       return;
     } else {
       const elapsed = Math.abs(now - ctx.rateLimitTs);
-      if (elapsed >= ctx.rateLimitPolicy.perMs) return;
+      if (elapsed >= ctx.rateLimitPolicy.perMs) {
+        ctx.rateLimitTs = now;
+        return;
+      }
       const delayMs = Math.abs(ctx.rateLimitPolicy!.perMs - elapsed);
+      ctx.rateLimitTs = now;
       console.log("[worker] waiting ms:", delayMs);
       await new Promise((res) => {
         setTimeout(res, delayMs);
