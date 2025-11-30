@@ -1,5 +1,5 @@
 import type { StepHandler } from "./step-handler.js";
-import type { ResolveStepArgs } from "../resolve.js";
+import { resolveSelector, type ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent, StepHttpJson } from "@lcase/types";
 import type { RunContext, Flow } from "@lcase/specs";
 import { PipeResolver } from "../pipe-resolver.js";
@@ -25,18 +25,22 @@ export class HttpJsonHandler implements StepHandler {
 
     const pipes = this.pipeResolver.resolve(flow, context, stepName);
     try {
-      let args = flow.steps[stepName].args;
+      let args = step.args;
       if (args !== undefined) {
         args = this.resolveArgs(context, args);
       }
 
+      const urlResolved = resolveSelector(step.url, context) as string;
+      const url = urlResolved ?? step.url;
+
+      console.log("url:", url);
       emitter.emit("job.httpjson.submitted", {
         job: {
           id: String(crypto.randomUUID()),
           toolid: step.tool ?? null,
           capid: step.type as CapId,
         },
-        url: step.url,
+        url,
         pipe: pipes,
       });
       context.steps[stepName].status = "submitted";

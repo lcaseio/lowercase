@@ -8,7 +8,14 @@
       "url": "https://swapi.dev/api/planets/1/",
       "headers": {
         "Content-Type": "application/json"
+      },
+      "on": {
+        "success": "second"
       }
+    },
+    "second": {
+      "type": "httpjson",
+      "url": "${steps.first.result.json.films[0]}"
     }
   }
 }
