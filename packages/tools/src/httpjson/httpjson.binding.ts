@@ -7,7 +7,12 @@ export const httpJsonBinding = {
     maxConcurrency: 1,
     capabilities: [],
     location: "internal",
-    rateLimit: undefined,
+    rateLimit: {
+      perMs: 5000,
+      maxRequests: 0,
+      scope: "worker",
+      keyStrategy: "url",
+    },
   },
   create: (deps: ToolDeps) => new HttpJsonTool(deps),
   runtimePolicy: {

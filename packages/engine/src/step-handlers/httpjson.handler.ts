@@ -42,6 +42,9 @@ export class HttpJsonHandler implements StepHandler {
         },
         url,
         pipe: pipes,
+        ...(step.headers ? { headers: step.headers } : {}),
+        ...(step.method ? { method: step.method } : {}),
+        ...(step.body ? { body: step.body } : {}),
       });
       context.steps[stepName].status = "submitted";
     } catch (err) {

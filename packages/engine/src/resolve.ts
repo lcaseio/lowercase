@@ -22,7 +22,6 @@ export function resolvePathParts<T = unknown>(
 ): T | unknown {
   let current: unknown = obj;
 
-  let count = 0;
   for (const p of parts) {
     if (current === null) return null;
 
@@ -56,7 +55,6 @@ export function resolveStepArgs(
   stepArgs: StepArgs
 ): Record<string, unknown> {
   if (!stepArgs) return {};
-
   // one level deep not recursive
   for (const [k, v] of Object.entries(stepArgs)) {
     if (typeof v === "string") {
@@ -64,8 +62,6 @@ export function resolveStepArgs(
       const selector = getSelector(v);
       if (selector) {
         const contextValue = getContextValue(context, selector);
-        // console.log(`[resolver] arg key ${k} had value ${v}`);
-        // console.log(`[resolver] now it has ${contextValue}`);
         stepArgs[k] = contextValue;
       }
     }

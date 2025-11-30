@@ -1,21 +1,28 @@
 {
   "name": "HTTP JSON Flow",
   "version": "0.1.0-alpha.7",
-  "start": "first",
+  "start": "post",
   "steps": {
-    "first": {
+    "post": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/planets/1/",
+      "url": "https://httpbin.org/post",
+      "method": "POST",
       "headers": {
         "Content-Type": "application/json"
       },
+      "body": { "hello": "world", "n": 123 },
       "on": {
-        "success": "second"
+        "success": "delete"
       }
     },
-    "second": {
+    "delete": {
       "type": "httpjson",
-      "url": "${steps.first.result.json.films[0]}"
+      "url": "https://httpbin.org/delete",
+      "method": "DELETE",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": { "hello": "world", "n": 123 }
     }
   }
 }

@@ -1,8 +1,12 @@
 // stub for console.log output for observability
 
 import type { EventSink } from "@lcase/ports";
-import { AnyEvent } from "@lcase/types";
+import { AnyEvent, EventType } from "@lcase/types";
 
+export type ConsoleSinkContext = {
+  allVerbose: boolean;
+  verboseEvents: Set<EventType>;
+};
 export class ConsoleSink implements EventSink {
   readonly id = "console-log-sink";
   #enableSink = false;
@@ -18,6 +22,8 @@ export class ConsoleSink implements EventSink {
     run: "\x1b[38;2;235;172;106m",
     system: "\x1b[38;2;170;170;190m",
   };
+
+  constructor(private readonly ctx: ConsoleSinkContext) {}
 
   async start(): Promise<void> {
     this.#enableSink = true;
@@ -38,9 +44,12 @@ export class ConsoleSink implements EventSink {
       const l = event as AnyEvent<"system.logged">;
       log = l.data.log;
     }
-
     console.log(
       `${this.#c[event.domain]}[${event.type}]${this.#s}${ok} ${log}`
     );
+
+    if (this.ctx.allVerbose || this.ctx.verboseEvents.has(event.type)) {
+      console.log("data:", event.data);
+    }
   }
 }

@@ -8,10 +8,10 @@ type ResponseObject =
     }
   | { error: true; event: AnyEvent<"tool.failed"> };
 
-type GetJsonObject =
+type GetResponseBody =
   | {
       error: false;
-      json: unknown;
+      body: unknown;
     }
   | { error: true; event: AnyEvent<"tool.failed"> };
 
@@ -29,39 +29,72 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     await this.emitToolStarted(event);
 
-    const headers = this.mapHeaders(event.data.headers);
-    const body = this.parseBody(event.data.body);
+    const inputHeaders = this.mapInputHeaders(event.data.headers);
+    const inputBody = this.parseInputBody(event.data.body);
 
-    const response = await this.getResponse(
+    const r = await this.getResponse(
       {
         url: event.data.url,
-        headers,
+        headers: inputHeaders,
         method: event.data.method,
-        body,
+        body: inputBody,
       },
       event
     );
 
-    if (response.error) return response.event;
+    if (r.error) return r.event;
 
-    const json = await this.getJson(response.response, event);
-    if (json.error) return json.event;
+    const getResponseBodyResult = await this.getResponseBody(r.response, event);
 
-    const e = await this.emitToolCompleted(event, { json: json.json });
-    return e;
+    if (getResponseBodyResult.error) return getResponseBodyResult.event;
+    const { body } = getResponseBodyResult;
+
+    if (r.response.ok) {
+      const e = await this.emitToolCompleted(event, {
+        body,
+        headers: Object.fromEntries(r.response.headers.entries()),
+        ok: r.response.ok,
+        redirected: r.response.redirected,
+        status: r.response.status,
+        statusText: r.response.statusText,
+        url: r.response.url,
+      });
+      return e;
+    } else {
+      const e = await this.emitToolFailed(event, "Response `ok` was false", {
+        body,
+        headers: Object.fromEntries(r.response.headers.entries()),
+        ok: r.response.ok,
+        redirected: r.response.redirected,
+        status: r.response.status,
+        statusText: r.response.statusText,
+        url: r.response.url,
+      });
+      return e;
+    }
   }
 
-  async getJson(
-    response: Response,
+  async getResponseBody(
+    r: Response,
     event: AnyEvent<"job.httpjson.started">
-  ): Promise<GetJsonObject> {
+  ): Promise<GetResponseBody> {
     try {
-      const data = await response.json();
-      return { error: false, json: data };
+      const contentType = r.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const body = await r.json();
+        return { error: false, body };
+      } else {
+        const body = await r.text();
+        return { error: false, body };
+      }
     } catch (err) {
       const e = await this.emitToolFailed(
         event,
-        `Could not parse response as json. respones: ${response}; error: ${err};`
+        `Could not parse response as json. respones: ${JSON.stringify(
+          r,
+          null,
+          2
+        )}; error: ${err};`
       );
       return { error: true, event: e };
     }
@@ -93,7 +126,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
     }
   }
 
-  mapHeaders(headers?: Record<string, string>): Headers | undefined {
+  mapInputHeaders(headers?: Record<string, string>): Headers | undefined {
     if (!headers) return;
     const customHeaders = new Headers();
     for (const [k, v] of Object.entries(headers)) {
@@ -101,8 +134,9 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
     }
     return customHeaders;
   }
-  parseBody(body?: unknown): string | undefined {
+  parseInputBody(body?: unknown): string | undefined {
     if (!body) return;
+
     return JSON.stringify(body);
   }
 
@@ -142,7 +176,8 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   }
   async emitToolFailed(
     event: AnyEvent<"job.httpjson.started">,
-    reason: string
+    reason: string,
+    payload?: Record<string, unknown>
   ) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       event,
@@ -156,6 +191,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
       },
       status: "failure",
       reason,
+      ...(payload ? { payload } : {}),
     });
   }
 }

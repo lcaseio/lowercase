@@ -12,6 +12,7 @@ import type {
   ToolId,
   PipeData,
   ToolEvent,
+  RateLimitPolicy,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
@@ -23,6 +24,9 @@ export type ToolWaitersCtx = {
   jobWaiters: Set<Promise<void>>;
   capacityRelease?: Deferred<void>;
   startWaitersPromise?: Promise<void>;
+  inQueue: number;
+  rateLimitPolicy?: RateLimitPolicy;
+  rateLimitTs?: number;
 };
 export type WorkerContext = {
   workerId: string;
@@ -113,6 +117,8 @@ export class Worker {
         maxConcurrency: binding.spec.maxConcurrency,
         newJobWaitersAllowed: true,
         jobWaiters: new Set(),
+        inQueue: 0,
+        rateLimitPolicy: binding.spec.rateLimit,
       });
     }
   }
@@ -299,38 +305,59 @@ export class Worker {
    * @param capabilityId id of the capability to start job waiters for
    */
   async startToolJobWaiters(toolId: ToolId): Promise<void> {
-    const waiterCtx = this.#ctx.tools.get(toolId);
-    if (!waiterCtx) return;
-    while (waiterCtx.newJobWaitersAllowed) {
-      if (waiterCtx.activeJobCount < waiterCtx.maxConcurrency) {
+    const ctx = this.#ctx.tools.get(toolId);
+    if (!ctx) return;
+    while (ctx.newJobWaitersAllowed) {
+      if (ctx.activeJobCount < ctx.maxConcurrency && ctx.inQueue === 0) {
         try {
+          await this.handleRateLimit(ctx);
+
+          ctx.inQueue++;
           const event = await this.#queue.reserve(toolId, this.#ctx.workerId);
+          ctx.inQueue--;
 
           // TODO: change queue from null to rejected?
           if (event === null) {
-            if (!waiterCtx.newJobWaitersAllowed) break;
+            if (!ctx.newJobWaitersAllowed) break;
             continue;
           }
 
-          waiterCtx.activeJobCount++;
+          ctx.activeJobCount++;
           const waiter = this.handleNewJob(event).finally(async () => {
-            waiterCtx.jobWaiters.delete(waiter);
-            waiterCtx.activeJobCount--;
-            if (waiterCtx.capacityRelease) {
-              waiterCtx.capacityRelease.resolve();
+            ctx.jobWaiters.delete(waiter);
+            ctx.activeJobCount--;
+            if (ctx.capacityRelease) {
+              ctx.capacityRelease.resolve();
             }
           });
 
-          waiterCtx.jobWaiters.add(waiter);
+          ctx.jobWaiters.add(waiter);
         } catch (err) {
           console.log(err);
-          if (!waiterCtx.newJobWaitersAllowed) break;
-          continue;
+          if (!ctx.newJobWaitersAllowed) break;
         }
       } else {
-        waiterCtx.capacityRelease = this.#makeDeferred<void>();
-        await waiterCtx.capacityRelease.promise;
+        ctx.capacityRelease = this.#makeDeferred<void>();
+        await ctx.capacityRelease.promise;
       }
+    }
+  }
+
+  async handleRateLimit(ctx: ToolWaitersCtx) {
+    if (!ctx.rateLimitPolicy) return;
+
+    const now = Date.now();
+    if (!ctx.rateLimitTs) {
+      ctx.rateLimitTs = now;
+      return;
+    } else {
+      const elapsed = Math.abs(now - ctx.rateLimitTs);
+      if (elapsed >= ctx.rateLimitPolicy.perMs) return;
+      const delayMs = Math.abs(ctx.rateLimitPolicy!.perMs - elapsed);
+      console.log("[worker] waiting ms:", delayMs);
+      await new Promise((res) => {
+        setTimeout(res, delayMs);
+      });
     }
   }
 
