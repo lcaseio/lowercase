@@ -1,10 +1,10 @@
 import type { StepHandler } from "./step-handler.js";
 import { resolveSelector, type ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent, StepHttpJson } from "@lcase/types";
-import type { RunContext, Flow } from "@lcase/specs";
+import type { RunContext } from "@lcase/types/engine";
 import { PipeResolver } from "../pipe-resolver.js";
-import { CapId } from "@lcase/types";
-import { JobEmitterPort } from "@lcase/ports";
+import type { CapId, FlowDefinition } from "@lcase/types";
+import type { JobEmitterPort } from "@lcase/ports";
 
 export class HttpJsonHandler implements StepHandler {
   constructor(
@@ -13,7 +13,7 @@ export class HttpJsonHandler implements StepHandler {
   ) {}
 
   async queue(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string,
     emitter: JobEmitterPort
@@ -56,7 +56,7 @@ export class HttpJsonHandler implements StepHandler {
   }
 
   onWorkerDone(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     event: AnyEvent
   ): Promise<void> {

@@ -23,6 +23,9 @@
     "./rm": {
       "types": "./dist/rm/index.d.ts",
       "import": "./dist/rm/index.js"
+    },
+    "./engine": {
+      "types": "./dist/engine/index.d.ts"
     }
   },
   "scripts": {

@@ -1,9 +1,9 @@
 import type { StepHandler } from "./step-handler.js";
 import type { ResolveStepArgs } from "../resolve.js";
-import type { AnyEvent } from "@lcase/types";
-import type { RunContext, Flow, McpStep } from "@lcase/specs";
+import type { FlowDefinition, StepMcp } from "@lcase/types";
 import { PipeResolver } from "../pipe-resolver.js";
 import { JobEmitterPort } from "@lcase/ports";
+import { RunContext } from "@lcase/types/engine";
 
 export class McpStepHandler implements StepHandler {
   constructor(
@@ -12,12 +12,12 @@ export class McpStepHandler implements StepHandler {
   ) {}
 
   async queue(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string,
     emitter: JobEmitterPort
   ): Promise<void> {
-    const step: McpStep = flow.steps[stepName] as McpStep;
+    const step = flow.steps[stepName] as StepMcp;
 
     try {
       let args = flow.steps[stepName].args;
@@ -47,13 +47,5 @@ export class McpStepHandler implements StepHandler {
       );
       console.error(err);
     }
-  }
-
-  onWorkerDone(
-    flow: Flow,
-    context: RunContext,
-    event: AnyEvent
-  ): Promise<void> {
-    throw new Error("Method not implemented.");
   }
 }

@@ -1,5 +1,6 @@
-import { StreamRegistryPort } from "@lcase/ports";
-import type { Flow, RunContext, Step } from "@lcase/specs";
+import type { StreamRegistryPort } from "@lcase/ports";
+import type { FlowDefinition, StepDefinition } from "@lcase/types";
+import { RunContext } from "@lcase/types/engine";
 import { randomUUID } from "crypto";
 
 export type ResolvedPipes = {
@@ -16,9 +17,13 @@ export type ResolvedPipes = {
 export class PipeResolver {
   constructor(private readonly streamRegistry: StreamRegistryPort) {}
 
-  resolve(flow: Flow, context: RunContext, stepName: string): ResolvedPipes {
-    const step = flow.steps[stepName] as Step;
-    if (step === undefined) {
+  resolve(
+    flow: FlowDefinition,
+    context: RunContext,
+    stepName: string
+  ): ResolvedPipes {
+    const step = flow.steps[stepName] as StepDefinition;
+    if (!step) {
       throw new Error(`[pipe-resolver] no step with name ${stepName}`);
     }
 
@@ -30,11 +35,13 @@ export class PipeResolver {
         id,
         payload: step.pipe.to.payload,
       };
-      context.steps[stepName].pipe.to = pipes.to;
+      if (context.steps[stepName]?.pipe?.to) {
+        context.steps[stepName].pipe.to = pipes.to;
+      }
     }
     if (step.pipe?.from) {
       const fromStep = step.pipe.from.step;
-      const id = context.steps[fromStep].pipe.to?.id;
+      const id = context.steps[fromStep]?.pipe?.to?.id;
       if (id === undefined) {
         throw new Error(`[pipe-resolver] cannot setup stream - no from id;`);
       }
@@ -43,7 +50,9 @@ export class PipeResolver {
         id,
         buffer: step.pipe.from.buffer,
       };
-      context.steps[stepName].pipe.from = pipes.from;
+      if (context.steps[stepName]?.pipe?.from) {
+        context.steps[stepName].pipe.from = pipes.from;
+      }
       console.log(
         `[pipe-resolver] pipes.from ${JSON.stringify(pipes.from, null, 2)}`
       );

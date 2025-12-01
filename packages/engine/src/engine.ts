@@ -1,15 +1,14 @@
 import fs from "fs";
-import type { RunContext, Flow } from "@lcase/specs";
 import type {
   EmitterFactoryPort,
   EventBusPort,
   JobParserPort,
-  StreamRegistryPort,
 } from "@lcase/ports";
+import type { EngineTelemetryPort } from "@lcase/ports/engine";
 import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
-import { FlowStore } from "@lcase/adapters/flow-store";
 import type { StepHandlerRegistry } from "./step-handler.registry.js";
-import { CapId } from "@lcase/types";
+import { CapId, FlowDefinition } from "@lcase/types";
+import { RunContext } from "@lcase/types/engine";
 
 /**
  * Engine class runs flows as the orchestration center.
@@ -23,11 +22,10 @@ export class Engine {
   version = "0.1.0-alpha.7";
 
   constructor(
-    private readonly flowDb: FlowStore,
     private readonly bus: EventBusPort,
-    private readonly streamRegistry: StreamRegistryPort,
     private readonly stepHandlerRegistry: StepHandlerRegistry,
     private readonly ef: EmitterFactoryPort,
+    private readonly tel: EngineTelemetryPort,
     private readonly jobParser: JobParserPort
   ) {}
 
@@ -118,7 +116,7 @@ export class Engine {
      * this will change when flow definitions are moved to the
      * types package, and specs is a home for schemas
      */
-    const flow = event.data.definition as Flow;
+    const flow = event.data.definition as FlowDefinition;
     let context = this.#buildRunContext(event);
     context = this.#initStepContext(context, flow.start);
 
@@ -170,15 +168,16 @@ export class Engine {
    * @param stepName name of first step
    */
   async startStreamingSteps(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string
   ): Promise<void> {
     while (true) {
       context = this.#initStepContext(context, stepName);
+      if (!context.steps[stepName]) return;
       await this.startStep(flow, context, stepName);
       const pipeToStep = flow.steps[stepName].pipe?.to?.step;
-      if (context.steps[stepName].pipe.to && pipeToStep) {
+      if (pipeToStep) {
         stepName = pipeToStep;
       } else {
         break;
@@ -187,7 +186,7 @@ export class Engine {
   }
   // queues a single step vs multiple
   async startStep(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string
   ): Promise<void> {
@@ -231,7 +230,7 @@ export class Engine {
       context.traceId
     );
 
-    const handler = this.stepHandlerRegistry[stepType];
+    const handler = this.stepHandlerRegistry[stepType as CapId];
     await handler.queue(flow, context, stepName, jobEmitter);
 
     context.queuedSteps.add(stepName);
@@ -240,7 +239,7 @@ export class Engine {
   }
   #buildRunContext(event: AnyEvent<"flow.queued">): RunContext {
     const context: RunContext = {
-      definition: event.data.definition as Flow,
+      definition: event.data.definition as FlowDefinition,
       flowId: event.data.flow.id,
       runId: event.data.test ? "test-run-id" : String(crypto.randomUUID()),
       traceId: event.traceid,
@@ -248,15 +247,10 @@ export class Engine {
       runningSteps: new Set(),
       queuedSteps: new Set(),
       doneSteps: new Set(),
-      stepStatusCounts: {},
       outstandingSteps: 0,
 
-      // test stuff
-      test: event.data.test,
-      outFile: event.data.outfile,
-
       flowName: event.data.flowName,
-      status: "running",
+      status: "started",
       globals: {},
       exports: {},
       inputs: {},
@@ -276,7 +270,7 @@ export class Engine {
   }
 
   #getNextStepName(
-    flow: Flow,
+    flow: FlowDefinition,
     context: RunContext,
     currentStep: string
   ): string | undefined {
@@ -419,7 +413,7 @@ export class Engine {
       },
       status: "success",
     });
-    run.status = "success";
+    run.status = "completed";
   }
 
   async markRunAsFailed(event: JobFailedEvent, run: RunContext) {
@@ -454,13 +448,12 @@ export class Engine {
       },
       status: "failure",
     });
-    run.status = "success";
+    run.status = "failed";
   }
 
   writeRunContext(runId: string): void {
     const context = this.#runs.get(runId);
-    const file =
-      context?.outFile !== undefined ? context.outFile : "./output.temp.json";
+    const file = "./output.temp.json";
 
     fs.writeFileSync(file, JSON.stringify(context, null, 2));
 

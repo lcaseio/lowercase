@@ -1,7 +1,7 @@
 import type { EventBusPort, FlowStorePort, FlowList } from "@lcase/ports";
-import type { FlowQueuedData } from "@lcase/types";
+import type { FlowDefinition } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
-import { FlowSchema, type Flow } from "@lcase/specs";
+import { FlowSchema } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
 
@@ -81,7 +81,7 @@ export class FlowService {
     return flowList;
   }
 
-  validateJsonFlow(blob: unknown): Flow | string {
+  validateJsonFlow(blob: unknown): FlowDefinition | string {
     if (blob === undefined) return "Invalid flow: Undefined";
     try {
       const flow = JSON.parse(blob as string);
