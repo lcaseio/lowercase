@@ -32,7 +32,7 @@ export type EngineState = {
 export type Patch = Partial<EngineState>;
 
 // messages
-export type FlowSubmitted = {
+export type FlowSubmittedMessage = {
   type: "FlowSubmitted";
   flowId: string;
   runId: string;
@@ -49,7 +49,7 @@ export type StartStep = {
   runId: string;
   stepId: string;
 };
-export type EngineMessage = FlowSubmitted | StartStep;
+export type EngineMessage = FlowSubmittedMessage | StartStep;
 
 // effects
 export type EmitEventEffect = {
@@ -176,7 +176,7 @@ export class Engine {
   }
 
   async startFlow(event: AnyEvent<"flow.submitted">): Promise<void> {
-    const message: FlowSubmitted = {
+    const message: FlowSubmittedMessage = {
       type: "FlowSubmitted",
       flowId: event.data.flow.id,
       runId: String(randomUUID()),
