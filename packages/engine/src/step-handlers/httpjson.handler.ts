@@ -1,18 +1,24 @@
-import type { StepHandler } from "./step-handler.js";
 import { resolveSelector, type ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent, StepHttpJson } from "@lcase/types";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext, StepContext } from "@lcase/types/engine";
 import { PipeResolver } from "../pipe-resolver.js";
 import type { CapId, FlowDefinition } from "@lcase/types";
-import type { JobEmitterPort } from "@lcase/ports";
+import type {
+  EmitterFactoryPort,
+  JobEmitterPort,
+  StepOutcome,
+} from "@lcase/ports";
+import { StepHandlerPort } from "@lcase/ports/engine";
+import { StepContexts } from "../step-runner.js";
 
-export class HttpJsonHandler implements StepHandler {
+export class HttpJsonHandler implements StepHandlerPort {
   constructor(
     private readonly resolveArgs: ResolveStepArgs,
-    private readonly pipeResolver: PipeResolver
+    private readonly pipeResolver: PipeResolver,
+    private readonly ef: EmitterFactoryPort
   ) {}
 
-  async queue(
+  async handle(
     flow: FlowDefinition,
     context: RunContext,
     stepName: string,
@@ -55,11 +61,13 @@ export class HttpJsonHandler implements StepHandler {
     }
   }
 
-  onWorkerDone(
-    flow: FlowDefinition,
-    context: RunContext,
-    event: AnyEvent
-  ): Promise<void> {
-    throw new Error("Method not implemented.");
+  async handleNew(
+    runCtx: RunContext,
+    stepCtx: StepContexts,
+    stepId: string
+  ): Promise<StepOutcome> {
+    const step = runCtx.definition.steps[stepId];
+
+    const pipes = this.pipeResolver.resolve(runCtx, stepCtx, stepId);
   }
 }

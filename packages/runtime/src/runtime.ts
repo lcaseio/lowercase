@@ -157,13 +157,13 @@ export function createInProcessEngine(
   const pipeResolver = new PipeResolver(streamRegistry);
   const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
 
-  const engine = new Engine(
+  const engine = new Engine({
     bus,
     stepHandlerRegistry,
-    emitterFactory,
+    ef: emitterFactory,
     tel,
-    jobParser
-  );
+    jobParser,
+  });
 
   return engine;
 }

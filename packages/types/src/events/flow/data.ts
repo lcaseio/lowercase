@@ -1,3 +1,5 @@
+import { FlowDefinition } from "../../flow/flow-definition.js";
+
 export type FlowDescriptor = {
   flow: {
     id: string;
@@ -12,6 +14,12 @@ export type FlowQueuedData = FlowDescriptor & {
   test?: boolean;
   outfile: string;
   definition: unknown;
+};
+
+export type FlowSubmittedData = FlowDescriptor & {
+  inputs: Record<string, unknown>;
+  outfile: string;
+  definition: FlowDefinition;
 };
 
 export type FlowStartedData = FlowDescriptor & {};

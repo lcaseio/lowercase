@@ -2,7 +2,7 @@ import { PipeData } from "../events/shared/pipe.js";
 import { FlowDefinition } from "../flow/flow-definition.js";
 
 // marking fields with "move" if they need to move out of Engine context
-export type RunContext = {
+export type RunContext = FlowContext & {
   runId: string;
   traceId: string; // move
 
@@ -11,15 +11,12 @@ export type RunContext = {
   doneSteps: Set<string>; // move
   outstandingSteps: number; // move
 
-  flowName: string;
-  flowId: string;
-
   inputs: Record<string, unknown>;
 
   exports: Record<string, unknown>; // move
   globals: Record<string, unknown>; // move
-  definition: FlowDefinition;
-  status: "started" | "completed" | "failed";
+
+  status: "started" | "completed" | "failed" | "pending";
 
   steps: Record<string, StepContext>;
 };
@@ -32,4 +29,13 @@ export type StepContext = {
   result: Record<string, unknown>; // move
   args?: Record<string, unknown>; // move
   pipe?: PipeData;
+  stepId: string;
 };
+
+export type FlowContext = {
+  flowId: string;
+  flowName: string;
+  definition: FlowDefinition;
+};
+
+const a = new Set();

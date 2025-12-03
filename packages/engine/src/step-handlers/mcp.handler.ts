@@ -1,17 +1,17 @@
-import type { StepHandler } from "./step-handler.js";
 import type { ResolveStepArgs } from "../resolve.js";
 import type { FlowDefinition, StepMcp } from "@lcase/types";
 import { PipeResolver } from "../pipe-resolver.js";
 import { JobEmitterPort } from "@lcase/ports";
-import { RunContext } from "@lcase/types/engine";
+import { RunContext, StepContext } from "@lcase/types/engine";
+import { StepHandlerPort } from "@lcase/ports/engine";
 
-export class McpStepHandler implements StepHandler {
+export class McpStepHandler implements StepHandlerPort {
   constructor(
     private readonly resolveArgs: ResolveStepArgs,
     private readonly pipeResolver: PipeResolver
   ) {}
 
-  async queue(
+  async handle(
     flow: FlowDefinition,
     context: RunContext,
     stepName: string,
@@ -48,4 +48,10 @@ export class McpStepHandler implements StepHandler {
       console.error(err);
     }
   }
+
+  async handleNew(
+    runCtx: RunContext,
+    stepCtx: StepContext,
+    stepId: string
+  ): Promise<void> {}
 }

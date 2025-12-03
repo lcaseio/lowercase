@@ -2,13 +2,21 @@ import fs from "fs";
 import type {
   EmitterFactoryPort,
   EventBusPort,
+  FlowParserPort,
   JobParserPort,
 } from "@lcase/ports";
-import type { EngineTelemetryPort } from "@lcase/ports/engine";
+import type {
+  EngineDeps,
+  EngineTelemetryPort,
+  StepHandlerRegistryPort,
+  RunOrchestratorPort,
+  StepRunnerPort,
+  FlowRouterPort,
+} from "@lcase/ports/engine";
 import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
-import type { StepHandlerRegistry } from "./step-handler.registry.js";
 import { CapId, FlowDefinition } from "@lcase/types";
 import { RunContext } from "@lcase/types/engine";
+import { randomUUID } from "crypto";
 
 /**
  * Engine class runs flows as the orchestration center.
@@ -16,44 +24,97 @@ import { RunContext } from "@lcase/types/engine";
  * Each run gets its own context.
  * Passes scoped emitters to handlers for emitting events.
  */
+
+// state
+export type EngineState = {
+  runs: Record<string, RunContext>;
+};
+export type Patch = Partial<EngineState>;
+
+// messages
+export type FlowSubmitted = {
+  type: "FlowSubmitted";
+  flowId: string;
+  runId: string;
+  definition: FlowDefinition;
+  meta: {
+    traceId: string;
+    spanId?: string;
+    traceparent?: string;
+  };
+};
+
+export type StartStep = {
+  type: "StartStep";
+  runId: string;
+  stepId: string;
+};
+export type EngineMessage = FlowSubmitted | StartStep;
+
+// effects
+export type EmitEventEffect = {
+  kind: "EmitEvent";
+  eventType: string;
+  payload: unknown;
+};
+export type DispatchInternalEffect = {
+  kind: "DispatchInternal";
+  message: EngineMessage;
+};
+
+export type EngineEffect = EmitEventEffect | DispatchInternalEffect;
+
+// reducers
+export type Reducer<M extends EngineMessage = EngineMessage> = (
+  state: EngineState,
+  message: M
+) => Patch | void;
+export type EffectPlanner<M extends EngineMessage = EngineMessage> = (args: {
+  oldState: EngineState;
+  newState: EngineState;
+  message: M;
+}) => EngineEffect[] | void;
+
 export class Engine {
   #runs = new Map<string, RunContext>();
   id = "internal-engine";
   version = "0.1.0-alpha.7";
 
-  constructor(
-    private readonly bus: EventBusPort,
-    private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly ef: EmitterFactoryPort,
-    private readonly tel: EngineTelemetryPort,
-    private readonly jobParser: JobParserPort
-  ) {}
+  private queue: EngineMessage[] = [];
+
+  // di
+  bus: EventBusPort;
+  ef: EmitterFactoryPort;
+  tel: EngineTelemetryPort;
+  flowParser: FlowParserPort;
+  jobParser: JobParserPort;
+  stepHandlerRegistry: StepHandlerRegistryPort;
+  stepRunner: StepRunnerPort;
+  runOrchestrator: RunOrchestratorPort;
+  flowRouter: FlowRouterPort;
+
+  constructor(private readonly deps: EngineDeps) {
+    this.bus = this.deps.bus;
+    this.ef = this.deps.ef;
+    this.tel = this.deps.tel;
+    this.jobParser = this.deps.jobParser;
+    this.stepHandlerRegistry = this.deps.stepHandlerRegistry;
+    this.stepRunner = this.deps.stepRunner;
+    this.runOrchestrator = this.deps.runOrchestrator;
+    this.flowParser = this.deps.flowParser;
+    this.flowRouter = this.deps.flowRouter;
+  }
 
   async subscribeToTopics(): Promise<void> {
-    this.bus.subscribe("flow.queued", async (e: AnyEvent) => {
-      if (e.type === "flow.queued") {
-        const event = e as AnyEvent<"flow.queued">;
-
-        const spanId = this.ef.generateSpanId();
-        const traceParent = this.ef.makeTraceParent(event.traceid, spanId);
-        const flowEmitter = this.ef.newFlowEmitter({
-          source: "lowercase://engine/flow/queued",
-          flowid: event.flowid,
-          traceId: event.traceid,
-          spanId,
-          traceParent,
-        });
-
-        flowEmitter.emit("flow.started", {
-          flow: {
-            id: event.flowid,
-            name: event.data.flow.name,
-            version: event.data.flow.version,
-          },
-        });
-
-        await this.startFlow(event);
+    this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
+      const event = e as AnyEvent<"flow.submitted">;
+      const parsedFlowQueued = this.flowParser.flowQueued(event);
+      if (parsedFlowQueued.error) {
+        await this.tel.flowQueuedFailed(parsedFlowQueued);
+        return;
       }
+
+      await this.startFlow(event);
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
@@ -85,6 +146,7 @@ export class Engine {
     });
     await this.subscribeToTopics();
   }
+
   async stop() {
     const traceId = this.ef.generateTraceId();
     const spanId = this.ef.generateSpanId();
@@ -109,54 +171,46 @@ export class Engine {
     await this.bus.close();
   }
 
-  async startFlow(event: AnyEvent<"flow.queued">): Promise<void> {
+  enqueue(message: EngineMessage): void {
+    this.queue.push(message);
+  }
+
+  async startFlow(event: AnyEvent<"flow.submitted">): Promise<void> {
+    const message: FlowSubmitted = {
+      type: "FlowSubmitted",
+      flowId: event.data.flow.id,
+      runId: String(randomUUID()),
+      definition: event.data.definition,
+      meta: {
+        traceId: event.traceid,
+      },
+    };
+
+    this.enqueue(message);
+
+    await this.tel.flowStarted(event);
+
+    const flow = event.data.definition as FlowDefinition; // extract to parse helper
+
+    const context = this.#buildRunContext(event);
+
+    await this.tel.runStarted(context);
+
+    await this.flowRouter.startFlow(context);
+
+    // await this.runOrchestrator.getNext(context);
+
     /**
-     * casting as flow now because the specs package cannot be
-     * imported into @lcase/types.
-     * this will change when flow definitions are moved to the
-     * types package, and specs is a home for schemas
+     * this.runOrchestrator.getNext()
+     *
+     * const stepIds = this.runOrchestrator.startRun() ?? undefined
+     * const b = a ?? this.runner.run(runCtx, stepId)
+     *
      */
-    const flow = event.data.definition as FlowDefinition;
-    let context = this.#buildRunContext(event);
-    context = this.#initStepContext(context, flow.start);
 
-    const systemSpanId = this.ef.generateSpanId();
-    const systemTraceParent = this.ef.makeTraceParent(
-      event.traceid,
-      systemSpanId
-    );
-    const logEmitter = this.ef.newSystemEmitter({
-      source: "lowercase://engine/start-flow",
-      traceId: event.traceid,
-      spanId: systemSpanId,
-      traceParent: systemTraceParent,
-    });
-    await logEmitter.emit("system.logged", {
-      log: "[engine] made RunContext",
-    });
+    /** */
 
-    const spanId = this.ef.generateSpanId();
-    const traceParent = this.ef.makeTraceParent(event.traceid, spanId);
-    const emitter = this.ef.newRunEmitter({
-      source: "lowercase://engine/start-flow",
-      flowid: flow.name,
-      runid: context.runId,
-      traceId: event.traceid,
-      spanId,
-      traceParent,
-    });
-
-    emitter.emit("run.started", {
-      run: {
-        id: context.runId,
-        status: "started",
-      },
-      engine: {
-        id: "default-engine",
-      },
-      status: "started",
-    });
-    await this.startStreamingSteps(flow, context, flow.start);
+    // await this.startStreamingSteps(flow, context, flow.start);
     return;
   }
 
@@ -231,17 +285,17 @@ export class Engine {
     );
 
     const handler = this.stepHandlerRegistry[stepType as CapId];
-    await handler.queue(flow, context, stepName, jobEmitter);
+    await handler.handle(flow, context, stepName, jobEmitter);
 
     context.queuedSteps.add(stepName);
     context.outstandingSteps++;
     this.#runs.set(context.runId, context);
   }
-  #buildRunContext(event: AnyEvent<"flow.queued">): RunContext {
+  #buildRunContext(event: AnyEvent<"flow.submitted">): RunContext {
     const context: RunContext = {
       definition: event.data.definition as FlowDefinition,
       flowId: event.data.flow.id,
-      runId: event.data.test ? "test-run-id" : String(crypto.randomUUID()),
+      runId: String(crypto.randomUUID()),
       traceId: event.traceid,
       // step state stuff
       runningSteps: new Set(),
@@ -249,7 +303,7 @@ export class Engine {
       doneSteps: new Set(),
       outstandingSteps: 0,
 
-      flowName: event.data.flowName,
+      flowName: event.data.flow.id,
       status: "started",
       globals: {},
       exports: {},
@@ -265,6 +319,7 @@ export class Engine {
       pipe: {},
       result: {},
       status: "idle",
+      stepId: stepName,
     };
     return context;
   }

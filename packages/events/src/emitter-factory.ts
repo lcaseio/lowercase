@@ -1,9 +1,4 @@
-import type {
-  EmitterFactoryPort,
-  EventBusPort,
-  FlowEmitterPort,
-  ToolEmitterPort,
-} from "@lcase/ports";
+import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -19,8 +14,6 @@ import type {
   JobEventType,
   JobCompletedEvent,
   JobFailedEvent,
-  ToolEvent,
-  ToolEventType,
   JobStartedType,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
@@ -113,7 +106,16 @@ export class EmitterFactory implements EmitterFactoryPort {
   }
   /* run */
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitter {
-    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new RunEmitter(this.bus, scope);
+  }
+  newRunEmitterNewSpan(
+    scope: CloudScope & RunScope & { traceid: string }
+  ): RunEmitter {
+    const combinedScope = {
+      ...scope,
+      traceId: scope.traceid,
+      ...this.makeNewSpan(scope.traceid),
+    };
     return new RunEmitter(this.bus, combinedScope);
   }
   newRunEmitterFromEvent(
