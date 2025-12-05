@@ -9,7 +9,6 @@ import type {
   StepOutcome,
 } from "@lcase/ports";
 import { StepHandlerPort } from "@lcase/ports/engine";
-import { StepContexts } from "../step-runner.js";
 
 export class HttpJsonHandler implements StepHandlerPort {
   constructor(
@@ -29,7 +28,7 @@ export class HttpJsonHandler implements StepHandlerPort {
       throw new Error("[http-json-handler] step type must be `httpjson`");
     }
 
-    const pipes = this.pipeResolver.resolve(flow, context, stepName);
+    const pipes = this.pipeResolver.resolve(context, stepName);
     try {
       let args = step.args;
       if (args !== undefined) {
@@ -59,15 +58,5 @@ export class HttpJsonHandler implements StepHandlerPort {
       );
       console.error(err);
     }
-  }
-
-  async handleNew(
-    runCtx: RunContext,
-    stepCtx: StepContexts,
-    stepId: string
-  ): Promise<StepOutcome> {
-    const step = runCtx.definition.steps[stepId];
-
-    const pipes = this.pipeResolver.resolve(runCtx, stepCtx, stepId);
   }
 }

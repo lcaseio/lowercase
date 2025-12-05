@@ -13,11 +13,25 @@ import type {
   StepRunnerPort,
   FlowRouterPort,
 } from "@lcase/ports/engine";
-import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
+import type {
+  AnyEvent,
+  CloudScope,
+  FlowScope,
+  FlowStartedData,
+  JobCompletedEvent,
+  JobFailedEvent,
+  JobHttpJsonData,
+  JobScope,
+} from "@lcase/types";
 import { CapId, FlowDefinition } from "@lcase/types";
 import { RunContext } from "@lcase/types/engine";
 import { randomUUID } from "crypto";
-
+import { reducers } from "./reducers/reducer-registry.js";
+import { planners } from "./planners/planner-registry.js";
+import {
+  EffectHandlerRegistry,
+  wireEffectHandlers,
+} from "./handlers/handler-registry.js";
 /**
  * Engine class runs flows as the orchestration center.
  * It handles multiple runs in one instance.
@@ -32,7 +46,7 @@ export type EngineState = {
 export type Patch = Partial<EngineState>;
 
 // messages
-export type FlowSubmittedMessage = {
+export type FlowSubmittedMsg = {
   type: "FlowSubmitted";
   flowId: string;
   runId: string;
@@ -44,41 +58,77 @@ export type FlowSubmittedMessage = {
   };
 };
 
-export type StartStep = {
-  type: "StartStep";
+export type StepReadyToStartMsg = {
+  type: "StepReadyToStart";
   runId: string;
   stepId: string;
 };
-export type EngineMessage = FlowSubmittedMessage | StartStep;
+
+export type StartHttjsonStepMsg = {
+  type: "StartHttpjsonStep";
+  runId: string;
+  stepId: string;
+};
+
+export type MessageType = EngineMessage["type"];
+export type EngineMessage =
+  | FlowSubmittedMsg
+  | StepReadyToStartMsg
+  | StartHttjsonStepMsg;
 
 // effects
-export type EmitEventEffect = {
+export type EmitEventFx = {
   kind: "EmitEvent";
   eventType: string;
-  payload: unknown;
+  data: unknown;
 };
-export type DispatchInternalEffect = {
+export type EmitFlowStartedFx = {
+  kind: "EmitFlowStartedEvent";
+  eventType: "flow.started";
+  scope: FlowScope & CloudScope;
+  data: FlowStartedData;
+  traceId: string;
+};
+export type EmitJobHttpjsonSubmittedFx = {
+  kind: "EmitJobHttpjsonSubmittedEvent";
+  eventType: "job.httpjson.submitted";
+  scope: JobScope & CloudScope;
+  data: JobHttpJsonData;
+  traceId: string;
+};
+export type DispatchInternalFx = {
   kind: "DispatchInternal";
   message: EngineMessage;
 };
 
-export type EngineEffect = EmitEventEffect | DispatchInternalEffect;
+export type EngineEffect =
+  | EmitEventFx
+  | DispatchInternalFx
+  | EmitFlowStartedFx
+  | EmitJobHttpjsonSubmittedFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
   state: EngineState,
   message: M
 ) => Patch | void;
-export type EffectPlanner<M extends EngineMessage = EngineMessage> = (args: {
+export type Planner<M extends EngineMessage = EngineMessage> = (args: {
   oldState: EngineState;
   newState: EngineState;
   message: M;
 }) => EngineEffect[] | void;
 
+// handlers
+export type EffectHandler<K extends EngineEffect["kind"]> = (
+  effect: Extract<EngineEffect, { kind: K }>
+) => void | Promise<void>;
+
 export class Engine {
   #runs = new Map<string, RunContext>();
   id = "internal-engine";
   version = "0.1.0-alpha.7";
+  state: EngineState = { runs: {} };
+  isProcessing = false;
 
   private queue: EngineMessage[] = [];
 
@@ -86,33 +136,26 @@ export class Engine {
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   tel: EngineTelemetryPort;
-  flowParser: FlowParserPort;
   jobParser: JobParserPort;
-  stepHandlerRegistry: StepHandlerRegistryPort;
-  stepRunner: StepRunnerPort;
-  runOrchestrator: RunOrchestratorPort;
-  flowRouter: FlowRouterPort;
+  handlers: EffectHandlerRegistry;
 
   constructor(private readonly deps: EngineDeps) {
     this.bus = this.deps.bus;
     this.ef = this.deps.ef;
     this.tel = this.deps.tel;
     this.jobParser = this.deps.jobParser;
-    this.stepHandlerRegistry = this.deps.stepHandlerRegistry;
-    this.stepRunner = this.deps.stepRunner;
-    this.runOrchestrator = this.deps.runOrchestrator;
-    this.flowParser = this.deps.flowParser;
-    this.flowRouter = this.deps.flowRouter;
+
+    this.handlers = wireEffectHandlers(this.ef);
   }
 
   async subscribeToTopics(): Promise<void> {
     this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
       const event = e as AnyEvent<"flow.submitted">;
-      const parsedFlowQueued = this.flowParser.flowQueued(event);
-      if (parsedFlowQueued.error) {
-        await this.tel.flowQueuedFailed(parsedFlowQueued);
-        return;
-      }
+      // const parsedFlowQueued = this.flowParser.flowQueued(event);
+      // if (parsedFlowQueued.error) {
+      //   await this.tel.flowQueuedFailed(parsedFlowQueued);
+      //   return;
+      // }
 
       await this.startFlow(event);
     });
@@ -170,13 +213,73 @@ export class Engine {
 
     await this.bus.close();
   }
+  getState(): EngineState {
+    return this.state;
+  }
 
   enqueue(message: EngineMessage): void {
     this.queue.push(message);
   }
 
+  executeEffect(effect: EngineEffect): void {
+    if (effect.kind === "DispatchInternal") {
+      this.queue.push(effect.message);
+      return;
+    }
+
+    // TODO: fix `any` here
+    const handler = this.handlers[effect.kind] as
+      | EffectHandler<any>
+      | undefined;
+    if (!handler) return;
+
+    handler(effect);
+  }
+  processNext(): void {
+    const message = this.queue.shift();
+    if (!message) return;
+
+    const reducer = reducers[message.type] as Reducer | undefined;
+    const planner = planners[message.type] ?? [];
+
+    const oldState = this.state;
+    const patch = reducer ? reducer({ ...oldState }, message) : undefined;
+
+    const newState =
+      patch && Object.keys(patch).length > 0
+        ? {
+            ...oldState,
+            ...patch,
+          }
+        : oldState;
+
+    this.state = newState;
+
+    const allEffects: EngineEffect[] = [];
+
+    // TODO: fix `any` here
+    const effects = planner({ oldState, newState, message } as any) ?? [];
+
+    for (const effect of effects) {
+      this.executeEffect(effect);
+    }
+  }
+
+  processAll(): void {
+    this.isProcessing = true;
+    while (this.queue.length > 0) {
+      this.processNext();
+    }
+    this.isProcessing = false;
+  }
+
+  submitExternal(message: EngineMessage) {
+    this.queue.push(message);
+    this.processAll();
+  }
+
   async startFlow(event: AnyEvent<"flow.submitted">): Promise<void> {
-    const message: FlowSubmittedMessage = {
+    const message: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: event.data.flow.id,
       runId: String(randomUUID()),
@@ -187,30 +290,7 @@ export class Engine {
     };
 
     this.enqueue(message);
-
-    await this.tel.flowStarted(event);
-
-    const flow = event.data.definition as FlowDefinition; // extract to parse helper
-
-    const context = this.#buildRunContext(event);
-
-    await this.tel.runStarted(context);
-
-    await this.flowRouter.startFlow(context);
-
-    // await this.runOrchestrator.getNext(context);
-
-    /**
-     * this.runOrchestrator.getNext()
-     *
-     * const stepIds = this.runOrchestrator.startRun() ?? undefined
-     * const b = a ?? this.runner.run(runCtx, stepId)
-     *
-     */
-
-    /** */
-
-    // await this.startStreamingSteps(flow, context, flow.start);
+    if (!this.isProcessing) this.processAll();
     return;
   }
 
@@ -284,34 +364,14 @@ export class Engine {
       context.traceId
     );
 
-    const handler = this.stepHandlerRegistry[stepType as CapId];
-    await handler.handle(flow, context, stepName, jobEmitter);
+    // const handler = this.stepHandlerRegistry[stepType as CapId];
+    // await handler.handle(flow, context, stepName, jobEmitter);
 
     context.queuedSteps.add(stepName);
     context.outstandingSteps++;
     this.#runs.set(context.runId, context);
   }
-  #buildRunContext(event: AnyEvent<"flow.submitted">): RunContext {
-    const context: RunContext = {
-      definition: event.data.definition as FlowDefinition,
-      flowId: event.data.flow.id,
-      runId: String(crypto.randomUUID()),
-      traceId: event.traceid,
-      // step state stuff
-      runningSteps: new Set(),
-      queuedSteps: new Set(),
-      doneSteps: new Set(),
-      outstandingSteps: 0,
 
-      flowName: event.data.flow.id,
-      status: "started",
-      globals: {},
-      exports: {},
-      inputs: {},
-      steps: {},
-    };
-    return context;
-  }
   #initStepContext(context: RunContext, stepName: string): RunContext {
     context.steps[stepName] = {
       attempt: 0,
@@ -363,7 +423,7 @@ export class Engine {
   }
 
   isValidRunId(runId: string) {
-    if (this.#runs.has(runId)) return true;
+    if (this.state.runs[runId] !== undefined) return true;
     throw new Error(`[engine] invalid run id ${runId}`);
   }
 

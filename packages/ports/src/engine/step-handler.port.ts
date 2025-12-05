@@ -11,10 +11,10 @@ export interface StepHandlerPort {
     stepName: string,
     emitter: JobEmitterPort
   ): Promise<void>;
-  handleNew(
-    runCtx: RunContext,
-    stepCtx: StepContext,
-    stepId: string
-  ): Promise<StepOutcome>;
+  // handleNew(
+  //   runCtx: RunContext,
+  //   stepCtx: StepContext,
+  //   stepId: string
+  // ): Promise<void>;
 }
 export type StepHandlerRegistryPort = Record<string, StepHandlerPort>;

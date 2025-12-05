@@ -4,16 +4,15 @@ import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import {
-  Engine,
-  EngineTelemetry,
-  PipeResolver,
-  resolveStepArgs,
-  wireStepHandlers,
-} from "@lcase/engine";
+import { Engine, EngineTelemetry, PipeResolver } from "@lcase/engine";
 
-import { EmitterFactory, EventParser, eventRegistry } from "@lcase/events";
-import { EventBusPort, JobParserPort, StreamRegistryPort } from "@lcase/ports";
+import { EmitterFactory, eventRegistry } from "@lcase/events";
+import {
+  EventBusPort,
+  FlowParserPort,
+  JobParserPort,
+  StreamRegistryPort,
+} from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -155,11 +154,9 @@ export function createInProcessEngine(
   jobParser: JobParserPort
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
-  const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
 
   const engine = new Engine({
     bus,
-    stepHandlerRegistry,
     ef: emitterFactory,
     tel,
     jobParser,

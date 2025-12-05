@@ -33,6 +33,11 @@ export const flowOtelAttributes = {
     domain: "flow",
     entity: undefined,
   },
+  "flow.submitted": {
+    action: "submitted",
+    domain: "flow",
+    entity: undefined,
+  },
   "flow.started": {
     action: "started",
     domain: "flow",

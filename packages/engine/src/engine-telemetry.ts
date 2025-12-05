@@ -1,4 +1,4 @@
-import { EmitterFactoryPort } from "@lcase/ports";
+import { EmitterFactoryPort, FlowQueuedParsed } from "@lcase/ports";
 import { EngineTelemetryPort } from "@lcase/ports/engine";
 import { FlowContext, RunContext } from "@lcase/types/engine";
 import { AnyEvent, FlowEvent, FlowEventType } from "@lcase/types";
@@ -61,5 +61,9 @@ export class EngineTelemetry implements EngineTelemetryPort {
   }
   setTraceId(runId: string, traceId: string) {
     this.ctx.set(runId, { traceId });
+  }
+
+  flowQueuedFailed(flowQueuedParse: FlowQueuedParsed): Promise<void> {
+    throw new Error("not yet implemented");
   }
 }

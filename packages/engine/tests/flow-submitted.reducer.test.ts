@@ -1,19 +1,15 @@
 import { RunContext } from "@lcase/types/engine";
-import { flowSubmittedPlanner } from "../src/planners/flow-submitted.planner.js";
-import type {
-  FlowSubmittedMessage,
-  EngineState,
-  EngineEffect,
-} from "../src/engine.js";
+import { flowSubmittedReducer } from "../src/reducers/flow-submitted.reducer.js";
+import type { FlowSubmittedMsg, EngineState } from "../src/engine.js";
 import { describe, it, expect } from "vitest";
 
-describe("flowSubmittedPlanner", () => {
-  it("generates an expected plan", () => {
+describe("flowSubmittedReducer", () => {
+  it("updates empty state correctly", () => {
     const state = {
       runs: {},
     } satisfies EngineState;
 
-    const flowSubmittedMessage: FlowSubmittedMessage = {
+    const flowSubmittedMessage: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: "test-id",
       runId: "test-id",
@@ -60,31 +56,8 @@ describe("flowSubmittedPlanner", () => {
         },
       },
     } satisfies RunContext;
-    const testNewState = { runs: { ["test-id"]: runCtx } };
-    const effectPlans = flowSubmittedPlanner({
-      oldState: { runs: {} },
-      newState: testNewState,
-      message: flowSubmittedMessage,
-    });
-
-    const expectedEffectPlans: EngineEffect[] = [
-      {
-        kind: "EmitEvent",
-        eventType: "flow.started",
-        payload: {
-          runId: "test-id",
-          traceId: "test",
-        },
-      },
-      {
-        kind: "DispatchInternal",
-        message: {
-          type: "StartStep",
-          runId: runCtx.runId,
-          stepId: runCtx.definition.start,
-        },
-      },
-    ];
-    expect(effectPlans).toEqual(expectedEffectPlans);
+    const expectedState = { runs: { ["test-id"]: runCtx } };
+    const newState = flowSubmittedReducer(state, flowSubmittedMessage);
+    expect(newState).toEqual(expectedState);
   });
 });

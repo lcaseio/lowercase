@@ -18,7 +18,6 @@ export type FlowQueuedData = FlowDescriptor & {
 
 export type FlowSubmittedData = FlowDescriptor & {
   inputs: Record<string, unknown>;
-  outfile: string;
   definition: FlowDefinition;
 };
 

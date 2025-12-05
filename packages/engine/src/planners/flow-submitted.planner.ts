@@ -1,16 +1,14 @@
 import {
-  EffectPlanner,
+  Planner,
   EngineEffect,
   EngineState,
-  FlowSubmittedMessage,
+  FlowSubmittedMsg,
 } from "../engine.js";
 
-export const flowSubmittedPlanner: EffectPlanner<
-  FlowSubmittedMessage
-> = (args: {
+export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
-  message: FlowSubmittedMessage;
+  message: FlowSubmittedMsg;
 }): EngineEffect[] | void => {
   const { newState, message } = args;
 
@@ -21,17 +19,22 @@ export const flowSubmittedPlanner: EffectPlanner<
 
   if (newRunState.status === "pending") {
     effects.push({
-      kind: "EmitEvent",
+      kind: "EmitFlowStartedEvent",
       eventType: "flow.started",
-      payload: {
-        runId: message.runId,
-        traceId: message.meta.traceId,
+      data: {
+        flow: {
+          id: message.flowId,
+          name: message.definition.name,
+          version: message.definition.version,
+        },
       },
+      scope: { flowid: message.flowId, source: "lowercase://engine" },
+      traceId: message.meta.traceId,
     });
     effects.push({
       kind: "DispatchInternal",
       message: {
-        type: "StartStep",
+        type: "StepReadyToStart",
         runId: message.runId,
         stepId: message.definition.start,
       },

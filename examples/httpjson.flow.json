@@ -5,24 +5,14 @@
   "steps": {
     "post": {
       "type": "httpjson",
-      "url": "https://httpbin.org/post",
-      "method": "POST",
+      "url": "https://swapi.dev/api/people/1",
+      "method": "GET",
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": { "hello": "world", "n": 123 },
       "on": {
         "success": "delete"
       }
-    },
-    "delete": {
-      "type": "httpjson",
-      "url": "https://httpbin.org/delete",
-      "method": "DELETE",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "body": { "hello": "world", "n": 123 }
     }
   }
 }

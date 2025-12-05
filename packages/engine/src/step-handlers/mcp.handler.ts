@@ -24,7 +24,7 @@ export class McpStepHandler implements StepHandlerPort {
       if (args !== undefined) {
         args = this.resolveArgs(context, args);
       }
-      const pipes = this.pipeResolver.resolve(flow, context, stepName);
+      const pipes = this.pipeResolver.resolve(context, stepName);
 
       await emitter.emit("job.mcp.submitted", {
         job: {

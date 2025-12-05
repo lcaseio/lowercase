@@ -12,10 +12,6 @@ export type EngineDeps = {
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   tel: EngineTelemetryPort;
-  flowParser: FlowParserPort;
+  // flowParser: FlowParserPort;
   jobParser: JobParserPort;
-  stepHandlerRegistry: StepHandlerRegistryPort;
-  stepRunner: StepRunnerPort;
-  runOrchestrator: RunOrchestratorPort;
-  flowRouter: FlowRouterPort;
 };

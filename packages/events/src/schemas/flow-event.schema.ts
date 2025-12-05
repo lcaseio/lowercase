@@ -5,6 +5,7 @@ import {
   FlowFailedDataSchema,
   FlowQueuedDataSchema,
   FlowStartedDataSchema,
+  FlowSubmittedDataSchema,
 } from "./flow-data.schema.js";
 import { CloudEventContextSchema } from "./cloud-context.schema.js";
 
@@ -27,6 +28,19 @@ export const FlowQueuedSchema = CloudEventContextSchema.extend(
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.queued">>;
+
+export const FlowSubmittedSchema = CloudEventContextSchema.extend(
+  FlowContextSchema.shape
+)
+  .merge(
+    z.object({
+      type: z.literal("flow.submitted"),
+      entity: z.undefined().optional(),
+      action: z.literal("submitted"),
+      data: FlowSubmittedDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"flow.submitted">>;
 
 export const FlowStartedSchema = CloudEventContextSchema.merge(
   FlowContextSchema

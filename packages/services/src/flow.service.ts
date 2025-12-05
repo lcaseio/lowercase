@@ -41,15 +41,13 @@ export class FlowService {
       spanId,
       traceParent,
     });
-    await flowEmitter.emit("flow.queued", {
+    await flowEmitter.emit("flow.submitted", {
       flow: {
         id: flowId,
         name: validatedFlow.name,
         version: validatedFlow.version,
       },
-      flowName: validatedFlow.name,
       inputs: {},
-      outfile: "output.temp.json",
       definition: validatedFlow,
     });
   }

@@ -5,12 +5,14 @@ import {
   FlowFailedSchema,
   FlowQueuedSchema,
   FlowStartedSchema,
+  FlowSubmittedSchema,
 } from "../schemas/flow-event.schema.js";
 import {
   FlowCompletedDataSchema,
   FlowFailedDataSchema,
   FlowQueuedDataSchema,
   FlowStartedDataSchema,
+  FlowSubmittedDataSchema,
 } from "../schemas/flow-data.schema.js";
 import {
   EngineStartedSchema,
@@ -92,6 +94,13 @@ export const eventRegistry = {
     schema: {
       event: FlowQueuedSchema,
       data: FlowQueuedDataSchema,
+    },
+  },
+  "flow.submitted": {
+    topic: "flows.lifecycle",
+    schema: {
+      event: FlowSubmittedSchema,
+      data: FlowSubmittedDataSchema,
     },
   },
   "flow.started": {

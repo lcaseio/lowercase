@@ -37,7 +37,7 @@
     "clean-node-modules": "rm -rf ./node_modules"
   },
   "packageManager": "pnpm@10.17.1",
-  "dependencies": {
+  "devDependencies": {
     "@lcase/types": "workspace:*"
   }
 }

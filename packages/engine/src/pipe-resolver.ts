@@ -1,5 +1,4 @@
 import type { StreamRegistryPort } from "@lcase/ports";
-import type { FlowDefinition, StepDefinition } from "@lcase/types";
 import { RunContext } from "@lcase/types/engine";
 import { randomUUID } from "crypto";
 
@@ -32,7 +31,9 @@ export class PipeResolver {
         payload: step.pipe.to.payload,
       };
       if (ctx.definition.steps[stepId]?.pipe?.to) {
-        ctx.steps[stepId].pipe.to = pipes.to;
+        if (ctx.steps[stepId]?.pipe?.to) {
+          ctx.steps[stepId].pipe.to = pipes.to;
+        }
       }
     }
     if (step.pipe?.from) {
@@ -43,11 +44,11 @@ export class PipeResolver {
       }
       console.log(`[pipe-resolver] stepName ${stepId}; id${id}`);
       pipes.from = {
-        id
+        id,
         buffer: step.pipe.from.buffer,
       };
-      if (context.steps[stepId]?.pipe?.from) {
-        context.steps[stepId].pipe.from = pipes.from;
+      if (ctx.steps[stepId]?.pipe?.from) {
+        ctx.steps[stepId].pipe.from = pipes.from;
       }
       console.log(
         `[pipe-resolver] pipes.from ${JSON.stringify(pipes.from, null, 2)}`
