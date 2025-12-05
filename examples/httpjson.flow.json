@@ -13,6 +13,14 @@
       "on": {
         "success": "delete"
       }
+    },
+    "delete": {
+      "type": "httpjson",
+      "url": "https://swapi.dev/api/people/2",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     }
   }
 }
