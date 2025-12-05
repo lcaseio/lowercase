@@ -2,28 +2,18 @@ import fs from "fs";
 import type {
   EmitterFactoryPort,
   EventBusPort,
-  FlowParserPort,
   JobParserPort,
 } from "@lcase/ports";
-import type {
-  EngineDeps,
-  EngineTelemetryPort,
-  StepHandlerRegistryPort,
-  RunOrchestratorPort,
-  StepRunnerPort,
-  FlowRouterPort,
-} from "@lcase/ports/engine";
+import type { EngineDeps, EngineTelemetryPort } from "@lcase/ports/engine";
 import type {
   AnyEvent,
   CloudScope,
   FlowScope,
   FlowStartedData,
-  JobCompletedEvent,
-  JobFailedEvent,
   JobHttpJsonData,
   JobScope,
 } from "@lcase/types";
-import { CapId, FlowDefinition } from "@lcase/types";
+import { FlowDefinition } from "@lcase/types";
 import { RunContext } from "@lcase/types/engine";
 import { randomUUID } from "crypto";
 import { reducers } from "./reducers/reducer-registry.js";
@@ -70,11 +60,19 @@ export type StartHttjsonStepMsg = {
   stepId: string;
 };
 
-export type MessageType = EngineMessage["type"];
+export type JobCompletedMsg = {
+  type: "JobCompleted";
+  runId: string;
+  stepId: string;
+};
+
 export type EngineMessage =
   | FlowSubmittedMsg
   | StepReadyToStartMsg
-  | StartHttjsonStepMsg;
+  | StartHttjsonStepMsg
+  | JobCompletedMsg;
+
+export type MessageType = EngineMessage["type"];
 
 // effects
 export type EmitEventFx = {
@@ -124,7 +122,6 @@ export type EffectHandler<K extends EngineEffect["kind"]> = (
 ) => void | Promise<void>;
 
 export class Engine {
-  #runs = new Map<string, RunContext>();
   id = "internal-engine";
   version = "0.1.0-alpha.7";
   state: EngineState = { runs: {} };
@@ -148,7 +145,7 @@ export class Engine {
     this.handlers = wireEffectHandlers(this.ef);
   }
 
-  async subscribeToTopics(): Promise<void> {
+  subscribeToTopics(): void {
     this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
       const event = e as AnyEvent<"flow.submitted">;
       // const parsedFlowQueued = this.flowParser.flowQueued(event);
@@ -157,7 +154,7 @@ export class Engine {
       //   return;
       // }
 
-      await this.startFlow(event);
+      this.startFlow(event);
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
@@ -180,14 +177,14 @@ export class Engine {
       traceParent,
     });
 
-    emitter.emit("engine.started", {
+    await emitter.emit("engine.started", {
       engine: {
         id: this.id,
         version: this.version,
       },
       status: "started",
     });
-    await this.subscribeToTopics();
+    this.subscribeToTopics();
   }
 
   async stop() {
@@ -278,7 +275,7 @@ export class Engine {
     this.processAll();
   }
 
-  async startFlow(event: AnyEvent<"flow.submitted">): Promise<void> {
+  startFlow(event: AnyEvent<"flow.submitted">): void {
     const message: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: event.data.flow.id,
@@ -294,144 +291,9 @@ export class Engine {
     return;
   }
 
-  /**
-   * Queues a step, and steps it pipes data to.
-   * If further steps also pipe, their to targets are queued too.
-   * @param flow Flow definition
-   * @param context RunContext
-   * @param stepName name of first step
-   */
-  async startStreamingSteps(
-    flow: FlowDefinition,
-    context: RunContext,
-    stepName: string
-  ): Promise<void> {
-    while (true) {
-      context = this.#initStepContext(context, stepName);
-      if (!context.steps[stepName]) return;
-      await this.startStep(flow, context, stepName);
-      const pipeToStep = flow.steps[stepName].pipe?.to?.step;
-      if (pipeToStep) {
-        stepName = pipeToStep;
-      } else {
-        break;
-      }
-    }
-  }
-  // queues a single step vs multiple
-  async startStep(
-    flow: FlowDefinition,
-    context: RunContext,
-    stepName: string
-  ): Promise<void> {
-    const stepType = flow.steps[stepName].type;
-
-    const flowid = context.flowName;
-    const runid = context.runId;
-    const stepid = stepName;
-    const steptype = stepType;
-
-    const stepEmitter = this.ef.newStepEmitterNewSpan(
-      {
-        source: "lowercase://engine/start-step",
-        flowid,
-        runid,
-        stepid,
-        steptype,
-      },
-      context.traceId
-    );
-    stepEmitter.emit("step.started", {
-      step: {
-        id: stepName,
-        name: stepName,
-        type: stepType,
-      },
-      status: "started",
-    });
-
-    const jobId = String(crypto.randomUUID());
-    const jobEmitter = this.ef.newJobEmitterNewSpan(
-      {
-        source: "lowercase://engine/queue-step",
-        flowid,
-        runid,
-        stepid,
-        jobid: jobId,
-        capid: stepType as CapId,
-        toolid: null,
-      },
-      context.traceId
-    );
-
-    // const handler = this.stepHandlerRegistry[stepType as CapId];
-    // await handler.handle(flow, context, stepName, jobEmitter);
-
-    context.queuedSteps.add(stepName);
-    context.outstandingSteps++;
-    this.#runs.set(context.runId, context);
-  }
-
-  #initStepContext(context: RunContext, stepName: string): RunContext {
-    context.steps[stepName] = {
-      attempt: 0,
-      exports: {},
-      pipe: {},
-      result: {},
-      status: "idle",
-      stepId: stepName,
-    };
-    return context;
-  }
-
-  #getNextStepName(
-    flow: FlowDefinition,
-    context: RunContext,
-    currentStep: string
-  ): string | undefined {
-    const status = context.steps[currentStep].status as "success" | "failure";
-    const nextStepName = flow.steps[currentStep].on?.[status];
-    return nextStepName;
-  }
-
   async handleJobFailed(event: AnyEvent): Promise<void> {
     const job = this.jobParser.parseJobFailed(event);
     if (!job) throw new Error("[engine] not a job failed event");
-
-    const e = job.event;
-
-    this.isValidRunId(e.runid);
-    const context = this.#runs.get(e.runid)!;
-
-    context.steps[e.stepid].result = e.data.result ?? {};
-    context.steps[e.stepid].status = e.data.status;
-
-    const flow = context.definition;
-
-    this.markStepAsFailed(e, context);
-    this.markStepAsDone(e.runid, context);
-    this.writeRunContext(e.runid);
-
-    const nextStep = this.#getNextStepName(flow, context, e.stepid);
-
-    if (nextStep) {
-      this.startStreamingSteps(flow, context, nextStep);
-    } else if (context.outstandingSteps === 0) {
-      this.markRunAsFailed(e, context);
-      return;
-    }
-  }
-
-  isValidRunId(runId: string) {
-    if (this.state.runs[runId] !== undefined) return true;
-    throw new Error(`[engine] invalid run id ${runId}`);
-  }
-
-  markStepAsDone(stepId: string, run: RunContext) {
-    run.queuedSteps.delete(stepId);
-    run.runningSteps.delete(stepId);
-    run.doneSteps.add(stepId);
-    run.outstandingSteps--;
   }
 
   async handleJobCompleted(event: AnyEvent): Promise<void> {
@@ -439,135 +301,19 @@ export class Engine {
     const job = this.jobParser.parseJobCompleted(event);
     if (!job) throw new Error("[engine] not a job completed event");
 
-    const e = job.event;
+    const jobCompletedMsg = {
+      type: "JobCompleted",
+      runId: job.event.runid,
+      stepId: job.event.stepid,
+    } satisfies JobCompletedMsg;
 
-    this.isValidRunId(e.runid);
-    const context = this.#runs.get(e.runid)!;
-
-    context.steps[e.stepid].result = e.data.result ?? {};
-    context.steps[e.stepid].status = e.data.status;
-
-    const flow = context.definition;
-
-    this.markStepAsCompleted(e, context);
-    this.markStepAsDone(e.runid, context);
-    this.writeRunContext(e.runid);
-
-    const nextStep = this.#getNextStepName(flow, context, e.stepid);
-
-    if (nextStep) {
-      this.startStreamingSteps(flow, context, nextStep);
-    } else if (context.outstandingSteps === 0) {
-      this.markRunAsCompleted(e, context);
-      return;
-    }
-  }
-
-  async markStepAsCompleted(e: JobCompletedEvent, run: RunContext) {
-    const stepEmitter = this.ef.newStepEmitterFromJobEvent(
-      e,
-      "lowercase://engine/handle-worker-done"
-    );
-    stepEmitter.emit("step.completed", {
-      step: {
-        id: e.stepid,
-        name: e.stepid,
-        type: run.definition.steps[e.stepid].type,
-      },
-      status: "success",
-    });
-    run.steps[e.stepid].status = e.data.status;
-  }
-
-  async markStepAsFailed(e: JobFailedEvent, run: RunContext) {
-    const stepEmitter = this.ef.newStepEmitterFromJobEvent(
-      e,
-      "lowercase://engine/handle-worker-done"
-    );
-    await stepEmitter.emit("step.failed", {
-      step: {
-        id: e.stepid,
-        name: e.stepid,
-        type: run.definition.steps[e.stepid].type,
-      },
-      status: "failure",
-      reason: e.data.reason,
-    });
-    run.steps[e.stepid].status = e.data.status;
-  }
-
-  async markRunAsCompleted(event: JobCompletedEvent, run: RunContext) {
-    const runEmitter = this.ef.newRunEmitterFromEvent(
-      event,
-      "lowercase://engine/mark-run-as-completed"
-    );
-    const e = await runEmitter.emit("run.completed", {
-      run: {
-        id: event.runid,
-        status: event.data.status,
-      },
-      engine: {
-        id: this.id,
-      },
-      status: "success",
-      message: "run completed",
-    });
-
-    const flowEmitter = this.ef.newFlowEmitterNewSpan(
-      {
-        source: "lowercase://engine/mark-run-as-done",
-        flowid: e.flowid,
-      },
-      e.traceid
-    );
-    await flowEmitter.emit("flow.completed", {
-      flow: {
-        id: e.flowid,
-        name: run.definition.name,
-        version: run.definition.version,
-      },
-      status: "success",
-    });
-    run.status = "completed";
-  }
-
-  async markRunAsFailed(event: JobFailedEvent, run: RunContext) {
-    const runEmitter = this.ef.newRunEmitterFromEvent(
-      event,
-      "lowercase://engine/mark-run-as-completed"
-    );
-    const e = await runEmitter.emit("run.failed", {
-      run: {
-        id: event.runid,
-        status: event.data.status,
-      },
-      engine: {
-        id: this.id,
-      },
-      status: "failure",
-      message: "run completed",
-    });
-
-    const flowEmitter = this.ef.newFlowEmitterNewSpan(
-      {
-        source: "lowercase://engine/mark-run-as-done",
-        flowid: e.flowid,
-      },
-      e.traceid
-    );
-    await flowEmitter.emit("flow.failed", {
-      flow: {
-        id: e.flowid,
-        name: run.definition.name,
-        version: run.definition.version,
-      },
-      status: "failure",
-    });
-    run.status = "failed";
+    this.enqueue(jobCompletedMsg);
+    if (this.isProcessing === false) this.processAll();
+    return;
   }
 
   writeRunContext(runId: string): void {
-    const context = this.#runs.get(runId);
+    const context = this.state.runs[runId];
     const file = "./output.temp.json";
 
     fs.writeFileSync(file, JSON.stringify(context, null, 2));

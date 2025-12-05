@@ -40,7 +40,7 @@ export class McpStepHandler implements StepHandlerPort {
         ...(step.tool ? { tool: step.tool } : {}),
       });
 
-      context.steps[stepName].status = "submitted";
+      context.steps[stepName].status = "started";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`

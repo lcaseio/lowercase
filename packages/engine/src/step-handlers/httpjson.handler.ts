@@ -51,7 +51,7 @@ export class HttpJsonHandler implements StepHandlerPort {
         ...(step.method ? { method: step.method } : {}),
         ...(step.body ? { body: step.body } : {}),
       });
-      context.steps[stepName].status = "submitted";
+      context.steps[stepName].status = "started";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`

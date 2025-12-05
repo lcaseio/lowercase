@@ -6,7 +6,7 @@ import {
   StartHttjsonStepMsg,
 } from "../engine.js";
 
-export const startHttjsonStepPlanner: Planner<StartHttjsonStepMsg> = (args: {
+export const startHttpjsonStepPlanner: Planner<StartHttjsonStepMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
   message: StartHttjsonStepMsg;
@@ -26,9 +26,9 @@ export const startHttjsonStepPlanner: Planner<StartHttjsonStepMsg> = (args: {
           toolid: null,
         },
         url: step.url,
-        body: step.body,
-        method: step.method,
-        headers: step.headers,
+        ...(step.body ? { body: step.body } : {}),
+        ...(step.headers ? { headers: step.headers } : {}),
+        ...(step.method ? { method: step.method } : {}),
       },
       eventType: "job.httpjson.submitted",
       traceId: newState.runs[runId].traceId,

@@ -22,7 +22,7 @@ export type RunContext = FlowContext & {
 };
 
 export type StepContext = {
-  status: string;
+  status: "initialized" | "pending" | "started" | "completed" | "failed";
   reason?: string;
   attempt: number;
   exports: Record<string, unknown>;
