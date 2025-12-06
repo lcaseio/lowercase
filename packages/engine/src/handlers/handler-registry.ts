@@ -2,10 +2,12 @@ import { EmitterFactoryPort } from "@lcase/ports";
 import {
   EffectHandler,
   EmitEventFx,
+  EmitFlowFailedFx,
   EmitFlowStartedFx,
   EmitJobHttpjsonSubmittedFx,
+  EmitStepStartedFx,
   EngineEffect,
-} from "../engine.js";
+} from "../engine.types.js";
 import { randomUUID } from "crypto";
 
 export type EffectHandlerRegistry = {
@@ -20,6 +22,7 @@ export function wireEffectHandlers(
     EmitEvent: function (effect: EmitEventFx): void | Promise<void> {
       throw new Error("Function not implemented.");
     },
+
     EmitFlowStartedEvent: function (
       effect: EmitFlowStartedFx
     ): void | Promise<void> {
@@ -32,9 +35,15 @@ export function wireEffectHandlers(
       );
       void emitter.emit("flow.started", { flow: effect.data.flow });
     },
+
+    EmitStepStarted: (effect: EmitStepStartedFx) => {
+      const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
+      emitter.emit("step.started", effect.data);
+    },
+
     EmitJobHttpjsonSubmittedEvent: function (
       effect: EmitJobHttpjsonSubmittedFx
-    ) {
+    ): void {
       effect.data.pipe = {};
       const jobId = String(randomUUID());
       const emitter = ef.newJobEmitterNewSpan(
@@ -46,6 +55,19 @@ export function wireEffectHandlers(
       );
 
       void emitter.emit("job.httpjson.submitted", effect.data);
+      return;
+    },
+
+    EmitFlowFailed: function (effect: EmitFlowFailedFx): void {
+      const jobId = String(randomUUID());
+      const emitter = ef.newFlowEmitterNewSpan(
+        {
+          ...effect.scope,
+        },
+        effect.traceId
+      );
+
+      void emitter.emit("flow.failed", effect.data);
       return;
     },
   } satisfies EffectHandlerRegistry;

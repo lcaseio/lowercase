@@ -5,16 +5,7 @@ import type {
   JobParserPort,
 } from "@lcase/ports";
 import type { EngineDeps, EngineTelemetryPort } from "@lcase/ports/engine";
-import type {
-  AnyEvent,
-  CloudScope,
-  FlowScope,
-  FlowStartedData,
-  JobHttpJsonData,
-  JobScope,
-} from "@lcase/types";
-import { FlowDefinition } from "@lcase/types";
-import { RunContext } from "@lcase/types/engine";
+import type { AnyEvent } from "@lcase/types";
 import { randomUUID } from "crypto";
 import { reducers } from "./reducers/reducer-registry.js";
 import { planners } from "./planners/planner-registry.js";
@@ -22,104 +13,22 @@ import {
   EffectHandlerRegistry,
   wireEffectHandlers,
 } from "./handlers/handler-registry.js";
+import {
+  EffectHandler,
+  EngineEffect,
+  EngineMessage,
+  EngineState,
+  FlowSubmittedMsg,
+  JobCompletedMsg,
+  JobFailedMsg,
+  Reducer,
+} from "./engine.types.js";
 /**
  * Engine class runs flows as the orchestration center.
  * It handles multiple runs in one instance.
  * Each run gets its own context.
  * Passes scoped emitters to handlers for emitting events.
  */
-
-// state
-export type EngineState = {
-  runs: Record<string, RunContext>;
-};
-export type Patch = Partial<EngineState>;
-
-// messages
-export type FlowSubmittedMsg = {
-  type: "FlowSubmitted";
-  flowId: string;
-  runId: string;
-  definition: FlowDefinition;
-  meta: {
-    traceId: string;
-    spanId?: string;
-    traceparent?: string;
-  };
-};
-
-export type StepReadyToStartMsg = {
-  type: "StepReadyToStart";
-  runId: string;
-  stepId: string;
-};
-
-export type StartHttjsonStepMsg = {
-  type: "StartHttpjsonStep";
-  runId: string;
-  stepId: string;
-};
-
-export type JobCompletedMsg = {
-  type: "JobCompleted";
-  runId: string;
-  stepId: string;
-};
-
-export type EngineMessage =
-  | FlowSubmittedMsg
-  | StepReadyToStartMsg
-  | StartHttjsonStepMsg
-  | JobCompletedMsg;
-
-export type MessageType = EngineMessage["type"];
-
-// effects
-export type EmitEventFx = {
-  kind: "EmitEvent";
-  eventType: string;
-  data: unknown;
-};
-export type EmitFlowStartedFx = {
-  kind: "EmitFlowStartedEvent";
-  eventType: "flow.started";
-  scope: FlowScope & CloudScope;
-  data: FlowStartedData;
-  traceId: string;
-};
-export type EmitJobHttpjsonSubmittedFx = {
-  kind: "EmitJobHttpjsonSubmittedEvent";
-  eventType: "job.httpjson.submitted";
-  scope: JobScope & CloudScope;
-  data: JobHttpJsonData;
-  traceId: string;
-};
-export type DispatchInternalFx = {
-  kind: "DispatchInternal";
-  message: EngineMessage;
-};
-
-export type EngineEffect =
-  | EmitEventFx
-  | DispatchInternalFx
-  | EmitFlowStartedFx
-  | EmitJobHttpjsonSubmittedFx;
-
-// reducers
-export type Reducer<M extends EngineMessage = EngineMessage> = (
-  state: EngineState,
-  message: M
-) => Patch | void;
-export type Planner<M extends EngineMessage = EngineMessage> = (args: {
-  oldState: EngineState;
-  newState: EngineState;
-  message: M;
-}) => EngineEffect[] | void;
-
-// handlers
-export type EffectHandler<K extends EngineEffect["kind"]> = (
-  effect: Extract<EngineEffect, { kind: K }>
-) => void | Promise<void>;
 
 export class Engine {
   id = "internal-engine";
@@ -154,7 +63,7 @@ export class Engine {
       //   return;
       // }
 
-      this.startFlow(event);
+      this.handleFlowSubmitted(event);
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
@@ -275,7 +184,7 @@ export class Engine {
     this.processAll();
   }
 
-  startFlow(event: AnyEvent<"flow.submitted">): void {
+  handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
     const message: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: event.data.flow.id,
@@ -291,12 +200,21 @@ export class Engine {
     return;
   }
 
-  async handleJobFailed(event: AnyEvent): Promise<void> {
+  handleJobFailed(event: AnyEvent): void {
     const job = this.jobParser.parseJobFailed(event);
     if (!job) throw new Error("[engine] not a job failed event");
+    const jobFailedMsg = {
+      type: "JobFailed",
+      runId: job.event.runid,
+      stepId: job.event.stepid,
+    } satisfies JobFailedMsg;
+
+    this.enqueue(jobFailedMsg);
+    if (!this.isProcessing) this.processAll();
+    return;
   }
 
-  async handleJobCompleted(event: AnyEvent): Promise<void> {
+  handleJobCompleted(event: AnyEvent): void {
     // parse event
     const job = this.jobParser.parseJobCompleted(event);
     if (!job) throw new Error("[engine] not a job completed event");
@@ -308,7 +226,7 @@ export class Engine {
     } satisfies JobCompletedMsg;
 
     this.enqueue(jobCompletedMsg);
-    if (this.isProcessing === false) this.processAll();
+    if (!this.isProcessing) this.processAll();
     return;
   }
 

@@ -1,4 +1,9 @@
-import { EngineState, Patch, Reducer, StepReadyToStartMsg } from "../engine.js";
+import {
+  EngineState,
+  Patch,
+  Reducer,
+  StepReadyToStartMsg,
+} from "../engine.types.js";
 
 export const stepReadyToStartReducer: Reducer<StepReadyToStartMsg> = (
   state: EngineState,

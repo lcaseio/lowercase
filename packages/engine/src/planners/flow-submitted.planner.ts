@@ -3,7 +3,7 @@ import {
   EngineEffect,
   EngineState,
   FlowSubmittedMsg,
-} from "../engine.js";
+} from "../engine.types.js";
 
 export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
   oldState: EngineState;

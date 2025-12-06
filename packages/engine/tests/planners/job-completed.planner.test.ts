@@ -1,11 +1,20 @@
-import { RunContext } from "@lcase/types/engine";
-import { jobCompletedReducer } from "../src/reducers/job-completed.reducer.js";
-import type { EngineState, JobCompletedMsg } from "../src/engine.js";
+import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import { FlowDefinition } from "@lcase/types";
+import type {
+  DispatchInternalFx,
+  EngineState,
+  JobCompletedMsg,
+  StepReadyToStartMsg,
+} from "../../src/engine.types.js";
+import type { FlowDefinition } from "@lcase/types";
+import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
 
-describe("jobCompletedReducer", () => {
-  it("updates empty state correctly", () => {
+describe("stepReadyToStartPlanner", () => {
+  it("gives correct effects for a proper message and context", () => {
+    const state = {
+      runs: {},
+    } satisfies EngineState;
+
     const runId = "test-runId";
     const stepId = "test-stepId";
     const jobCompletedMsg: JobCompletedMsg = {
@@ -13,13 +22,18 @@ describe("jobCompletedReducer", () => {
       runId,
       stepId,
     };
-
     const runCtx = {
       flowId: "test-flowId",
       flowName: "test-flowName",
       definition: {
         start: stepId,
-        steps: { [stepId]: {} },
+        steps: {
+          [stepId]: {
+            on: {
+              success: "stepTwo",
+            },
+          },
+        },
       } as unknown as FlowDefinition,
       runId,
       traceId: "test-traceId",
@@ -42,16 +56,18 @@ describe("jobCompletedReducer", () => {
       },
     } satisfies RunContext;
 
-    const startState = {
-      runs: { [runId]: runCtx },
-    } satisfies EngineState;
-
     const newRunCtx = {
       flowId: "test-flowId",
       flowName: "test-flowName",
       definition: {
         start: stepId,
-        steps: { [stepId]: {} },
+        steps: {
+          [stepId]: {
+            on: {
+              success: "stepTwo",
+            },
+          },
+        },
       } as unknown as FlowDefinition,
       runId,
       traceId: "test-traceId",
@@ -73,13 +89,23 @@ describe("jobCompletedReducer", () => {
         },
       },
     } satisfies RunContext;
+    const oldState: EngineState = { runs: { [runId]: runCtx } };
+    const newState: EngineState = { runs: { [runId]: newRunCtx } };
+    const effects = jobCompletedPlanner({
+      oldState,
+      newState,
+      message: jobCompletedMsg,
+    });
 
-    const expectedState: EngineState = {
-      runs: {
-        [runId]: newRunCtx,
-      },
-    };
-    const newState = jobCompletedReducer(startState, jobCompletedMsg);
-    expect(newState).toEqual(expectedState);
+    const expectedEffectPlan = {
+      kind: "DispatchInternal",
+      message: {
+        runId,
+        stepId: "stepTwo",
+        type: "StepReadyToStart",
+      } satisfies StepReadyToStartMsg,
+    } satisfies DispatchInternalFx;
+
+    expect(effects).toEqual([expectedEffectPlan]);
   });
 });

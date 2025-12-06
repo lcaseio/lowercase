@@ -1,10 +1,13 @@
 import { RunContext } from "@lcase/types/engine";
-import type { EngineState, Reducer, StartHttjsonStepMsg } from "../engine.js";
-import { randomUUID } from "crypto";
+import type {
+  EngineState,
+  Reducer,
+  StartHttpJsonStepMsg,
+} from "../engine.types.js";
 
-export const startHttpjsonStepReducer: Reducer<StartHttjsonStepMsg> = (
+export const startHttpJsonStepReducer: Reducer<StartHttpJsonStepMsg> = (
   state: EngineState,
-  message: StartHttjsonStepMsg
+  message: StartHttpJsonStepMsg
 ) => {
   const { runId, stepId } = message;
   const run = { ...state.runs[runId] };
@@ -28,21 +31,3 @@ export const startHttpjsonStepReducer: Reducer<StartHttjsonStepMsg> = (
 
   return { runs: { [runId]: newRunContext } };
 };
-
-/**
- * flowStar
- *  make run context         (flowStartedMsg)
- *  make all step contexts
- *  starts first step
- * run started
- *  does nothing, just a message
- *  could make context here, or not
- *
- * step started
- *  resolves fields (generic?) -
- *  updates state for status, attempts etc
- *  emits the job thing
- *
- *
- *
- */

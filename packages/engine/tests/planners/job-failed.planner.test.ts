@@ -1,24 +1,23 @@
-import { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import {
-  DispatchInternalFx,
+import type {
   EngineState,
-  JobCompletedMsg,
-  StepReadyToStartMsg,
-} from "../src/engine.js";
+  FlowFailedMsg,
+  JobFailedMsg,
+} from "../../src/engine.types.js";
 import { FlowDefinition } from "@lcase/types";
-import { jobCompletedPlanner } from "../src/planners/job-completed.planner.js";
+import { jobFailedPlanner } from "../../src/planners/job-failed.planner.js";
 
-describe("stepReadyToStartPlanner", () => {
-  it("gives correct effects for a proper message and context", () => {
+describe("jobFailedPlanner", () => {
+  it("plans internal FlowFailedMsg as DispatchInternalFx given proper state", () => {
     const state = {
       runs: {},
     } satisfies EngineState;
 
     const runId = "test-runId";
     const stepId = "test-stepId";
-    const jobCompletedMsg: JobCompletedMsg = {
-      type: "JobCompleted",
+    const jobFailedMsg: JobFailedMsg = {
+      type: "JobFailed",
       runId,
       stepId,
     };
@@ -30,9 +29,10 @@ describe("stepReadyToStartPlanner", () => {
         steps: {
           [stepId]: {
             on: {
-              success: "stepTwo",
+              failure: "stepTwo",
             },
           },
+          stepTwo: {},
         },
       } as unknown as FlowDefinition,
       runId,
@@ -67,6 +67,7 @@ describe("stepReadyToStartPlanner", () => {
               success: "stepTwo",
             },
           },
+          stepTwo: {},
         },
       } as unknown as FlowDefinition,
       runId,
@@ -78,10 +79,10 @@ describe("stepReadyToStartPlanner", () => {
       inputs: {},
       exports: {},
       globals: {},
-      status: "completed",
+      status: "failed",
       steps: {
         [stepId]: {
-          status: "completed",
+          status: "failed",
           attempt: 1,
           exports: {},
           result: {},
@@ -91,20 +92,20 @@ describe("stepReadyToStartPlanner", () => {
     } satisfies RunContext;
     const oldState: EngineState = { runs: { [runId]: runCtx } };
     const newState: EngineState = { runs: { [runId]: newRunCtx } };
-    const effects = jobCompletedPlanner({
+    const effects = jobFailedPlanner({
       oldState,
       newState,
-      message: jobCompletedMsg,
+      message: jobFailedMsg,
     });
 
     const expectedEffectPlan = {
       kind: "DispatchInternal",
       message: {
         runId,
-        stepId: "stepTwo",
-        type: "StepReadyToStart",
-      } satisfies StepReadyToStartMsg,
-    } satisfies DispatchInternalFx;
+        stepId,
+        type: "FlowFailed",
+      } satisfies FlowFailedMsg,
+    };
 
     expect(effects).toEqual([expectedEffectPlan]);
   });

@@ -3,7 +3,7 @@ import {
   EngineEffect,
   EngineState,
   JobCompletedMsg,
-} from "../engine.js";
+} from "../engine.types.js";
 
 export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
   oldState: EngineState;

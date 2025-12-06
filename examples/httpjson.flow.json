@@ -6,12 +6,12 @@
     "post": {
       "type": "httpjson",
       "url": "https://swapi.dev/api/people/1",
-      "method": "GET",
+      "method": "POST",
       "headers": {
         "Content-Type": "application/json"
       },
       "on": {
-        "success": "delete"
+        "failure": "delete"
       }
     },
     "delete": {

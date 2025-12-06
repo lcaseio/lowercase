@@ -1,12 +1,11 @@
 import type {
-  DispatchInternalFx,
   EngineEffect,
   EngineMessage,
   EngineState,
   Planner,
-  StartHttjsonStepMsg,
+  StartHttpJsonStepMsg,
   StepReadyToStartMsg,
-} from "../engine.js";
+} from "../engine.types.js";
 
 export const stepTypeMap = {
   httpjson: httpjsonStartMsg,
@@ -17,7 +16,7 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
   message: StepReadyToStartMsg;
-}): DispatchInternalFx[] | void => {
+}): EngineEffect[] | void => {
   const { newState, message } = args;
   const { runId, stepId } = message;
 
@@ -31,6 +30,26 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
 
   return [
     {
+      kind: "EmitStepStarted",
+      data: {
+        status: "started",
+        step: {
+          id: stepId,
+          name: stepId,
+          type: newState.runs[runId].definition.steps[stepId].type,
+        },
+      },
+      eventType: "step.started",
+      scope: {
+        flowid: newState.runs[runId].flowId,
+        runid: runId,
+        source: "lowercase://engine",
+        stepid: stepId,
+        steptype: newState.runs[runId].definition.steps[stepId].type,
+      },
+      traceId: newState.runs[runId].traceId,
+    },
+    {
       kind: "DispatchInternal",
       message: stepMessage,
     },
@@ -39,7 +58,7 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
 
 export function httpjsonStartMsg(
   message: StepReadyToStartMsg
-): StartHttjsonStepMsg {
+): StartHttpJsonStepMsg {
   return {
     type: "StartHttpjsonStep",
     runId: message.runId,

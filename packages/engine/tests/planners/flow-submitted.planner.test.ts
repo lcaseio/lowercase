@@ -1,10 +1,10 @@
-import { RunContext } from "@lcase/types/engine";
-import { flowSubmittedPlanner } from "../src/planners/flow-submitted.planner.js";
+import type { RunContext } from "@lcase/types/engine";
+import { flowSubmittedPlanner } from "../../src/planners/flow-submitted.planner.js";
 import type {
   FlowSubmittedMsg,
   EngineState,
   EngineEffect,
-} from "../src/engine.js";
+} from "../../src/engine.types.js";
 import { describe, it, expect } from "vitest";
 
 describe("flowSubmittedPlanner", () => {

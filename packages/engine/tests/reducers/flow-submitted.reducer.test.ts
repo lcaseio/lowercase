@@ -1,6 +1,6 @@
-import { RunContext } from "@lcase/types/engine";
-import { flowSubmittedReducer } from "../src/reducers/flow-submitted.reducer.js";
-import type { FlowSubmittedMsg, EngineState } from "../src/engine.js";
+import type { RunContext } from "@lcase/types/engine";
+import { flowSubmittedReducer } from "../../src/reducers/flow-submitted.reducer.js";
+import type { FlowSubmittedMsg, EngineState } from "../../src/engine.types.js";
 import { describe, it, expect } from "vitest";
 
 describe("flowSubmittedReducer", () => {

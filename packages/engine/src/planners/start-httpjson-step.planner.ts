@@ -3,13 +3,13 @@ import {
   EngineEffect,
   EngineState,
   Planner,
-  StartHttjsonStepMsg,
-} from "../engine.js";
+  StartHttpJsonStepMsg,
+} from "../engine.types.js";
 
-export const startHttpjsonStepPlanner: Planner<StartHttjsonStepMsg> = (args: {
+export const startHttpJsonStepPlanner: Planner<StartHttpJsonStepMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
-  message: StartHttjsonStepMsg;
+  message: StartHttpJsonStepMsg;
 }): EngineEffect[] | void => {
   const { message, newState } = args;
   const { runId, stepId } = message;

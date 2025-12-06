@@ -1,5 +1,10 @@
 import { RunContext, StepContext } from "@lcase/types/engine";
-import { EngineState, FlowSubmittedMsg, Patch, Reducer } from "../engine.js";
+import {
+  EngineState,
+  FlowSubmittedMsg,
+  Patch,
+  Reducer,
+} from "../engine.types.js";
 
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   state: EngineState,

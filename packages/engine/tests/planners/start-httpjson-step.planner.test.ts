@@ -1,11 +1,11 @@
-import { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import {
+import type {
   EmitJobHttpjsonSubmittedFx,
   EngineState,
-  StartHttjsonStepMsg,
-} from "../src/engine.js";
-import { startHttpjsonStepPlanner } from "../src/planners/start-httpjson-step.planner.js";
+  StartHttpJsonStepMsg,
+} from "../../src/engine.types.js";
+import { startHttpJsonStepPlanner } from "../../src/planners/start-httpjson-step.planner.js";
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
@@ -13,7 +13,7 @@ describe("stepReadyToStartPlanner", () => {
       runs: {},
     } satisfies EngineState;
 
-    const startHttpjsonStepMsg: StartHttjsonStepMsg = {
+    const startHttpjsonStepMsg: StartHttpJsonStepMsg = {
       type: "StartHttpjsonStep",
       runId: "test-id",
       stepId: "test-stepId",
@@ -68,7 +68,7 @@ describe("stepReadyToStartPlanner", () => {
       },
     };
     const newState: EngineState = { runs: { ["test-id"]: newRunContext } };
-    const effects = startHttpjsonStepPlanner({
+    const effects = startHttpJsonStepPlanner({
       oldState,
       newState,
       message: startHttpjsonStepMsg,

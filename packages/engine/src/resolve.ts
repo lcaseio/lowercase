@@ -117,6 +117,5 @@ export function parsePath(path: string): Part[] {
       }
     }
   }
-  console.log("parseArray", parseArray);
   return partArray;
 }

@@ -1,15 +1,18 @@
 import { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import { EngineState, StartHttjsonStepMsg } from "../src/engine";
-import { startHttpjsonStepReducer } from "../src/reducers/start-httpjson-step.reducer.js";
+import type {
+  EngineState,
+  StartHttpJsonStepMsg,
+} from "../../src/engine.types.js";
+import { startHttpJsonStepReducer } from "../../src/reducers/start-httpjson-step.reducer.js";
 
-describe("stepReadyToStartReducer", () => {
+describe("startHttpJsonStepReducer", () => {
   it("increments attempt, outstanding steps, and running steps correctly", () => {
     const state = {
       runs: {},
     } satisfies EngineState;
 
-    const stepReadyToStartMsg: StartHttjsonStepMsg = {
+    const stepReadyToStartMsg: StartHttpJsonStepMsg = {
       type: "StartHttpjsonStep",
       runId: "test-id",
       stepId: "test-stepId",
@@ -64,7 +67,7 @@ describe("stepReadyToStartReducer", () => {
       },
     };
     const testNewState = { runs: { ["test-id"]: newRunContext } };
-    const reducerState = startHttpjsonStepReducer(
+    const reducerState = startHttpJsonStepReducer(
       startState,
       stepReadyToStartMsg
     );

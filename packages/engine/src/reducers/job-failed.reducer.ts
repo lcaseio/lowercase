@@ -1,9 +1,9 @@
 import { RunContext, StepContext } from "@lcase/types/engine";
-import type { EngineState, JobCompletedMsg, Reducer } from "../engine.types.js";
+import type { EngineState, JobFailedMsg, Reducer } from "../engine.types.js";
 
-export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
+export const jobFailedReducer: Reducer<JobFailedMsg> = (
   state: EngineState,
-  message: JobCompletedMsg
+  message: JobFailedMsg
 ) => {
   const { runId, stepId } = message;
   const run = state.runs[runId];
@@ -12,7 +12,7 @@ export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
 
   const newStepCtx = {
     ...stepCtx,
-    status: "completed",
+    status: "failed",
   } satisfies StepContext;
 
   const stepsSlice = { ...steps, [stepId]: newStepCtx };
@@ -26,7 +26,7 @@ export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
     outstandingSteps: Math.abs(run.outstandingSteps - 1),
     runningSteps,
     doneSteps,
-    status: "completed",
+    status: "failed",
   } satisfies RunContext;
 
   const newState = {

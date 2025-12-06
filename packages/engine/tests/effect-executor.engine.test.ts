@@ -1,14 +1,14 @@
-import { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types/engine";
 import { flowSubmittedPlanner } from "../src/planners/flow-submitted.planner.js";
 import {
   type FlowSubmittedMsg,
   type EngineState,
   type EngineEffect,
-  Engine,
-} from "../src/engine.js";
+} from "../src/engine.types.js";
 import { describe, it, expect } from "vitest";
-import { EngineDeps } from "@lcase/ports/engine";
-import { EmitterFactoryPort } from "@lcase/ports";
+import type { EngineDeps } from "@lcase/ports/engine";
+import type { EmitterFactoryPort } from "@lcase/ports";
+import { Engine } from "../src/engine.js";
 
 describe("submitExternal", () => {
   it("generates the expected state for starting an httpjson step", () => {
@@ -21,6 +21,9 @@ describe("submitExternal", () => {
         return { emit: () => {} };
       },
       newJobEmitterNewSpan: () => {
+        return { emit: () => {} };
+      },
+      newStepEmitterNewSpan: () => {
         return { emit: () => {} };
       },
     } as unknown as EmitterFactoryPort;

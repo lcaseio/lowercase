@@ -1,9 +1,13 @@
 import { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import { flowSubmittedPlanner } from "../src/planners/flow-submitted.planner";
-import { EngineEffect, EngineState, StepReadyToStartMsg } from "../src/engine";
-import { stepReadyToStartPlanner } from "../src/planners/step-ready-to-start.planner";
-import { stepReadyToStartReducer } from "../src/reducers/step-ready-to-start.reducer";
+import { flowSubmittedPlanner } from "../../src/planners/flow-submitted.planner";
+import {
+  EngineEffect,
+  EngineState,
+  StepReadyToStartMsg,
+} from "../../src/engine";
+import { stepReadyToStartPlanner } from "../../src/planners/step-ready-to-start.planner";
+import { stepReadyToStartReducer } from "../../src/reducers/step-ready-to-start.reducer";
 
 describe("stepReadyToStartReducer", () => {
   it("", () => {
