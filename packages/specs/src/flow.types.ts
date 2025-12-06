@@ -6,6 +6,7 @@ import type {
   StepOnField,
   FlowDefinition,
 } from "@lcase/types";
+import { StepParallelSchema } from "./parallel.schema.js";
 
 export const StepOnSchema = z
   .object({
@@ -85,6 +86,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
 export const StepSchema = z.discriminatedUnion("type", [
   StepHttpJsonSchema,
   StepMcpSchema,
+  StepParallelSchema,
 ]);
 
 export const FlowSchema = z

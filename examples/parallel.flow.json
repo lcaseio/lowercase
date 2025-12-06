@@ -1,0 +1,32 @@
+{
+  "name": "Parallel Flow Test",
+  "version": "0.1.0-alpha.7",
+  "start": "p",
+  "steps": {
+    "p": {
+      "type": "parallel",
+      "steps": ["one", "two"]
+    },
+    "one": {
+      "type": "httpjson",
+      "url": "https://httpbin.org/post",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": { "hello": "world", "n": 123 },
+      "on": {
+        "success": "two"
+      }
+    },
+    "two": {
+      "type": "httpjson",
+      "url": "https://httpbin.org/post",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": { "hello": "world", "n": 123 }
+    }
+  }
+}
