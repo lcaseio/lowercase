@@ -2,13 +2,16 @@ import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
   DispatchInternalFx,
+  EmitFlowCompletedFx,
   EmitStepCompletedFx,
   EngineState,
+  FlowCompletedMsg,
   JobCompletedMsg,
   StepReadyToStartMsg,
 } from "../../src/engine.types.js";
 import type { FlowDefinition } from "@lcase/types";
 import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
+import { flowCompletedPlanner } from "../../src/planners/flow-completed.planner.js";
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
@@ -18,8 +21,8 @@ describe("stepReadyToStartPlanner", () => {
 
     const runId = "test-runId";
     const stepId = "test-stepId";
-    const jobCompletedMsg: JobCompletedMsg = {
-      type: "JobCompleted",
+    const flowCompletedMsg: FlowCompletedMsg = {
+      type: "FlowCompleted",
       runId,
       stepId,
     };
@@ -94,42 +97,30 @@ describe("stepReadyToStartPlanner", () => {
     } satisfies RunContext;
     const oldState: EngineState = { runs: { [runId]: runCtx } };
     const newState: EngineState = { runs: { [runId]: newRunCtx } };
-    const effects = jobCompletedPlanner({
+    const effects = flowCompletedPlanner({
       oldState,
       newState,
-      message: jobCompletedMsg,
+      message: flowCompletedMsg,
     });
 
-    const emitStepCompletedFx = {
-      kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+    const expectedEffectPlan = {
+      kind: "EmitFlowCompleted",
+      data: {
+        flow: {
+          id: newRunCtx.flowId,
+          name: newRunCtx.flowName,
+          version: newRunCtx.definition.version,
+        },
+        status: "success",
+      },
+      eventType: "flow.completed",
       scope: {
         flowid: newRunCtx.flowId,
-        runid: runId,
         source: "lowercase://engine",
-        stepid: stepId,
-        steptype: "httpjson",
-      },
-      data: {
-        status: "success",
-        step: {
-          id: stepId,
-          name: stepId,
-          type: "httpjson",
-        },
       },
       traceId: newRunCtx.traceId,
-    } satisfies EmitStepCompletedFx;
+    } satisfies EmitFlowCompletedFx;
 
-    const distpatchNextStepFx = {
-      kind: "DispatchInternal",
-      message: {
-        runId,
-        stepId: "stepTwo",
-        type: "StepReadyToStart",
-      } satisfies StepReadyToStartMsg,
-    } satisfies DispatchInternalFx;
-
-    expect(effects).toEqual([emitStepCompletedFx, distpatchNextStepFx]);
+    expect(effects).toEqual([expectedEffectPlan]);
   });
 });

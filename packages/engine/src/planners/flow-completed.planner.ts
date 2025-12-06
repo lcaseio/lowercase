@@ -2,14 +2,14 @@ import type {
   Planner,
   EngineEffect,
   EngineState,
-  FlowFailedMsg,
-  EmitFlowFailedFx,
+  EmitFlowCompletedFx,
+  FlowCompletedMsg,
 } from "../engine.types.js";
 
-export const flowFailedPlanner: Planner<FlowFailedMsg> = (args: {
+export const flowCompletedPlanner: Planner<FlowCompletedMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
-  message: FlowFailedMsg;
+  message: FlowCompletedMsg;
 }): EngineEffect[] | void => {
   const { newState, message } = args;
   const { runId, stepId } = message;
@@ -19,25 +19,25 @@ export const flowFailedPlanner: Planner<FlowFailedMsg> = (args: {
   const newRunState = newState.runs[message.runId];
   if (!newRunState) return;
 
-  if (newRunState.status !== "failed") return;
+  if (newRunState.status !== "completed") return;
 
   const effect = {
-    kind: "EmitFlowFailed",
+    kind: "EmitFlowCompleted",
     data: {
       flow: {
         id: flowId,
         name: newState.runs[runId].flowName,
         version: newState.runs[runId].definition.version,
       },
-      status: "failure",
+      status: "success",
     },
-    eventType: "flow.failed",
+    eventType: "flow.completed",
     scope: {
       flowid: flowId,
       source: "lowercase://engine",
     },
     traceId: newState.runs[runId].traceId,
-  } satisfies EmitFlowFailedFx;
+  } satisfies EmitFlowCompletedFx;
   effects.push(effect);
 
   return effects;

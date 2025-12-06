@@ -57,20 +57,17 @@ export class Engine {
   subscribeToTopics(): void {
     this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
       const event = e as AnyEvent<"flow.submitted">;
-      // const parsedFlowQueued = this.flowParser.flowQueued(event);
-      // if (parsedFlowQueued.error) {
-      //   await this.tel.flowQueuedFailed(parsedFlowQueued);
-      //   return;
-      // }
-
+      // TODO: parse enevelope or move this out of engine
       this.handleFlowSubmitted(event);
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
-      await this.handleJobCompleted(e);
+      // TODO: parse evenvelope
+      this.handleJobCompleted(e);
     });
     this.bus.subscribe("job.*.failed", async (e: AnyEvent) => {
-      await this.handleJobFailed(e);
+      // TODO: parse evenvelope
+      this.handleJobFailed(e);
     });
   }
 
@@ -207,6 +204,7 @@ export class Engine {
       type: "JobFailed",
       runId: job.event.runid,
       stepId: job.event.stepid,
+      reason: job.event.data.reason,
     } satisfies JobFailedMsg;
 
     this.enqueue(jobFailedMsg);

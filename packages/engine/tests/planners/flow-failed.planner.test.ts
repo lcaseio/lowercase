@@ -2,13 +2,18 @@ import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
   DispatchInternalFx,
-  EmitStepCompletedFx,
+  EmitFlowCompletedFx,
+  EmitFlowFailedFx,
   EngineState,
+  FlowCompletedMsg,
+  FlowFailedMsg,
   JobCompletedMsg,
   StepReadyToStartMsg,
 } from "../../src/engine.types.js";
 import type { FlowDefinition } from "@lcase/types";
 import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
+import { flowCompletedPlanner } from "../../src/planners/flow-completed.planner.js";
+import { flowFailedPlanner } from "../../src/planners/flow-failed.planner.js";
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
@@ -18,8 +23,8 @@ describe("stepReadyToStartPlanner", () => {
 
     const runId = "test-runId";
     const stepId = "test-stepId";
-    const jobCompletedMsg: JobCompletedMsg = {
-      type: "JobCompleted",
+    const flowFailedMsg: FlowFailedMsg = {
+      type: "FlowFailed",
       runId,
       stepId,
     };
@@ -30,7 +35,6 @@ describe("stepReadyToStartPlanner", () => {
         start: stepId,
         steps: {
           [stepId]: {
-            type: "httpjson",
             on: {
               success: "stepTwo",
             },
@@ -65,7 +69,6 @@ describe("stepReadyToStartPlanner", () => {
         start: stepId,
         steps: {
           [stepId]: {
-            type: "httpjson",
             on: {
               success: "stepTwo",
             },
@@ -81,10 +84,10 @@ describe("stepReadyToStartPlanner", () => {
       inputs: {},
       exports: {},
       globals: {},
-      status: "completed",
+      status: "failed",
       steps: {
         [stepId]: {
-          status: "completed",
+          status: "failed",
           attempt: 1,
           exports: {},
           result: {},
@@ -94,42 +97,30 @@ describe("stepReadyToStartPlanner", () => {
     } satisfies RunContext;
     const oldState: EngineState = { runs: { [runId]: runCtx } };
     const newState: EngineState = { runs: { [runId]: newRunCtx } };
-    const effects = jobCompletedPlanner({
+    const effects = flowFailedPlanner({
       oldState,
       newState,
-      message: jobCompletedMsg,
+      message: flowFailedMsg,
     });
 
-    const emitStepCompletedFx = {
-      kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+    const expectedEffectPlan = {
+      kind: "EmitFlowFailed",
+      data: {
+        flow: {
+          id: newRunCtx.flowId,
+          name: newRunCtx.flowName,
+          version: newRunCtx.definition.version,
+        },
+        status: "failure",
+      },
+      eventType: "flow.failed",
       scope: {
         flowid: newRunCtx.flowId,
-        runid: runId,
         source: "lowercase://engine",
-        stepid: stepId,
-        steptype: "httpjson",
-      },
-      data: {
-        status: "success",
-        step: {
-          id: stepId,
-          name: stepId,
-          type: "httpjson",
-        },
       },
       traceId: newRunCtx.traceId,
-    } satisfies EmitStepCompletedFx;
+    } satisfies EmitFlowFailedFx;
 
-    const distpatchNextStepFx = {
-      kind: "DispatchInternal",
-      message: {
-        runId,
-        stepId: "stepTwo",
-        type: "StepReadyToStart",
-      } satisfies StepReadyToStartMsg,
-    } satisfies DispatchInternalFx;
-
-    expect(effects).toEqual([emitStepCompletedFx, distpatchNextStepFx]);
+    expect(effects).toEqual([expectedEffectPlan]);
   });
 });

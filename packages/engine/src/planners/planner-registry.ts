@@ -1,4 +1,5 @@
 import { Planner, EngineMessage } from "../engine.types.js";
+import { flowCompletedPlanner } from "./flow-completed.planner.js";
 import { flowFailedPlanner } from "./flow-failed.planner.js";
 import { flowSubmittedPlanner } from "./flow-submitted.planner.js";
 import { jobCompletedPlanner } from "./job-completed.planner.js";
@@ -16,5 +17,6 @@ export const planners = {
   StartHttpjsonStep: startHttpJsonStepPlanner,
   JobCompleted: jobCompletedPlanner,
   JobFailed: jobFailedPlanner,
+  FlowCompleted: flowCompletedPlanner,
   FlowFailed: flowFailedPlanner,
 } satisfies PlannerRegistry;

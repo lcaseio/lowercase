@@ -1,12 +1,14 @@
-import { EmitterFactoryPort } from "@lcase/ports";
 import type {
   CloudScope,
+  FlowCompletedData,
   FlowDefinition,
   FlowFailedData,
   FlowScope,
   FlowStartedData,
   JobHttpJsonData,
   JobScope,
+  StepCompletedData,
+  StepFailedData,
   StepScope,
   StepStartedData,
 } from "@lcase/types";
@@ -52,6 +54,12 @@ export type JobFailedMsg = {
   type: "JobFailed";
   runId: string;
   stepId: string;
+  reason: string;
+};
+export type FlowCompletedMsg = {
+  type: "FlowCompleted";
+  runId: string;
+  stepId: string;
 };
 export type FlowFailedMsg = {
   type: "FlowFailed";
@@ -65,6 +73,7 @@ export type EngineMessage =
   | StartHttpJsonStepMsg
   | JobCompletedMsg
   | JobFailedMsg
+  | FlowCompletedMsg
   | FlowFailedMsg;
 
 export type MessageType = EngineMessage["type"];
@@ -89,7 +98,21 @@ export type EmitStepStartedFx = {
   data: StepStartedData;
   traceId: string;
 };
-export type EmitJobHttpjsonSubmittedFx = {
+export type EmitStepCompletedFx = {
+  kind: "EmitStepCompleted";
+  eventType: "step.compelted";
+  scope: StepScope & CloudScope;
+  data: StepCompletedData;
+  traceId: string;
+};
+export type EmitStepFailedFx = {
+  kind: "EmitStepFailed";
+  eventType: "step.failed";
+  scope: StepScope & CloudScope;
+  data: StepFailedData;
+  traceId: string;
+};
+export type EmitJobHttpJsonSubmittedFx = {
   kind: "EmitJobHttpjsonSubmittedEvent";
   eventType: "job.httpjson.submitted";
   scope: JobScope & CloudScope;
@@ -103,6 +126,13 @@ export type EmitFlowFailedFx = {
   data: FlowFailedData;
   traceId: string;
 };
+export type EmitFlowCompletedFx = {
+  kind: "EmitFlowCompleted";
+  eventType: "flow.completed";
+  scope: FlowScope & CloudScope;
+  data: FlowCompletedData;
+  traceId: string;
+};
 export type DispatchInternalFx = {
   kind: "DispatchInternal";
   message: EngineMessage;
@@ -112,8 +142,11 @@ export type EngineEffect =
   | EmitEventFx
   | DispatchInternalFx
   | EmitStepStartedFx
-  | EmitJobHttpjsonSubmittedFx
+  | EmitStepCompletedFx
+  | EmitStepFailedFx
+  | EmitJobHttpJsonSubmittedFx
   | EmitFlowStartedFx
+  | EmitFlowCompletedFx
   | EmitFlowFailedFx;
 
 // reducers
@@ -121,6 +154,8 @@ export type Reducer<M extends EngineMessage = EngineMessage> = (
   state: EngineState,
   message: M
 ) => Patch | void;
+
+// planners
 export type Planner<M extends EngineMessage = EngineMessage> = (args: {
   oldState: EngineState;
   newState: EngineState;

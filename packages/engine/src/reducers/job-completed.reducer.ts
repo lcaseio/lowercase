@@ -20,13 +20,19 @@ export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
   const runningSteps = new Set([...run.runningSteps]);
   runningSteps.delete(stepId);
   const doneSteps = new Set([...run.doneSteps, stepId]);
+
+  const outstandingSteps = Math.abs(run.outstandingSteps - 1);
+  let status = run.status;
+  if (runningSteps.size === 0 && outstandingSteps === 0) {
+    status = "completed";
+  }
   const newRunContext = {
     ...state.runs[runId],
     steps: stepsSlice,
-    outstandingSteps: Math.abs(run.outstandingSteps - 1),
+    outstandingSteps,
     runningSteps,
     doneSteps,
-    status: "completed",
+    status,
   } satisfies RunContext;
 
   const newState = {

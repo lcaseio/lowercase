@@ -2,9 +2,12 @@ import { EmitterFactoryPort } from "@lcase/ports";
 import {
   EffectHandler,
   EmitEventFx,
+  EmitFlowCompletedFx,
   EmitFlowFailedFx,
   EmitFlowStartedFx,
-  EmitJobHttpjsonSubmittedFx,
+  EmitJobHttpJsonSubmittedFx,
+  EmitStepCompletedFx,
+  EmitStepFailedFx,
   EmitStepStartedFx,
   EngineEffect,
 } from "../engine.types.js";
@@ -40,9 +43,17 @@ export function wireEffectHandlers(
       const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
       emitter.emit("step.started", effect.data);
     },
+    EmitStepCompleted: (effect: EmitStepCompletedFx) => {
+      const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
+      emitter.emit("step.completed", effect.data);
+    },
+    EmitStepFailed: (effect: EmitStepFailedFx) => {
+      const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
+      emitter.emit("step.failed", effect.data);
+    },
 
     EmitJobHttpjsonSubmittedEvent: function (
-      effect: EmitJobHttpjsonSubmittedFx
+      effect: EmitJobHttpJsonSubmittedFx
     ): void {
       effect.data.pipe = {};
       const jobId = String(randomUUID());
@@ -59,16 +70,12 @@ export function wireEffectHandlers(
     },
 
     EmitFlowFailed: function (effect: EmitFlowFailedFx): void {
-      const jobId = String(randomUUID());
-      const emitter = ef.newFlowEmitterNewSpan(
-        {
-          ...effect.scope,
-        },
-        effect.traceId
-      );
-
+      const emitter = ef.newFlowEmitterNewSpan(effect.scope, effect.traceId);
       void emitter.emit("flow.failed", effect.data);
-      return;
+    },
+    EmitFlowCompleted: function (effect: EmitFlowCompletedFx): void {
+      const emitter = ef.newFlowEmitterNewSpan(effect.scope, effect.traceId);
+      void emitter.emit("flow.completed", effect.data);
     },
   } satisfies EffectHandlerRegistry;
 

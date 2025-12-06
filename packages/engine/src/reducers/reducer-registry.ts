@@ -1,4 +1,5 @@
 import { EngineMessage, Reducer } from "../engine.types.js";
+import { flowCompletedReducer } from "./flow-completed.reducer.js";
 import { flowFailedReducer } from "./flow-failed.reducer.js";
 import { flowSubmittedReducer } from "./flow-submitted.reducer.js";
 import { jobCompletedReducer } from "./job-completed.reducer.js";
@@ -16,5 +17,6 @@ export const reducers = {
   StartHttpjsonStep: startHttpJsonStepReducer,
   JobCompleted: jobCompletedReducer,
   JobFailed: jobFailedReducer,
+  FlowCompleted: flowCompletedReducer,
   FlowFailed: flowFailedReducer,
 } satisfies ReducerRegistry;

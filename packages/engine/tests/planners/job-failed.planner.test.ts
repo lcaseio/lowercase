@@ -1,6 +1,7 @@
 import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
+  EmitStepFailedFx,
   EngineState,
   FlowFailedMsg,
   JobFailedMsg,
@@ -20,6 +21,7 @@ describe("jobFailedPlanner", () => {
       type: "JobFailed",
       runId,
       stepId,
+      reason: "test-reason",
     };
     const runCtx = {
       flowId: "test-flowId",
@@ -28,6 +30,7 @@ describe("jobFailedPlanner", () => {
         start: stepId,
         steps: {
           [stepId]: {
+            type: "httpsjson",
             on: {
               failure: "stepTwo",
             },
@@ -63,6 +66,7 @@ describe("jobFailedPlanner", () => {
         start: stepId,
         steps: {
           [stepId]: {
+            type: "httpjson",
             on: {
               success: "stepTwo",
             },
@@ -87,6 +91,7 @@ describe("jobFailedPlanner", () => {
           exports: {},
           result: {},
           stepId,
+          reason: "test-reason",
         },
       },
     } satisfies RunContext;
@@ -98,7 +103,29 @@ describe("jobFailedPlanner", () => {
       message: jobFailedMsg,
     });
 
-    const expectedEffectPlan = {
+    const emitStepFailedFx = {
+      kind: "EmitStepFailed",
+      eventType: "step.failed",
+      scope: {
+        flowid: newRunCtx.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+        stepid: stepId,
+        steptype: "httpjson",
+      },
+      data: {
+        status: "failure",
+        step: {
+          id: stepId,
+          name: stepId,
+          type: "httpjson",
+        },
+        reason: "test-reason",
+      },
+      traceId: newRunCtx.traceId,
+    } satisfies EmitStepFailedFx;
+
+    const dispatchInternalFx = {
       kind: "DispatchInternal",
       message: {
         runId,
@@ -107,6 +134,6 @@ describe("jobFailedPlanner", () => {
       } satisfies FlowFailedMsg,
     };
 
-    expect(effects).toEqual([expectedEffectPlan]);
+    expect(effects).toEqual([emitStepFailedFx, dispatchInternalFx]);
   });
 });
