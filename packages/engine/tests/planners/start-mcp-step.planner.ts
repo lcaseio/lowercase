@@ -1,13 +1,13 @@
 import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
-  EmitJobHttpJsonSubmittedFx,
+  EmitJobMcpSubmittedFx,
   EngineState,
   StartHttpJsonStepMsg,
 } from "../../src/engine.types.js";
 import { startHttpJsonStepPlanner } from "../../src/planners/start-httpjson-step.planner.js";
 
-describe("stepReadyToStartPlanner", () => {
+describe("startMcpStepPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
     const state = {
       runs: {},
@@ -75,10 +75,10 @@ describe("stepReadyToStartPlanner", () => {
     });
 
     const expectedEffectPlan = {
-      kind: "EmitJobHttpjsonSubmittedEvent",
-      eventType: "job.httpjson.submitted",
+      kind: "EmitJobMcpSubmittedEvent",
+      eventType: "job.mcp.submitted",
       scope: {
-        capid: "httpjson",
+        capid: "mcp",
         flowid: "test-flowId",
         jobid: "", // FIXME: possibly null or created earlier
         runid: "test-id",
@@ -88,14 +88,16 @@ describe("stepReadyToStartPlanner", () => {
       },
       data: {
         job: {
-          capid: "httpjson",
+          capid: "mcp",
           id: "", // FIXME: possibly null or created earlier
           toolid: null,
         },
         url: "test-url",
+        feature: { name: "", primitive: "tool" },
+        transport: "http",
       },
       traceId: "test-traceId",
-    } satisfies EmitJobHttpJsonSubmittedFx;
+    } satisfies EmitJobMcpSubmittedFx;
 
     expect(effects).toEqual([expectedEffectPlan]);
   });

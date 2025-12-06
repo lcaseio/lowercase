@@ -1,36 +1,38 @@
-import { StepHttpJson } from "@lcase/types";
-import {
+import type { StepMcp } from "@lcase/types";
+import type {
+  EmitJobMcpSubmittedFx,
   EngineEffect,
   EngineState,
   Planner,
-  StartHttpJsonStepMsg,
+  StartMcpStepMsg,
 } from "../engine.types.js";
 
-export const startHttpJsonStepPlanner: Planner<StartHttpJsonStepMsg> = (args: {
+export const starMcpStepPlanner: Planner<StartMcpStepMsg> = (args: {
   oldState: EngineState;
   newState: EngineState;
-  message: StartHttpJsonStepMsg;
+  message: StartMcpStepMsg;
 }): EngineEffect[] | void => {
   const { message, newState } = args;
   const { runId, stepId } = message;
   const step = newState.runs[message.runId].definition.steps[
     message.stepId
-  ] as StepHttpJson;
+  ] as StepMcp;
   return [
     {
-      kind: "EmitJobHttpjsonSubmittedEvent",
+      kind: "EmitJobMcpSubmittedEvent",
       data: {
         job: {
           capid: step.type,
           id: "",
-          toolid: null,
+          toolid: step.tool ?? null,
         },
         url: step.url,
-        ...(step.body ? { body: step.body } : {}),
-        ...(step.headers ? { headers: step.headers } : {}),
-        ...(step.method ? { method: step.method } : {}),
+        feature: step.feature,
+        transport: step.transport,
+        ...(step.args ? { args: step.args } : {}),
+        ...(step.tool ? { tool: step.tool } : {}),
       },
-      eventType: "job.httpjson.submitted",
+      eventType: "job.mcp.submitted",
       traceId: newState.runs[runId].traceId,
       scope: {
         capid: step.type,
@@ -39,8 +41,8 @@ export const startHttpJsonStepPlanner: Planner<StartHttpJsonStepMsg> = (args: {
         runid: runId,
         stepid: stepId,
         source: "lowercase://engine",
-        toolid: null,
+        toolid: step.tool ?? null,
       },
-    },
+    } satisfies EmitJobMcpSubmittedFx,
   ];
 };

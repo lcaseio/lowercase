@@ -5,6 +5,7 @@ import { flowSubmittedReducer } from "./flow-submitted.reducer.js";
 import { jobCompletedReducer } from "./job-completed.reducer.js";
 import { jobFailedReducer } from "./job-failed.reducer.js";
 import { startHttpJsonStepReducer } from "./start-httpjson-step.reducer.js";
+import { startMcpStepReducer } from "./start-mcp-step.reducer.js";
 import { stepReadyToStartReducer } from "./step-ready-to-start.reducer.js";
 
 export type ReducerRegistry = {
@@ -15,6 +16,7 @@ export const reducers = {
   FlowSubmitted: flowSubmittedReducer,
   StepReadyToStart: stepReadyToStartReducer,
   StartHttpjsonStep: startHttpJsonStepReducer,
+  StartMcpStep: startMcpStepReducer,
   JobCompleted: jobCompletedReducer,
   JobFailed: jobFailedReducer,
   FlowCompleted: flowCompletedReducer,

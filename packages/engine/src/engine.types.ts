@@ -6,6 +6,7 @@ import type {
   FlowScope,
   FlowStartedData,
   JobHttpJsonData,
+  JobMcpData,
   JobScope,
   StepCompletedData,
   StepFailedData,
@@ -43,6 +44,11 @@ export type StartHttpJsonStepMsg = {
   runId: string;
   stepId: string;
 };
+export type StartMcpStepMsg = {
+  type: "StartMcpStep";
+  runId: string;
+  stepId: string;
+};
 
 export type JobCompletedMsg = {
   type: "JobCompleted";
@@ -71,6 +77,7 @@ export type EngineMessage =
   | FlowSubmittedMsg
   | StepReadyToStartMsg
   | StartHttpJsonStepMsg
+  | StartMcpStepMsg
   | JobCompletedMsg
   | JobFailedMsg
   | FlowCompletedMsg
@@ -119,6 +126,14 @@ export type EmitJobHttpJsonSubmittedFx = {
   data: JobHttpJsonData;
   traceId: string;
 };
+
+export type EmitJobMcpSubmittedFx = {
+  kind: "EmitJobMcpSubmittedEvent";
+  eventType: "job.mcp.submitted";
+  scope: JobScope & CloudScope;
+  data: JobMcpData;
+  traceId: string;
+};
 export type EmitFlowFailedFx = {
   kind: "EmitFlowFailed";
   eventType: "flow.failed";
@@ -145,6 +160,7 @@ export type EngineEffect =
   | EmitStepCompletedFx
   | EmitStepFailedFx
   | EmitJobHttpJsonSubmittedFx
+  | EmitJobMcpSubmittedFx
   | EmitFlowStartedFx
   | EmitFlowCompletedFx
   | EmitFlowFailedFx;

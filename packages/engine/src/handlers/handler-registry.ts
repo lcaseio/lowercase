@@ -6,6 +6,7 @@ import {
   EmitFlowFailedFx,
   EmitFlowStartedFx,
   EmitJobHttpJsonSubmittedFx,
+  EmitJobMcpSubmittedFx,
   EmitStepCompletedFx,
   EmitStepFailedFx,
   EmitStepStartedFx,
@@ -57,6 +58,7 @@ export function wireEffectHandlers(
     ): void {
       effect.data.pipe = {};
       const jobId = String(randomUUID());
+      effect.data.job.id = jobId;
       const emitter = ef.newJobEmitterNewSpan(
         {
           ...effect.scope,
@@ -66,6 +68,22 @@ export function wireEffectHandlers(
       );
 
       void emitter.emit("job.httpjson.submitted", effect.data);
+      return;
+    },
+
+    EmitJobMcpSubmittedEvent: function (effect: EmitJobMcpSubmittedFx): void {
+      effect.data.pipe = {};
+      const jobId = String(randomUUID());
+      effect.data.job.id = jobId;
+      const emitter = ef.newJobEmitterNewSpan(
+        {
+          ...effect.scope,
+          jobid: jobId,
+        },
+        effect.traceId
+      );
+
+      void emitter.emit("job.mcp.submitted", effect.data);
       return;
     },
 

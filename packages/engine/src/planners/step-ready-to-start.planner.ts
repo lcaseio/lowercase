@@ -4,12 +4,13 @@ import type {
   EngineState,
   Planner,
   StartHttpJsonStepMsg,
+  StartMcpStepMsg,
   StepReadyToStartMsg,
 } from "../engine.types.js";
 
 export const stepTypeMap = {
-  httpjson: httpjsonStartMsg,
-  mcp: httpjsonStartMsg,
+  httpjson: httpJsonStartMsg,
+  mcp: mcpStartMsg,
 } satisfies StepMsgMap;
 
 export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
@@ -56,11 +57,19 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
   ];
 };
 
-export function httpjsonStartMsg(
+export function httpJsonStartMsg(
   message: StepReadyToStartMsg
 ): StartHttpJsonStepMsg {
   return {
     type: "StartHttpjsonStep",
+    runId: message.runId,
+    stepId: message.stepId,
+  };
+}
+
+export function mcpStartMsg(message: StepReadyToStartMsg): StartMcpStepMsg {
+  return {
+    type: "StartMcpStep",
     runId: message.runId,
     stepId: message.stepId,
   };
