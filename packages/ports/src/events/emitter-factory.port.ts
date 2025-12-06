@@ -87,6 +87,9 @@ export interface EmitterFactoryPort {
     traceId: string
   ): FlowEmitterPort;
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitterPort;
+  newRunEmitterNewSpan(
+    scope: CloudScope & RunScope & { traceid: string }
+  ): RunEmitterPort;
   newRunEmitterFromEvent(
     event: JobCompletedEvent | JobFailedEvent,
     source: string

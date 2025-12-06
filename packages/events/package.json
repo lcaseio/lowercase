@@ -21,7 +21,8 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "@lcase/specs": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

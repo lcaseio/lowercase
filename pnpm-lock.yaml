@@ -300,6 +300,9 @@ importers:
 
   packages/events:
     dependencies:
+      '@lcase/specs':
+        specifier: workspace:*
+        version: link:../specs
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -334,7 +337,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
   packages/ports:
-    dependencies:
+    devDependencies:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types

@@ -1,30 +1,30 @@
-import type { StepHandler } from "./step-handler.js";
 import type { ResolveStepArgs } from "../resolve.js";
-import type { AnyEvent } from "@lcase/types";
-import type { RunContext, Flow, McpStep } from "@lcase/specs";
+import type { FlowDefinition, StepMcp } from "@lcase/types";
 import { PipeResolver } from "../pipe-resolver.js";
 import { JobEmitterPort } from "@lcase/ports";
+import { RunContext, StepContext } from "@lcase/types/engine";
+import { StepHandlerPort } from "@lcase/ports/engine";
 
-export class McpStepHandler implements StepHandler {
+export class McpStepHandler implements StepHandlerPort {
   constructor(
     private readonly resolveArgs: ResolveStepArgs,
     private readonly pipeResolver: PipeResolver
   ) {}
 
-  async queue(
-    flow: Flow,
+  async handle(
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string,
     emitter: JobEmitterPort
   ): Promise<void> {
-    const step: McpStep = flow.steps[stepName] as McpStep;
+    const step = flow.steps[stepName] as StepMcp;
 
     try {
       let args = flow.steps[stepName].args;
       if (args !== undefined) {
         args = this.resolveArgs(context, args);
       }
-      const pipes = this.pipeResolver.resolve(flow, context, stepName);
+      const pipes = this.pipeResolver.resolve(context, stepName);
 
       await emitter.emit("job.mcp.submitted", {
         job: {
@@ -40,7 +40,7 @@ export class McpStepHandler implements StepHandler {
         ...(step.tool ? { tool: step.tool } : {}),
       });
 
-      context.steps[stepName].status = "submitted";
+      context.steps[stepName].status = "started";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`
@@ -49,11 +49,9 @@ export class McpStepHandler implements StepHandler {
     }
   }
 
-  onWorkerDone(
-    flow: Flow,
-    context: RunContext,
-    event: AnyEvent
-  ): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
+  async handleNew(
+    runCtx: RunContext,
+    stepCtx: StepContext,
+    stepId: string
+  ): Promise<void> {}
 }

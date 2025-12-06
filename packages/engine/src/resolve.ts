@@ -1,4 +1,5 @@
-import type { RunContext, StepArgs } from "@lcase/specs";
+import type { StepArgs } from "@lcase/specs";
+import type { RunContext } from "@lcase/types/engine";
 
 export type ResolveStepArgs = typeof resolveStepArgs;
 export function split(path: string): string[] {
@@ -116,6 +117,5 @@ export function parsePath(path: string): Part[] {
       }
     }
   }
-  console.log("parseArray", parseArray);
   return partArray;
 }

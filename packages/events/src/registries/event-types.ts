@@ -12,6 +12,7 @@ export const eventTypes = [
   ...httpjsonEventTypes,
   ...mcpEventTypes,
   "flow.queued",
+  "flow.submitted",
   "flow.started",
   "flow.completed",
   "flow.failed",

@@ -4,6 +4,7 @@ import type {
   StepMcp,
   StepCapCommonFields,
   StepOnField,
+  FlowDefinition,
 } from "@lcase/types";
 
 export const StepOnSchema = z
@@ -53,8 +54,6 @@ export const StepCapBaseSchema = StepCapCommonFieldsSchema.extend(
   StepOnSchema.shape
 );
 
-type a = z.infer<typeof StepCapBaseSchema>;
-
 export const StepMcpSchema = StepCapBaseSchema.extend({
   type: z.literal("mcp"),
   url: z.string(),
@@ -88,17 +87,14 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepMcpSchema,
 ]);
 
-export type Step = z.infer<typeof StepSchema>;
-export type McpStep = z.infer<typeof StepMcpSchema>;
-
-export const FlowSchema = z.object({
-  name: z.string().min(1),
-  version: z.string(),
-  description: z.string().optional(),
-  inputs: z.record(z.string(), z.unknown()).default({}),
-  outputs: z.record(z.string(), z.unknown()).default({}),
-  start: z.string().min(1),
-  steps: z.record(z.string(), StepSchema),
-});
-
-export type Flow = z.infer<typeof FlowSchema>;
+export const FlowSchema = z
+  .object({
+    name: z.string().min(1),
+    version: z.string(),
+    description: z.string().optional(),
+    inputs: z.record(z.string(), z.unknown()).optional(),
+    outputs: z.record(z.string(), z.unknown()).optional(),
+    start: z.string().min(1),
+    steps: z.record(z.string(), StepSchema),
+  })
+  .strict() satisfies z.ZodType<FlowDefinition>;

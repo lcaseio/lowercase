@@ -4,21 +4,14 @@ import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import {
-  Engine,
-  PipeResolver,
-  resolveStepArgs,
-  wireStepHandlers,
-} from "@lcase/engine";
+import { Engine, EngineTelemetry, PipeResolver } from "@lcase/engine";
 
-import { EmitterFactory, EventParser, eventRegistry } from "@lcase/events";
-import type { ToolId } from "@lcase/types";
+import { EmitterFactory, eventRegistry } from "@lcase/events";
 import {
   EventBusPort,
-  EventParserPort,
+  FlowParserPort,
   JobParserPort,
   StreamRegistryPort,
-  ToolBinding,
 } from "@lcase/ports";
 import {
   makeBusFactory,
@@ -39,6 +32,7 @@ import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
 import { ResourceManager } from "@lcase/resource-manager";
 import { JobParser } from "@lcase/events/parsers";
+import { EngineTelemetryPort } from "@lcase/ports/engine";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -67,11 +61,11 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const queue = queueFactory();
 
   const ef = new EmitterFactory(bus);
+  const engineTelemetry = new EngineTelemetry(ef);
   const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
   const flowStore = new FlowStore();
 
-  const eventParser = new EventParser(eventRegistry);
   const jobParser = new JobParser(eventRegistry);
   const rm = new ResourceManager({
     bus,
@@ -81,10 +75,10 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   });
 
   const engine = createInProcessEngine(
-    flowStore,
     bus,
     streamRegistry,
     ef,
+    engineTelemetry,
     jobParser
   );
 
@@ -153,23 +147,20 @@ export function createObservability(
 }
 
 export function createInProcessEngine(
-  flowDb: FlowStore,
   bus: EventBusPort,
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
+  tel: EngineTelemetryPort,
   jobParser: JobParserPort
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
-  const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
 
-  const engine = new Engine(
-    flowDb,
+  const engine = new Engine({
     bus,
-    streamRegistry,
-    stepHandlerRegistry,
-    emitterFactory,
-    jobParser
-  );
+    ef: emitterFactory,
+    tel,
+    jobParser,
+  });
 
   return engine;
 }

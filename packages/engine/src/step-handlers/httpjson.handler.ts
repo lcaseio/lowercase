@@ -1,19 +1,24 @@
-import type { StepHandler } from "./step-handler.js";
 import { resolveSelector, type ResolveStepArgs } from "../resolve.js";
 import type { AnyEvent, StepHttpJson } from "@lcase/types";
-import type { RunContext, Flow } from "@lcase/specs";
+import type { RunContext, StepContext } from "@lcase/types/engine";
 import { PipeResolver } from "../pipe-resolver.js";
-import { CapId } from "@lcase/types";
-import { JobEmitterPort } from "@lcase/ports";
+import type { CapId, FlowDefinition } from "@lcase/types";
+import type {
+  EmitterFactoryPort,
+  JobEmitterPort,
+  StepOutcome,
+} from "@lcase/ports";
+import { StepHandlerPort } from "@lcase/ports/engine";
 
-export class HttpJsonHandler implements StepHandler {
+export class HttpJsonHandler implements StepHandlerPort {
   constructor(
     private readonly resolveArgs: ResolveStepArgs,
-    private readonly pipeResolver: PipeResolver
+    private readonly pipeResolver: PipeResolver,
+    private readonly ef: EmitterFactoryPort
   ) {}
 
-  async queue(
-    flow: Flow,
+  async handle(
+    flow: FlowDefinition,
     context: RunContext,
     stepName: string,
     emitter: JobEmitterPort
@@ -23,7 +28,7 @@ export class HttpJsonHandler implements StepHandler {
       throw new Error("[http-json-handler] step type must be `httpjson`");
     }
 
-    const pipes = this.pipeResolver.resolve(flow, context, stepName);
+    const pipes = this.pipeResolver.resolve(context, stepName);
     try {
       let args = step.args;
       if (args !== undefined) {
@@ -46,20 +51,12 @@ export class HttpJsonHandler implements StepHandler {
         ...(step.method ? { method: step.method } : {}),
         ...(step.body ? { body: step.body } : {}),
       });
-      context.steps[stepName].status = "submitted";
+      context.steps[stepName].status = "started";
     } catch (err) {
       console.error(
         `[mcp-step-handler] emitting step ${stepName} in flow ${flow.name}`
       );
       console.error(err);
     }
-  }
-
-  onWorkerDone(
-    flow: Flow,
-    context: RunContext,
-    event: AnyEvent
-  ): Promise<void> {
-    throw new Error("Method not implemented.");
   }
 }

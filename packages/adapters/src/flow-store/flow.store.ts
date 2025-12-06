@@ -1,10 +1,11 @@
-import { type Flow, FlowSchema } from "@lcase/specs";
+import { FlowSchema } from "@lcase/specs";
+import { FlowDefinition } from "@lcase/types";
 export class FlowStore {
-  #flows = new Map<string, Flow>();
+  #flows = new Map<string, FlowDefinition>();
 
   constructor() {}
 
-  add(unvalidatedFlow: Flow) {
+  add(unvalidatedFlow: FlowDefinition) {
     const { result, flow } = this.validate(unvalidatedFlow);
     if (flow === undefined) return;
     if (result) {
@@ -12,14 +13,14 @@ export class FlowStore {
     }
   }
 
-  get(flowName: string): Flow | false {
+  get(flowName: string): FlowDefinition | false {
     if (!this.#flows.has(flowName)) return false;
     const flow = this.#flows.get(flowName);
     if (flow === undefined) return false;
     return flow;
   }
 
-  validate(flow: Flow): { result: boolean; flow?: Flow } {
+  validate(flow: FlowDefinition): { result: boolean; flow?: FlowDefinition } {
     if (flow === undefined) return { result: false, flow };
     const result = FlowSchema.safeParse(flow);
     if (!result.success) {
