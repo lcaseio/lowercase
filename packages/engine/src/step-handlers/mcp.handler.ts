@@ -20,7 +20,7 @@ export class McpStepHandler implements StepHandlerPort {
     const step = flow.steps[stepName] as StepMcp;
 
     try {
-      let args = flow.steps[stepName].args;
+      let args = step.args;
       if (args !== undefined) {
         args = this.resolveArgs(context, args);
       }

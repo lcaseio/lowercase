@@ -50,6 +50,12 @@ export type StartMcpStepMsg = {
   stepId: string;
 };
 
+export type StartParallelMsg = {
+  type: "StartParallel";
+  runId: string;
+  stepId: string;
+};
+
 export type JobCompletedMsg = {
   type: "JobCompleted";
   runId: string;
@@ -76,6 +82,7 @@ export type FlowFailedMsg = {
 export type EngineMessage =
   | FlowSubmittedMsg
   | StepReadyToStartMsg
+  | StartParallelMsg
   | StartHttpJsonStepMsg
   | StartMcpStepMsg
   | JobCompletedMsg
@@ -172,11 +179,14 @@ export type Reducer<M extends EngineMessage = EngineMessage> = (
 ) => Patch | void;
 
 // planners
-export type Planner<M extends EngineMessage = EngineMessage> = (args: {
+export type PlannerArgs<M extends EngineMessage = EngineMessage> = {
   oldState: EngineState;
   newState: EngineState;
   message: M;
-}) => EngineEffect[] | void;
+};
+export type Planner<M extends EngineMessage = EngineMessage> = (
+  args: PlannerArgs<M>
+) => EngineEffect[] | void;
 
 // handlers
 export type EffectHandler<K extends EngineEffect["kind"]> = (

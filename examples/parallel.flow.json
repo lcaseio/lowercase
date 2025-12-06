@@ -5,7 +5,7 @@
   "steps": {
     "p": {
       "type": "parallel",
-      "steps": ["one", "two"]
+      "steps": ["one", "two", "three"]
     },
     "one": {
       "type": "httpjson",
@@ -27,6 +27,14 @@
         "Content-Type": "application/json"
       },
       "body": { "hello": "world", "n": 123 }
+    },
+    "three": {
+      "type": "httpjson",
+      "url": "https://httpbin.org/get",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     }
   }
 }

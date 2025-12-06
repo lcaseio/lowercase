@@ -42,6 +42,9 @@ export type JobParsedAny =
   | JobCompletedParsed
   | JobFailedParsed;
 
+type ActiveJobsPerTool = {
+  [t in string]: number;
+};
 /**
  * this resource manager is designed to map step capabilities to
  * tools based on policies / table lookups, queue them if the worker
@@ -65,6 +68,7 @@ export class ResourceManager implements ResourceManagerPort {
   #capRegisteredToolsMap: CapRegisteredToolsMap = {};
   #capDefaultToolMap: Record<CapId, string>;
   #activeTools = new Map<ToolId, number>();
+  activeJobsPerTool: ActiveJobsPerTool = {};
   busStopTopics = new Map<string, () => void>();
   constructor(deps: ResourceManagerDeps) {
     this.#bus = deps.bus;
@@ -258,24 +262,32 @@ export class ResourceManager implements ResourceManagerPort {
     return tool;
   }
 
+  getActiveJobs(toolId: string) {
+    if (this.#activeTools.get(toolId) === undefined) return 0;
+    return this.activeJobsPerTool[toolId];
+  }
+
   async queueOrDelaySubmitted(e: JobSubmittedEvent) {
     const toolId = e.data.job.toolid!;
     const capId = e.data.job.capid;
     const max = this.#internalTools[toolId].maxConcurrency;
     let current = this.#activeTools.get(toolId) ?? 0;
+    console.log("current first", current);
+    console.log("current first", current);
 
     const jobEmitter = this.#ef.newJobEmitterFromEvent(
       e,
       "lowercase://rm/queue-or-delay-submitted"
     );
-    if (current < max) {
+    if (this.getActiveJobs(toolId) < max) {
       const type = `job.${capId}.queued` as JobQueuedType;
-      const job = await this.makeQueuedEventFromSubmitted(e, type);
+      const job = this.makeQueuedEventFromSubmitted(e, type);
       if (!job) return;
 
+      this.#activeTools.set(toolId, ++current);
       const newEvent = await jobEmitter.emit(type, job.event.data);
       this.#queue.enqueue(toolId, newEvent);
-      this.#activeTools.set(toolId, ++current);
+      console.log(current);
     } else {
       const type = `job.${capId}.delayed` as JobDelayedType;
       const job = await this.makeDelayedEventFromSubmitted(e, type);
@@ -286,16 +298,16 @@ export class ResourceManager implements ResourceManagerPort {
     }
   }
 
-  async makeQueuedEventFromSubmitted(
+  makeQueuedEventFromSubmitted(
     event: JobSubmittedEvent,
     type: JobQueuedType
-  ): Promise<JobQueuedParsed | undefined> {
+  ): JobQueuedParsed | undefined {
     const e = event as unknown as JobQueuedEvent;
     e.type = type;
     e.action = "queued";
     const job = this.#jobParser.parseJobQueued(e);
     if (!job) {
-      await this.emitError(event, "Unable to create queued event", event);
+      this.emitError(event, "Unable to create queued event", event);
     }
     return job;
   }

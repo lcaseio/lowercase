@@ -20,6 +20,7 @@ export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
   const newRunState = newState.runs[message.runId];
   if (!newRunState) return;
 
+  if (newRunState.definition.steps[stepId].type === "parallel") return;
   if (newRunState.steps[stepId].status === "completed") {
     const nextStepId = newRunState.definition.steps[stepId].on?.success;
 
