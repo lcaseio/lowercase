@@ -53,6 +53,7 @@ describe("flowSubmittedReducer", () => {
           exports: {},
           result: {},
           stepId: "start",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

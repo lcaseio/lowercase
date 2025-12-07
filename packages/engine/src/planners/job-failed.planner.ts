@@ -20,6 +20,7 @@ export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
   if (!newRunState) return;
 
   if (newRunState.definition.steps[stepId].type === "parallel") return;
+  if (newRunState.definition.steps[stepId].type === "join") return;
   if (newRunState.steps[stepId].status !== "failed") return;
 
   const nextStepId = newRunState.definition.steps[stepId].on?.failure;

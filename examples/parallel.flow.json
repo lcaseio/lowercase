@@ -5,7 +5,7 @@
   "steps": {
     "p": {
       "type": "parallel",
-      "steps": ["one", "two", "three"]
+      "steps": ["one", "two", "join"]
     },
     "one": {
       "type": "httpjson",
@@ -16,7 +16,7 @@
       },
       "body": { "hello": "world", "n": 123 },
       "on": {
-        "success": "two"
+        "success": "jelly"
       }
     },
     "two": {
@@ -26,12 +26,30 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": { "hello": "world", "n": 123 }
+      "body": { "hello": "world", "n": 123 },
+      "next": "jelly"
     },
     "three": {
       "type": "httpjson",
       "url": "https://httpbin.org/get",
       "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "on": {
+        "success": "jelly"
+      }
+    },
+    "jelly": {
+      "type": "join",
+      "steps": ["two", "three"],
+      "next": "five"
+    },
+
+    "five": {
+      "type": "httpjson",
+      "url": "https://httpbin.org/delete",
+      "method": "DELETE",
       "headers": {
         "Content-Type": "application/json"
       }

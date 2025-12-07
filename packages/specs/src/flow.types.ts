@@ -7,6 +7,7 @@ import type {
   FlowDefinition,
 } from "@lcase/types";
 import { StepParallelSchema } from "./parallel.schema.js";
+import { StepJoinSchema } from "./join.schema.js";
 
 export const StepOnSchema = z
   .object({
@@ -87,6 +88,7 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepHttpJsonSchema,
   StepMcpSchema,
   StepParallelSchema,
+  StepJoinSchema,
 ]);
 
 export const FlowSchema = z
@@ -100,3 +102,7 @@ export const FlowSchema = z
     steps: z.record(z.string(), StepSchema),
   })
   .strict() satisfies z.ZodType<FlowDefinition>;
+
+const a = {
+  stepId: new Set(["jelly"]),
+};

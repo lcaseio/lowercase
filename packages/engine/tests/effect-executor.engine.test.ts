@@ -72,6 +72,7 @@ describe("submitExternal", () => {
           exports: {},
           result: {},
           stepId: "first",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

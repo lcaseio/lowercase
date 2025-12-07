@@ -30,6 +30,7 @@ export type StepContext = {
   args?: Record<string, unknown>; // move
   pipe?: PipeData;
   stepId: string;
+  joins: Set<string>;
 };
 
 export type FlowContext = {
@@ -37,5 +38,3 @@ export type FlowContext = {
   flowName: string;
   definition: FlowDefinition;
 };
-
-const a = new Set();
