@@ -8,6 +8,7 @@ export type RunContext = FlowContext & {
 
   runningSteps: Set<string>; // move
   queuedSteps: Set<string>; // move
+  activeJoinSteps: Set<string>;
   doneSteps: Set<string>; // move
   outstandingSteps: number; // move
 

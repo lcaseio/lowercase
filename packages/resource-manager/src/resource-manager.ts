@@ -273,13 +273,12 @@ export class ResourceManager implements ResourceManagerPort {
     const max = this.#internalTools[toolId].maxConcurrency;
     let current = this.#activeTools.get(toolId) ?? 0;
     console.log("current first", current);
-    console.log("current first", current);
 
     const jobEmitter = this.#ef.newJobEmitterFromEvent(
       e,
       "lowercase://rm/queue-or-delay-submitted"
     );
-    if (this.getActiveJobs(toolId) < max) {
+    if (current < max) {
       const type = `job.${capId}.queued` as JobQueuedType;
       const job = this.makeQueuedEventFromSubmitted(e, type);
       if (!job) return;

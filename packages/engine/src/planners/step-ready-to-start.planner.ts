@@ -7,6 +7,7 @@ import type {
   StartMcpStepMsg,
   StartParallelMsg,
   StepReadyToStartMsg,
+  UpdateJoinMsg,
 } from "../engine.types.js";
 
 export const stepTypeMap = {
@@ -22,9 +23,9 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
 }): EngineEffect[] | void => {
   const { newState, message } = args;
   const { runId, stepId } = message;
-
   const stepType = newState.runs[runId].definition.steps[stepId].type;
 
+  if (stepType === "join") return;
   const msgMaker = stepTypeMap[stepType] ?? undefined;
   if (!msgMaker) return;
 

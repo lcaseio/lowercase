@@ -24,6 +24,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 1,
@@ -38,6 +39,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set<string>(),
         },
       },
     } satisfies RunContext;
@@ -58,6 +60,7 @@ describe("jobCompletedReducer", () => {
       runningSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
       outstandingSteps: 0,
       inputs: {},
       exports: {},
@@ -70,6 +73,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -103,6 +107,7 @@ describe("jobCompletedReducer", () => {
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId, "two"]),
       queuedSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 2,
       inputs: {},
@@ -116,6 +121,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -134,6 +140,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>(["two"]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
       outstandingSteps: 1,
@@ -148,6 +155,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

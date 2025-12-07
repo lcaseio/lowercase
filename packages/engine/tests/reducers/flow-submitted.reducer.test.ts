@@ -39,6 +39,7 @@ describe("flowSubmittedReducer", () => {
       runId: flowSubmittedMessage.runId,
       traceId: flowSubmittedMessage.meta.traceId,
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,

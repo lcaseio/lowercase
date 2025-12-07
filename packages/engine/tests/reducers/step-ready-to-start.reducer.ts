@@ -1,12 +1,6 @@
 import { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
-import { flowSubmittedPlanner } from "../../src/planners/flow-submitted.planner";
-import {
-  EngineEffect,
-  EngineState,
-  StepReadyToStartMsg,
-} from "../../src/engine";
-import { stepReadyToStartPlanner } from "../../src/planners/step-ready-to-start.planner";
+import { EngineState, StepReadyToStartMsg } from "../../src/engine.types.js";
 import { stepReadyToStartReducer } from "../../src/reducers/step-ready-to-start.reducer";
 
 describe("stepReadyToStartReducer", () => {
@@ -38,6 +32,7 @@ describe("stepReadyToStartReducer", () => {
       runId: "test-id",
       traceId: "",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,
@@ -52,6 +47,7 @@ describe("stepReadyToStartReducer", () => {
           exports: {},
           result: {},
           stepId: "start",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

@@ -36,6 +36,7 @@ describe("stepReadyToStartPlanner", () => {
       runId: "test-id",
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,
@@ -50,6 +51,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId: "start",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

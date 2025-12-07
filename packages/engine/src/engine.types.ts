@@ -79,6 +79,13 @@ export type FlowFailedMsg = {
   stepId: string;
 };
 
+export type UpdateJoinMsg = {
+  type: "UpdateJoin";
+  runId: string;
+  stepId: string;
+  joinStepId: string;
+};
+
 export type EngineMessage =
   | FlowSubmittedMsg
   | StepReadyToStartMsg
@@ -88,7 +95,8 @@ export type EngineMessage =
   | JobCompletedMsg
   | JobFailedMsg
   | FlowCompletedMsg
-  | FlowFailedMsg;
+  | FlowFailedMsg
+  | UpdateJoinMsg;
 
 export type MessageType = EngineMessage["type"];
 

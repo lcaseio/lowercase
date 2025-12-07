@@ -8,6 +8,7 @@ import { startHttpJsonStepReducer } from "./start-httpjson-step.reducer.js";
 import { startMcpStepReducer } from "./start-mcp-step.reducer.js";
 import { startParallelReducer } from "./start-parallel.reducer.js";
 import { stepReadyToStartReducer } from "./step-ready-to-start.reducer.js";
+import { updateJoinReducer } from "./update-join.reducer.js";
 
 export type ReducerRegistry = {
   [T in EngineMessage["type"]]?: Reducer<Extract<EngineMessage, { type: T }>>;
@@ -17,6 +18,7 @@ export const reducers = {
   FlowSubmitted: flowSubmittedReducer,
   StepReadyToStart: stepReadyToStartReducer,
   StartParallel: startParallelReducer,
+  UpdateJoin: updateJoinReducer,
   StartHttpjsonStep: startHttpJsonStepReducer,
   StartMcpStep: startMcpStepReducer,
   JobCompleted: jobCompletedReducer,

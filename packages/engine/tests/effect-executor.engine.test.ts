@@ -59,6 +59,7 @@ describe("submitExternal", () => {
       traceId: flowSubmittedMessage.meta.traceId,
       runningSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,
       inputs: flowSubmittedMessage.definition.inputs ?? {},

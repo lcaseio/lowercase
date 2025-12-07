@@ -8,6 +8,7 @@ import { startHttpJsonStepPlanner } from "./start-httpjson-step.planner.js";
 import { stepReadyToStartPlanner } from "./step-ready-to-start.planner.js";
 import { starMcpStepPlanner } from "./start-mcp-step.planner.js";
 import { startParallelPlanner } from "./start-parallel.planner.js";
+import { updateJoinPlanner } from "./update-join.planner.js";
 
 export type PlannerRegistry = {
   [T in EngineMessage["type"]]?: Planner<Extract<EngineMessage, { type: T }>>;
@@ -17,6 +18,7 @@ export const planners = {
   FlowSubmitted: flowSubmittedPlanner,
   StepReadyToStart: stepReadyToStartPlanner,
   StartParallel: startParallelPlanner,
+  UpdateJoin: updateJoinPlanner,
   StartHttpjsonStep: startHttpJsonStepPlanner,
   StartMcpStep: starMcpStepPlanner,
   JobCompleted: jobCompletedPlanner,

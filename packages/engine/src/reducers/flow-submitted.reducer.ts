@@ -40,6 +40,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     runningSteps: new Set<string>(),
     queuedSteps: new Set<string>(),
     doneSteps: new Set<string>(),
+    activeJoinSteps: new Set<string>(),
     outstandingSteps: 0,
     inputs: definition.inputs ?? {},
     exports: {},
