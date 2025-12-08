@@ -78,7 +78,12 @@ export type FlowFailedMsg = {
   runId: string;
   stepId: string;
 };
-
+export type StartJoinMsg = {
+  type: "StartJoin";
+  runId: string;
+  stepId: string;
+  joinStepId: string;
+};
 export type UpdateJoinMsg = {
   type: "UpdateJoin";
   runId: string;
@@ -96,6 +101,7 @@ export type EngineMessage =
   | JobFailedMsg
   | FlowCompletedMsg
   | FlowFailedMsg
+  | StartJoinMsg
   | UpdateJoinMsg;
 
 export type MessageType = EngineMessage["type"];
@@ -120,9 +126,15 @@ export type EmitStepStartedFx = {
   data: StepStartedData;
   traceId: string;
 };
+export type EmitJoinStepStartedFx = {
+  kind: "EmitJoinStepStarted";
+  scope: StepScope & CloudScope;
+  data: StepStartedData;
+  traceId: string;
+};
 export type EmitStepCompletedFx = {
   kind: "EmitStepCompleted";
-  eventType: "step.compelted";
+  eventType: "step.completed";
   scope: StepScope & CloudScope;
   data: StepCompletedData;
   traceId: string;
@@ -172,6 +184,7 @@ export type EngineEffect =
   | EmitEventFx
   | DispatchInternalFx
   | EmitStepStartedFx
+  | EmitJoinStepStartedFx
   | EmitStepCompletedFx
   | EmitStepFailedFx
   | EmitJobHttpJsonSubmittedFx

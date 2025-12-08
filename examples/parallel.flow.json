@@ -9,25 +9,23 @@
     },
     "one": {
       "type": "httpjson",
-      "url": "https://httpbin.org/post",
-      "method": "POST",
+      "url": "https://swapi.dev/api/people/1",
+      "method": "GET",
       "headers": {
         "Content-Type": "application/json"
-      },
-      "body": { "hello": "one", "n": 123 }
+      }
     },
     "two": {
       "type": "httpjson",
-      "url": "https://httpbin.org/post",
-      "method": "POST",
+      "url": "https://swapi.dev/api/people/2",
+      "method": "GET",
       "headers": {
         "Content-Type": "application/json"
-      },
-      "body": { "hello": "two", "n": 123 }
+      }
     },
     "three": {
       "type": "httpjson",
-      "url": "https://httpbin.org/get",
+      "url": "https://swapi.dev/api/people/3",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
@@ -35,14 +33,14 @@
     },
     "join-step": {
       "type": "join",
-      "steps": ["two", "three"],
+      "steps": ["two", "one"],
       "next": "five"
     },
 
     "five": {
       "type": "httpjson",
-      "url": "https://httpbin.org/delete",
-      "method": "DELETE",
+      "url": "https://swapi.dev/api/people/4",
+      "method": "GET",
       "headers": {
         "Content-Type": "application/json"
       }

@@ -145,7 +145,7 @@ export class ResourceManager implements ResourceManagerPort {
       job = this.#jobParser.parseJobFailed(event);
     }
 
-    if ((await this.jobHasErrors(event, job)) || !job) return;
+    if (this.jobHasErrors(event, job) || !job) return;
 
     const active = Math.max(
       0,
@@ -204,16 +204,16 @@ export class ResourceManager implements ResourceManagerPort {
     await this.queueOrDelaySubmitted(e);
     return;
   }
-  async jobHasErrors<T extends JobParsedAny>(
+  jobHasErrors<T extends JobParsedAny>(
     event: AnyEvent,
     job: T | undefined
-  ): Promise<boolean> {
+  ): boolean {
     if (!job) {
-      await this.emitError(event, "Error parsing job.", job);
+      this.emitError(event, "Error parsing job.", job);
       return true;
     }
     if (job.capId in this.#capRegisteredToolsMap === false) {
-      await this.emitError(
+      this.emitError(
         event,
         "No tools registered to handle capability id: }",
         job

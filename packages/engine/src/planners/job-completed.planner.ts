@@ -31,7 +31,7 @@ export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
 
     const emitStepCompletedFx = {
       kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+      eventType: "step.completed",
       scope: {
         flowid: newState.runs[runId].flowId,
         runid: runId,

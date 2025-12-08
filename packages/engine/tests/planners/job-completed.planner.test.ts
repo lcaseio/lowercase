@@ -106,7 +106,7 @@ describe("stepReadyToStartPlanner", () => {
 
     const emitStepCompletedFx = {
       kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+      eventType: "step.completed",
       scope: {
         flowid: newRunCtx.flowId,
         runid: runId,

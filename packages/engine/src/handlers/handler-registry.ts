@@ -7,6 +7,7 @@ import {
   EmitFlowStartedFx,
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
+  EmitJoinStepStartedFx,
   EmitStepCompletedFx,
   EmitStepFailedFx,
   EmitStepStartedFx,
@@ -51,6 +52,10 @@ export function wireEffectHandlers(
     EmitStepFailed: (effect: EmitStepFailedFx) => {
       const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
       emitter.emit("step.failed", effect.data);
+    },
+    EmitJoinStepStarted: (effect: EmitJoinStepStartedFx) => {
+      const emitter = ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
+      emitter.emit("step.started", effect.data);
     },
 
     EmitJobHttpjsonSubmittedEvent: function (

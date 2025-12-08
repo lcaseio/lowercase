@@ -8,7 +8,7 @@ export const httpJsonBinding = {
     capabilities: [],
     location: "internal",
     rateLimit: {
-      perMs: 1000,
+      perMs: 2000,
       maxRequests: 0,
       scope: "worker",
       keyStrategy: "url",

@@ -1,13 +1,15 @@
 import type {
+  DispatchInternalFx,
+  EmitStepStartedFx,
   EngineEffect,
   EngineMessage,
   EngineState,
   Planner,
   StartHttpJsonStepMsg,
+  StartJoinMsg,
   StartMcpStepMsg,
   StartParallelMsg,
   StepReadyToStartMsg,
-  UpdateJoinMsg,
 } from "../engine.types.js";
 
 export const stepTypeMap = {
@@ -23,7 +25,10 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
 }): EngineEffect[] | void => {
   const { newState, message } = args;
   const { runId, stepId } = message;
+  const run = newState.runs[runId];
   const stepType = newState.runs[runId].definition.steps[stepId].type;
+
+  const effects: EngineEffect[] = [];
 
   if (stepType === "join") return;
   const msgMaker = stepTypeMap[stepType] ?? undefined;
@@ -32,32 +37,56 @@ export const stepReadyToStartPlanner: Planner<StepReadyToStartMsg> = (args: {
   const stepMessage = msgMaker(message);
   if (!stepMessage) return;
 
-  return [
-    {
-      kind: "EmitStepStarted",
-      data: {
-        status: "started",
-        step: {
-          id: stepId,
-          name: stepId,
-          type: newState.runs[runId].definition.steps[stepId].type,
-        },
+  const stepCtx = run.steps[stepId];
+
+  if (stepCtx.joins.size > 0) {
+    for (const joinStep of stepCtx.joins.values()) {
+      if (run.steps[joinStep].status === "pending") {
+        const effect = {
+          kind: "DispatchInternal",
+          message: {
+            type: "StartJoin",
+            runId,
+            stepId,
+            joinStepId: joinStep,
+          } satisfies StartJoinMsg,
+        } satisfies DispatchInternalFx;
+        effects.push(effect);
+      }
+    }
+  }
+
+  const stepStartedEffect = {
+    kind: "EmitStepStarted",
+    data: {
+      status: "started",
+      step: {
+        id: stepId,
+        name: stepId,
+        type: newState.runs[runId].definition.steps[stepId].type,
       },
-      eventType: "step.started",
-      scope: {
-        flowid: newState.runs[runId].flowId,
-        runid: runId,
-        source: "lowercase://engine",
-        stepid: stepId,
-        steptype: newState.runs[runId].definition.steps[stepId].type,
-      },
-      traceId: newState.runs[runId].traceId,
     },
-    {
-      kind: "DispatchInternal",
-      message: stepMessage,
+    eventType: "step.started",
+    scope: {
+      flowid: newState.runs[runId].flowId,
+      runid: runId,
+      source: "lowercase://engine",
+      stepid: stepId,
+      steptype: newState.runs[runId].definition.steps[stepId].type,
     },
-  ];
+    traceId: newState.runs[runId].traceId,
+  } satisfies EmitStepStartedFx;
+
+  effects.push(stepStartedEffect);
+
+  const dispatchInternal = {
+    kind: "DispatchInternal",
+    message: stepMessage,
+  } satisfies DispatchInternalFx;
+
+  effects.push(dispatchInternal);
+
+  return effects;
 };
 
 export function httpJsonStartMsg(

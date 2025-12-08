@@ -19,15 +19,16 @@ export const updateJoinReducer: Reducer<UpdateJoinMsg> = (
   joinStepCtx.result[stepId] ??= status;
 
   // if join status is pending and stepId status is failed
-  if (joinStepCtx.status === "pending" && status === "failed") {
+  if (joinStepCtx.status === "started" && status === "failed") {
     runCtx.activeJoinSteps.delete(joinStepId);
     joinStepCtx.status = "failed";
   }
   // otherwise loop through and see if the join step is "done"
-  else if (joinStepCtx.status === "pending" && status === "completed") {
+  else if (joinStepCtx.status === "started" && status === "completed") {
     if (joinStepDef.steps.length === Object.keys(joinStepCtx.result).length) {
       joinStepCtx.status = "completed";
       runCtx.activeJoinSteps.delete(joinStepId);
+      console.log("completed join");
     }
   }
   runCtx.steps = {
