@@ -22,7 +22,10 @@ type McpToolContext = {
   isCleanupRunning: boolean;
   notificationHandlers: Set<string>;
 };
-
+/**
+ * This entire tool needs to be rewritten in a cleaner more modular way and only
+ * support streaming as a producer not a consumer.
+ */
 export class McpTool implements ToolInstancePort<"mcp"> {
   id = "mcp" as const;
   name = "Internal MCP SSE Tool";
@@ -43,7 +46,8 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   async invoke(
     input: AnyEvent<"job.mcp.started">
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
-    console.log(`[tool-mcp] ${input}`);
+    await this.emitToolStarted(input);
+
     const data = input.data;
     await this.connect(data.url);
 
@@ -129,6 +133,21 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         this.#client.removeNotificationHandler(handler);
       }
     }
+  }
+
+  async emitToolStarted(inputEvent: AnyEvent<"job.mcp.started">) {
+    const emitter = this.#deps.ef.newToolEmitterFromEvent(
+      inputEvent,
+      "lowercase://mcp-tool"
+    );
+    await emitter.emit("tool.started", {
+      tool: {
+        id: this.id,
+        name: this.name,
+        version: this.version,
+      },
+      log: "MCP internal tool start",
+    });
   }
 
   async emitToolCompleted(
