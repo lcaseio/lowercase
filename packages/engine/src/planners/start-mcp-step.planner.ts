@@ -17,6 +17,9 @@ export const starMcpStepPlanner: Planner<StartMcpStepMsg> = (args: {
   const step = newState.runs[message.runId].definition.steps[
     message.stepId
   ] as StepMcp;
+
+  const runCtx = { ...newState.runs[runId] };
+  const stepCtx = { ...runCtx.steps[stepId] };
   return [
     {
       kind: "EmitJobMcpSubmittedEvent",
@@ -29,7 +32,7 @@ export const starMcpStepPlanner: Planner<StartMcpStepMsg> = (args: {
         url: step.url,
         feature: step.feature,
         transport: step.transport,
-        ...(step.args ? { args: step.args } : {}),
+        ...(stepCtx.args ? { args: stepCtx.args } : {}),
         ...(step.tool ? { tool: step.tool } : {}),
       },
       eventType: "job.mcp.submitted",

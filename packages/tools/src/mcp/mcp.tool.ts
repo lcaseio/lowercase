@@ -41,7 +41,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
     this.#deps = deps;
   }
   async invoke(
-    input: AnyEvent<"job.mcp.queued">
+    input: AnyEvent<"job.mcp.started">
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     console.log(`[tool-mcp] ${input}`);
     const data = input.data;
@@ -59,14 +59,19 @@ export class McpTool implements ToolInstancePort<"mcp"> {
       ]);
 
       if (toolResult.isError) {
-        console.log(
-          `[tool-mcp] result has error:${JSON.stringify(toolResult, null, 2)}`
-        );
         await this.disconnect();
-        return {} as ToolEvent<"tool.failed">;
+        const reason = `[tool-mcp] result has error:${JSON.stringify(
+          toolResult,
+          null,
+          2
+        )}`;
+        const event = await this.emitToolFailed(input, reason, toolResult);
+        return event;
       }
       await this.disconnect();
-      return toolResult as unknown as ToolEvent<"tool.completed">;
+
+      const event = await this.emitToolCompleted(input, toolResult);
+      return event;
     } else if (
       this.#deps.consumer &&
       !this.#deps.producer &&
@@ -80,8 +85,9 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         data.pipe.from.buffer
       );
       await this.disconnect();
-      // return { streamResult: consumerResult };
-      return {} as ToolEvent<"tool.failed">;
+
+      const event = await this.emitToolCompleted(input, { consumerResult });
+      return event;
     } else {
       console.log("[tool-mcp] not streaming");
       const result = await this.#client.callTool({
@@ -93,10 +99,17 @@ export class McpTool implements ToolInstancePort<"mcp"> {
           `[tool-mcp] result has error:${JSON.stringify(result, null, 2)}`
         );
         await this.disconnect();
+        const reason = `[tool-mcp] result has error:${JSON.stringify(
+          result,
+          null,
+          2
+        )}`;
+        const event = this.emitToolFailed(input, reason, result);
         return {} as ToolEvent<"tool.failed">;
       }
       await this.disconnect();
-      return result as unknown as ToolEvent<"tool.completed">;
+      const event = await this.emitToolCompleted(input, result);
+      return event;
     }
   }
 
@@ -116,6 +129,48 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         this.#client.removeNotificationHandler(handler);
       }
     }
+  }
+
+  async emitToolCompleted(
+    inputEvent: AnyEvent<"job.mcp.started">,
+    payload: Record<string, unknown>
+  ) {
+    const emitter = this.#deps.ef.newToolEmitterFromEvent(
+      inputEvent,
+      "lowercase://mcp-tool"
+    );
+    const event = await emitter.emit("tool.completed", {
+      tool: {
+        id: this.id,
+        name: this.name,
+        version: this.version,
+      },
+      status: "success",
+      payload,
+    });
+    return event;
+  }
+
+  async emitToolFailed(
+    inputEvent: AnyEvent<"job.mcp.started">,
+    reason: string,
+    payload: Record<string, unknown>
+  ) {
+    const emitter = this.#deps.ef.newToolEmitterFromEvent(
+      inputEvent,
+      "lowercase://mcp-tool"
+    );
+    const event = await emitter.emit("tool.failed", {
+      tool: {
+        id: this.id,
+        name: this.name,
+        version: this.version,
+      },
+      status: "failure",
+      payload,
+      reason,
+    });
+    return event;
   }
 
   #pluck(path: string): (payload: unknown) => any {
