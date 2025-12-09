@@ -36,9 +36,6 @@ export const startHttpJsonStepReducer: Reducer<StartHttpJsonStepMsg> = (
 
   fields.url ?? stepDef.url;
 
-  console.log("stepDef.url", stepDef.url);
-  console.log("fields", fields);
-
   const newRunContext = {
     ...runCtx,
     steps: {

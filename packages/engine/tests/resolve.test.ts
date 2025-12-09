@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   getSelector,
   parseArray,
-  parsePath,
+  makePathParts,
   type Part,
   extractPathValue,
 } from "../src/resolve.js";
@@ -75,7 +75,7 @@ describe("resolve", () => {
 
   it("parseSelector parses correctly", () => {
     const path = "test[0].thing.other[4][5]";
-    const parts = parsePath(path);
+    const parts = makePathParts(path);
     expect(parts.length).toEqual(6);
     expect(parts[0]).toEqual({ id: "test", type: "objectKey" });
     expect(parts[1]).toEqual({ id: "0", type: "arrayIndex" });
