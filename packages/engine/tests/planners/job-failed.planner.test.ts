@@ -11,10 +11,6 @@ import { jobFailedPlanner } from "../../src/planners/job-failed.planner.js";
 
 describe("jobFailedPlanner", () => {
   it("plans internal FlowFailedMsg as DispatchInternalFx given proper state", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const runId = "test-runId";
     const stepId = "test-stepId";
     const jobFailedMsg: JobFailedMsg = {

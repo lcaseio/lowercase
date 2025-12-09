@@ -4,7 +4,7 @@ import type {
   EventBusPort,
   JobParserPort,
 } from "@lcase/ports";
-import type { EngineDeps, EngineTelemetryPort } from "@lcase/ports/engine";
+import type { EngineDeps } from "@lcase/ports/engine";
 import type { AnyEvent } from "@lcase/types";
 import { randomUUID } from "crypto";
 import { reducers } from "./reducers/reducer-registry.js";
@@ -41,14 +41,12 @@ export class Engine {
   // di
   bus: EventBusPort;
   ef: EmitterFactoryPort;
-  tel: EngineTelemetryPort;
   jobParser: JobParserPort;
   handlers: EffectHandlerRegistry;
 
   constructor(private readonly deps: EngineDeps) {
     this.bus = this.deps.bus;
     this.ef = this.deps.ef;
-    this.tel = this.deps.tel;
     this.jobParser = this.deps.jobParser;
 
     this.handlers = wireEffectHandlers(this.ef);

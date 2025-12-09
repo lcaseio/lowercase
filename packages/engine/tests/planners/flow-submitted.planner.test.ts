@@ -9,10 +9,6 @@ import { describe, it, expect } from "vitest";
 
 describe("flowSubmittedPlanner", () => {
   it("generates an expected plan", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const flowSubmittedMessage: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: "test-id",

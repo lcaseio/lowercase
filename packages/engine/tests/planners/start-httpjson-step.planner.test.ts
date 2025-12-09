@@ -9,10 +9,6 @@ import { startHttpJsonStepPlanner } from "../../src/planners/start-httpjson-step
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const startHttpjsonStepMsg: StartHttpJsonStepMsg = {
       type: "StartHttpjsonStep",
       runId: "test-id",

@@ -1,26 +1,15 @@
 import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
-  DispatchInternalFx,
-  EmitFlowCompletedFx,
   EmitFlowFailedFx,
   EngineState,
-  FlowCompletedMsg,
   FlowFailedMsg,
-  JobCompletedMsg,
-  StepReadyToStartMsg,
 } from "../../src/engine.types.js";
 import type { FlowDefinition } from "@lcase/types";
-import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
-import { flowCompletedPlanner } from "../../src/planners/flow-completed.planner.js";
 import { flowFailedPlanner } from "../../src/planners/flow-failed.planner.js";
 
-describe("stepReadyToStartPlanner", () => {
+describe("flowFailedPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const runId = "test-runId";
     const stepId = "test-stepId";
     const flowFailedMsg: FlowFailedMsg = {

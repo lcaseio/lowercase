@@ -12,10 +12,6 @@ import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const runId = "test-runId";
     const stepId = "test-stepId";
     const jobCompletedMsg: JobCompletedMsg = {

@@ -1,10 +1,10 @@
 import { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import { EngineState, StepReadyToStartMsg } from "../../src/engine.types.js";
-import { stepReadyToStartReducer } from "../../src/reducers/step-ready-to-start.reducer";
+import { stepReadyToStartReducer } from "../../src/reducers/step-ready-to-start.reducer.js";
 
 describe("stepReadyToStartReducer", () => {
-  it("", () => {
+  it("updates run status to started when status is pending", () => {
     const state = {
       runs: {},
     } satisfies EngineState;

@@ -16,11 +16,9 @@ export const startJoinPlanner: Planner<StartJoinMsg> = (
 
   const effects: EngineEffect[] = [];
   const runCtx = newState.runs[runId];
-  console.log("emitting step.started for join 1");
 
   if (runCtx.definition.steps[joinStepId].type !== "join") return;
   if (oldJoinStatus === "started") return;
-  console.log("emitting step.started for join 2");
 
   const effect = {
     kind: "EmitJoinStepStarted",
