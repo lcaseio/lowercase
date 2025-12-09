@@ -12,6 +12,7 @@ describe("jobCompletedReducer", () => {
       type: "JobCompleted",
       runId,
       stepId,
+      result: { foo: "bar" },
     };
 
     const runCtx = {
@@ -40,6 +41,7 @@ describe("jobCompletedReducer", () => {
           result: {},
           stepId: stepId,
           joins: new Set<string>(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -71,9 +73,10 @@ describe("jobCompletedReducer", () => {
           status: "completed",
           attempt: 1,
           exports: {},
-          result: {},
+          result: { foo: "bar" },
           stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -94,6 +97,7 @@ describe("jobCompletedReducer", () => {
       type: "JobCompleted",
       runId,
       stepId,
+      result: { foo: "bar" },
     };
 
     const runCtx = {
@@ -122,6 +126,7 @@ describe("jobCompletedReducer", () => {
           result: {},
           stepId: stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -153,9 +158,10 @@ describe("jobCompletedReducer", () => {
           status: "completed",
           attempt: 1,
           exports: {},
-          result: {},
+          result: { foo: "bar" },
           stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;

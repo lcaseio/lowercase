@@ -18,6 +18,7 @@ describe("jobFailedPlanner", () => {
       runId,
       stepId,
       reason: "test-reason",
+      result: {},
     };
     const runCtx = {
       flowId: "test-flowId",
@@ -53,6 +54,7 @@ describe("jobFailedPlanner", () => {
           result: {},
           stepId: stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -92,6 +94,7 @@ describe("jobFailedPlanner", () => {
           stepId,
           reason: "test-reason",
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;

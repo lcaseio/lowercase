@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   getSelector,
   parseArray,
-  parsePath,
+  makePathParts,
   type Part,
-  resolvePathParts,
+  extractPathValue,
 } from "../src/resolve.js";
 
 describe("resolve", () => {
@@ -27,7 +27,7 @@ describe("resolve", () => {
       { id: "1", type: "arrayIndex" },
       { id: "1", type: "arrayIndex" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual(9);
   });
 
@@ -48,7 +48,7 @@ describe("resolve", () => {
       { id: "thing", type: "objectKey" },
       { id: "other", type: "objectKey" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual([5, [4, 9]]);
   });
 
@@ -69,13 +69,13 @@ describe("resolve", () => {
       { id: "thing", type: "objectKey" },
       { id: "other", type: "objectKey" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual([5, [4, 9]]);
   });
 
   it("parseSelector parses correctly", () => {
     const path = "test[0].thing.other[4][5]";
-    const parts = parsePath(path);
+    const parts = makePathParts(path);
     expect(parts.length).toEqual(6);
     expect(parts[0]).toEqual({ id: "test", type: "objectKey" });
     expect(parts[1]).toEqual({ id: "0", type: "arrayIndex" });

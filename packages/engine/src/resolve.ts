@@ -1,23 +1,56 @@
 import type { StepArgs } from "@lcase/specs";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext, StepContext } from "@lcase/types/engine";
+
+/**
+ * internally here language is currently evolving.
+ *
+ * selector - the actual string in the flow, like: ${a.path.like.this}
+ * path - a parsed version of the selector so each part is broken up for traversal
+ * so a path is like a way to get to the value, not the actual selector.
+ *
+ * may be clearer to make a selector always called either "selector" or "path"
+ * unsure.
+ *
+ * In general, resolving should be refactored to help auto resolve step fields
+ * per step type, and deep nested values.
+ */
 
 export type ResolveStepArgs = typeof resolveStepArgs;
 export function split(path: string): string[] {
   return path ? path.split(".") : [];
 }
 
+export function resolveFlatFields(
+  fields: Record<string, string>,
+  object: Record<string, unknown>
+): Record<string, unknown> {
+  const fieldValues: Record<string, unknown> = {};
+  for (const [field, selector] of Object.entries(fields)) {
+    const isSelector = getSelector(selector);
+    if (!isSelector) continue;
+    const value = resolvePath(isSelector, object);
+    fieldValues[field] = value;
+  }
+  return fieldValues;
+}
 export function resolveSelector(
   selector: string,
   object: Record<string, unknown>
 ) {
-  const path = getSelector(selector);
+  const parsedSelector = getSelector(selector);
+  if (!parsedSelector) return;
+  const parts = makePathParts(parsedSelector);
+  return extractPathValue(parts, object);
+}
+
+export function resolvePath(path: string, object: Record<string, unknown>) {
   if (!path) return;
-  const parts = parsePath(path);
-  return resolvePathParts(parts, object);
+  const parts = makePathParts(path);
+  return extractPathValue(parts, object);
 }
 
 // dig through object to see if we can get a data type from context
-export function resolvePathParts<T = unknown>(
+export function extractPathValue<T = unknown>(
   parts: Part[],
   obj: Record<string, unknown>
 ): T | unknown {
@@ -34,16 +67,16 @@ export function resolvePathParts<T = unknown>(
       p.id in current
     ) {
       current = (current as Record<string, unknown>)[p.id];
+    } else {
+      return undefined;
     }
   }
-
   return current;
 }
 
 export function parseArray(part: string): { key?: string; index?: string[] } {
   // pull out the name and any array index
-  // not robust, just easy.
-
+  // not robust, just simple
   const regex = /([a-zA-Z0-9\-\_]+)/gm;
   const match = part.match(regex);
   if (!match) return {};
@@ -52,19 +85,20 @@ export function parseArray(part: string): { key?: string; index?: string[] } {
 }
 
 export function resolveStepArgs(
-  context: RunContext,
+  stepContext: Record<string, StepContext>,
   stepArgs: StepArgs
 ): Record<string, unknown> {
   if (!stepArgs) return {};
   // one level deep not recursive
   for (const [k, v] of Object.entries(stepArgs)) {
-    if (typeof v === "string") {
-      // see if its a selector
-      const selector = getSelector(v);
-      if (selector) {
-        const contextValue = getContextValue(context, selector);
-        stepArgs[k] = contextValue;
-      }
+    if (typeof v !== "string") continue;
+
+    // see if its a selector
+    const selector = getSelector(v);
+    if (selector) {
+      const parts = makePathParts(selector);
+      const value = extractPathValue(parts, stepContext);
+      stepArgs[k] = value;
     }
   }
   return stepArgs;
@@ -80,32 +114,8 @@ export function getSelector(arg: string): string | false {
   return match[1];
 }
 
-export function getContextValue(
-  context: RunContext,
-  selector: string
-): Record<string, unknown> | undefined {
-  const [root, stepName, ...keys] = selector.split(".");
-  if (keys.length === 0 || root !== "steps" || !stepName) return;
-  if (!context.steps[stepName]) return;
-
-  // console.log(`[resolver] got keys ${keys}`);
-
-  // selector steps.transcribe.text.url
-  // keys = ["text", "url"]
-
-  // console.log(`[resolver] full context\n`, JSON.stringify(context, null, 2));
-
-  let c: Record<string, unknown> | undefined = context.steps[stepName].result;
-  if (!c) return;
-
-  for (const k of keys) {
-    if (!c || typeof c !== "object" || !(k in c)) return;
-    c = c[k] as Record<string, unknown>;
-  }
-  return c;
-}
 export type Part = { id: string; type: "objectKey" | "arrayIndex" };
-export function parsePath(path: string): Part[] {
+export function makePathParts(path: string): Part[] {
   const partArray: Part[] = [];
   const parts = path.split(".");
   for (const part of parts) {

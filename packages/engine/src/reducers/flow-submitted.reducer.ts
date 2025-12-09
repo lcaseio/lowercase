@@ -26,6 +26,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
       result: {},
       stepId: step,
       joins: joinMap[step] ?? new Set<string>(),
+      resolved: {},
     };
 
     initAllStepContexts[step] = stepContext;

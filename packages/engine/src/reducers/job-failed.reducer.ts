@@ -6,14 +6,15 @@ export const jobFailedReducer: Reducer<JobFailedMsg> = (
   message: JobFailedMsg
 ) => {
   const { runId, stepId } = message;
-  const run = state.runs[runId];
+  const run = { ...state.runs[runId] };
   const steps = state.runs[runId].steps;
-  const stepCtx = steps[stepId];
+  const stepCtx = { ...steps[stepId] };
 
   const newStepCtx = {
     ...stepCtx,
     status: "failed",
     reason: message.reason,
+    result: message.result,
   } satisfies StepContext;
 
   const stepsSlice = { ...steps, [stepId]: newStepCtx };

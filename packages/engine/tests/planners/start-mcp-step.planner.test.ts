@@ -9,6 +9,8 @@ import { starMcpStepPlanner } from "../../src/planners/start-mcp-step.planner.js
 
 describe("startMcpStepPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
+    const runId = "test-id";
+    const stepId = "test-stepId";
     const state = {
       runs: {},
     } satisfies EngineState;
@@ -57,6 +59,7 @@ describe("startMcpStepPlanner", () => {
           result: {},
           stepId: "start",
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -102,6 +105,7 @@ describe("startMcpStepPlanner", () => {
         url: "test-url",
         feature: { name: "", primitive: "tool" },
         transport: "http",
+        args: newState.runs[runId].steps[stepId].args,
       },
       traceId: "test-traceId",
     } satisfies EmitJobMcpSubmittedFx;

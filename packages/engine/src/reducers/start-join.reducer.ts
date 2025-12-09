@@ -14,7 +14,6 @@ export const startJoinReducer: Reducer<StartJoinMsg> = (
   stepCtx.status = "started";
   runCtx.activeJoinSteps.add(joinStepId);
 
-  console.log("startJoin");
   return {
     runs: {
       [runId]: {

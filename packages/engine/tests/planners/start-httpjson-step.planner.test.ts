@@ -1,4 +1,4 @@
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext, StepContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
   EmitJobHttpJsonSubmittedFx,
@@ -25,7 +25,7 @@ describe("stepReadyToStartPlanner", () => {
         steps: {
           "test-stepId": {
             type: "httpjson",
-            url: "test-url",
+            url: "https://www.google.com",
           },
         },
       },
@@ -48,6 +48,7 @@ describe("stepReadyToStartPlanner", () => {
           result: {},
           stepId: "start",
           joins: new Set(),
+          resolved: { url: "foo" },
         },
       },
     } satisfies RunContext;
@@ -62,6 +63,7 @@ describe("stepReadyToStartPlanner", () => {
           ...runCtx.steps["test-stepId"],
           status: "started" as const,
           attempt: 1,
+          resolved: { url: "thing" },
         },
       },
     };
@@ -90,7 +92,7 @@ describe("stepReadyToStartPlanner", () => {
           id: "", // FIXME: possibly null or created earlier
           toolid: null,
         },
-        url: "test-url",
+        url: "thing",
       },
       traceId: "test-traceId",
     } satisfies EmitJobHttpJsonSubmittedFx;

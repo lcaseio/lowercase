@@ -39,7 +39,7 @@
 
     "five": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/people/4",
+      "url": "${two.result.body.homeworld}",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"

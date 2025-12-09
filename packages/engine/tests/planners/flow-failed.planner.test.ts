@@ -49,6 +49,7 @@ describe("flowFailedPlanner", () => {
           result: {},
           stepId: stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -85,6 +86,7 @@ describe("flowFailedPlanner", () => {
           result: {},
           stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
