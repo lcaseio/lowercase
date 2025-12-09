@@ -4,7 +4,7 @@ import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import { Engine, EngineTelemetry, PipeResolver } from "@lcase/engine";
+import { Engine, PipeResolver } from "@lcase/engine";
 
 import { EmitterFactory, eventRegistry } from "@lcase/events";
 import {
@@ -61,7 +61,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const queue = queueFactory();
 
   const ef = new EmitterFactory(bus);
-  const engineTelemetry = new EngineTelemetry(ef);
   const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
   const flowStore = new FlowStore();
@@ -74,13 +73,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     jobParser,
   });
 
-  const engine = createInProcessEngine(
-    bus,
-    streamRegistry,
-    ef,
-    engineTelemetry,
-    jobParser
-  );
+  const engine = createInProcessEngine(bus, streamRegistry, ef, jobParser);
 
   const worker = createInProcessWorker(
     config.worker.id,
@@ -150,7 +143,6 @@ export function createInProcessEngine(
   bus: EventBusPort,
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
-  tel: EngineTelemetryPort,
   jobParser: JobParserPort
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
@@ -158,7 +150,6 @@ export function createInProcessEngine(
   const engine = new Engine({
     bus,
     ef: emitterFactory,
-    tel,
     jobParser,
   });
 

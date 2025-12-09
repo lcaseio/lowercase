@@ -43,6 +43,9 @@ export class ConsoleSink implements EventSink {
     if (event.type === "system.logged") {
       const l = event as AnyEvent<"system.logged">;
       log = l.data.log;
+    } else if (event.type === "step.started") {
+      const l = event as AnyEvent<"step.started">;
+      log = l.data.step.id + " | " + l.data.step.type;
     }
     console.log(
       `${this.#c[event.domain]}[${event.type}]${this.#s}${ok} ${log}`

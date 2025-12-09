@@ -1,24 +1,15 @@
 import type { RunContext } from "@lcase/types/engine";
 import { describe, it, expect } from "vitest";
 import type {
-  DispatchInternalFx,
   EmitFlowCompletedFx,
-  EmitStepCompletedFx,
   EngineState,
   FlowCompletedMsg,
-  JobCompletedMsg,
-  StepReadyToStartMsg,
 } from "../../src/engine.types.js";
 import type { FlowDefinition } from "@lcase/types";
-import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
 import { flowCompletedPlanner } from "../../src/planners/flow-completed.planner.js";
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const runId = "test-runId";
     const stepId = "test-stepId";
     const flowCompletedMsg: FlowCompletedMsg = {
@@ -43,6 +34,7 @@ describe("stepReadyToStartPlanner", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 1,
@@ -57,6 +49,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -78,6 +71,7 @@ describe("stepReadyToStartPlanner", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
       outstandingSteps: 0,
@@ -92,6 +86,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

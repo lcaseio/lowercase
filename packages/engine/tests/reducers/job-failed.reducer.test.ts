@@ -25,6 +25,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 1,
@@ -39,6 +40,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -57,6 +59,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
       outstandingSteps: 0,
@@ -72,6 +75,7 @@ describe("jobCompletedReducer", () => {
           result: {},
           stepId,
           reason: "test-reason",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -105,6 +109,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId, "other"]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 2,
@@ -119,6 +124,7 @@ describe("jobCompletedReducer", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -137,6 +143,7 @@ describe("jobCompletedReducer", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>(["other"]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
       outstandingSteps: 1,
@@ -152,6 +159,7 @@ describe("jobCompletedReducer", () => {
           result: {},
           stepId,
           reason: "test-reason",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

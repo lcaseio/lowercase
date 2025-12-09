@@ -10,5 +10,9 @@ export const stepReadyToStartReducer: Reducer<StepReadyToStartMsg> = (
   message: StepReadyToStartMsg
 ): Patch | void => {
   const run = { ...state.runs[message.runId] };
-  return { runs: { [message.runId]: { ...run, status: "started" } } };
+
+  if (run.status === "pending") {
+    run.status = "started";
+  }
+  return { runs: { [message.runId]: { ...run } } };
 };

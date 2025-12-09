@@ -24,13 +24,20 @@ export class PipeResolver {
 
     const pipes: ResolvedPipes = {};
 
+    if (step.type === "parallel") return {};
+    if (step.type === "join") return {};
+
     if (step.pipe?.to) {
       const { id } = this.streamRegistry.createStream(randomUUID());
       pipes.to = {
         id,
         payload: step.pipe.to.payload,
       };
-      if (ctx.definition.steps[stepId]?.pipe?.to) {
+      if (
+        ctx.definition.steps[stepId].type !== "parallel" &&
+        ctx.definition.steps[stepId].type !== "join" &&
+        ctx.definition.steps[stepId]?.pipe?.to
+      ) {
         if (ctx.steps[stepId]?.pipe?.to) {
           ctx.steps[stepId].pipe.to = pipes.to;
         }

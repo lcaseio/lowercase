@@ -50,6 +50,12 @@ export type StartMcpStepMsg = {
   stepId: string;
 };
 
+export type StartParallelMsg = {
+  type: "StartParallel";
+  runId: string;
+  stepId: string;
+};
+
 export type JobCompletedMsg = {
   type: "JobCompleted";
   runId: string;
@@ -72,16 +78,31 @@ export type FlowFailedMsg = {
   runId: string;
   stepId: string;
 };
+export type StartJoinMsg = {
+  type: "StartJoin";
+  runId: string;
+  stepId: string;
+  joinStepId: string;
+};
+export type UpdateJoinMsg = {
+  type: "UpdateJoin";
+  runId: string;
+  stepId: string;
+  joinStepId: string;
+};
 
 export type EngineMessage =
   | FlowSubmittedMsg
   | StepReadyToStartMsg
+  | StartParallelMsg
   | StartHttpJsonStepMsg
   | StartMcpStepMsg
   | JobCompletedMsg
   | JobFailedMsg
   | FlowCompletedMsg
-  | FlowFailedMsg;
+  | FlowFailedMsg
+  | StartJoinMsg
+  | UpdateJoinMsg;
 
 export type MessageType = EngineMessage["type"];
 
@@ -105,9 +126,15 @@ export type EmitStepStartedFx = {
   data: StepStartedData;
   traceId: string;
 };
+export type EmitJoinStepStartedFx = {
+  kind: "EmitJoinStepStarted";
+  scope: StepScope & CloudScope;
+  data: StepStartedData;
+  traceId: string;
+};
 export type EmitStepCompletedFx = {
   kind: "EmitStepCompleted";
-  eventType: "step.compelted";
+  eventType: "step.completed";
   scope: StepScope & CloudScope;
   data: StepCompletedData;
   traceId: string;
@@ -157,6 +184,7 @@ export type EngineEffect =
   | EmitEventFx
   | DispatchInternalFx
   | EmitStepStartedFx
+  | EmitJoinStepStartedFx
   | EmitStepCompletedFx
   | EmitStepFailedFx
   | EmitJobHttpJsonSubmittedFx
@@ -172,11 +200,14 @@ export type Reducer<M extends EngineMessage = EngineMessage> = (
 ) => Patch | void;
 
 // planners
-export type Planner<M extends EngineMessage = EngineMessage> = (args: {
+export type PlannerArgs<M extends EngineMessage = EngineMessage> = {
   oldState: EngineState;
   newState: EngineState;
   message: M;
-}) => EngineEffect[] | void;
+};
+export type Planner<M extends EngineMessage = EngineMessage> = (
+  args: PlannerArgs<M>
+) => EngineEffect[] | void;
 
 // handlers
 export type EffectHandler<K extends EngineEffect["kind"]> = (

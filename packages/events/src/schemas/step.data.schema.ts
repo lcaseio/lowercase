@@ -10,6 +10,8 @@ const RunDescriptorSchema = z.object({
     id: z.string(),
     name: z.string(),
     type: z.string(),
+    joinFrom: z.array(z.string()).optional(),
+    parallelSteps: z.array(z.string()).optional(),
   }),
 });
 export const StepStartedDataSchema = RunDescriptorSchema.merge(

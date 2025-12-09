@@ -9,10 +9,6 @@ import { startHttpJsonStepPlanner } from "../../src/planners/start-httpjson-step
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const startHttpjsonStepMsg: StartHttpJsonStepMsg = {
       type: "StartHttpjsonStep",
       runId: "test-id",
@@ -36,6 +32,7 @@ describe("stepReadyToStartPlanner", () => {
       runId: "test-id",
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,
@@ -50,6 +47,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId: "start",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;

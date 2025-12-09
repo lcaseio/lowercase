@@ -5,6 +5,7 @@ import type {
   JobFailedMsg,
   DispatchInternalFx,
   EmitStepFailedFx,
+  UpdateJoinMsg,
 } from "../engine.types.js";
 
 export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
@@ -19,9 +20,14 @@ export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
   const newRunState = newState.runs[message.runId];
   if (!newRunState) return;
 
-  if (newRunState.steps[stepId].status !== "failed") return;
+  const step = newRunState.definition.steps[stepId];
+  const stepCtx = newRunState.steps[stepId];
 
-  const nextStepId = newRunState.definition.steps[stepId].on?.failure;
+  if (step.type === "parallel") return;
+  if (step.type === "join") return;
+  if (stepCtx.status !== "failed") return;
+
+  const nextStepId = step.on?.failure;
 
   const emitStepCompletedFx = {
     kind: "EmitStepFailed",
@@ -31,14 +37,14 @@ export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
       runid: runId,
       source: "lowercase://engine",
       stepid: stepId,
-      steptype: newRunState.definition.steps[stepId].type,
+      steptype: step.type,
     },
     data: {
       status: "failure",
       step: {
         id: stepId,
         name: stepId,
-        type: newRunState.definition.steps[stepId].type,
+        type: step.type,
       },
       reason: message.reason,
     },
@@ -46,6 +52,22 @@ export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
   } satisfies EmitStepFailedFx;
 
   effects.push(emitStepCompletedFx);
+
+  // send update messages to joins that are waiting on this step
+  if (stepCtx.joins.size > 0) {
+    for (const joinStepId of stepCtx.joins.values()) {
+      const updateJoinEffect = {
+        kind: "DispatchInternal",
+        message: {
+          type: "UpdateJoin",
+          runId,
+          stepId,
+          joinStepId,
+        } satisfies UpdateJoinMsg,
+      } satisfies DispatchInternalFx;
+      effects.push(updateJoinEffect);
+    }
+  }
 
   if (nextStepId) {
     const effect = {
@@ -57,10 +79,7 @@ export const jobFailedPlanner: Planner<JobFailedMsg> = (args: {
       },
     } satisfies DispatchInternalFx;
     effects.push(effect);
-  } else if (
-    newRunState.outstandingSteps === 0 &&
-    newRunState.runningSteps.size === 0
-  ) {
+  } else if (newRunState.status === "failed") {
     const effect = {
       kind: "DispatchInternal",
       message: {

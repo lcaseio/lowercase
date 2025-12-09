@@ -6,6 +6,7 @@ import {
   DispatchInternalFx,
   FlowCompletedMsg,
   EmitStepCompletedFx,
+  UpdateJoinMsg,
 } from "../engine.types.js";
 
 export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
@@ -20,12 +21,17 @@ export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
   const newRunState = newState.runs[message.runId];
   if (!newRunState) return;
 
-  if (newRunState.steps[stepId].status === "completed") {
-    const nextStepId = newRunState.definition.steps[stepId].on?.success;
+  const step = newRunState.definition.steps[stepId];
+  const stepCtx = newRunState.steps[stepId];
+
+  if (step.type === "parallel") return;
+  if (step.type === "join") return;
+  if (stepCtx.status === "completed") {
+    const nextStepId = step.on?.success;
 
     const emitStepCompletedFx = {
       kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+      eventType: "step.completed",
       scope: {
         flowid: newState.runs[runId].flowId,
         runid: runId,
@@ -45,6 +51,22 @@ export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
     } satisfies EmitStepCompletedFx;
     effects.push(emitStepCompletedFx);
 
+    // send update messages to joins that are waiting on this step
+    if (stepCtx.joins.size > 0) {
+      for (const joinStepId of stepCtx.joins.values()) {
+        const updateJoinEffect = {
+          kind: "DispatchInternal",
+          message: {
+            type: "UpdateJoin",
+            runId,
+            stepId,
+            joinStepId,
+          } satisfies UpdateJoinMsg,
+        } satisfies DispatchInternalFx;
+        effects.push(updateJoinEffect);
+      }
+    }
+
     if (nextStepId) {
       const effect = {
         kind: "DispatchInternal",
@@ -55,10 +77,7 @@ export const jobCompletedPlanner: Planner<JobCompletedMsg> = (args: {
         },
       } satisfies EngineEffect;
       effects.push(effect);
-    } else if (
-      newRunState.outstandingSteps === 0 &&
-      newRunState.runningSteps.size === 0
-    ) {
+    } else if (newRunState.status === "completed") {
       const effect = {
         kind: "DispatchInternal",
         message: {

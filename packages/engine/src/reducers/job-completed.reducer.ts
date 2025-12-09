@@ -23,7 +23,11 @@ export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
 
   const outstandingSteps = Math.abs(run.outstandingSteps - 1);
   let status = run.status;
-  if (runningSteps.size === 0 && outstandingSteps === 0) {
+  if (
+    runningSteps.size === 0 &&
+    outstandingSteps === 0 &&
+    run.activeJoinSteps.size === 0
+  ) {
     status = "completed";
   }
   const newRunContext = {

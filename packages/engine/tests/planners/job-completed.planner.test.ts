@@ -12,10 +12,6 @@ import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js
 
 describe("stepReadyToStartPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
-    const state = {
-      runs: {},
-    } satisfies EngineState;
-
     const runId = "test-runId";
     const stepId = "test-stepId";
     const jobCompletedMsg: JobCompletedMsg = {
@@ -40,6 +36,7 @@ describe("stepReadyToStartPlanner", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 1,
@@ -54,6 +51,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId: stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -75,6 +73,7 @@ describe("stepReadyToStartPlanner", () => {
       runId,
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>([stepId]),
       outstandingSteps: 0,
@@ -89,6 +88,7 @@ describe("stepReadyToStartPlanner", () => {
           exports: {},
           result: {},
           stepId,
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -102,7 +102,7 @@ describe("stepReadyToStartPlanner", () => {
 
     const emitStepCompletedFx = {
       kind: "EmitStepCompleted",
-      eventType: "step.compelted",
+      eventType: "step.completed",
       scope: {
         flowid: newRunCtx.flowId,
         runid: runId,

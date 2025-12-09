@@ -5,6 +5,7 @@ import {
   Patch,
   Reducer,
 } from "../engine.types.js";
+import { StepDefinition } from "@lcase/types";
 
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   state: EngineState,
@@ -14,6 +15,9 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   const { definition } = message;
 
   const initAllStepContexts: Record<string, StepContext> = {};
+
+  const joinMap = makeJoinSetsForSteps(definition.steps);
+
   for (const step of Object.keys(definition.steps)) {
     const stepContext: StepContext = {
       status: "pending",
@@ -21,6 +25,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
       exports: {},
       result: {},
       stepId: step,
+      joins: joinMap[step] ?? new Set<string>(),
     };
 
     initAllStepContexts[step] = stepContext;
@@ -35,6 +40,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     runningSteps: new Set<string>(),
     queuedSteps: new Set<string>(),
     doneSteps: new Set<string>(),
+    activeJoinSteps: new Set<string>(),
     outstandingSteps: 0,
     inputs: definition.inputs ?? {},
     exports: {},
@@ -50,3 +56,25 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     },
   };
 };
+
+/**
+ * Create a new map of step ids to join steps, which is inverting the
+ * dependencies.  These normally live inside join steps, but we apply them
+ * to each step, if they are mentioned in a join, in order for easy lookup when
+ * a step ends.
+ * @param steps Record<string, StepDefinition>
+ */
+export function makeJoinSetsForSteps(
+  steps: Record<string, StepDefinition>
+): Record<string, Set<string>> {
+  const joinMap: Record<string, Set<string>> = {};
+  for (const [stepId, definition] of Object.entries(steps)) {
+    if (definition.type !== "join") continue;
+
+    for (const joinTarget of definition.steps) {
+      joinMap[joinTarget] ??= new Set();
+      joinMap[joinTarget].add(stepId);
+    }
+  }
+  return joinMap;
+}

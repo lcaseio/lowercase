@@ -8,6 +8,7 @@ export type RunContext = FlowContext & {
 
   runningSteps: Set<string>; // move
   queuedSteps: Set<string>; // move
+  activeJoinSteps: Set<string>;
   doneSteps: Set<string>; // move
   outstandingSteps: number; // move
 
@@ -30,6 +31,7 @@ export type StepContext = {
   args?: Record<string, unknown>; // move
   pipe?: PipeData;
   stepId: string;
+  joins: Set<string>;
 };
 
 export type FlowContext = {
@@ -37,5 +39,3 @@ export type FlowContext = {
   flowName: string;
   definition: FlowDefinition;
 };
-
-const a = new Set();

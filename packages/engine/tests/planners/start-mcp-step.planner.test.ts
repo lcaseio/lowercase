@@ -3,9 +3,9 @@ import { describe, it, expect } from "vitest";
 import type {
   EmitJobMcpSubmittedFx,
   EngineState,
-  StartHttpJsonStepMsg,
+  StartMcpStepMsg,
 } from "../../src/engine.types.js";
-import { startHttpJsonStepPlanner } from "../../src/planners/start-httpjson-step.planner.js";
+import { starMcpStepPlanner } from "../../src/planners/start-mcp-step.planner.js";
 
 describe("startMcpStepPlanner", () => {
   it("gives correct effects for a proper message and context", () => {
@@ -13,8 +13,8 @@ describe("startMcpStepPlanner", () => {
       runs: {},
     } satisfies EngineState;
 
-    const startHttpjsonStepMsg: StartHttpJsonStepMsg = {
-      type: "StartHttpjsonStep",
+    const starMcpStepMsg: StartMcpStepMsg = {
+      type: "StartMcpStep",
       runId: "test-id",
       stepId: "test-stepId",
     };
@@ -28,14 +28,20 @@ describe("startMcpStepPlanner", () => {
         start: "test-stepId",
         steps: {
           "test-stepId": {
-            type: "httpjson",
+            type: "mcp",
             url: "test-url",
+            feature: {
+              name: "",
+              primitive: "tool",
+            },
+            transport: "http",
           },
         },
       },
       runId: "test-id",
       traceId: "test-traceId",
       runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
       queuedSteps: new Set<string>(),
       doneSteps: new Set<string>(),
       outstandingSteps: 0,
@@ -50,6 +56,7 @@ describe("startMcpStepPlanner", () => {
           exports: {},
           result: {},
           stepId: "start",
+          joins: new Set(),
         },
       },
     } satisfies RunContext;
@@ -68,10 +75,10 @@ describe("startMcpStepPlanner", () => {
       },
     };
     const newState: EngineState = { runs: { ["test-id"]: newRunContext } };
-    const effects = startHttpJsonStepPlanner({
+    const effects = starMcpStepPlanner({
       oldState,
       newState,
-      message: startHttpjsonStepMsg,
+      message: starMcpStepMsg,
     });
 
     const expectedEffectPlan = {

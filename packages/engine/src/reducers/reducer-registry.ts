@@ -5,8 +5,11 @@ import { flowSubmittedReducer } from "./flow-submitted.reducer.js";
 import { jobCompletedReducer } from "./job-completed.reducer.js";
 import { jobFailedReducer } from "./job-failed.reducer.js";
 import { startHttpJsonStepReducer } from "./start-httpjson-step.reducer.js";
+import { startJoinReducer } from "./start-join.reducer.js";
 import { startMcpStepReducer } from "./start-mcp-step.reducer.js";
+import { startParallelReducer } from "./start-parallel.reducer.js";
 import { stepReadyToStartReducer } from "./step-ready-to-start.reducer.js";
+import { updateJoinReducer } from "./update-join.reducer.js";
 
 export type ReducerRegistry = {
   [T in EngineMessage["type"]]?: Reducer<Extract<EngineMessage, { type: T }>>;
@@ -15,6 +18,9 @@ export type ReducerRegistry = {
 export const reducers = {
   FlowSubmitted: flowSubmittedReducer,
   StepReadyToStart: stepReadyToStartReducer,
+  StartParallel: startParallelReducer,
+  StartJoin: startJoinReducer,
+  UpdateJoin: updateJoinReducer,
   StartHttpjsonStep: startHttpJsonStepReducer,
   StartMcpStep: startMcpStepReducer,
   JobCompleted: jobCompletedReducer,
