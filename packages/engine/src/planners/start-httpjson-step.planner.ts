@@ -16,6 +16,12 @@ export const startHttpJsonStepPlanner: Planner<StartHttpJsonStepMsg> = (args: {
   const step = newState.runs[message.runId].definition.steps[
     message.stepId
   ] as StepHttpJson;
+
+  const resolveUrl = newState.runs[runId].steps[stepId].resolved.url;
+
+  const url =
+    resolveUrl && typeof resolveUrl === "string" ? resolveUrl : step.url;
+
   return [
     {
       kind: "EmitJobHttpjsonSubmittedEvent",
@@ -25,7 +31,7 @@ export const startHttpJsonStepPlanner: Planner<StartHttpJsonStepMsg> = (args: {
           id: "",
           toolid: null,
         },
-        url: step.url,
+        url,
         ...(step.body ? { body: step.body } : {}),
         ...(step.headers ? { headers: step.headers } : {}),
         ...(step.method ? { method: step.method } : {}),

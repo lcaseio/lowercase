@@ -4,7 +4,7 @@ import {
   parseArray,
   parsePath,
   type Part,
-  resolvePathParts,
+  extractPathValue,
 } from "../src/resolve.js";
 
 describe("resolve", () => {
@@ -27,7 +27,7 @@ describe("resolve", () => {
       { id: "1", type: "arrayIndex" },
       { id: "1", type: "arrayIndex" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual(9);
   });
 
@@ -48,7 +48,7 @@ describe("resolve", () => {
       { id: "thing", type: "objectKey" },
       { id: "other", type: "objectKey" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual([5, [4, 9]]);
   });
 
@@ -69,7 +69,7 @@ describe("resolve", () => {
       { id: "thing", type: "objectKey" },
       { id: "other", type: "objectKey" },
     ];
-    const value = resolvePathParts(parts, object);
+    const value = extractPathValue(parts, object);
     expect(value).toEqual([5, [4, 9]]);
   });
 

@@ -4,27 +4,49 @@ import type {
   Reducer,
   StartHttpJsonStepMsg,
 } from "../engine.types.js";
+import { resolveFlatFields } from "../resolve.js";
 
 export const startHttpJsonStepReducer: Reducer<StartHttpJsonStepMsg> = (
   state: EngineState,
   message: StartHttpJsonStepMsg
 ) => {
   const { runId, stepId } = message;
-  const run = { ...state.runs[runId] };
-  if (run.steps[stepId].status !== "pending") return;
+  const runCtx = { ...state.runs[runId] };
+  const stepDef = { ...runCtx.definition.steps[stepId] };
+  const stepCtx = { ...runCtx.steps[stepId] };
+  if (runCtx.steps[stepId].status !== "pending") return;
+  if (stepDef.type !== "httpjson") return;
 
-  run.outstandingSteps++;
-  run.runningSteps = new Set([...run.runningSteps, stepId]);
-  run.steps[stepId].status = "started";
+  const allStepsCtx = { ...runCtx.steps };
+
+  runCtx.outstandingSteps++;
+  runCtx.runningSteps = new Set([...runCtx.runningSteps, stepId]);
+  runCtx.steps[stepId].status = "started";
+
+  const fields = resolveFlatFields(
+    {
+      url: stepDef.url,
+    },
+    allStepsCtx
+  );
+
+  stepCtx.resolved = {
+    ...(fields.url ? { url: fields.url } : {}),
+  };
+
+  fields.url ?? stepDef.url;
+
+  console.log("stepDef.url", stepDef.url);
+  console.log("fields", fields);
 
   const newRunContext = {
-    ...run,
+    ...runCtx,
     steps: {
-      ...run.steps,
+      ...runCtx.steps,
       [stepId]: {
-        ...run.steps[stepId],
+        ...stepCtx,
         status: "started",
-        attempt: run.steps[stepId].attempt + 1,
+        attempt: runCtx.steps[stepId].attempt + 1,
       },
     },
   } satisfies RunContext;

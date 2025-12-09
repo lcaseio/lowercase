@@ -1,11 +1,39 @@
 import type { StepArgs } from "@lcase/specs";
 import type { RunContext } from "@lcase/types/engine";
 
+/**
+ * internally here language is currently evolving.
+ *
+ * selector - the actual string in the flow, like: ${a.path.like.this}
+ * path - a parsed version of the selector so each part is broken up for traversal
+ * so a path is like a way to get to the value, not the actual selector.
+ *
+ * may be clearer to make a selector always called either "selector" or "path"
+ * unsure.
+ *
+ * In general, resolving should be refactored to help auto resolve step fields
+ * per step type, and deep nested values.
+ */
+
 export type ResolveStepArgs = typeof resolveStepArgs;
 export function split(path: string): string[] {
   return path ? path.split(".") : [];
 }
 
+export function resolveFlatFields(
+  fields: Record<string, string>,
+  object: Record<string, unknown>
+): Record<string, unknown> {
+  const fieldValues: Record<string, unknown> = {};
+  for (const [field, selector] of Object.entries(fields)) {
+    console.log("rs field", field);
+    const isSelector = getSelector(selector);
+    if (!isSelector) continue;
+    const value = resolvePath(isSelector, object);
+    fieldValues[field] = value;
+  }
+  return fieldValues;
+}
 export function resolveSelector(
   selector: string,
   object: Record<string, unknown>
@@ -13,11 +41,17 @@ export function resolveSelector(
   const path = getSelector(selector);
   if (!path) return;
   const parts = parsePath(path);
-  return resolvePathParts(parts, object);
+  return extractPathValue(parts, object);
+}
+
+export function resolvePath(path: string, object: Record<string, unknown>) {
+  if (!path) return;
+  const parts = parsePath(path);
+  return extractPathValue(parts, object);
 }
 
 // dig through object to see if we can get a data type from context
-export function resolvePathParts<T = unknown>(
+export function extractPathValue<T = unknown>(
   parts: Part[],
   obj: Record<string, unknown>
 ): T | unknown {

@@ -57,6 +57,7 @@ describe("startMcpStepPlanner", () => {
           result: {},
           stepId: "start",
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;

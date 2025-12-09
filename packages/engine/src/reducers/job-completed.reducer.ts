@@ -6,27 +6,28 @@ export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
   message: JobCompletedMsg
 ) => {
   const { runId, stepId } = message;
-  const run = state.runs[runId];
+  const runCtx = { ...state.runs[runId] };
   const steps = state.runs[runId].steps;
-  const stepCtx = steps[stepId];
+  const stepCtx = { ...steps[stepId] };
 
   const newStepCtx = {
     ...stepCtx,
     status: "completed",
+    result: message.result,
   } satisfies StepContext;
 
   const stepsSlice = { ...steps, [stepId]: newStepCtx };
 
-  const runningSteps = new Set([...run.runningSteps]);
+  const runningSteps = new Set([...runCtx.runningSteps]);
   runningSteps.delete(stepId);
-  const doneSteps = new Set([...run.doneSteps, stepId]);
+  const doneSteps = new Set([...runCtx.doneSteps, stepId]);
 
-  const outstandingSteps = Math.abs(run.outstandingSteps - 1);
-  let status = run.status;
+  const outstandingSteps = Math.abs(runCtx.outstandingSteps - 1);
+  let status = runCtx.status;
   if (
     runningSteps.size === 0 &&
     outstandingSteps === 0 &&
-    run.activeJoinSteps.size === 0
+    runCtx.activeJoinSteps.size === 0
   ) {
     status = "completed";
   }

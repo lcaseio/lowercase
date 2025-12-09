@@ -50,6 +50,7 @@ describe("stepReadyToStartPlanner", () => {
           result: {},
           stepId: stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -87,6 +88,7 @@ describe("stepReadyToStartPlanner", () => {
           result: {},
           stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;

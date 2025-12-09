@@ -9,9 +9,4 @@ export const flowCompletedReducer: Reducer<FlowCompletedMsg> = (
   message: FlowCompletedMsg
 ) => {
   const { runId, stepId } = message;
-  const run = state.runs[runId];
-  const steps = state.runs[runId].steps;
-  const stepCtx = steps[stepId];
-
-  return;
 };

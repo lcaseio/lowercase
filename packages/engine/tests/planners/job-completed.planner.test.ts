@@ -18,6 +18,7 @@ describe("stepReadyToStartPlanner", () => {
       type: "JobCompleted",
       runId,
       stepId,
+      result: {},
     };
     const runCtx = {
       flowId: "test-flowId",
@@ -52,6 +53,7 @@ describe("stepReadyToStartPlanner", () => {
           result: {},
           stepId: stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;
@@ -89,6 +91,7 @@ describe("stepReadyToStartPlanner", () => {
           result: {},
           stepId,
           joins: new Set(),
+          resolved: {},
         },
       },
     } satisfies RunContext;

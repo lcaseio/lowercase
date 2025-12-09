@@ -60,6 +60,7 @@ export type JobCompletedMsg = {
   type: "JobCompleted";
   runId: string;
   stepId: string;
+  result: Record<string, unknown>;
 };
 
 export type JobFailedMsg = {
@@ -67,6 +68,7 @@ export type JobFailedMsg = {
   runId: string;
   stepId: string;
   reason: string;
+  result: Record<string, unknown>;
 };
 export type FlowCompletedMsg = {
   type: "FlowCompleted";

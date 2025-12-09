@@ -203,6 +203,7 @@ export class Engine {
       runId: job.event.runid,
       stepId: job.event.stepid,
       reason: job.event.data.reason,
+      result: job.event.data.result ?? {},
     } satisfies JobFailedMsg;
 
     this.enqueue(jobFailedMsg);
@@ -219,6 +220,7 @@ export class Engine {
       type: "JobCompleted",
       runId: job.event.runid,
       stepId: job.event.stepid,
+      result: job.event.data.result ?? {},
     } satisfies JobCompletedMsg;
 
     this.enqueue(jobCompletedMsg);

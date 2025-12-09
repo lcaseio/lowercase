@@ -6,16 +6,16 @@ export type RunContext = FlowContext & {
   runId: string;
   traceId: string; // move
 
-  runningSteps: Set<string>; // move
-  queuedSteps: Set<string>; // move
+  runningSteps: Set<string>;
+  queuedSteps: Set<string>;
   activeJoinSteps: Set<string>;
-  doneSteps: Set<string>; // move
-  outstandingSteps: number; // move
+  doneSteps: Set<string>;
+  outstandingSteps: number;
 
   inputs: Record<string, unknown>;
 
-  exports: Record<string, unknown>; // move
-  globals: Record<string, unknown>; // move
+  exports: Record<string, unknown>;
+  globals: Record<string, unknown>;
 
   status: "started" | "completed" | "failed" | "pending";
 
@@ -27,8 +27,9 @@ export type StepContext = {
   reason?: string;
   attempt: number;
   exports: Record<string, unknown>;
-  result: Record<string, unknown>; // move
-  args?: Record<string, unknown>; // move
+  result: Record<string, unknown>;
+  resolved: Record<string, unknown>;
+  args?: Record<string, unknown>;
   pipe?: PipeData;
   stepId: string;
   joins: Set<string>;
