@@ -1,8 +1,10 @@
-# lowercase Observability
+# Oservability Event Docs
+
+Updated for `v0.1.0-alpha.7`
 
 ## Status
 
-This is draft of a specification in an attempt to align event envelopes with Cloud Events and OpenTelemetry
+This is draft of a specification in an attempt to align event envelopes with Cloud Events and OpenTelemetry. Some design aspects are not yet implemented but documented for future use.
 
 ## Cloud Events + OpenTelemetry Conventions
 
@@ -11,7 +13,7 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 ### 01. Design Goals
 
 - Human friendly readable event types + machine friendly attributes that fit Cloud Events flat structure, easy to analyze
-- OTel aligned span attributes and W3C Trace Context propagation for Cloud Events (`traceparent` & `tracestate`)
+- Otel aligned span attributes and W3C Trace Context propagation for Cloud Events (`traceparent` & `tracestate`)
 - Structured data payloads in `data`, low cardinality attributes in base event
 
 ### 02. Cloud Events Envelope
@@ -26,13 +28,12 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 
 #### lowercase / Otel Extension Attributes
 
-- `traceparent` (W3C Trace Context) **always include**
+- `traceparent` W3C Trace Context
 - `tracestate` optional W3C trace state
-- `component` (lowercase bounded set)
-- `operation` (lowercase bounded set)
-- ids (optional per scope, references to lowercase values) - `flowid`, `runid`, `stepid`, `jobid`, `toolid`, `steptype`
-- classification (lowercase relevant references) `capability`, `tool`
-- errors/retries `attempt`, `errorkind`, `errorcode`
+- `traceid`
+- `domain` (lowercase bounded set)
+- `entity` (lowercase bounded set)
+- ids (optional per scope, references to lowercase values) - `flowid`, `runid`, `stepid`, `jobid`, `toolid`, `steptype`, `capid`
 
 ### 03. Vocabulary
 
@@ -43,7 +44,6 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 - `flow`
 - `step`
 - `tool`
-- `queue`
 - `router`
 - `stream`
 - `cli`
@@ -70,36 +70,23 @@ Prefer one word verbs, past tense.
 - `requested`
 - `saved`
 - `logged`
+- `submitted`
+- `delayed`
 
 #### `entity` (classification of work)
 
 Optional map to **lowercase** capabilities or domain entities
 
 - `mcp`
-- `shell`
-- `sql`
-- `rag`
-- `fs`
-- `rpc`
-- `custom`
+- `httpjson`
 - `registration`
-
-#### `errorkind` (optional, bounded)
-
-- `timeout`
-- `validation`
-- `io`
-- `auth`
-- `internal`
-- `quota`
-- `conflict`
 
 ### 04. Event `type` should be human readable even if redundant
 
 Example:
 
-- type `step.mcp.queued` for human readable type, but also emit attributes for otel
-- maps to `domain=step`, `entity=mcp`, `action=queued`
+- type `job.mcp.queued` for human readable type, but also emit attributes for otel
+- maps to `domain=job`, `entity=mcp`, `action=queued`
 
 This maps well to TypeScript data payload per type, and human readable types, while still providing open telemetry attributes to sort events. Redundant but helpful.
 
@@ -107,7 +94,7 @@ May move to simple event types later if redundancy is a performance problem or b
 
 ### 05. Tracing model (OpenTelemetry aligned)
 
-Trace is a full flow run (`flow.started` in engine or `flow.queued` from external)
+Trace is a full flow run `flow.submitted` to `flow.completed` or `flow.failed`)
 
 #### Nested Spans
 

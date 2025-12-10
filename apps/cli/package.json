@@ -1,6 +1,6 @@
 {
   "name": "@lcase/cli",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "private": "true",
   "type": "module",
   "bin": {
@@ -10,7 +10,6 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "echo test",
-    "test:e2e": "vitest test",
     "lint": "echo lint",
     "start": "node ./dist/main.js",
     "dev": "npx tsx ./src/main.ts"

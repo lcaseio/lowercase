@@ -32,7 +32,6 @@ import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
 import { ResourceManager } from "@lcase/resource-manager";
 import { JobParser } from "@lcase/events/parsers";
-import { EngineTelemetryPort } from "@lcase/ports/engine";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
