@@ -1,0 +1,26 @@
+{
+  "name": "HTTP JSON Flow",
+  "version": "0.1.0-alpha.7",
+  "start": "post",
+  "steps": {
+    "post": {
+      "type": "httpjson",
+      "url": "https://swapi.dev/api/people/1",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "on": {
+        "failure": "delete"
+      }
+    },
+    "delete": {
+      "type": "httpjson",
+      "url": "https://swapi.dev/api/people/2",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  }
+}

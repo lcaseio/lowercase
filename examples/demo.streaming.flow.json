@@ -15,9 +15,6 @@
         "primitive": "tool",
         "name": "draw"
       },
-      "on": {
-        "success": "luigi"
-      },
       "pipe": {
         "to": {
           "step": "luigi",

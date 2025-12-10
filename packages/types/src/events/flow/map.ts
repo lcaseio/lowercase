@@ -3,16 +3,24 @@ import type {
   FlowQueuedData,
   FlowCompletedData,
   FlowStartedData,
+  FlowFailedData,
+  FlowSubmittedData,
 } from "./data.js";
 
 export type FlowEventMap = {
   "flow.queued": DomainActionDescriptor<"flow", "queued", FlowQueuedData>;
+  "flow.submitted": DomainActionDescriptor<
+    "flow",
+    "submitted",
+    FlowSubmittedData
+  >;
   "flow.started": DomainActionDescriptor<"flow", "started", FlowStartedData>;
   "flow.completed": DomainActionDescriptor<
     "flow",
     "completed",
     FlowCompletedData
   >;
+  "flow.failed": DomainActionDescriptor<"flow", "failed", FlowFailedData>;
 };
 
 export type FlowEventType = keyof FlowEventMap;

@@ -6,11 +6,7 @@ export class ObservabilityTap {
   #sinks = new Map<string, EventSink>();
 
   constructor(private readonly bus: EventBusPort, sinks?: EventSink[]) {
-    if (sinks) {
-      for (const sink of sinks) {
-        this.#sinks.set(sink.id, sink);
-      }
-    }
+    if (sinks) sinks.forEach((s) => this.#sinks.set(s.id, s));
   }
 
   start() {

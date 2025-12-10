@@ -1,4 +1,4 @@
-import type { WorkerMetadata } from "../../worker.types.js";
+import type { WorkerMetadata } from "../../worker/metadata.js";
 export type WorkerDescriptorData = {
   worker: {
     id: string;

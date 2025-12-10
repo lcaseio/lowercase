@@ -1,11 +1,14 @@
 {
   "name": "@lcase/types",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "private": "true",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
+    },
+    "./engine": {
+      "types": "./dist/engine/index.d.ts"
     }
   },
   "scripts": {

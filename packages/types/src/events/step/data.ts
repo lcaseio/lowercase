@@ -3,6 +3,8 @@ export type StepDescriptor = {
     id: string;
     name: string;
     type: string;
+    joinFrom?: string[];
+    parallelSteps?: string[];
   };
 };
 export type StepStartedData = StepDescriptor & {
@@ -10,10 +12,10 @@ export type StepStartedData = StepDescriptor & {
 };
 
 export type StepCompletedData = StepDescriptor & {
-  status: "completed";
+  status: "success";
 };
 
 export type StepFailedData = StepDescriptor & {
-  status: "failed";
+  status: "failure";
   reason: string;
 };

@@ -1,130 +1,103 @@
 import fs from "fs";
-import type { RunContext, Flow } from "@lcase/specs";
 import type {
+  EmitterFactoryPort,
   EventBusPort,
-  StartFlowInput,
-  StreamRegistryPort,
+  JobParserPort,
 } from "@lcase/ports";
-import type { AnyEvent, FlowQueuedData } from "@lcase/types";
-import { EmitterFactory } from "@lcase/events";
-import { FlowStore } from "@lcase/adapters/flow-store";
-import type { StepHandlerRegistry } from "./step-handler.registry.js";
-import { ResourceRegistry } from "./resource-registry.js";
-
+import type { EngineDeps } from "@lcase/ports/engine";
+import type { AnyEvent } from "@lcase/types";
+import { randomUUID } from "crypto";
+import { reducers } from "./reducers/reducer-registry.js";
+import { planners } from "./planners/planner-registry.js";
+import {
+  EffectHandlerRegistry,
+  wireEffectHandlers,
+} from "./handlers/handler-registry.js";
+import {
+  EffectHandler,
+  EngineEffect,
+  EngineMessage,
+  EngineState,
+  FlowSubmittedMsg,
+  JobCompletedMsg,
+  JobFailedMsg,
+  Reducer,
+} from "./engine.types.js";
 /**
  * Engine class runs flows as the orchestration center.
  * It handles multiple runs in one instance.
  * Each run gets its own context.
  * Passes scoped emitters to handlers for emitting events.
  */
+
 export class Engine {
-  #runs = new Map<string, RunContext>();
+  id = "internal-engine";
+  version = "0.1.0-alpha.7";
+  state: EngineState = { runs: {} };
+  isProcessing = false;
 
-  constructor(
-    private readonly flowDb: FlowStore,
-    private readonly bus: EventBusPort,
-    private readonly streamRegistry: StreamRegistryPort,
-    private readonly stepHandlerRegistry: StepHandlerRegistry,
-    private readonly resourceRegistry: ResourceRegistry,
-    private readonly emitterFactory: EmitterFactory
-  ) {}
+  private queue: EngineMessage[] = [];
 
-  async subscribeToTopics(): Promise<void> {
-    await this.bus.subscribe("flows.lifecycle", async (e: AnyEvent) => {
-      if (e.type === "flow.queued") {
-        const event = e as AnyEvent<"flow.queued">;
+  // di
+  bus: EventBusPort;
+  ef: EmitterFactoryPort;
+  jobParser: JobParserPort;
+  handlers: EffectHandlerRegistry;
 
-        const spanId = this.emitterFactory.generateSpanId();
-        const traceParent = this.emitterFactory.makeTraceParent(
-          event.traceid,
-          spanId
-        );
-        const flowEmitter = this.emitterFactory.newFlowEmitter({
-          source: "lowercase://engine/flow/queued",
-          flowid: event.flowid,
-          traceId: event.traceid,
-          spanId,
-          traceParent,
-        });
+  constructor(private readonly deps: EngineDeps) {
+    this.bus = this.deps.bus;
+    this.ef = this.deps.ef;
+    this.jobParser = this.deps.jobParser;
 
-        flowEmitter.emit("flow.started", {
-          flow: {
-            id: event.flowid,
-            name: event.data.flow.name,
-            version: event.data.flow.version,
-          },
-        });
+    this.handlers = wireEffectHandlers(this.ef);
+  }
 
-        await this.startFlow(event);
-      }
+  subscribeToTopics(): void {
+    this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
+      const event = e as AnyEvent<"flow.submitted">;
+      // TODO: parse enevelope or move this out of engine
+      this.handleFlowSubmitted(event);
     });
 
-    await this.bus.subscribe("jobs.lifecycle", async (e: AnyEvent) => {
-      if (e.type === "job.completed") {
-        const jobCompletedEvent = e as AnyEvent<"job.completed">;
-        await this.handleWorkerDone(jobCompletedEvent);
-      }
+    this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
+      // TODO: parse evenvelope
+      this.handleJobCompleted(e);
     });
-
-    await this.bus.subscribe("workers.lifecycle", async (e: AnyEvent) => {
-      if (e.type === "worker.registration.requested") {
-        const event = e as AnyEvent<"worker.registration.requested">;
-        this.resourceRegistry.registerWorker(event.data);
-
-        const spanId = this.emitterFactory.generateSpanId();
-        const traceParent = this.emitterFactory.makeTraceParent(
-          e.traceid,
-          spanId
-        );
-
-        const workerEmitter = this.emitterFactory.newWorkerEmitter({
-          source: "lowercase://engine/resource-registry",
-          workerid: event.data.worker.id,
-          traceId: event.traceid,
-          spanId,
-          traceParent,
-        });
-
-        await workerEmitter.emit("worker.registered", {
-          worker: {
-            id: event.data.worker.id,
-          },
-          workerId: event.data.worker.id,
-          status: "accepted",
-          registeredAt: new Date().toISOString(),
-        });
-      }
+    this.bus.subscribe("job.*.failed", async (e: AnyEvent) => {
+      // TODO: parse evenvelope
+      this.handleJobFailed(e);
     });
   }
 
   async start() {
-    const traceId = this.emitterFactory.generateTraceId();
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
-    const emitter = this.emitterFactory.newEngineEmitter({
+    const traceId = this.ef.generateTraceId();
+    const spanId = this.ef.generateSpanId();
+    const traceParent = this.ef.makeTraceParent(traceId, spanId);
+    const emitter = this.ef.newEngineEmitter({
       source: "lowercase://engine/start",
-      engineid: "default-engine",
+      engineid: this.id,
       traceId,
       spanId,
       traceParent,
     });
 
-    emitter.emit("engine.started", {
+    await emitter.emit("engine.started", {
       engine: {
-        id: "default-engine",
-        version: "0.1.0-alpha.4",
+        id: this.id,
+        version: this.version,
       },
       status: "started",
     });
-    await this.subscribeToTopics();
+    this.subscribeToTopics();
   }
+
   async stop() {
-    const traceId = this.emitterFactory.generateTraceId();
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(traceId, spanId);
-    const emitter = this.emitterFactory.newEngineEmitter({
+    const traceId = this.ef.generateTraceId();
+    const spanId = this.ef.generateSpanId();
+    const traceParent = this.ef.makeTraceParent(traceId, spanId);
+    const emitter = this.ef.newEngineEmitter({
       source: "lowercase://engine/stop/",
-      engineid: "default-engine",
+      engineid: this.id,
       traceId,
       spanId,
       traceParent,
@@ -132,8 +105,8 @@ export class Engine {
 
     emitter.emit("engine.stopped", {
       engine: {
-        id: "default-engine",
-        version: "0.1.0-alpha.6",
+        id: this.id,
+        version: this.version,
       },
       status: "stopped",
       reason: "SIGINT called",
@@ -141,330 +114,127 @@ export class Engine {
 
     await this.bus.close();
   }
+  getState(): EngineState {
+    return this.state;
+  }
 
-  async startFlow(event: AnyEvent<"flow.queued">): Promise<void> {
-    /**
-     * casting as flow now because the specs package cannot be
-     * imported into @lcase/types.
-     * this will change when flow definitions are moved to the
-     * types package, and specs is a home for schemas
-     */
-    const flow = event.data.definition as Flow;
-    let context = this.#buildRunContext(event);
-    context = this.#initStepContext(context, flow.start);
+  enqueue(message: EngineMessage): void {
+    this.queue.push(message);
+  }
 
-    const systemSpanId = this.emitterFactory.generateSpanId();
-    const systemTraceParent = this.emitterFactory.makeTraceParent(
-      event.traceid,
-      systemSpanId
-    );
-    const logEmitter = this.emitterFactory.newSystemEmitter({
-      source: "lowercase://engine/start-flow",
-      traceId: event.traceid,
-      spanId: systemSpanId,
-      traceParent: systemTraceParent,
-    });
-    await logEmitter.emit("system.logged", {
-      log: "[engine] made RunContext",
-    });
+  executeEffect(effect: EngineEffect): void {
+    if (effect.kind === "DispatchInternal") {
+      this.queue.push(effect.message);
+      return;
+    }
 
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(
-      event.traceid,
-      spanId
-    );
-    const emitter = this.emitterFactory.newRunEmitter({
-      source: "lowercase://engine/start-flow",
-      flowid: flow.name,
-      runid: context.runId,
-      traceId: event.traceid,
-      spanId,
-      traceParent,
-    });
+    // TODO: fix `any` here
+    const handler = this.handlers[effect.kind] as
+      | EffectHandler<any>
+      | undefined;
+    if (!handler) return;
 
-    emitter.emit("run.started", {
-      run: {
-        id: context.runId,
-        status: "started",
+    handler(effect);
+  }
+  processNext(): void {
+    const message = this.queue.shift();
+    if (!message) return;
+
+    const reducer = reducers[message.type] as Reducer | undefined;
+    const planner = planners[message.type] ?? [];
+
+    const oldState = this.state;
+    const patch = reducer ? reducer({ ...oldState }, message) : undefined;
+
+    const newState =
+      patch && Object.keys(patch).length > 0
+        ? {
+            ...oldState,
+            ...patch,
+          }
+        : oldState;
+
+    this.state = newState;
+
+    const allEffects: EngineEffect[] = [];
+
+    // TODO: fix `any` here
+    const effects = planner({ oldState, newState, message } as any) ?? [];
+
+    for (const effect of effects) {
+      this.executeEffect(effect);
+    }
+  }
+
+  processAll(): void {
+    this.isProcessing = true;
+    while (this.queue.length > 0) {
+      this.processNext();
+    }
+    this.isProcessing = false;
+  }
+
+  submitExternal(message: EngineMessage) {
+    this.queue.push(message);
+    this.processAll();
+  }
+
+  handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
+    const message: FlowSubmittedMsg = {
+      type: "FlowSubmitted",
+      flowId: event.data.flow.id,
+      runId: String(randomUUID()),
+      definition: event.data.definition,
+      meta: {
+        traceId: event.traceid,
       },
-      engine: {
-        id: "default-engine",
-      },
-      status: "started",
-    });
-    await this.queueStreamingSteps(flow, context, flow.start);
+    };
+
+    this.enqueue(message);
+    if (!this.isProcessing) this.processAll();
     return;
   }
 
-  /**
-   * Queues a step, and steps it pipes data to.
-   * If further steps also pipe, their to targets are queued too.
-   * @param flow Flow definition
-   * @param context RunContext
-   * @param stepName name of first step
-   */
-  async queueStreamingSteps(
-    flow: Flow,
-    context: RunContext,
-    stepName: string
-  ): Promise<void> {
-    while (true) {
-      context = this.#initStepContext(context, stepName);
-      await this.queueStep(flow, context, stepName);
-      const pipeToStep = flow.steps[stepName].pipe?.to?.step;
-      if (context.steps[stepName].pipe.to && pipeToStep) {
-        stepName = pipeToStep;
-      } else {
-        break;
-      }
-    }
-  }
-  // queues a single step vs multiple
-  async queueStep(
-    flow: Flow,
-    context: RunContext,
-    stepName: string
-  ): Promise<void> {
-    const stepType = flow.steps[stepName].type;
-    const stepSpanId = this.emitterFactory.generateSpanId();
-    const stepTraceParent = this.emitterFactory.makeTraceParent(
-      context.traceId,
-      stepSpanId
-    );
-    const stepEmitter = this.emitterFactory.newStepEmitter({
-      source: "lowercase://engine/queue-step",
-      flowid: context.flowName,
-      runid: context.runId,
-      stepid: stepName,
-      steptype: stepType,
-      traceId: context.traceId,
-      spanId: stepSpanId,
-      traceParent: stepTraceParent,
-    });
-    stepEmitter.emit("step.started", {
-      step: {
-        id: stepName,
-        name: stepName,
-        type: stepType,
-      },
-      status: "started",
-    });
+  handleJobFailed(event: AnyEvent): void {
+    const job = this.jobParser.parseJobFailed(event);
+    if (!job) throw new Error("[engine] not a job failed event");
+    const jobFailedMsg = {
+      type: "JobFailed",
+      runId: job.event.runid,
+      stepId: job.event.stepid,
+      reason: job.event.data.reason,
+      result: job.event.data.result ?? {},
+    } satisfies JobFailedMsg;
 
-    // const stepEmitter = this.emitterFactory.newStepEmitter();
-    const spanId = this.emitterFactory.generateSpanId();
-    const traceParent = this.emitterFactory.makeTraceParent(
-      context.traceId,
-      spanId
-    );
-    const jobEmitter = this.emitterFactory.newJobEmitter({
-      source: "lowercase://engine/queue-step",
-      flowid: context.flowName,
-      runid: context.runId,
-      stepid: stepName,
-      jobid: String(crypto.randomUUID()),
-      traceId: context.traceId,
-      spanId,
-      traceParent,
-    });
-
-    if (stepType === "mcp") {
-      const capName = flow.steps[stepName].type;
-      const caps = this.resourceRegistry.getCapability(capName);
-      if (caps === undefined) {
-        throw new Error(
-          `[engine] no capability in local resource registry for ${capName}`
-        );
-      }
-
-      const handler = this.stepHandlerRegistry[stepType];
-      await handler.queue(flow, context, stepName, jobEmitter);
-    }
-
-    context.queuedSteps.add(stepName);
-    context.outstandingSteps++;
-    this.#runs.set(context.runId, context);
-  }
-  #buildRunContext(event: AnyEvent<"flow.queued">): RunContext {
-    const context: RunContext = {
-      definition: event.data.definition as Flow,
-      flowId: event.data.flow.id,
-      runId: event.data.test ? "test-run-id" : String(crypto.randomUUID()),
-      traceId: event.traceid,
-      // step state stuff
-      runningSteps: new Set(),
-      queuedSteps: new Set(),
-      doneSteps: new Set(),
-      stepStatusCounts: {},
-      outstandingSteps: 0,
-
-      // test stuff
-      test: event.data.test,
-      outFile: event.data.outfile,
-
-      flowName: event.data.flowName,
-      status: "running",
-      globals: {},
-      exports: {},
-      inputs: {},
-      steps: {},
-    };
-    return context;
-  }
-  #initStepContext(context: RunContext, stepName: string): RunContext {
-    context.steps[stepName] = {
-      attempt: 0,
-      exports: {},
-      pipe: {},
-      result: {},
-      status: "idle",
-    };
-    return context;
+    this.enqueue(jobFailedMsg);
+    if (!this.isProcessing) this.processAll();
+    return;
   }
 
-  #getNextStepName(
-    flow: Flow,
-    context: RunContext,
-    currentStep: string
-  ): string | undefined {
-    const status = context.steps[currentStep].status as "success" | "failure";
-    const nextStepName = flow.steps[currentStep].on?.[status];
-    return nextStepName;
-  }
+  handleJobCompleted(event: AnyEvent): void {
+    // parse event
+    const job = this.jobParser.parseJobCompleted(event);
+    if (!job) throw new Error("[engine] not a job completed event");
 
-  async handleWorkerDone(event: AnyEvent): Promise<void> {
-    const e = event as AnyEvent<"job.completed">;
-    // update context based on completed event
-    if (!this.#runs.has(e.runid)) {
-      console.error(`[engine] invalid run id: ${e.runid}`);
-      return;
-    }
-    const context = this.#runs.get(e.runid)!;
+    const jobCompletedMsg = {
+      type: "JobCompleted",
+      runId: job.event.runid,
+      stepId: job.event.stepid,
+      result: job.event.data.result ?? {},
+    } satisfies JobCompletedMsg;
 
-    const result = e.data.result
-      ? (e.data.result as Array<Record<string, unknown>>)
-      : [{ data: null }];
-    if (e.data.result) {
-      context.steps[e.stepid].result = { result };
-    }
-    context.steps[e.stepid].status = "success";
-
-    const stepSpanId = this.emitterFactory.generateSpanId();
-    const stepTraceParent = this.emitterFactory.makeTraceParent(
-      context.traceId,
-      stepSpanId
-    );
-    const flow = context.definition;
-
-    if (!flow) return;
-    flow.steps[e.stepid].type;
-
-    const stepEmitter = this.emitterFactory.newStepEmitter({
-      source: "lowercase://engine/handle-worker-done",
-      flowid: context.flowName,
-      runid: context.runId,
-      stepid: e.stepid,
-      steptype: flow.steps[e.stepid].type,
-      traceId: context.traceId,
-      spanId: stepSpanId,
-      traceParent: stepTraceParent,
-    });
-    stepEmitter.emit("step.completed", {
-      step: {
-        id: e.stepid,
-        name: e.stepid,
-        type: flow.steps[e.stepid].type,
-      },
-      status: "completed",
-    });
-
-    context.queuedSteps.delete(e.stepid);
-    context.runningSteps.delete(e.stepid);
-    context.doneSteps.add(e.stepid);
-    context.outstandingSteps--;
-
-    this.writeRunContext(e.runid);
-
-    if (!flow) {
-      console.log(`[engine] executeStep(): no flow for ${context.flowName}`);
-      return;
-    }
-    const nextStep = this.#getNextStepName(flow, context, e.stepid);
-
-    if (nextStep) {
-      this.queueStreamingSteps(flow, context, nextStep);
-    } else if (context.outstandingSteps === 0) {
-      const logEmitter = this.emitterFactory.newSystemEmitter({
-        source: "lowercase://engine/handle-work-done",
-        traceId: "",
-        spanId: "",
-        traceParent: "",
-      });
-      await logEmitter.emit("system.logged", {
-        log: "[engine] no next step; no outstanding steps; run ended;",
-      });
-
-      const runSpanId = this.emitterFactory.generateSpanId();
-      const flowSpanId = this.emitterFactory.generateSpanId();
-      const runTraceParent = this.emitterFactory.makeTraceParent(
-        runSpanId,
-        e.traceid
-      );
-      const flowTraceParent = this.emitterFactory.makeTraceParent(
-        flowSpanId,
-        e.traceid
-      );
-
-      const runEmitter = this.emitterFactory.newRunEmitter({
-        source: "lowercase://worker/run/ended",
-        flowid: e.flowid,
-        runid: e.runid,
-        traceId: e.traceid,
-        spanId: runSpanId,
-        traceParent: runTraceParent,
-      });
-
-      runEmitter.emit("run.completed", {
-        run: {
-          id: e.runid,
-          status: "completed",
-        },
-        engine: {
-          id: "default-engine",
-        },
-        status: "completed",
-        message: "run is over",
-      });
-
-      const flowEmitter = this.emitterFactory.newFlowEmitter({
-        source: "lowercase://worker/run/ended",
-        flowid: e.flowid,
-        traceId: e.traceid,
-        spanId: runSpanId,
-        traceParent: runTraceParent,
-      });
-
-      const flow = this.flowDb.get(e.flowid);
-      if (!flow) return;
-      await flowEmitter.emit("flow.completed", {
-        flow: {
-          id: e.flowid,
-          name: flow.name,
-          version: flow.version,
-        },
-      });
-
-      return;
-    }
+    this.enqueue(jobCompletedMsg);
+    if (!this.isProcessing) this.processAll();
+    return;
   }
 
   writeRunContext(runId: string): void {
-    const context = this.#runs.get(runId);
-    const file =
-      context?.outFile !== undefined ? context.outFile : "./output.temp.json";
+    const context = this.state.runs[runId];
+    const file = "./output.temp.json";
 
     fs.writeFileSync(file, JSON.stringify(context, null, 2));
 
-    const logEmitter = this.emitterFactory.newSystemEmitter({
+    const logEmitter = this.ef.newSystemEmitter({
       source: "lowercase://engine/write-run-context",
       traceId: "",
       spanId: "",

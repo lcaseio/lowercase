@@ -1,0 +1,138 @@
+import type { RunContext } from "@lcase/types/engine";
+import { describe, it, expect } from "vitest";
+import type {
+  DispatchInternalFx,
+  EmitStepCompletedFx,
+  EngineState,
+  JobCompletedMsg,
+  StepReadyToStartMsg,
+} from "../../src/engine.types.js";
+import type { FlowDefinition } from "@lcase/types";
+import { jobCompletedPlanner } from "../../src/planners/job-completed.planner.js";
+
+describe("stepReadyToStartPlanner", () => {
+  it("gives correct effects for a proper message and context", () => {
+    const runId = "test-runId";
+    const stepId = "test-stepId";
+    const jobCompletedMsg: JobCompletedMsg = {
+      type: "JobCompleted",
+      runId,
+      stepId,
+      result: {},
+    };
+    const runCtx = {
+      flowId: "test-flowId",
+      flowName: "test-flowName",
+      definition: {
+        start: stepId,
+        steps: {
+          [stepId]: {
+            type: "httpjson",
+            on: {
+              success: "stepTwo",
+            },
+          },
+        },
+      } as unknown as FlowDefinition,
+      runId,
+      traceId: "test-traceId",
+      runningSteps: new Set<string>([stepId]),
+      activeJoinSteps: new Set<string>(),
+      queuedSteps: new Set<string>(),
+      doneSteps: new Set<string>(),
+      outstandingSteps: 1,
+      inputs: {},
+      exports: {},
+      globals: {},
+      status: "started",
+      steps: {
+        [stepId]: {
+          status: "started",
+          attempt: 1,
+          exports: {},
+          result: {},
+          stepId: stepId,
+          joins: new Set(),
+          resolved: {},
+        },
+      },
+    } satisfies RunContext;
+
+    const newRunCtx = {
+      flowId: "test-flowId",
+      flowName: "test-flowName",
+      definition: {
+        start: stepId,
+        steps: {
+          [stepId]: {
+            type: "httpjson",
+            on: {
+              success: "stepTwo",
+            },
+          },
+        },
+      } as unknown as FlowDefinition,
+      runId,
+      traceId: "test-traceId",
+      runningSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
+      queuedSteps: new Set<string>(),
+      doneSteps: new Set<string>([stepId]),
+      outstandingSteps: 0,
+      inputs: {},
+      exports: {},
+      globals: {},
+      status: "completed",
+      steps: {
+        [stepId]: {
+          status: "completed",
+          attempt: 1,
+          exports: {},
+          result: {},
+          stepId,
+          joins: new Set(),
+          resolved: {},
+        },
+      },
+    } satisfies RunContext;
+    const oldState: EngineState = { runs: { [runId]: runCtx } };
+    const newState: EngineState = { runs: { [runId]: newRunCtx } };
+    const effects = jobCompletedPlanner({
+      oldState,
+      newState,
+      message: jobCompletedMsg,
+    });
+
+    const emitStepCompletedFx = {
+      kind: "EmitStepCompleted",
+      eventType: "step.completed",
+      scope: {
+        flowid: newRunCtx.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+        stepid: stepId,
+        steptype: "httpjson",
+      },
+      data: {
+        status: "success",
+        step: {
+          id: stepId,
+          name: stepId,
+          type: "httpjson",
+        },
+      },
+      traceId: newRunCtx.traceId,
+    } satisfies EmitStepCompletedFx;
+
+    const distpatchNextStepFx = {
+      kind: "DispatchInternal",
+      message: {
+        runId,
+        stepId: "stepTwo",
+        type: "StepReadyToStart",
+      } satisfies StepReadyToStartMsg,
+    } satisfies DispatchInternalFx;
+
+    expect(effects).toEqual([emitStepCompletedFx, distpatchNextStepFx]);
+  });
+});

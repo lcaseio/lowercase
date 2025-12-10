@@ -1,7 +1,7 @@
 {
   "name": "@lcase/engine",
-  "version": "0.1.0-alpha.6",
-  "private": "true",
+  "version": "0.1.0-alpha.7",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -12,15 +12,17 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "echo test",
+    "test": "vitest",
     "lint": "echo lint"
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/adapters": "workspace:*",
+    "@lcase/specs": "workspace:*"
+  },
+  "devDependencies": {
     "@lcase/ports": "workspace:*",
-    "@lcase/specs": "workspace:*",
     "@lcase/types": "workspace:*",
-    "@lcase/events": "workspace:*"
+    "vitest": "^3.2.4"
   }
 }

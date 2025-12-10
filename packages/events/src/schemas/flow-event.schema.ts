@@ -2,8 +2,10 @@ import { z } from "zod";
 import type { AnyEvent, FlowScope } from "@lcase/types";
 import {
   FlowCompletedDataSchema,
+  FlowFailedDataSchema,
   FlowQueuedDataSchema,
   FlowStartedDataSchema,
+  FlowSubmittedDataSchema,
 } from "./flow-data.schema.js";
 import { CloudEventContextSchema } from "./cloud-context.schema.js";
 
@@ -14,7 +16,9 @@ export const FlowContextSchema = z
   })
   .strict() satisfies z.ZodType<FlowScope>;
 
-export const FlowQueuedSchema = CloudEventContextSchema.merge(FlowContextSchema)
+export const FlowQueuedSchema = CloudEventContextSchema.extend(
+  FlowContextSchema.shape
+)
   .merge(
     z.object({
       type: z.literal("flow.queued"),
@@ -24,6 +28,19 @@ export const FlowQueuedSchema = CloudEventContextSchema.merge(FlowContextSchema)
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.queued">>;
+
+export const FlowSubmittedSchema = CloudEventContextSchema.extend(
+  FlowContextSchema.shape
+)
+  .merge(
+    z.object({
+      type: z.literal("flow.submitted"),
+      entity: z.undefined().optional(),
+      action: z.literal("submitted"),
+      data: FlowSubmittedDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"flow.submitted">>;
 
 export const FlowStartedSchema = CloudEventContextSchema.merge(
   FlowContextSchema
@@ -50,3 +67,14 @@ export const FlowCompletedSchema = CloudEventContextSchema.merge(
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.completed">>;
+
+export const FlowFailedSchema = CloudEventContextSchema.merge(FlowContextSchema)
+  .merge(
+    z.object({
+      type: z.literal("flow.failed"),
+      entity: z.undefined().optional(),
+      action: z.literal("failed"),
+      data: FlowFailedDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"flow.failed">>;

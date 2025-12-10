@@ -10,7 +10,6 @@ import {
   QueueTransport,
 } from "../registries/queue.registry.js";
 import { SinkId } from "./runtime.context.js";
-import { Capability } from "@lcase/types";
 
 export type BusConfig = {
   id: string;
@@ -36,7 +35,6 @@ export type EngineConfig = {
 
 export type WorkerConfig = {
   id: string;
-  capabilities: Capability[];
 };
 
 export type StreamConfig = {

@@ -1,5 +1,5 @@
 import type { EventBusPort, RouterPort, QueuePort } from "@lcase/ports";
-import { Worker } from "@lcase/adapters/worker";
+import { Worker } from "@lcase/worker";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 import {
@@ -7,6 +7,8 @@ import {
   ObservabilityTap,
   WebSocketServerSink,
 } from "@lcase/observability";
+import { EmitterFactory } from "@lcase/events";
+import { ResourceManager } from "@lcase/resource-manager";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
@@ -22,4 +24,6 @@ export type RuntimeContext = {
   flowStore: FlowStore;
   tap: ObservabilityTap;
   sinks: SinkMap;
+  ef: EmitterFactory;
+  rm: ResourceManager;
 };

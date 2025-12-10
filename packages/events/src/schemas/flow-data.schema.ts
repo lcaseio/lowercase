@@ -1,8 +1,11 @@
 import { z } from "zod";
+import { FlowSchema } from "@lcase/specs";
 import type {
   FlowCompletedData,
+  FlowFailedData,
   FlowQueuedData,
   FlowStartedData,
+  FlowSubmittedData,
 } from "@lcase/types";
 
 export const FlowQueuedDataSchema = z
@@ -19,6 +22,18 @@ export const FlowQueuedDataSchema = z
     }),
   })
   .strict() satisfies z.ZodType<FlowQueuedData>;
+
+export const FlowSubmittedDataSchema = z
+  .object({
+    inputs: z.record(z.string(), z.unknown()),
+    definition: FlowSchema,
+    flow: z.object({
+      id: z.string(),
+      name: z.string(),
+      version: z.string(),
+    }),
+  })
+  .strict() satisfies z.ZodType<FlowSubmittedData>;
 
 export const FlowStartedDataSchema = z
   .object({
@@ -37,5 +52,17 @@ export const FlowCompletedDataSchema = z
       name: z.string(),
       version: z.string(),
     }),
+    status: z.literal("success"),
   })
   .strict() satisfies z.ZodType<FlowCompletedData>;
+
+export const FlowFailedDataSchema = z
+  .object({
+    flow: z.object({
+      id: z.string(),
+      name: z.string(),
+      version: z.string(),
+    }),
+    status: z.literal("failure"),
+  })
+  .strict() satisfies z.ZodType<FlowFailedData>;

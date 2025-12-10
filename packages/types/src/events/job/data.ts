@@ -1,33 +1,17 @@
+import { CapId } from "../../flow/map.js";
+
 export type JobDescriptor = {
   job: {
     id: string;
-    capability: string;
+    capid: CapId;
+    toolid: string | null;
   };
 };
-
-export type JobMcpQueuedData = JobDescriptor & {
-  url: string;
-  transport: "sse" | "stdio" | "streamable-http" | "http";
-  feature: {
-    primitive:
-      | "resource"
-      | "prompt"
-      | "tool"
-      | "sampling"
-      | "roots"
-      | "elicitation";
-    name: string;
-  };
-  args?: Record<string, unknown>;
-  pipe: {
-    to?: {
-      id: string;
-      payload: string;
-    };
-    from?: {
-      id: string;
-      buffer?: number;
-    };
+export type JobDescriptorResolved = {
+  job: {
+    id: string;
+    capid: CapId;
+    toolid: string;
   };
 };
 
@@ -35,13 +19,17 @@ export type JobStartedData = JobDescriptor & {
   status: "started";
 };
 
-export type JobCompletedData = JobDescriptor & {
-  status: "completed";
-  result?: unknown;
+export type JobCompletedData = JobDescriptorResolved & {
+  status: "success";
+  result?: Record<string, unknown>;
 };
 
-export type JobFailedData = JobDescriptor & {
-  status: "failed";
-  result?: unknown;
+export type JobFailedData = JobDescriptorResolved & {
+  status: "failure";
+  result?: Record<string, unknown>;
+  reason: string;
+};
+
+export type JobDelayedData = {
   reason: string;
 };

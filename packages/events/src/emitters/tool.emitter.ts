@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { toolOtelAttributesMap } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -28,12 +28,12 @@ export class ToolEmitter extends BaseEmitter {
     scope: OtelContext & ToolScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, jobid, toolid } = scope;
+    const { flowid, runid, stepid, jobid, capid, toolid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#toolScope = { flowid, runid, stepid, jobid, toolid };
+    this.#toolScope = { flowid, runid, stepid, jobid, capid, toolid };
     this.toolOtelAttributesMap = toolOtelAttributesMap;
     this.bus = bus;
   }
@@ -41,7 +41,7 @@ export class ToolEmitter extends BaseEmitter {
   async emit<T extends ToolEventType>(
     type: T,
     data: ToolEventData<T>
-  ): Promise<void> {
+  ): Promise<ToolEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#toolScope,
@@ -54,14 +54,14 @@ export class ToolEmitter extends BaseEmitter {
         : {}),
     } satisfies ToolEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[tool-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
+    return event;
   }
 }

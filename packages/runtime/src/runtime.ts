@@ -1,19 +1,18 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
-import { Worker } from "@lcase/adapters/worker";
-import { McpTool, ToolFactories, ToolRegistry } from "@lcase/adapters/tools";
+import { Worker } from "@lcase/worker";
+import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import {
-  Engine,
-  PipeResolver,
-  resolveStepArgs,
-  ResourceRegistry,
-  wireStepHandlers,
-} from "@lcase/engine";
+import { Engine, PipeResolver } from "@lcase/engine";
 
-import { EmitterFactory } from "@lcase/events";
-import { EventBusPort, StreamRegistryPort } from "@lcase/ports";
+import { EmitterFactory, eventRegistry } from "@lcase/events";
+import {
+  EventBusPort,
+  FlowParserPort,
+  JobParserPort,
+  StreamRegistryPort,
+} from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -31,6 +30,8 @@ import {
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
+import { ResourceManager } from "@lcase/resource-manager";
+import { JobParser } from "@lcase/events/parsers";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -58,23 +59,28 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   );
   const queue = queueFactory();
 
-  const router = new NodeRouter(bus, queue);
+  const ef = new EmitterFactory(bus);
+  const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
-  const emitterFactory = new EmitterFactory(bus);
   const flowStore = new FlowStore();
 
-  const engine = createInProcessEngine(
-    flowStore,
+  const jobParser = new JobParser(eventRegistry);
+  const rm = new ResourceManager({
     bus,
-    streamRegistry,
-    emitterFactory
-  );
+    ef,
+    queue,
+    jobParser,
+  });
+
+  const engine = createInProcessEngine(bus, streamRegistry, ef, jobParser);
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
     queue,
     streamRegistry,
-    emitterFactory,
+    ef,
+    jobParser,
     config.worker
   );
 
@@ -89,6 +95,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     flowStore,
     tap,
     sinks,
+    ef,
+    rm,
   };
 }
 
@@ -102,7 +110,14 @@ export function createObservability(
     for (const sink of config.sinks) {
       switch (sink) {
         case "console-log-sink":
-          const consoleSink = new ConsoleSink();
+          const consoleSink = new ConsoleSink({
+            allVerbose: false,
+            verboseEvents: new Set([
+              "job.httpjson.started",
+              "tool.failed",
+              "tool.completed",
+            ]),
+          });
           sinks["console-log-sink"] = consoleSink;
           tap.attachSink(consoleSink);
           break;
@@ -124,23 +139,18 @@ export function createObservability(
 }
 
 export function createInProcessEngine(
-  flowDb: FlowStore,
   bus: EventBusPort,
   streamRegistry: StreamRegistryPort,
-  emitterFactory: EmitterFactory
+  emitterFactory: EmitterFactory,
+  jobParser: JobParserPort
 ): Engine {
   const pipeResolver = new PipeResolver(streamRegistry);
-  const stepHandlerRegistry = wireStepHandlers(resolveStepArgs, pipeResolver);
-  const resourceRegistry = new ResourceRegistry();
 
-  const engine = new Engine(
-    flowDb,
+  const engine = new Engine({
     bus,
-    streamRegistry,
-    stepHandlerRegistry,
-    resourceRegistry,
-    emitterFactory
-  );
+    ef: emitterFactory,
+    jobParser,
+  });
 
   return engine;
 }
@@ -151,23 +161,20 @@ export function createInProcessWorker(
   queue: InMemoryQueue,
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
+  jobParser: JobParserPort,
   config: WorkerConfig
 ): Worker {
-  const toolFactories: ToolFactories = {
-    mcp: () => new McpTool(),
-  };
-  const toolRegistry = new ToolRegistry(toolFactories);
+  const toolRegistry = new ToolRegistry(allToolBindingsMap);
   const worker = new Worker(id, {
     bus,
     emitterFactory,
     queue,
     streamRegistry,
     toolRegistry,
+    jobParser,
   });
 
-  for (const cap of config.capabilities) {
-    worker.addCapability(cap);
-  }
+  // NOTE: add custom config for tools
 
   return worker;
 }

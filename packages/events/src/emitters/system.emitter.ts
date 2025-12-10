@@ -8,9 +8,9 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EventBusPort, SystemEmitterPort } from "@lcase/ports";
 import { systemOtelAttributesMap } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -18,7 +18,7 @@ import { registry } from "../event-registry.js";
  *
  * registry should move out.
  */
-export class SystemEmitter extends BaseEmitter {
+export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
   protected otel: OtelContext;
   protected systemOtelAttributesMap: SystemOtelAttributesMap;
   #systemScope: SystemScope;
@@ -55,13 +55,13 @@ export class SystemEmitter extends BaseEmitter {
     } satisfies SystemEvent<T>;
 
     // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[system-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
   }
 }

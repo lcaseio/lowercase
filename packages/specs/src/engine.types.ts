@@ -11,6 +11,8 @@ export const StatusSchema = z.enum([
   "success",
   "failure",
   "error",
+  "requested",
+  "submitted",
 ]);
 
 export type Status = z.infer<typeof StatusSchema>;
@@ -29,7 +31,6 @@ export const RunContextSchema = z.object({
   doneSteps: z.set(z.string()),
 
   // number of steps in each state, and total steps in process but not done
-  stepStatusCounts: z.record(StepSchema, z.number()).default({}),
   outstandingSteps: z.number(),
 
   flowName: z.string().min(1),
@@ -68,5 +69,3 @@ export const RunContextSchema = z.object({
     })
   ),
 });
-
-export type RunContext = z.infer<typeof RunContextSchema>;

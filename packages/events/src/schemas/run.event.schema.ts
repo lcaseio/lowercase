@@ -3,6 +3,7 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 import { RunScope, AnyEvent } from "@lcase/types";
 import {
   RunCompletedDataSchema,
+  RunFailedDataSchema,
   RunStartedDataSchema,
 } from "./run.data.schema.js";
 
@@ -37,3 +38,14 @@ export const RunCompletedSchema = CloudEventContextSchema.merge(
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"run.completed">>;
+
+export const RunFailedSchema = CloudEventContextSchema.merge(RunContextSchema)
+  .merge(
+    z.object({
+      type: z.literal("run.failed"),
+      entity: z.undefined().optional(),
+      action: z.literal("failed"),
+      data: RunFailedDataSchema,
+    })
+  )
+  .strict() satisfies z.ZodType<AnyEvent<"run.failed">>;

@@ -21,17 +21,6 @@ export const runtimeConfig = {
   },
   worker: {
     id: "desktop-worker",
-    capabilities: [
-      {
-        name: "mcp",
-        queueId: "mcp",
-        maxJobCount: 2,
-        tool: {
-          id: "mcp",
-          type: "inprocess",
-        },
-      },
-    ],
   },
   stream: {
     id: "",

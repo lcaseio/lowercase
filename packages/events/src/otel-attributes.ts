@@ -33,6 +33,11 @@ export const flowOtelAttributes = {
     domain: "flow",
     entity: undefined,
   },
+  "flow.submitted": {
+    action: "submitted",
+    domain: "flow",
+    entity: undefined,
+  },
   "flow.started": {
     action: "started",
     domain: "flow",
@@ -40,6 +45,11 @@ export const flowOtelAttributes = {
   },
   "flow.completed": {
     action: "completed",
+    domain: "flow",
+    entity: undefined,
+  },
+  "flow.failed": {
+    action: "failed",
     domain: "flow",
     entity: undefined,
   },
@@ -69,28 +79,74 @@ export const runOtelAttributesMap = {
     domain: "run",
     entity: undefined,
   },
+  "run.failed": {
+    action: "failed",
+    domain: "run",
+    entity: undefined,
+  },
 } satisfies RunOtelAttributesMap;
 
 export const jobOtelAttributesMap = {
+  "job.mcp.submitted": {
+    action: "submitted",
+    domain: "job",
+    entity: "mcp",
+  },
+  "job.mcp.delayed": {
+    action: "delayed",
+    domain: "job",
+    entity: "mcp",
+  },
+
   "job.mcp.queued": {
     action: "queued",
     domain: "job",
     entity: "mcp",
   },
-  "job.completed": {
-    action: "completed",
-    domain: "job",
-    entity: undefined,
-  },
-  "job.started": {
+  "job.mcp.started": {
     action: "started",
     domain: "job",
-    entity: undefined,
+    entity: "mcp",
   },
-  "job.failed": {
+  "job.mcp.completed": {
+    action: "completed",
+    domain: "job",
+    entity: "mcp",
+  },
+  "job.mcp.failed": {
     action: "failed",
     domain: "job",
-    entity: undefined,
+    entity: "mcp",
+  },
+  "job.httpjson.submitted": {
+    action: "submitted",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.delayed": {
+    action: "delayed",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.queued": {
+    action: "queued",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.started": {
+    action: "started",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.completed": {
+    action: "completed",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.failed": {
+    action: "failed",
+    domain: "job",
+    entity: "httpjson",
   },
 } satisfies JobOtelAttributesMap;
 

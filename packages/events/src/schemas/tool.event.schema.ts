@@ -6,6 +6,7 @@ import {
   ToolFailedDataSchema,
   ToolStartedDataSchema,
 } from "./tool.data.schema.js";
+import { CapIdSchema } from "./job/job.data.schema.js";
 
 export const ToolContextSchema = z
   .object({
@@ -14,6 +15,7 @@ export const ToolContextSchema = z
     stepid: z.string(),
     jobid: z.string(),
     toolid: z.string(),
+    capid: CapIdSchema,
     domain: z.literal("tool"),
   })
   .strict() satisfies z.ZodType<ToolScope>;

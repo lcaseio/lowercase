@@ -8,9 +8,9 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EventBusPort, FlowEmitterPort } from "@lcase/ports";
 import { flowOtelAttributes } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly types scoped emitter for step events.
@@ -18,7 +18,7 @@ import { registry } from "../event-registry.js";
  *
  * registry should move out eventually
  */
-export class FlowEmitter extends BaseEmitter {
+export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
   protected otel: OtelContext;
   protected flowOtelAttributes: FlowOtelAttributesMap;
   #flowScope: FlowScope;
@@ -41,7 +41,7 @@ export class FlowEmitter extends BaseEmitter {
   async emit<T extends FlowEventType>(
     type: T,
     data: FlowEventData<T>
-  ): Promise<void> {
+  ): Promise<FlowEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#flowScope,
@@ -54,14 +54,14 @@ export class FlowEmitter extends BaseEmitter {
         : {}),
     } satisfies FlowEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
         `[flow-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
+    return event;
   }
 }

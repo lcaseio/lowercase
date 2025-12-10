@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { jobOtelAttributesMap } from "../otel-attributes.js";
-import { registry } from "../event-registry.js";
+import { eventRegistry } from "../registries/event-registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -28,12 +28,12 @@ export class JobEmitter extends BaseEmitter {
     scope: OtelContext & JobScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, jobid } = scope;
+    const { flowid, runid, stepid, jobid, capid, toolid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#jobScope = { flowid, runid, stepid, jobid };
+    this.#jobScope = { flowid, runid, stepid, jobid, capid, toolid };
     this.jobOtelAttributesMap = jobOtelAttributesMap;
     this.bus = bus;
   }
@@ -41,7 +41,7 @@ export class JobEmitter extends BaseEmitter {
   async emit<T extends JobEventType>(
     type: T,
     data: JobEventData<T>
-  ): Promise<void> {
+  ): Promise<JobEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#jobScope,
@@ -54,14 +54,14 @@ export class JobEmitter extends BaseEmitter {
         : {}),
     } satisfies JobEvent<T>;
 
-    // console.log("event", JSON.stringify(event, null, 2));
-    const entry = registry[type];
+    const entry = eventRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[job-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(entry.topic, event);
+    await this.bus.publish(type, event);
+    return event;
   }
 }
