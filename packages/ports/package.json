@@ -26,6 +26,9 @@
     },
     "./engine": {
       "types": "./dist/engine/index.d.ts"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/event-store.port.d.ts"
     }
   },
   "scripts": {
