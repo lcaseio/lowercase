@@ -112,6 +112,7 @@ describe("flowFailedPlanner", () => {
       eventType: "flow.failed",
       scope: {
         flowid: newRunCtx.flowId,
+        runid: runId,
         source: "lowercase://engine",
       },
       traceId: newRunCtx.traceId,

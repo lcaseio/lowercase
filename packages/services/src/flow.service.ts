@@ -35,9 +35,11 @@ export class FlowService {
       validatedFlow.version,
       args.absoluteFilePath
     );
+    const runId = `run-${String(randomUUID())}`;
     const flowEmitter = this.ef.newFlowEmitter({
       source: "lowercase://flow-service/start-flow",
       flowid: flowId,
+      runid: runId,
       traceId,
       spanId,
       traceParent,
@@ -48,7 +50,7 @@ export class FlowService {
         name: validatedFlow.name,
         version: validatedFlow.version,
       },
-      run: { id: `run-${String(randomUUID())}` },
+      run: { id: runId },
       inputs: {},
       definition: validatedFlow,
     });

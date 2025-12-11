@@ -35,6 +35,7 @@ export const flowFailedPlanner: Planner<FlowFailedMsg> = (args: {
     eventType: "flow.failed",
     scope: {
       flowid: flowId,
+      runid: runId,
       source: "lowercase://engine",
     },
     traceId: newState.runs[runId].traceId,

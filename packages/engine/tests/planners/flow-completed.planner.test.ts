@@ -114,6 +114,7 @@ describe("stepReadyToStartPlanner", () => {
       eventType: "flow.completed",
       scope: {
         flowid: newRunCtx.flowId,
+        runid: runId,
         source: "lowercase://engine",
       },
       traceId: newRunCtx.traceId,

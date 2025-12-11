@@ -29,7 +29,11 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
         },
         run: { id: message.runId },
       },
-      scope: { flowid: message.flowId, source: "lowercase://engine" },
+      scope: {
+        flowid: message.flowId,
+        runid: message.runId,
+        source: "lowercase://engine",
+      },
       traceId: message.meta.traceId,
     });
     effects.push({
