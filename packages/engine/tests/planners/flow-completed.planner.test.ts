@@ -108,6 +108,7 @@ describe("stepReadyToStartPlanner", () => {
           name: newRunCtx.flowName,
           version: newRunCtx.definition.version,
         },
+        run: { id: runId },
         status: "success",
       },
       eventType: "flow.completed",

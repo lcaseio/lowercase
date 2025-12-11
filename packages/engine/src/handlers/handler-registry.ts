@@ -38,7 +38,7 @@ export function wireEffectHandlers(
         },
         effect.traceId
       );
-      void emitter.emit("flow.started", { flow: effect.data.flow });
+      void emitter.emit("flow.started", effect.data);
     },
 
     EmitStepStarted: (effect: EmitStepStartedFx) => {

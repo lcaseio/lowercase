@@ -102,7 +102,3 @@ export const FlowSchema = z
     steps: z.record(z.string(), StepSchema),
   })
   .strict() satisfies z.ZodType<FlowDefinition>;
-
-const a = {
-  stepId: new Set(["jelly"]),
-};

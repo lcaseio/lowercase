@@ -27,6 +27,7 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
           name: message.definition.name,
           version: message.definition.version,
         },
+        run: { id: message.runId },
       },
       scope: { flowid: message.flowId, source: "lowercase://engine" },
       traceId: message.meta.traceId,

@@ -4,6 +4,7 @@ import { EmitterFactory } from "@lcase/events";
 import { FlowSchema } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 
 export class FlowService {
   constructor(
@@ -47,6 +48,7 @@ export class FlowService {
         name: validatedFlow.name,
         version: validatedFlow.version,
       },
+      run: { id: `run-${String(randomUUID())}` },
       inputs: {},
       definition: validatedFlow,
     });

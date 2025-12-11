@@ -29,6 +29,7 @@ export const flowFailedPlanner: Planner<FlowFailedMsg> = (args: {
         name: newState.runs[runId].flowName,
         version: newState.runs[runId].definition.version,
       },
+      run: { id: runId },
       status: "failure",
     },
     eventType: "flow.failed",

@@ -106,6 +106,7 @@ describe("flowFailedPlanner", () => {
           name: newRunCtx.flowName,
           version: newRunCtx.definition.version,
         },
+        run: { id: runId },
         status: "failure",
       },
       eventType: "flow.failed",

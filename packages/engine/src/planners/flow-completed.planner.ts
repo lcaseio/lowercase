@@ -29,6 +29,7 @@ export const flowCompletedPlanner: Planner<FlowCompletedMsg> = (args: {
         name: newState.runs[runId].flowName,
         version: newState.runs[runId].definition.version,
       },
+      run: { id: runId },
       status: "success",
     },
     eventType: "flow.completed",
