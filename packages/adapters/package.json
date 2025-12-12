@@ -27,6 +27,10 @@
     "./stream": {
       "types": "./dist/stream/index.d.ts",
       "import": "./dist/stream/index.js"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/index.d.ts",
+      "import": "./dist/event-store/index.js"
     }
   },
   "scripts": {

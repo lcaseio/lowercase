@@ -27,6 +27,6 @@ export const runtimeConfig = {
   },
   observability: {
     id: "",
-    sinks: ["console-log-sink"],
+    sinks: ["console-log-sink", "replay-jsonl-sink"],
   },
 } satisfies RuntimeConfig;

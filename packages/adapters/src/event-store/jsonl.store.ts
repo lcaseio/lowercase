@@ -1,17 +1,30 @@
 import type { AnyEvent } from "@lcase/types";
-import type { EventStore } from "@lcase/ports/event-store";
+import type { EventStorePort } from "@lcase/ports/event-store";
 import fs, { WriteStream } from "fs";
 import path from "path";
 import readline from "readline";
 
 type RunScopedEvent = AnyEvent & { runid: string };
 
-export class JsonlEventLog implements EventStore {
+/**
+ * jsonl implementation of an event store
+ * write is append only
+ * read is only an async generator from the beginning
+ *
+ * constructor requires absolute path to the directory to read/write files
+ */
+export class JsonlEventLog implements EventStorePort {
   private writeStreams = new Map<string, WriteStream>();
 
-  constructor(public dir: string) {}
+  constructor(public dir: string) {
+    if (!path.isAbsolute(dir)) {
+      throw new Error("[json-event-log] dir must be absolute");
+    }
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  }
 
   async getEvent(eventId: string) {
+    throw new Error("not yet implemented");
     return {} as AnyEvent;
   }
 
@@ -26,10 +39,8 @@ export class JsonlEventLog implements EventStore {
 
     try {
       // TODO: later handle situations where the node internal buffer is
-      // full.  at that point, we need an internal queue that then flushes
-      // in some way at some point, and either persist it or keep it in memory.
-      // but at some point node's internal buffer overrun might be something
-      // to look at.
+      // full.  at that point, implement an internal queue that then flushes
+      // in some way
       return writeStream.write(JSON.stringify(event) + "\n");
     } catch (err) {
       throw new Error(`could not write  event ${event}: error:${err}`);
@@ -49,7 +60,11 @@ export class JsonlEventLog implements EventStore {
       throw new Error("unable to read file");
     } finally {
       rl.close();
-      stream.close();
+      await new Promise<void>((resolve, reject) => {
+        stream.close((err?: Error | null) => {
+          err ? reject(err) : resolve();
+        });
+      });
     }
   }
 

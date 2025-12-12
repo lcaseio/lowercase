@@ -7,12 +7,7 @@ import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine, PipeResolver } from "@lcase/engine";
 
 import { EmitterFactory, eventRegistry } from "@lcase/events";
-import {
-  EventBusPort,
-  FlowParserPort,
-  JobParserPort,
-  StreamRegistryPort,
-} from "@lcase/ports";
+import { EventBusPort, JobParserPort, StreamRegistryPort } from "@lcase/ports";
 import {
   makeBusFactory,
   makeQueueFactory,
@@ -26,12 +21,15 @@ import type { RuntimeContext, SinkMap } from "./types/runtime.context.js";
 import {
   ConsoleSink,
   ObservabilityTap,
+  ReplaySink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService } from "@lcase/services";
 import { ResourceManager } from "@lcase/resource-manager";
 import { JobParser } from "@lcase/events/parsers";
+import { JsonlEventLog } from "@lcase/adapters/event-store";
+import path from "path";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -108,6 +106,7 @@ export function createObservability(
   const sinks: SinkMap = {};
   if (config.sinks) {
     for (const sink of config.sinks) {
+      // TODO: move sink settings to config, not hardcoded
       switch (sink) {
         case "console-log-sink":
           const consoleSink = new ConsoleSink({
@@ -129,6 +128,13 @@ export function createObservability(
             sinks["websocket-sink"] = webSocketServerSink;
             tap.attachSink(webSocketServerSink);
           }
+          break;
+        case "replay-jsonl-sink":
+          const absoluteDirPath = path.join(process.cwd(), "./replay-test");
+          const replaySink = new ReplaySink(new JsonlEventLog(absoluteDirPath));
+          sinks["replay-jsonl-sink"] = replaySink;
+          tap.attachSink(replaySink);
+
           break;
         default:
           break;
