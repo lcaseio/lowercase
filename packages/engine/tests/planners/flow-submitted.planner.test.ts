@@ -4,6 +4,8 @@ import type {
   FlowSubmittedMsg,
   EngineState,
   EngineEffect,
+  EmitFlowStartedFx,
+  DispatchInternalFx,
 } from "../../src/engine.types.js";
 import { describe, it, expect } from "vitest";
 
@@ -76,13 +78,15 @@ describe("flowSubmittedPlanner", () => {
             name: flowSubmittedMessage.definition.name,
             version: flowSubmittedMessage.definition.version,
           },
+          run: { id: flowSubmittedMessage.runId },
         },
         scope: {
           flowid: flowSubmittedMessage.flowId,
+          runid: flowSubmittedMessage.runId,
           source: "lowercase://engine",
         },
         traceId: "test",
-      },
+      } satisfies EmitFlowStartedFx,
       {
         kind: "DispatchInternal",
         message: {
@@ -90,7 +94,7 @@ describe("flowSubmittedPlanner", () => {
           runId: runCtx.runId,
           stepId: runCtx.definition.start,
         },
-      },
+      } satisfies DispatchInternalFx,
     ];
     expect(effectPlans).toEqual(expectedEffectPlans);
   });

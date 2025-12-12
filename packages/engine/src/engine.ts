@@ -183,7 +183,7 @@ export class Engine {
     const message: FlowSubmittedMsg = {
       type: "FlowSubmitted",
       flowId: event.data.flow.id,
-      runId: String(randomUUID()),
+      runId: event.data.run.id,
       definition: event.data.definition,
       meta: {
         traceId: event.traceid,

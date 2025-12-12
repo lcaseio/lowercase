@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": "true",
   "type": "module",
   "exports": {
@@ -27,6 +27,10 @@
     "./stream": {
       "types": "./dist/stream/index.d.ts",
       "import": "./dist/stream/index.js"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/index.d.ts",
+      "import": "./dist/event-store/index.js"
     }
   },
   "scripts": {

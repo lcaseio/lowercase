@@ -114,8 +114,13 @@ describe("submitExternal", () => {
             name: runCtx.definition.name,
             version: runCtx.definition.version,
           },
+          run: { id: runCtx.runId },
         },
-        scope: { flowid: runCtx.flowId, source: "lowercase://engine" },
+        scope: {
+          flowid: runCtx.flowId,
+          runid: runCtx.runId,
+          source: "lowercase://engine",
+        },
         traceId: "test",
       },
       {

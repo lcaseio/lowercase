@@ -1,6 +1,6 @@
 {
   "name": "@lcase/ports",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": "true",
   "type": "module",
   "exports": {
@@ -26,6 +26,9 @@
     },
     "./engine": {
       "types": "./dist/engine/index.d.ts"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/event-store.port.d.ts"
     }
   },
   "scripts": {

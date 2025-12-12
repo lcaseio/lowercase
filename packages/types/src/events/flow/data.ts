@@ -6,14 +6,14 @@ export type FlowDescriptor = {
     name: string;
     version: string;
   };
+  run: { id: string };
 };
 
 export type FlowQueuedData = FlowDescriptor & {
   flowName: string;
   inputs: Record<string, unknown>;
-  test?: boolean;
   outfile: string;
-  definition: unknown;
+  definition: FlowDefinition;
 };
 
 export type FlowSubmittedData = FlowDescriptor & {

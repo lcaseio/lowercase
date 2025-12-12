@@ -33,12 +33,12 @@ export function wireEffectHandlers(
     ): void | Promise<void> {
       const emitter = ef.newFlowEmitterNewSpan(
         {
-          flowid: effect.data.flow.id,
+          ...effect.scope,
           source,
         },
         effect.traceId
       );
-      void emitter.emit("flow.started", { flow: effect.data.flow });
+      void emitter.emit("flow.started", effect.data);
     },
 
     EmitStepStarted: (effect: EmitStepStartedFx) => {

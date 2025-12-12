@@ -106,11 +106,13 @@ describe("flowFailedPlanner", () => {
           name: newRunCtx.flowName,
           version: newRunCtx.definition.version,
         },
+        run: { id: runId },
         status: "failure",
       },
       eventType: "flow.failed",
       scope: {
         flowid: newRunCtx.flowId,
+        runid: runId,
         source: "lowercase://engine",
       },
       traceId: newRunCtx.traceId,

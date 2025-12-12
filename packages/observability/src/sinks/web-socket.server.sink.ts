@@ -32,7 +32,11 @@ export class WebSocketServerSink implements EventSink {
 
   handle(event: AnyEvent): void {
     if (this.socket) {
-      this.socket.send(JSON.stringify(event));
+      try {
+        this.socket.send(JSON.stringify(event));
+      } catch (err) {
+        console.error(`Error sending to socket: ${err}`);
+      }
     }
   }
 }

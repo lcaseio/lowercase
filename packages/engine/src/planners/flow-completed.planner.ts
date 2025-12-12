@@ -29,11 +29,13 @@ export const flowCompletedPlanner: Planner<FlowCompletedMsg> = (args: {
         name: newState.runs[runId].flowName,
         version: newState.runs[runId].definition.version,
       },
+      run: { id: runId },
       status: "success",
     },
     eventType: "flow.completed",
     scope: {
       flowid: flowId,
+      runid: runId,
       source: "lowercase://engine",
     },
     traceId: newState.runs[runId].traceId,
