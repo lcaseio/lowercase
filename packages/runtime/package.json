@@ -1,6 +1,6 @@
 {
   "name": "@lcase/runtime",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": true,
   "type": "module",
   "exports": {
@@ -26,7 +26,8 @@
     "@lcase/events": "workspace:*",
     "@lcase/observability": "workspace:*",
     "@lcase/resource-manager": "workspace:*",
-    "@lcase/services": "workspace:*"
+    "@lcase/services": "workspace:*",
+    "@lcase/replay": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

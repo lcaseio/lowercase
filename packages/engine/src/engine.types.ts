@@ -177,6 +177,11 @@ export type EmitFlowCompletedFx = {
   data: FlowCompletedData;
   traceId: string;
 };
+export type WriteContextToDiskFx = {
+  kind: "WriteContextToDisk";
+  context: RunContext;
+  runId: string;
+};
 export type DispatchInternalFx = {
   kind: "DispatchInternal";
   message: EngineMessage;
@@ -193,7 +198,8 @@ export type EngineEffect =
   | EmitJobMcpSubmittedFx
   | EmitFlowStartedFx
   | EmitFlowCompletedFx
-  | EmitFlowFailedFx;
+  | EmitFlowFailedFx
+  | WriteContextToDiskFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (

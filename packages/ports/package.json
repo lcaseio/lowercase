@@ -29,6 +29,9 @@
     },
     "./event-store": {
       "types": "./dist/event-store/event-store.port.d.ts"
+    },
+    "./replay": {
+      "types": "./dist/replay/index.d.ts"
     }
   },
   "scripts": {

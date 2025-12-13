@@ -12,8 +12,11 @@ import {
   EmitStepFailedFx,
   EmitStepStartedFx,
   EngineEffect,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 
 export type EffectHandlerRegistry = {
   [K in EngineEffect["kind"]]?: EffectHandler<K>;
@@ -99,6 +102,11 @@ export function wireEffectHandlers(
     EmitFlowCompleted: function (effect: EmitFlowCompletedFx): void {
       const emitter = ef.newFlowEmitterNewSpan(effect.scope, effect.traceId);
       void emitter.emit("flow.completed", effect.data);
+    },
+    WriteContextToDisk: (effect: WriteContextToDiskFx): void => {
+      const file = `./output-${effect.runId}.temp.json`;
+      const filePath = path.join(process.cwd(), file);
+      fs.writeFileSync(filePath, JSON.stringify(effect.context, null, 2));
     },
   } satisfies EffectHandlerRegistry;
 

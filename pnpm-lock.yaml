@@ -380,6 +380,9 @@ importers:
       '@lcase/observability':
         specifier: workspace:*
         version: link:../observability
+      '@lcase/replay':
+        specifier: workspace:*
+        version: link:../replay
       '@lcase/resource-manager':
         specifier: workspace:*
         version: link:../resource-manager
