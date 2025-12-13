@@ -7,10 +7,12 @@ import type {
 } from "@lcase/types";
 import { httpjsonEventTypes } from "./job/httpjson.types.js";
 import { mcpEventTypes } from "./job/mcp.types.js";
+import { replayEventTypes } from "./replay/replay.types.js";
 
 export const eventTypes = [
   ...httpjsonEventTypes,
   ...mcpEventTypes,
+  ...replayEventTypes,
   "flow.queued",
   "flow.submitted",
   "flow.started",

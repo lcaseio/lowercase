@@ -22,6 +22,8 @@ import type { ToolScope } from "./tool/event.js";
 import type { WorkerEventType } from "./worker/map.js";
 import type { WorkerScope } from "./worker/event.js";
 import { SystemScope } from "./system/event.js";
+import { ReplayEventType } from "./replay/map.js";
+import { ReplayScope } from "./replay/event.js";
 
 /**
  * The varying base fields that are required for each event type.
@@ -46,6 +48,8 @@ export type ScopeFor<T extends EventType> = T extends StepEventType
   ? ToolScope
   : T extends WorkerEventType
   ? WorkerScope
+  : T extends ReplayEventType
+  ? ReplayScope
   : T extends SystemScope
   ? SystemScope
   : {};

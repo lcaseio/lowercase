@@ -22,6 +22,9 @@ import type {
   RunEvent,
   AnyEvent,
   ToolEvent,
+  ReplayEventType,
+  ReplayEventData,
+  ReplayEvent,
 } from "@lcase/types";
 export type EnvelopeHeader = {
   id: string;
@@ -44,6 +47,13 @@ export interface SystemEmitterPort {
     type: T,
     data: SystemEventData<T>
   ): Promise<void>;
+}
+
+export interface ReplayEmitterPort {
+  emit<T extends ReplayEventType>(
+    type: T,
+    data: ReplayEventData<T>
+  ): Promise<ReplayEvent<T>>;
 }
 
 export interface JobEmitterPort {

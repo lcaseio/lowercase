@@ -4,6 +4,7 @@ import type {
   EngineState,
   EmitFlowCompletedFx,
   FlowCompletedMsg,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 
 export const flowCompletedPlanner: Planner<FlowCompletedMsg> = (args: {
@@ -41,6 +42,14 @@ export const flowCompletedPlanner: Planner<FlowCompletedMsg> = (args: {
     traceId: newState.runs[runId].traceId,
   } satisfies EmitFlowCompletedFx;
   effects.push(effect);
+
+  const writeEffect = {
+    kind: "WriteContextToDisk",
+    context: newRunState,
+    runId,
+  } satisfies WriteContextToDiskFx;
+
+  effects.push(writeEffect);
 
   return effects;
 };

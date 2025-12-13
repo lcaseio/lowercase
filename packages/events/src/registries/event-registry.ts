@@ -68,6 +68,7 @@ import { SystemLoggedSchema } from "../schemas/system.event.schema.js";
 import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
 import { httpjsonRegistry } from "./job/httpjson.registry.js";
 import { mcpRegistry } from "./job/mcp.registry.js";
+import { replayRegistry } from "./replay/replay.registry.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -89,6 +90,7 @@ export type EventTopic =
 export const eventRegistry = {
   ...httpjsonRegistry,
   ...mcpRegistry,
+  ...replayRegistry,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {

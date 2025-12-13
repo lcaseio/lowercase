@@ -30,6 +30,7 @@ import { ResourceManager } from "@lcase/resource-manager";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
+import { ReplayEngine } from "@lcase/replay";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -84,6 +85,12 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const { tap, sinks } = createObservability(config.observability, bus);
 
+  const replay = new ReplayEngine(
+    new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
+    bus,
+    ef
+  );
+
   return {
     queue,
     bus,
@@ -95,6 +102,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     sinks,
     ef,
     rm,
+    replay,
   };
 }
 

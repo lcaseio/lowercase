@@ -10,6 +10,7 @@ import {
 } from "@lcase/observability";
 import { EmitterFactory } from "@lcase/events";
 import { ResourceManager } from "@lcase/resource-manager";
+import { ReplayEngine } from "@lcase/replay";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
@@ -28,4 +29,5 @@ export type RuntimeContext = {
   sinks: SinkMap;
   ef: EmitterFactory;
   rm: ResourceManager;
+  replay: ReplayEngine;
 };

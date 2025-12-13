@@ -4,6 +4,7 @@ import type {
   EmitFlowCompletedFx,
   EngineState,
   FlowCompletedMsg,
+  WriteContextToDiskFx,
 } from "../../src/engine.types.js";
 import type { FlowDefinition } from "@lcase/types";
 import { flowCompletedPlanner } from "../../src/planners/flow-completed.planner.js";
@@ -100,26 +101,33 @@ describe("stepReadyToStartPlanner", () => {
       message: flowCompletedMsg,
     });
 
-    const expectedEffectPlan = {
-      kind: "EmitFlowCompleted",
-      data: {
-        flow: {
-          id: newRunCtx.flowId,
-          name: newRunCtx.flowName,
-          version: newRunCtx.definition.version,
+    const expectedEffectPlan = [
+      {
+        kind: "EmitFlowCompleted",
+        data: {
+          flow: {
+            id: newRunCtx.flowId,
+            name: newRunCtx.flowName,
+            version: newRunCtx.definition.version,
+          },
+          run: { id: runId },
+          status: "success",
         },
-        run: { id: runId },
-        status: "success",
-      },
-      eventType: "flow.completed",
-      scope: {
-        flowid: newRunCtx.flowId,
-        runid: runId,
-        source: "lowercase://engine",
-      },
-      traceId: newRunCtx.traceId,
-    } satisfies EmitFlowCompletedFx;
+        eventType: "flow.completed",
+        scope: {
+          flowid: newRunCtx.flowId,
+          runid: runId,
+          source: "lowercase://engine",
+        },
+        traceId: newRunCtx.traceId,
+      } satisfies EmitFlowCompletedFx,
+      {
+        kind: "WriteContextToDisk",
+        context: newRunCtx,
+        runId,
+      } satisfies WriteContextToDiskFx,
+    ];
 
-    expect(effects).toEqual([expectedEffectPlan]);
+    expect(effects).toEqual(expectedEffectPlan);
   });
 });
