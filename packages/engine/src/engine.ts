@@ -1,4 +1,3 @@
-import fs from "fs";
 import type {
   EmitterFactoryPort,
   EventBusPort,
@@ -28,6 +27,8 @@ import {
  * It handles multiple runs in one instance.
  * Each run gets its own context.
  * Passes scoped emitters to handlers for emitting events.
+ * Uses a reducer -> planner -> effects structure + internal message queue for
+ * deterministic state and logic flows.
  */
 
 export class Engine {
@@ -88,6 +89,7 @@ export class Engine {
         id: this.id,
         version: this.version,
       },
+
       status: "started",
     });
     this.subscribeToTopics();
@@ -130,7 +132,7 @@ export class Engine {
       return;
     }
 
-    if (!this.enableSideEffects) return;
+    if (!this.enableSideEffects && effect.kind !== "WriteContextToDisk") return;
 
     // TODO: fix `any` here
     const handler = this.handlers[effect.kind] as

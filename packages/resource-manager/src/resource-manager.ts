@@ -70,6 +70,8 @@ export class ResourceManager implements ResourceManagerPort {
   #activeTools = new Map<ToolId, number>();
   activeJobsPerTool: ActiveJobsPerTool = {};
   busStopTopics = new Map<string, () => void>();
+
+  enableSideEffects = true;
   constructor(deps: ResourceManagerDeps) {
     this.#bus = deps.bus;
     this.#ef = deps.ef;
@@ -96,6 +98,7 @@ export class ResourceManager implements ResourceManagerPort {
     const submitted = "job.*.submitted";
     const completed = "job.*.completed";
     const failed = "job.*.failed";
+    const replay = "replay.mode.submitted";
 
     this.busStopTopics.set(
       worker,
@@ -123,6 +126,13 @@ export class ResourceManager implements ResourceManagerPort {
         this.handleCompletedOrFailed(event)
       )
     );
+
+    this.busStopTopics.set(
+      replay,
+      this.#bus.subscribe(replay, async (event) => {
+        this.handleReplayModeSubmitted(event);
+      })
+    );
   }
   stop() {
     for (const [_topic, cb] of this.busStopTopics.entries()) {
@@ -135,6 +145,11 @@ export class ResourceManager implements ResourceManagerPort {
       const e = event as AnyEvent<"worker.registration.requested">;
       this.registerWorkerTools(e);
     }
+  }
+  handleReplayModeSubmitted(event: AnyEvent) {
+    if (event.type !== "replay.mode.submitted") return;
+    const e = event as AnyEvent<"replay.mode.submitted">;
+    this.enableSideEffects = e.data.enableSideEffects;
   }
 
   async handleCompletedOrFailed(event: AnyEvent) {
@@ -182,6 +197,7 @@ export class ResourceManager implements ResourceManagerPort {
         "lowercase://rm/queue-delayed-job"
       );
 
+      if (!this.enableSideEffects) return;
       const newEvent = await jobEmitter.emit(type, jobQueued.event.data);
       this.#queue.enqueue(newEvent.data.job.toolid, newEvent);
       this.#activeTools.set(toolId, ++current);
@@ -227,6 +243,7 @@ export class ResourceManager implements ResourceManagerPort {
     message: string,
     data?: unknown
   ): Promise<void> {
+    if (!this.enableSideEffects) return;
     await this.#ef
       .newSystemEmitterNewSpan(
         {
@@ -284,6 +301,7 @@ export class ResourceManager implements ResourceManagerPort {
       if (!job) return;
 
       this.#activeTools.set(toolId, ++current);
+      if (!this.enableSideEffects) return;
       const newEvent = await jobEmitter.emit(type, job.event.data);
       this.#queue.enqueue(toolId, newEvent);
       console.log(current);
@@ -292,6 +310,7 @@ export class ResourceManager implements ResourceManagerPort {
       const job = await this.makeDelayedEventFromSubmitted(e, type);
       if (!job) return;
 
+      if (!this.enableSideEffects) return;
       const newEvent = await jobEmitter.emit(type, job.event.data);
       this.#queue.enqueue(`${toolId}.delayed`, newEvent);
     }
@@ -346,6 +365,8 @@ export class ResourceManager implements ResourceManagerPort {
     for (const tool of event.data.tools) {
       this.#availableTools.add(tool);
     }
+
+    if (!this.enableSideEffects) return;
 
     const we = this.#ef.newWorkerEmitterNewSpan(
       {

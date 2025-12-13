@@ -23,7 +23,7 @@ export class ReplayEngine implements ReplayEnginePort {
       runid: runId,
     });
 
-    emitter.emit("replay.mode.submitted", {
+    await emitter.emit("replay.mode.submitted", {
       enableSideEffects,
     });
   }

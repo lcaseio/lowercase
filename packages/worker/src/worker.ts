@@ -55,6 +55,7 @@ export type WorkerDeps = {
 };
 
 export class Worker {
+  enableSideEffects = true;
   #ctx: WorkerContext = {
     workerId: "generic-worker",
     totalActiveJobCount: 0,
@@ -104,6 +105,12 @@ export class Worker {
         }
       }
     });
+
+    this.#bus.subscribe("replay.mode.submitted", async (event: AnyEvent) => {
+      if (event.type !== "replay.mode.submitted") return;
+      const e = event as AnyEvent<"replay.mode.submitted">;
+      this.handleReplayModeSubmitted(e);
+    });
   }
 
   #buildToolCtx() {
@@ -121,6 +128,10 @@ export class Worker {
         rateLimitPolicy: binding.spec.rateLimit,
       });
     }
+  }
+
+  handleReplayModeSubmitted(event: AnyEvent<"replay.mode.submitted">) {
+    this.enableSideEffects = event.data.enableSideEffects;
   }
 
   async handleNewJob(event: AnyEvent): Promise<void> {
@@ -165,6 +176,8 @@ export class Worker {
         e,
         "lowercase://worker/handle-new-job"
       );
+
+      if (!this.enableSideEffects) return;
       await jobEmitter.emit(type, e.data);
 
       toolEvent = await tool.invoke(event);
@@ -176,6 +189,7 @@ export class Worker {
         throw new Error(`[worker] invalid type; could not parse ${manualType}`);
       }
 
+      if (!this.enableSideEffects) return;
       const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
         e,
         "lowercase://worker/handle-new-job/job-executor/run"
@@ -255,6 +269,7 @@ export class Worker {
   }
 
   async requestRegistration(): Promise<void> {
+    if (!this.enableSideEffects) return;
     const meta = this.getMetadata();
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewTrace({
@@ -275,6 +290,8 @@ export class Worker {
       const p = this.startToolJobWaiters(id);
       waiterCtx.startWaitersPromise = p;
     }
+
+    if (!this.enableSideEffects) return;
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewTrace({
       source: "lowercase://worker/start",
