@@ -10,6 +10,7 @@ import {
   JobScope,
   JobStartedData,
   JobStartedEvent,
+  ReplayScope,
   RunScope,
   StepScope,
   SystemScope,
@@ -21,6 +22,7 @@ import {
   EngineEmitterPort,
   FlowEmitterPort,
   JobEmitterPort,
+  ReplayEmitterPort,
   RunEmitterPort,
   StepEmitterPort,
   SystemEmitterPort,
@@ -36,6 +38,7 @@ export type OtelContext = {
 };
 
 export interface EmitterFactoryPort {
+  newReplayEmitterNewTrace(scope: CloudScope & ReplayScope): ReplayEmitterPort;
   newSystemEmitter(
     scope: CloudScope & SystemScope & OtelContext
   ): SystemEmitterPort;

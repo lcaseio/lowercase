@@ -87,7 +87,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const replay = new ReplayEngine(
     new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
-    bus
+    bus,
+    ef
   );
 
   return {

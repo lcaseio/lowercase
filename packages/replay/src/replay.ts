@@ -1,10 +1,11 @@
 import type { EventStorePort } from "@lcase/ports/event-store";
 import type { ReplayEnginePort } from "@lcase/ports/replay";
-import type { EventBusPort } from "@lcase/ports";
+import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
 export class ReplayEngine implements ReplayEnginePort {
   constructor(
     private readonly store: EventStorePort,
-    private readonly bus: EventBusPort
+    private readonly bus: EventBusPort,
+    private readonly ef: EmitterFactoryPort
   ) {}
 
   async replayAllEvents(runId: string) {
@@ -14,5 +15,16 @@ export class ReplayEngine implements ReplayEnginePort {
         setTimeout(resolve, 10);
       });
     }
+  }
+
+  async emitReplayMode(runId: string, enableSideEffects: boolean) {
+    const emitter = this.ef.newReplayEmitterNewTrace({
+      source: "lowercase://replay",
+      runid: runId,
+    });
+
+    emitter.emit("replay.mode.submitted", {
+      enableSideEffects,
+    });
   }
 }

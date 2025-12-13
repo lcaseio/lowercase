@@ -15,6 +15,7 @@ import type {
   JobCompletedEvent,
   JobFailedEvent,
   JobStartedType,
+  ReplayScope,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -26,6 +27,7 @@ import { JobEmitter } from "./emitters/jobs.emitter.js";
 import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
+import { ReplayEmitter } from "./emitters/replay.emitter.js";
 
 /**
  * NOTE: This class is currently in between being refactored.
@@ -55,6 +57,11 @@ import { SystemEmitter } from "./emitters/system.emitter.js";
 
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
+
+  newReplayEmitterNewTrace(scope: CloudScope & ReplayScope) {
+    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new ReplayEmitter(this.bus, combinedScope);
+  }
 
   /* system */
   newSystemEmitter(
