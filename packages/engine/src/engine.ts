@@ -32,9 +32,10 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.7";
+  version = "0.1.0-alpha.8";
   state: EngineState = { runs: {} };
   isProcessing = false;
+  enableSideEffects = true;
 
   private queue: EngineMessage[] = [];
 
@@ -67,6 +68,7 @@ export class Engine {
       // TODO: parse evenvelope
       this.handleJobFailed(e);
     });
+    this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) => {});
   }
 
   async start() {
@@ -127,6 +129,8 @@ export class Engine {
       this.queue.push(effect.message);
       return;
     }
+
+    if (!this.enableSideEffects) return;
 
     // TODO: fix `any` here
     const handler = this.handlers[effect.kind] as
@@ -228,21 +232,12 @@ export class Engine {
     return;
   }
 
-  writeRunContext(runId: string): void {
-    const context = this.state.runs[runId];
-    const file = "./output.temp.json";
+  handleReplayModeSubmitted(e: AnyEvent) {
+    if (e.type !== "replay.mode.submitted") return;
 
-    fs.writeFileSync(file, JSON.stringify(context, null, 2));
+    // TODO: parse the event
+    const event = e as AnyEvent<"replay.mode.submitted">;
 
-    const logEmitter = this.ef.newSystemEmitter({
-      source: "lowercase://engine/write-run-context",
-      traceId: "",
-      spanId: "",
-      traceParent: "",
-    });
-    logEmitter.emit("system.logged", {
-      log: `[engine] context written to disk at ${file}`,
-    });
-    return;
+    this.enableSideEffects = event.data.enableSideEffects;
   }
 }
