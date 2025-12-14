@@ -69,7 +69,9 @@ export class Engine {
       // TODO: parse evenvelope
       this.handleJobFailed(e);
     });
-    this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) => {});
+    this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>
+      this.handleReplayModeSubmitted(e)
+    );
   }
 
   async start() {

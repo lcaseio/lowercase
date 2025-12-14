@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { ReplayEngine } from "../src/replay.js";
 import { EventStorePort } from "@lcase/ports/event-store";
-import { EventBusPort } from "@lcase/ports";
+import { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
 
 describe("replay engine", () => {
   it("should read and emit all events", async () => {
@@ -26,11 +26,17 @@ describe("replay engine", () => {
       publish,
     } as unknown as EventBusPort;
 
-    const replay = new ReplayEngine(store, bus);
+    const ef = {} as unknown as EmitterFactoryPort;
+
+    const replay = new ReplayEngine(store, bus, ef);
     await replay.replayAllEvents("run-123");
 
     expect(publish).toHaveBeenCalledTimes(2);
-    expect(publish).toHaveBeenNthCalledWith(1, eventOne.type, eventOne);
-    expect(publish).toHaveBeenNthCalledWith(2, eventTwo.type, eventTwo);
+    expect(publish).toHaveBeenNthCalledWith(1, eventOne.type, eventOne, {
+      internal: true,
+    });
+    expect(publish).toHaveBeenNthCalledWith(2, eventTwo.type, eventTwo, {
+      internal: true,
+    });
   });
 });

@@ -25,7 +25,8 @@ export class ReplayEmitter extends BaseEmitter {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & ReplayScope & CloudScope
+    scope: OtelContext & ReplayScope & CloudScope,
+    private internal: boolean
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { runid } = scope;
@@ -61,7 +62,7 @@ export class ReplayEmitter extends BaseEmitter {
         `[replay-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
-    await this.bus.publish(type, event);
+    await this.bus.publish(type, event, { internal: this.internal });
     return event;
   }
 }
