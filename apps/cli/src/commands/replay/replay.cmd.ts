@@ -7,6 +7,7 @@ export async function cliReplayAction(
 ): Promise<void> {
   console.log("[cli] running replay command");
   await controller.startRuntime();
+  await controller.replayRun(runId);
 }
 
 export function registerReplayCmd(

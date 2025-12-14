@@ -32,4 +32,8 @@ export class WorkflowController implements ServerControllerPort {
   attachSink(sink: EventSink) {
     this.runtime.attachSink(sink);
   }
+
+  async replayRun(runId: string) {
+    await this.runtime.replay.replayRun(runId);
+  }
 }

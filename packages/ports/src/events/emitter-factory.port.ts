@@ -38,7 +38,10 @@ export type OtelContext = {
 };
 
 export interface EmitterFactoryPort {
-  newReplayEmitterNewTrace(scope: CloudScope & ReplayScope): ReplayEmitterPort;
+  newReplayEmitterNewTrace(
+    scope: CloudScope & ReplayScope,
+    internal?: boolean
+  ): ReplayEmitterPort;
   newSystemEmitter(
     scope: CloudScope & SystemScope & OtelContext
   ): SystemEmitterPort;

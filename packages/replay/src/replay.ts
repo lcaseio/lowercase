@@ -10,7 +10,7 @@ export class ReplayEngine implements ReplayEnginePort {
 
   async replayAllEvents(runId: string) {
     for await (const event of this.store.iterateAllEvents(runId)) {
-      await this.bus.publish(event.type, event);
+      await this.bus.publish(event.type, event, { internal: true });
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 10);
       });
@@ -23,7 +23,7 @@ export class ReplayEngine implements ReplayEnginePort {
       runid: runId,
     });
 
-    emitter.emit("replay.mode.submitted", {
+    await emitter.emit("replay.mode.submitted", {
       enableSideEffects,
     });
   }

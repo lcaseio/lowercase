@@ -28,6 +28,7 @@ import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
 import { ReplayEmitter } from "./emitters/replay.emitter.js";
+import { boolean } from "zod/v4";
 
 /**
  * NOTE: This class is currently in between being refactored.
@@ -58,9 +59,12 @@ import { ReplayEmitter } from "./emitters/replay.emitter.js";
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
-  newReplayEmitterNewTrace(scope: CloudScope & ReplayScope) {
+  newReplayEmitterNewTrace(
+    scope: CloudScope & ReplayScope,
+    internal: boolean = true
+  ) {
     const combinedScope = { ...scope, ...this.startNewTrace() };
-    return new ReplayEmitter(this.bus, combinedScope);
+    return new ReplayEmitter(this.bus, combinedScope, internal);
   }
 
   /* system */

@@ -25,7 +25,7 @@ import {
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
-import { FlowService } from "@lcase/services";
+import { FlowService, ReplayService } from "@lcase/services";
 import { ResourceManager } from "@lcase/resource-manager";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
@@ -38,7 +38,8 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ef = new EmitterFactory(ctx.bus);
 
   const flowService = new FlowService(ctx.bus, ef, new FlowStoreFs());
-  const runtime = new WorkflowRuntime(ctx, { flowService });
+  const replayService = new ReplayService(ctx.replay);
+  const runtime = new WorkflowRuntime(ctx, { flowService, replayService });
   return runtime;
 }
 
