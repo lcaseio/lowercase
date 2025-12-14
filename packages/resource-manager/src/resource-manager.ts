@@ -25,6 +25,7 @@ import type {
 import { internalToolConfig } from "./internal-tools.map.js";
 import { CapId } from "../../types/dist/flow/map.js";
 import { defaultCapToolMap } from "./default-tools.map.js";
+import { RmMessage } from "./rm.types.js";
 
 export type ResourceManagerDeps = {
   bus: EventBusPort;
@@ -71,6 +72,8 @@ export class ResourceManager implements ResourceManagerPort {
   activeJobsPerTool: ActiveJobsPerTool = {};
   busStopTopics = new Map<string, () => void>();
 
+  messages: RmMessage[] = [];
+  isProcessing = false;
   enableSideEffects = true;
   constructor(deps: ResourceManagerDeps) {
     this.#bus = deps.bus;
@@ -150,6 +153,19 @@ export class ResourceManager implements ResourceManagerPort {
     if (event.type !== "replay.mode.submitted") return;
     const e = event as AnyEvent<"replay.mode.submitted">;
     this.enableSideEffects = e.data.enableSideEffects;
+  }
+
+  processAll() {
+    if (this.messages.length === 0) return;
+    this.isProcessing = true;
+    while (this.messages.length > 0) {
+      this.processNext();
+    }
+    this.isProcessing = false;
+  }
+  processNext() {
+    const message = this.messages.shift();
+    if (!message) return;
   }
 
   async handleCompletedOrFailed(event: AnyEvent) {
