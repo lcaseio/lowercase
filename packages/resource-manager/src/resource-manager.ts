@@ -20,7 +20,7 @@ import type {
   JobQueuedEvent,
   JobQueuedType,
   JobSubmittedEvent,
-  ToolId,
+  ToolSpec,
 } from "@lcase/types";
 import { internalToolConfig } from "./internal-tools.map.js";
 import { CapId } from "../../types/dist/flow/map.js";
@@ -28,10 +28,10 @@ import { defaultCapToolMap } from "./default-tools.map.js";
 import { RmMessage } from "./rm.types.js";
 
 export type ResourceManagerDeps = {
-  bus: EventBusPort;
   ef: EmitterFactoryPort;
   queue: QueuePort;
   jobParser: JobParserPort;
+  bus: EventBusPort;
 };
 
 export type CapRegisteredToolsMap = {
@@ -46,6 +46,47 @@ export type JobParsedAny =
 type ActiveJobsPerTool = {
   [t in string]: number;
 };
+type ToolId = string;
+type WorkerId = string;
+type JobId = string;
+type RunId = string;
+
+type WorkerRegistryEntry = {
+  canRunTools: Record<ToolId, true>;
+};
+
+type ToolRuntime = {
+  inFlight: Record<
+    JobId,
+    { runId: RunId; workerId?: WorkerId; startedAt: string }
+  >;
+  activeJobCount: number;
+  queue: {
+    ready: JobId[]; // in queue ready to be picked up
+    delayed: Array<{ jobId: JobId }>;
+  };
+};
+type RunRuntime = {
+  jobTool: Record<JobId, ToolId>;
+  activeJobsByToolIdCount: Record<ToolId, number>;
+  delayedJobs: Record<JobId, { reason: string; since: string; toolId: ToolId }>;
+};
+
+export type RmState = {
+  policy: RmPolicyState;
+  registry: {
+    tools: Record<ToolId, ToolSpec & { hasOnlineWorker: boolean }>;
+    workers: Record<WorkerId, WorkerRegistryEntry>;
+  };
+  runtime: {
+    perTool: Record<ToolId, ToolRuntime>;
+    perRun: Record<RunId, RunRuntime>;
+  };
+};
+export type RmPolicyState = {
+  defaultToolMap: Record<CapId, string>;
+};
+
 /**
  * this resource manager is designed to map step capabilities to
  * tools based on policies / table lookups, queue them if the worker
@@ -56,7 +97,7 @@ type ActiveJobsPerTool = {
  *
  * still left to implement:
  * - worker availability
- * - policy based tool decisions
+ * - advanced policy based tool decisions
  */
 export class ResourceManager implements ResourceManagerPort {
   static contact = true;
@@ -64,17 +105,20 @@ export class ResourceManager implements ResourceManagerPort {
   #ef: EmitterFactoryPort;
   #queue: QueuePort;
   #jobParser: JobParserPort;
+
   #internalTools: InternalToolsMap;
   #availableTools = new Set<ToolId>();
   #capRegisteredToolsMap: CapRegisteredToolsMap = {};
   #capDefaultToolMap: Record<CapId, string>;
   #activeTools = new Map<ToolId, number>();
   activeJobsPerTool: ActiveJobsPerTool = {};
+
   busStopTopics = new Map<string, () => void>();
 
   messages: RmMessage[] = [];
   isProcessing = false;
   enableSideEffects = true;
+
   constructor(deps: ResourceManagerDeps) {
     this.#bus = deps.bus;
     this.#ef = deps.ef;
@@ -221,9 +265,9 @@ export class ResourceManager implements ResourceManagerPort {
   }
 
   async handleSubmitted(event: AnyEvent): Promise<void> {
-    const job = this.#jobParser.parseJobSubmitted(event);
-    if (await this.jobHasErrors(event, job)) return;
-    const e = job!.event;
+    const e = this.#jobParser.parseJobSubmitted(event);
+    // if (await this.jobHasErrors(event, job)) return;
+    if (!e) return;
 
     const tool = this.resolveToolPolicy(e);
     if (!tool) {

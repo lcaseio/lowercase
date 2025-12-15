@@ -14,23 +14,6 @@ export type ToolId = string;
 
 export type ToolContext = {};
 
-/** old tool context
- * export type ToolContext<T extends JobRequestedType> = {
-  data: JobEventData<T>;
-  flowId: string;
-  runId: string;
-  stepId: string;
-  capability: string;
-  workerId: string;
-  consumer?: ConsumerStreamPort;
-  producer?: ProducerStreamPort;
-  emitter?: never; // not yet implemented tool event emitter
-
-  auth?: Record<string, string>;
-  config?: Record<string, string>;
-};
- */
-
 export type RateLimitPolicy = {
   scope: "worker" | "global";
   maxRequests: number;
@@ -53,8 +36,4 @@ export type ToolSpec<ID extends ToolId = ToolId> = {
   rateLimit?: RateLimitPolicy;
 };
 
-export interface ToolInstance<ID extends ToolId = ToolId> {
-  id: ID;
-  invoke(args: unknown, ctx: ToolContext): Promise<unknown>;
-}
 export type InternalToolsMap = Record<string, ToolSpec<CapId>>;

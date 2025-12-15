@@ -6,6 +6,7 @@ import {
   JobSubmittedParsed,
 } from "@lcase/ports";
 import {
+  JobSubmittedEvent,
   WorkerRegisteredData,
   WorkerRegistrationRequestedData,
   WorkerScope,
@@ -13,8 +14,7 @@ import {
 
 export type JobSubmittedMsg = {
   type: "JobSubmitted";
-  runId: string;
-  parsed: JobSubmittedParsed;
+  event: JobSubmittedEvent;
 };
 
 export type JobCompletedMsg = {

@@ -1,5 +1,6 @@
 import {
   AnyEvent,
+  CapId,
   EventType,
   JobCompletedType,
   JobDelayedType,
@@ -8,6 +9,7 @@ import {
   JobFailedType,
   JobQueuedType,
   JobStartedType,
+  JobSubmittedEvent,
   JobSubmittedType,
 } from "@lcase/types";
 import {
@@ -67,19 +69,14 @@ export class JobParser implements JobParserPort {
 
   /* full type and event parsers */
 
-  parseJobSubmitted(event: AnyEvent): JobSubmittedParsed | undefined {
+  parseJobSubmitted(event: AnyEvent): JobSubmittedEvent | undefined {
     const type = this.parseJobSubmittedType(event.type);
     if (!type) {
       return;
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
-    return {
-      type,
-      capId,
-      event: parsedEvent,
-    };
+    return parsedEvent;
   }
   parseJobDelayed(event: AnyEvent): JobDelayedParsed | undefined {
     const type = this.parseJobDelayedType(event.type);
@@ -102,10 +99,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -116,10 +113,9 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -130,10 +126,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -144,10 +140,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -168,6 +164,6 @@ export class JobParser implements JobParserPort {
   /** utility to split and extract middle portion as capability */
   #getCapId(type: JobEventType) {
     const parts = type.split(".");
-    return parts[1];
+    return parts[1] as CapId;
   }
 }

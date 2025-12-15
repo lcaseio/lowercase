@@ -1,9 +1,11 @@
 import {
   AnyEvent,
+  CapId,
   JobCompletedEvent,
   JobCompletedType,
   JobDelayedEvent,
   JobDelayedType,
+  JobEvent,
   JobFailedEvent,
   JobFailedType,
   JobQueuedEvent,
@@ -17,7 +19,7 @@ import {
 /* typed return objects */
 export type JobSubmittedParsed = {
   type: JobSubmittedType;
-  capId: string;
+  capId: CapId;
   event: JobSubmittedEvent;
 };
 export type JobDelayedParsed = {
@@ -48,7 +50,7 @@ export type JobFailedParsed = {
 
 export interface JobParserPort {
   /* parse types and event envelops */
-  parseJobSubmitted(event: AnyEvent): JobSubmittedParsed | undefined;
+  parseJobSubmitted(event: AnyEvent): JobSubmittedEvent | undefined;
   parseJobDelayed(event: AnyEvent): JobDelayedParsed | undefined;
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined;
   parseJobStarted(event: AnyEvent): JobStartedParsed | undefined;
