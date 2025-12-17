@@ -25,7 +25,13 @@ import type {
 import { internalToolConfig } from "./internal-tools.map.js";
 import { CapId } from "../../types/dist/flow/map.js";
 import { defaultCapToolMap } from "./default-tools.map.js";
-import { RmMessage } from "./rm.types.js";
+import type {
+  RmEffect,
+  RmEffectHandler,
+  RmEffectHandlerRegistry,
+  RmMessage,
+} from "./rm.types.js";
+import { wireEffectHandlers } from "./effects/effects-registry.js";
 
 export type ResourceManagerDeps = {
   ef: EmitterFactoryPort;
@@ -68,7 +74,7 @@ type ToolRuntime = {
 };
 type RunRuntime = {
   jobTool: Record<JobId, ToolId>;
-  activeJobsByToolIdCount: Record<ToolId, number>;
+  activeToolCount: Record<ToolId, number>;
   delayedJobs: Record<JobId, { reason: string; since: string; toolId: ToolId }>;
 };
 
@@ -118,6 +124,8 @@ export class ResourceManager implements ResourceManagerPort {
   messages: RmMessage[] = [];
   isProcessing = false;
   enableSideEffects = true;
+  state: RmState;
+  handlers: RmEffectHandlerRegistry;
 
   constructor(deps: ResourceManagerDeps) {
     this.#bus = deps.bus;
@@ -127,6 +135,24 @@ export class ResourceManager implements ResourceManagerPort {
     this.#internalTools = internalToolConfig;
     this.#capDefaultToolMap = defaultCapToolMap;
     this.mapInternalTools();
+    this.handlers = wireEffectHandlers(deps.ef, deps.jobParser, deps.queue);
+
+    this.state = {
+      policy: {
+        defaultToolMap: {
+          httpjson: "httpjson",
+          mcp: "mcp",
+        },
+      },
+      registry: {
+        tools: {},
+        workers: {},
+      },
+      runtime: {
+        perTool: {},
+        perRun: {},
+      },
+    } satisfies RmState;
   }
   mapInternalTools() {
     for (const toolId in this.#internalTools) {
@@ -210,6 +236,19 @@ export class ResourceManager implements ResourceManagerPort {
   processNext() {
     const message = this.messages.shift();
     if (!message) return;
+
+    const effects: RmEffect[] = [];
+
+    for (const effect of effects) {
+      this.executeEffect(effect);
+    }
+  }
+  executeEffect(effect: RmEffect) {
+    const handler = this.handlers[effect.type] as
+      | RmEffectHandler<any>
+      | undefined;
+    if (!handler) return;
+    handler(effect);
   }
 
   async handleCompletedOrFailed(event: AnyEvent) {

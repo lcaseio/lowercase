@@ -1,11 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { jobSubmittedReducer } from "../../src/reducers/job-submitted.reducer.js";
+import { jobSubmittedPlanner } from "../../src/planners/job-submitted.planner.js";
+import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
 import { RmState } from "../../src/resource-manager.js";
-import { JobSubmittedMsg } from "../../src/rm.types.js";
-import { JobEvent } from "@lcase/types";
-
-describe("jobSubmittedReducer", () => {
-  it("works", () => {
+import { QueueJobFx } from "../../src/rm.types.js";
+describe("jobSubmittedPlanner", () => {
+  it("should queue jobs when new job is added as ready", () => {
     const toolId = "httpjson";
     const workerId = "test-workerid";
     const runId = "test-runid";
@@ -49,40 +48,7 @@ describe("jobSubmittedReducer", () => {
       },
     } satisfies RmState;
 
-    const message = {
-      type: "JobSubmitted",
-      event: {
-        type: "job.httpjson.submitted",
-        capid: "httpjson",
-        action: "submitted",
-
-        data: {
-          url: "test-url",
-          job: {
-            id: "test-jobid",
-            capid: "httpjson",
-            toolid: null,
-          },
-        },
-        domain: "job",
-        flowid: "test-flowid",
-        id: "test-id",
-        jobid: "test-jobid",
-        runid: "test-runid",
-        source: "test-source",
-        spanid: "test-span",
-        specversion: "1.0",
-        stepid: "test-stepid",
-        time: "test-time",
-        toolid: null,
-        traceid: "test-traceid",
-        traceparent: "test-traceparent",
-      } satisfies JobEvent<"job.httpjson.submitted">,
-    } satisfies JobSubmittedMsg;
-    const result = jobSubmittedReducer(state, message);
-
     const expectedState = structuredClone(state) as RmState;
-
     expectedState.runtime.perRun = {
       [runId]: {
         activeToolCount: {
@@ -109,6 +75,19 @@ describe("jobSubmittedReducer", () => {
         },
       },
     };
-    expect(result).toEqual(expectedState);
+
+    const result = jobSubmittedPlanner(
+      state,
+      expectedState,
+      jobSubmittedHttpJsonMsg
+    );
+
+    const queueJobFx = {
+      type: "QueueJob",
+      toolId: "httpjson",
+      event: jobSubmittedHttpJsonMsg.event,
+    } satisfies QueueJobFx;
+
+    expect(result).toEqual([queueJobFx]);
   });
 });
