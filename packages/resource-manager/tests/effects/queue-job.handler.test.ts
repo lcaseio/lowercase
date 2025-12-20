@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import {
-  EmitError,
+  EmitErrorFn,
   wireEffectHandlers,
-} from "../../src/effects/effects-registry.js";
+} from "../../src/registries/effect.registry.js";
 import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
 import { QueueJobFx } from "../../src/rm.types.js";
 import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
@@ -38,9 +38,9 @@ describe("QueueJob Effect Handler", () => {
       enqueue,
     } as unknown as QueuePort;
 
-    const emitErrorFn = {} as EmitError;
+    const emitErrorFn = {} as EmitErrorFn;
 
-    const handlers = wireEffectHandlers(ef, jobParser, queue, emitErrorFn);
+    const handlers = wireEffectHandlers({ ef, jobParser, queue, emitErrorFn });
     const handler = handlers.QueueJob;
 
     await handler(queueJobFx);
@@ -74,8 +74,8 @@ describe("QueueJob Effect Handler", () => {
 
     const emitErrorFn = vi
       .fn()
-      .mockReturnValue(undefined) as unknown as EmitError;
-    const handlers = wireEffectHandlers(ef, jobParser, queue, emitErrorFn);
+      .mockReturnValue(undefined) as unknown as EmitErrorFn;
+    const handlers = wireEffectHandlers({ ef, jobParser, queue, emitErrorFn });
     const handler = handlers.QueueJob;
 
     await handler(queueJobFx);

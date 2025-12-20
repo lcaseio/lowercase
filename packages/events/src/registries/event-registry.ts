@@ -53,14 +53,14 @@ import {
   ToolStartedDataSchema,
 } from "../schemas/tool.data.schema.js";
 import {
-  WorkerRegisteredDataSchema,
-  WorkerRegistrationRequestedDataSchema,
+  WorkerProfileAddedDataSchema,
+  WorkerProfileSubmittedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
 } from "../schemas/worker.data.schema.js";
 import {
-  WorkerRegisteredSchema,
-  WorkerRegistrationRequestedSchema,
+  WorkerProfileAddedSchema,
+  WorkerProfileSubmittedSchema,
   WorkerStartedSchema,
   WorkerStoppedSchema,
 } from "../schemas/worker.event.schema.js";
@@ -217,18 +217,17 @@ export const eventRegistry = {
       data: WorkerStoppedDataSchema,
     },
   },
-  "worker.registered": {
+  "worker.profile.added": {
     topic: "workers.lifecycle",
     schema: {
-      event: WorkerRegisteredSchema,
-      data: WorkerRegisteredDataSchema,
+      event: WorkerProfileAddedSchema,
+      data: WorkerProfileAddedDataSchema,
     },
   },
-  "worker.registration.requested": {
-    topic: "worker.registration.requested",
+  "worker.profile.submitted": {
     schema: {
-      event: WorkerRegistrationRequestedSchema,
-      data: WorkerRegistrationRequestedDataSchema,
+      event: WorkerProfileSubmittedSchema,
+      data: WorkerProfileSubmittedDataSchema,
     },
   },
   "system.logged": {

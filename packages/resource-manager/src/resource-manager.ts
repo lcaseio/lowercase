@@ -30,8 +30,12 @@ import type {
   RmEffectHandler,
   RmEffectHandlerRegistry,
   RmMessage,
+  RmPlanner,
+  RmReducer,
 } from "./rm.types.js";
-import { wireEffectHandlers } from "./effects/effects-registry.js";
+import { emitError, wireEffectHandlers } from "./registries/effect.registry.js";
+import { reducers } from "./registries/reducer.registry.js";
+import { planners } from "./registries/planner.registry.js";
 
 export type ResourceManagerDeps = {
   ef: EmitterFactoryPort;
@@ -59,6 +63,9 @@ type RunId = string;
 
 type WorkerRegistryEntry = {
   canRunTools: Record<ToolId, true>;
+  name: string;
+  type: "internal" | "external";
+  status: "online" | "offline";
 };
 
 type ToolRuntime = {
@@ -135,7 +142,12 @@ export class ResourceManager implements ResourceManagerPort {
     this.#internalTools = internalToolConfig;
     this.#capDefaultToolMap = defaultCapToolMap;
     this.mapInternalTools();
-    this.handlers = wireEffectHandlers(deps.ef, deps.jobParser, deps.queue);
+    this.handlers = wireEffectHandlers({
+      ef: deps.ef,
+      jobParser: deps.jobParser,
+      queue: deps.queue,
+      emitErrorFn: emitError,
+    });
 
     this.state = {
       policy: {
@@ -214,8 +226,8 @@ export class ResourceManager implements ResourceManagerPort {
   }
 
   async handleWorkerRequest(event: AnyEvent) {
-    if (event.type === "worker.registration.requested") {
-      const e = event as AnyEvent<"worker.registration.requested">;
+    if (event.type === "worker.profile.submitted") {
+      const e = event as AnyEvent<"worker.profile.submitted">;
       this.registerWorkerTools(e);
     }
   }
@@ -225,6 +237,7 @@ export class ResourceManager implements ResourceManagerPort {
     this.enableSideEffects = e.data.enableSideEffects;
   }
 
+  /*-- new architecture refactor starts -- */
   processAll() {
     if (this.messages.length === 0) return;
     this.isProcessing = true;
@@ -237,7 +250,15 @@ export class ResourceManager implements ResourceManagerPort {
     const message = this.messages.shift();
     if (!message) return;
 
-    const effects: RmEffect[] = [];
+    const reducer = reducers[message.type] as RmReducer | undefined;
+    const planner = planners[message.type] as RmPlanner | undefined;
+
+    let newState = reducer ? reducer(this.state, message) : undefined;
+    newState ??= this.state; // default to current state if new state is undefined
+
+    const effects = planner ? planner(this.state, newState, message) : [];
+
+    this.state = newState;
 
     for (const effect of effects) {
       this.executeEffect(effect);
@@ -250,6 +271,7 @@ export class ResourceManager implements ResourceManagerPort {
     if (!handler) return;
     handler(effect);
   }
+  /*-- new architecture refactor ends -- */
 
   async handleCompletedOrFailed(event: AnyEvent) {
     let job: JobCompletedParsed | JobFailedParsed | undefined;
@@ -460,7 +482,7 @@ export class ResourceManager implements ResourceManagerPort {
     return job;
   }
 
-  async registerWorkerTools(event: AnyEvent<"worker.registration.requested">) {
+  async registerWorkerTools(event: AnyEvent<"worker.profile.submitted">) {
     for (const tool of event.data.tools) {
       this.#availableTools.add(tool);
     }
@@ -470,17 +492,13 @@ export class ResourceManager implements ResourceManagerPort {
     const we = this.#ef.newWorkerEmitterNewSpan(
       {
         source: "lowercase://rm/register-worker-tools",
-        workerid: event.data.worker.id,
+        workerid: event.data.id,
       },
       event.traceid
     );
-    await we.emit("worker.registered", {
-      worker: {
-        id: event.data.worker.id,
-      },
-      workerId: event.data.worker.id,
+    await we.emit("worker.profile.added", {
+      ok: true,
       status: "accepted",
-      registeredAt: new Date().toISOString(),
     });
   }
 }

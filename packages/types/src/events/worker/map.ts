@@ -3,8 +3,8 @@ import {
   DomainEntityActionDescriptor,
 } from "../shared/otel-attributes.js";
 import {
-  WorkerRegisteredData,
-  WorkerRegistrationRequestedData,
+  WorkerProfileAddedData,
+  WorkerProfileSubmittedData as WorkerProfileSubmittedData,
   WorkerStartedData,
   WorkerStoppedData,
 } from "./data.js";
@@ -20,16 +20,17 @@ export type WorkerEventMap = {
     "stopped",
     WorkerStoppedData
   >;
-  "worker.registration.requested": DomainEntityActionDescriptor<
+  "worker.profile.submitted": DomainEntityActionDescriptor<
     "worker",
-    "registration",
-    "requested",
-    WorkerRegistrationRequestedData
+    "profile",
+    "submitted",
+    WorkerProfileSubmittedData
   >;
-  "worker.registered": DomainActionDescriptor<
+  "worker.profile.added": DomainEntityActionDescriptor<
     "worker",
-    "registered",
-    WorkerRegisteredData
+    "profile",
+    "added",
+    WorkerProfileAddedData
   >;
 };
 

@@ -1,5 +1,10 @@
-import { JobEvent } from "@lcase/types";
-import { JobSubmittedMsg } from "../../src/rm.types";
+import type { JobEvent } from "@lcase/types";
+import type { JobSubmittedMsg } from "../../src/rm.types.js";
+import type { RmState } from "../../src/resource-manager.js";
+
+const toolId = "httpjson";
+const workerId = "test-workerid";
+const runId = "test-runid";
 
 export const jobSubmittedHttpJsonMsg = {
   type: "JobSubmitted",
@@ -20,7 +25,7 @@ export const jobSubmittedHttpJsonMsg = {
     flowid: "test-flowid",
     id: "test-id",
     jobid: "test-jobid",
-    runid: "test-runid",
+    runid: runId,
     source: "test-source",
     spanid: "test-span",
     specversion: "1.0",
@@ -31,3 +36,46 @@ export const jobSubmittedHttpJsonMsg = {
     traceparent: "test-traceparent",
   } satisfies JobEvent<"job.httpjson.submitted">,
 } satisfies JobSubmittedMsg;
+
+export const jobSubmittedStartState = {
+  policy: {
+    defaultToolMap: {
+      httpjson: "httpjson",
+      mcp: "mcp",
+    },
+  },
+  registry: {
+    tools: {
+      [toolId]: {
+        id: toolId,
+        capabilities: ["httpjson"],
+        hasOnlineWorker: true,
+        location: "internal",
+        maxConcurrency: 2,
+      },
+    },
+    workers: {
+      [workerId]: {
+        canRunTools: {
+          [toolId]: true,
+        },
+        name: "worker-name",
+        type: "internal",
+        status: "online",
+      },
+    },
+  },
+  runtime: {
+    perTool: {
+      [toolId]: {
+        activeJobCount: 0,
+        inFlight: {},
+        queue: {
+          ready: [],
+          delayed: [],
+        },
+      },
+    },
+    perRun: {},
+  },
+} satisfies RmState;

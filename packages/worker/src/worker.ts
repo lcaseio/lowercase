@@ -84,11 +84,11 @@ export class Worker {
   }
 
   #subscribeToBus(): void {
-    this.#bus.subscribe("worker.registered", async (e: AnyEvent) => {
-      if (e.type === "worker.registered") {
-        const event = e as AnyEvent<"worker.registered">;
+    this.#bus.subscribe("worker.profile.added", async (e: AnyEvent) => {
+      if (e.type === "worker.profile.added") {
+        const event = e as AnyEvent<"worker.profile.added">;
         if (
-          event.data.workerId === this.#ctx.workerId &&
+          event.workerid === this.#ctx.workerId &&
           event.data.status === "accepted"
         ) {
           this.#ctx.isRegistered = true;
@@ -100,7 +100,7 @@ export class Worker {
             e.traceid
           );
           await logEmitter.emit("system.logged", {
-            log: "[worker] received registration accepted",
+            log: "[worker] received resource manager response",
           });
         }
       }
@@ -276,12 +276,7 @@ export class Worker {
       source: "lowercase://worker/" + this.#ctx.workerId,
       workerid: this.#ctx.workerId,
     });
-    await workerEmitter.emit("worker.registration.requested", {
-      ...meta,
-      worker: {
-        id: meta.id,
-      },
-    });
+    await workerEmitter.emit("worker.profile.submitted", meta);
   }
 
   async start(): Promise<void> {

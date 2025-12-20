@@ -5,14 +5,12 @@ export type WorkerDescriptorData = {
   };
 };
 
-export type WorkerRegisteredData = WorkerDescriptorData & {
-  workerId: string;
-  status: string;
-  registeredAt: string;
+export type WorkerProfileAddedData = {
+  status: "accepted";
+  ok: true;
 };
 
-export type WorkerRegistrationRequestedData = WorkerDescriptorData &
-  WorkerMetadata;
+export type WorkerProfileSubmittedData = WorkerMetadata;
 
 export type WorkerStartedData = WorkerDescriptorData & {
   status: "started";

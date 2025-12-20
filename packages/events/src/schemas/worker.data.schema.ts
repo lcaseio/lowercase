@@ -3,8 +3,8 @@ import type {
   WorkerDescriptorData,
   WorkerStartedData,
   WorkerStoppedData,
-  WorkerRegistrationRequestedData,
-  WorkerRegisteredData,
+  WorkerProfileSubmittedData,
+  WorkerProfileAddedData,
 } from "@lcase/types";
 
 const WorkerDescriptorDataSchema = z
@@ -26,7 +26,7 @@ export const WorkerStoppedDataSchema = WorkerDescriptorDataSchema.merge(
   })
 ).strict() satisfies z.ZodType<WorkerStoppedData>;
 
-export const WorkerRegistrationRequestedDataSchema =
+export const WorkerProfileSubmittedDataSchema =
   WorkerDescriptorDataSchema.merge(
     z.object({
       id: z.string(),
@@ -34,12 +34,11 @@ export const WorkerRegistrationRequestedDataSchema =
       type: z.enum(["internal", "external"]),
       tools: z.array(z.enum(["mcp", "httpjson"])),
     })
-  ).strict() satisfies z.ZodType<WorkerRegistrationRequestedData>;
+  ).strict() satisfies z.ZodType<WorkerProfileSubmittedData>;
 
-export const WorkerRegisteredDataSchema = WorkerDescriptorDataSchema.merge(
-  z.object({
-    workerId: z.string(),
-    status: z.string(),
-    registeredAt: z.string(),
+export const WorkerProfileAddedDataSchema = z
+  .object({
+    status: z.literal("accepted"),
+    ok: z.literal(true),
   })
-).strict() satisfies z.ZodType<WorkerRegisteredData>;
+  .strict() satisfies z.ZodType<WorkerProfileAddedData>;
