@@ -13,53 +13,63 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       event.data.job.toolid ?? state.policy.defaultToolMap[event.capid];
 
     const run = (draft.runtime.perRun[runId] ??= {
-      activeToolCount: {},
-      delayedJobs: {},
-      jobTool: {
-        [jobId]: toolId,
-      },
+      activeJobsPerToolCount: {},
+      delayed: {},
+      delayedArray: [],
+      jobToolMap: { [jobId]: toolId },
+      pendingDelayed: {},
+      pendingQueued: {},
+      queued: {},
+      queuedArray: [],
     });
 
     const tool = (draft.runtime.perTool[toolId] ??= {
       activeJobCount: 0,
-      inFlight: {},
-      queue: {
-        ready: [],
-        delayed: [{ jobId, runId }],
-      },
+      delayed: {},
+      delayedArray: [],
+      pendingDelayed: {},
+      pendingQueued: {},
+      queued: {},
+      queuedArray: [],
+      toBeDelayed: null,
+      toBeQueued: null,
     });
+
+    const jobEntry = { capId: event.capid, jobId, runId, toolId };
 
     // delay if worker exists for tool
     if (!draft.registry.tools[toolId].hasOnlineWorker) {
-      tool.queue.delayed.push({
-        jobId,
-        runId,
-      });
-      run.delayedJobs[jobId] = {
-        reason: "Delayed due to no online workers.",
-        since: event.time,
-        toolId,
-      };
+      tool.activeJobCount++;
+      tool.toBeDelayed = jobId;
+      tool.toBeQueued = null;
+
+      tool.pendingDelayed[jobId] = jobEntry;
+
+      run.pendingDelayed[jobId] = jobEntry;
+      run.jobToolMap[jobId] = toolId;
+      run.activeJobsPerToolCount[toolId] =
+        (run.activeJobsPerToolCount[toolId] ?? 0) + 1;
     }
     // queue or delay job
     else if (
       tool.activeJobCount < draft.registry.tools[toolId].maxConcurrency
     ) {
-      tool.inFlight[event.jobid] = {
-        runId,
-        startedAt: event.time,
-      };
-      const active = Object.keys(draft.runtime.perTool[toolId].inFlight).length;
-      tool.activeJobCount = active;
-      tool.queue.ready.push(event.jobid);
-      run.activeToolCount[toolId] = (run.activeToolCount[toolId] ?? 0) + 1;
+      tool.activeJobCount++;
+      tool.toBeQueued = jobId;
+      tool.toBeDelayed = null;
+      tool.pendingQueued[jobId] = jobEntry;
+
+      run.jobToolMap[jobId] = toolId;
+      run.pendingQueued[jobId] = jobEntry;
+      run.activeJobsPerToolCount[toolId] =
+        (run.activeJobsPerToolCount[toolId] ?? 0) + 1;
     } else {
-      tool.queue.delayed.push({ jobId, runId });
-      run.delayedJobs[jobId] = {
-        reason: "Delayed due to concurrency limit.",
-        since: event.time,
-        toolId,
-      };
+      tool.toBeDelayed = jobId;
+      tool.toBeQueued = null;
+      tool.pendingDelayed[jobId] = jobEntry;
+
+      run.jobToolMap[jobId] = toolId;
+      run.pendingDelayed[jobId] = jobEntry;
     }
   });
 }

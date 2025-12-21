@@ -88,7 +88,7 @@ type WorkerRegistryEntry = {
  * }
  */
 
-type ToolRuntime = {
+type ToolRuntimeOld = {
   inFlight: Record<
     JobId,
     { runId: RunId; workerId?: WorkerId; startedAt: string }
@@ -100,35 +100,39 @@ type ToolRuntime = {
   };
 };
 
+type RunRuntimeOld = {
+  jobTool: Record<JobId, ToolId>;
+  activeToolCount: Record<ToolId, number>;
+  delayedJobs: Record<JobId, { reason: string; since: string; toolId: ToolId }>;
+};
+
 type JobEntry = {
   jobId: JobId;
   toolId: ToolId;
   runId: RunId;
   capId: CapId;
-  nextJobId: JobId | undefined;
 };
 
-type ToolRuntimeTwo = {
-  toBeQueued: JobId | undefined;
-  toBeDelayed: JobId | undefined;
+export type ToolRuntime = {
+  toBeQueued: JobId | null;
+  toBeDelayed: JobId | null;
   activeJobCount: number;
-  delayed: Array<{ jobId: JobId; runId: RunId }>;
-  queued: Array<{ jobId: JobId; runId: RunId }>;
-  pendingQueued: Array<{ jobId: JobId; runId: RunId }>;
-  pendingDelayed: Array<{ jobId: JobId; runId: RunId }>;
+  queuedArray: JobId[];
+  delayedArray: JobId[];
+  queued: Record<JobId, JobEntry>;
+  delayed: Record<JobId, JobEntry>;
+  pendingQueued: Record<JobId, JobEntry>;
+  pendingDelayed: Record<JobId, JobEntry>;
 };
-type RunRuntimeTwo = {
+export type RunRuntime = {
   jobToolMap: Record<JobId, ToolId>;
   activeJobsPerToolCount: Record<ToolId, number>;
-  delayed: Array<{ jobId: JobId; toolId: ToolId }>;
-  queued: Array<{ jobId: JobId; toolId: ToolId }>;
-  pendingQueued: Array<{ jobId: JobId; toolId: ToolId }>;
-  pendingDelayed: Array<{ jobId: JobId; toolId: ToolId }>;
-};
-type RunRuntime = {
-  jobTool: Record<JobId, ToolId>;
-  activeToolCount: Record<ToolId, number>;
-  delayedJobs: Record<JobId, { reason: string; since: string; toolId: ToolId }>;
+  queued: Record<JobId, JobEntry>;
+  delayed: Record<JobId, JobEntry>;
+  queuedArray: JobId[];
+  delayedArray: JobId[];
+  pendingQueued: Record<JobId, JobEntry>;
+  pendingDelayed: Record<JobId, JobEntry>;
 };
 
 export type RmState = {

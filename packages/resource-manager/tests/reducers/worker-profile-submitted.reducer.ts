@@ -60,16 +60,7 @@ describe("workerRegistrationRequestedReducer", () => {
         },
       },
       runtime: {
-        perTool: {
-          [toolId]: {
-            activeJobCount: 0,
-            inFlight: {},
-            queue: {
-              ready: [],
-              delayed: [],
-            },
-          },
-        },
+        perTool: {},
         perRun: {},
       },
     } satisfies RmState;

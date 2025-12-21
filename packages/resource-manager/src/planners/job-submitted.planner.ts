@@ -16,24 +16,22 @@ export const jobSubmittedPlanner: RmPlanner<JobSubmittedMsg> = (
   const runId = message.event.runid;
   const jobId = message.event.jobid;
 
-  const newRun = newState.runtime.perRun[runId];
+  const newRunState = newState.runtime.perRun[runId];
 
-  const toolId = newRun.jobTool[jobId];
+  const toolId = newRunState.jobToolMap[jobId];
 
-  const oldToolState = oldState.runtime.perTool[toolId];
   const newToolState = newState.runtime.perTool[toolId];
 
-  if (oldToolState.queue.ready.length < newToolState.queue.ready.length) {
+  if (newToolState.toBeQueued === jobId) {
+    // queue something
     const queueJobFx = {
       type: "QueueJob",
       toolId,
       event: message.event,
     } satisfies QueueJobFx;
-
     effects.push(queueJobFx);
-  } else if (
-    oldToolState.queue.delayed.length < newToolState.queue.delayed.length
-  ) {
+  } else if ((newToolState.toBeDelayed = jobId)) {
+    // delay something
     const delayJobFx = {
       type: "DelayJob",
       event: message.event,

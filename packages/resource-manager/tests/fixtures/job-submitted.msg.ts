@@ -69,13 +69,99 @@ export const jobSubmittedStartState = {
     perTool: {
       [toolId]: {
         activeJobCount: 0,
-        inFlight: {},
-        queue: {
-          ready: [],
-          delayed: [],
-        },
+        delayed: {},
+        delayedArray: [],
+        pendingDelayed: {},
+        pendingQueued: {},
+        queued: {},
+        queuedArray: [],
+        toBeDelayed: null,
+        toBeQueued: null,
       },
     },
     perRun: {},
   },
 } satisfies RmState;
+
+export const startStateFilledConcurrency: RmState = {
+  policy: {
+    defaultToolMap: {
+      httpjson: "httpjson",
+      mcp: "mcp",
+    },
+  },
+  registry: {
+    tools: {
+      [toolId]: {
+        id: toolId,
+        capabilities: ["httpjson"],
+        hasOnlineWorker: true,
+        location: "internal",
+        maxConcurrency: 2,
+      },
+    },
+    workers: {
+      [workerId]: {
+        canRunTools: {
+          [toolId]: true,
+        },
+        name: "worker-name",
+        type: "internal",
+        status: "online",
+      },
+    },
+  },
+  runtime: {
+    perTool: {
+      [toolId]: {
+        activeJobCount: 2,
+        delayed: {},
+        delayedArray: [],
+        pendingDelayed: {},
+        pendingQueued: {},
+        queued: {
+          job1: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+        },
+        queuedArray: ["job1", "job2"],
+        toBeDelayed: null,
+        toBeQueued: null,
+      },
+    },
+    perRun: {
+      "test-runid": {
+        activeJobsPerToolCount: { httpjson: 2 },
+        delayed: {},
+        delayedArray: [],
+        jobToolMap: {},
+        pendingDelayed: {},
+        pendingQueued: {},
+        queued: {
+          job1: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+        },
+        queuedArray: ["job1", "job2"],
+      },
+    },
+  },
+};

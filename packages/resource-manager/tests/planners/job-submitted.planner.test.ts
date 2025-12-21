@@ -11,32 +11,46 @@ describe("jobSubmittedPlanner", () => {
     const toolId = "httpjson";
     const workerId = "test-workerid";
     const runId = jobSubmittedHttpJsonMsg.event.runid;
+    const jobId = "test-jobid";
 
     const expectedState = structuredClone(jobSubmittedStartState) as RmState;
     expectedState.runtime.perRun = {
       [runId]: {
-        activeToolCount: {
-          httpjson: 1,
+        activeJobsPerToolCount: { httpjson: 1 },
+        delayed: {},
+        delayedArray: [],
+        jobToolMap: { [jobId]: toolId },
+        pendingDelayed: {},
+        pendingQueued: {
+          [jobId]: {
+            capId: jobSubmittedHttpJsonMsg.event.capid,
+            runId,
+            jobId,
+            toolId,
+          },
         },
-        delayedJobs: {},
-        jobTool: {
-          ["test-jobid"]: toolId,
-        },
+        queued: {},
+        queuedArray: [],
       },
     };
     expectedState.runtime.perTool = {
       [toolId]: {
         activeJobCount: 1,
-        inFlight: {
-          "test-jobid": {
+        delayed: {},
+        delayedArray: [],
+        pendingDelayed: {},
+        pendingQueued: {
+          [jobId]: {
+            capId: jobSubmittedHttpJsonMsg.event.capid,
             runId,
-            startedAt: "test-time",
+            jobId,
+            toolId,
           },
         },
-        queue: {
-          delayed: [],
-          ready: ["test-jobid"],
-        },
+        queued: {},
+        queuedArray: [],
+        toBeDelayed: null,
+        toBeQueued: jobId,
       },
     };
 
