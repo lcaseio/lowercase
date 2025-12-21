@@ -68,6 +68,26 @@ type WorkerRegistryEntry = {
   status: "online" | "offline";
 };
 
+/**
+ * need to do something that describes whats happening
+ *
+ * ready to be queued
+ * ready to be delayed
+ *
+ * actually queued
+ * actually delayed
+ *
+ * started (or dequeued)
+ * finished (failed or completed)
+ *
+ * per tool vs per run
+ *
+ * status: {
+ *   queued: [], // or linked list
+ *   delayed: [], // or linked list
+ * }
+ */
+
 type ToolRuntime = {
   inFlight: Record<
     JobId,
@@ -76,8 +96,34 @@ type ToolRuntime = {
   activeJobCount: number;
   queue: {
     ready: JobId[]; // in queue ready to be picked up
-    delayed: Array<{ jobId: JobId }>;
+    delayed: Array<{ jobId: JobId; runId: RunId }>;
   };
+};
+
+type JobEntry = {
+  jobId: JobId;
+  toolId: ToolId;
+  runId: RunId;
+  capId: CapId;
+  nextJobId: JobId | undefined;
+};
+
+type ToolRuntimeTwo = {
+  toBeQueued: JobId | undefined;
+  toBeDelayed: JobId | undefined;
+  activeJobCount: number;
+  delayed: Array<{ jobId: JobId; runId: RunId }>;
+  queued: Array<{ jobId: JobId; runId: RunId }>;
+  pendingQueued: Array<{ jobId: JobId; runId: RunId }>;
+  pendingDelayed: Array<{ jobId: JobId; runId: RunId }>;
+};
+type RunRuntimeTwo = {
+  jobToolMap: Record<JobId, ToolId>;
+  activeJobsPerToolCount: Record<ToolId, number>;
+  delayed: Array<{ jobId: JobId; toolId: ToolId }>;
+  queued: Array<{ jobId: JobId; toolId: ToolId }>;
+  pendingQueued: Array<{ jobId: JobId; toolId: ToolId }>;
+  pendingDelayed: Array<{ jobId: JobId; toolId: ToolId }>;
 };
 type RunRuntime = {
   jobTool: Record<JobId, ToolId>;

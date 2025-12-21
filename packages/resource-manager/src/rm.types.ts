@@ -1,7 +1,9 @@
-import type { JobCompletedParsed, JobFailedParsed } from "@lcase/ports";
+import type { JobFailedParsed } from "@lcase/ports";
 import type {
   CloudScope,
+  JobCompletedEvent,
   JobDelayedEvent,
+  JobFailedEvent,
   JobSubmittedEvent,
   WorkerEvent,
   WorkerProfileAddedData,
@@ -14,10 +16,9 @@ export type JobSubmittedMsg = {
   event: JobSubmittedEvent;
 };
 
-export type JobCompletedMsg = {
-  type: "JobCompleted";
-  runId: string;
-  parsed: JobCompletedParsed;
+export type JobFinishedMsg = {
+  type: "JobFinished";
+  event: JobCompletedEvent | JobFailedEvent;
 };
 
 export type JobFailedMsg = {
@@ -33,7 +34,7 @@ export type WorkerProfileSubmittedMsg = {
 
 export type RmMessage =
   | JobSubmittedMsg
-  | JobCompletedMsg
+  | JobFinishedMsg
   | JobFailedMsg
   | WorkerProfileSubmittedMsg;
 

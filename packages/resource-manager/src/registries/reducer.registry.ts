@@ -1,3 +1,4 @@
+import { jobFinishedReducer } from "../reducers/job-finished.reducer.js";
 import { jobSubmittedReducer } from "../reducers/job-submitted.reducer.js";
 import { workerProfileSubmittedReducer } from "../reducers/worker-profile-submitted.reducer.js";
 import type { RmReducerRegistry } from "../rm.types.js";
@@ -11,4 +12,5 @@ import type { RmReducerRegistry } from "../rm.types.js";
 export const reducers: RmReducerRegistry = {
   JobSubmitted: jobSubmittedReducer,
   WorkerProfileSubmitted: workerProfileSubmittedReducer,
+  JobFinished: jobFinishedReducer,
 };

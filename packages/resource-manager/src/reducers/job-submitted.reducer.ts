@@ -25,7 +25,7 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       inFlight: {},
       queue: {
         ready: [],
-        delayed: [{ jobId }],
+        delayed: [{ jobId, runId }],
       },
     });
 
@@ -33,6 +33,7 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
     if (!draft.registry.tools[toolId].hasOnlineWorker) {
       tool.queue.delayed.push({
         jobId,
+        runId,
       });
       run.delayedJobs[jobId] = {
         reason: "Delayed due to no online workers.",
@@ -53,7 +54,7 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       tool.queue.ready.push(event.jobid);
       run.activeToolCount[toolId] = (run.activeToolCount[toolId] ?? 0) + 1;
     } else {
-      tool.queue.delayed.push({ jobId });
+      tool.queue.delayed.push({ jobId, runId });
       run.delayedJobs[jobId] = {
         reason: "Delayed due to concurrency limit.",
         since: event.time,
