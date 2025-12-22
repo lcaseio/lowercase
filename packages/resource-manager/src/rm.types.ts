@@ -4,6 +4,7 @@ import type {
   JobCompletedEvent,
   JobDelayedEvent,
   JobFailedEvent,
+  JobQueuedEvent,
   JobSubmittedEvent,
   WorkerEvent,
   WorkerProfileAddedData,
@@ -21,6 +22,16 @@ export type JobFinishedMsg = {
   event: JobCompletedEvent | JobFailedEvent;
 };
 
+export type JobQueuedMsg = {
+  type: "JobQueued";
+  event: JobQueuedEvent;
+};
+
+export type JobDelayedMsg = {
+  type: "JobDelayed";
+  event: JobDelayedEvent;
+};
+
 export type JobFailedMsg = {
   type: "JobFailed";
   runId: string;
@@ -34,6 +45,8 @@ export type WorkerProfileSubmittedMsg = {
 
 export type RmMessage =
   | JobSubmittedMsg
+  | JobQueuedMsg
+  | JobDelayedMsg
   | JobFinishedMsg
   | JobFailedMsg
   | WorkerProfileSubmittedMsg;
@@ -46,6 +59,11 @@ export type QueueJobFx = {
 export type DelayJobFx = {
   type: "DelayJob";
   event: JobSubmittedEvent;
+};
+
+export type QueueDelayedJobFx = {
+  type: "QueueDelayedJob";
+  toolId: string;
 };
 export type EmitWorkerProfileAddedFx = {
   type: "EmitWorkerProfileAdded";
