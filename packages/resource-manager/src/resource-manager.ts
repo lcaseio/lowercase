@@ -113,26 +113,28 @@ type JobEntry = {
   capId: CapId;
 };
 
+// tool is global across all runs per tool
 export type ToolRuntime = {
-  toBeQueued: JobId | null;
-  toBeDelayed: JobId | null;
   activeJobCount: number;
-  queuedArray: JobId[];
-  delayedArray: JobId[];
+
   queued: Record<JobId, JobEntry>;
   delayed: Record<JobId, JobEntry>;
   pendingQueued: Record<JobId, JobEntry>;
+  pendingQueuedCount: number;
   pendingDelayed: Record<JobId, JobEntry>;
+  pendingDelayedCount: number;
 };
+
+// state per run for replay
 export type RunRuntime = {
   jobToolMap: Record<JobId, ToolId>;
   activeJobsPerToolCount: Record<ToolId, number>;
   queued: Record<JobId, JobEntry>;
   delayed: Record<JobId, JobEntry>;
-  queuedArray: JobId[];
-  delayedArray: JobId[];
   pendingQueued: Record<JobId, JobEntry>;
+  pendingQueuedCount: number;
   pendingDelayed: Record<JobId, JobEntry>;
+  pendingDelayedCount: number;
 };
 
 export type RmState = {

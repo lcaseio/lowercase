@@ -15,24 +15,22 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
     const run = (draft.runtime.perRun[runId] ??= {
       activeJobsPerToolCount: {},
       delayed: {},
-      delayedArray: [],
       jobToolMap: { [jobId]: toolId },
       pendingDelayed: {},
+      pendingDelayedCount: 0,
       pendingQueued: {},
+      pendingQueuedCount: 0,
       queued: {},
-      queuedArray: [],
     });
 
     const tool = (draft.runtime.perTool[toolId] ??= {
       activeJobCount: 0,
       delayed: {},
-      delayedArray: [],
       pendingDelayed: {},
+      pendingDelayedCount: 0,
       pendingQueued: {},
+      pendingQueuedCount: 0,
       queued: {},
-      queuedArray: [],
-      toBeDelayed: null,
-      toBeQueued: null,
     });
 
     const jobEntry = { capId: event.capid, jobId, runId, toolId };
@@ -40,12 +38,13 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
     // delay if worker exists for tool
     if (!draft.registry.tools[toolId].hasOnlineWorker) {
       tool.activeJobCount++;
-      tool.toBeDelayed = jobId;
-      tool.toBeQueued = null;
 
       tool.pendingDelayed[jobId] = jobEntry;
+      tool.pendingDelayedCount++;
 
       run.pendingDelayed[jobId] = jobEntry;
+      run.pendingDelayedCount++;
+
       run.jobToolMap[jobId] = toolId;
       run.activeJobsPerToolCount[toolId] =
         (run.activeJobsPerToolCount[toolId] ?? 0) + 1;
@@ -55,21 +54,21 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       tool.activeJobCount < draft.registry.tools[toolId].maxConcurrency
     ) {
       tool.activeJobCount++;
-      tool.toBeQueued = jobId;
-      tool.toBeDelayed = null;
       tool.pendingQueued[jobId] = jobEntry;
+      tool.pendingQueuedCount++;
 
       run.jobToolMap[jobId] = toolId;
       run.pendingQueued[jobId] = jobEntry;
+      run.pendingQueuedCount++;
       run.activeJobsPerToolCount[toolId] =
         (run.activeJobsPerToolCount[toolId] ?? 0) + 1;
     } else {
-      tool.toBeDelayed = jobId;
-      tool.toBeQueued = null;
       tool.pendingDelayed[jobId] = jobEntry;
+      tool.pendingDelayedCount++;
 
       run.jobToolMap[jobId] = toolId;
       run.pendingDelayed[jobId] = jobEntry;
+      run.pendingDelayedCount++;
     }
   });
 }

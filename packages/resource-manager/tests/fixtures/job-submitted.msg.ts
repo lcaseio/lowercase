@@ -70,13 +70,11 @@ export const jobSubmittedStartState = {
       [toolId]: {
         activeJobCount: 0,
         delayed: {},
-        delayedArray: [],
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {},
+        pendingQueuedCount: 0,
         queued: {},
-        queuedArray: [],
-        toBeDelayed: null,
-        toBeQueued: null,
       },
     },
     perRun: {},
@@ -116,9 +114,10 @@ export const startStateFilledConcurrency: RmState = {
       [toolId]: {
         activeJobCount: 2,
         delayed: {},
-        delayedArray: [],
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {},
+        pendingQueuedCount: 0,
         queued: {
           job1: {
             jobId: "",
@@ -133,18 +132,16 @@ export const startStateFilledConcurrency: RmState = {
             capId: "httpjson",
           },
         },
-        queuedArray: ["job1", "job2"],
-        toBeDelayed: null,
-        toBeQueued: null,
       },
     },
     perRun: {
       "test-runid": {
         activeJobsPerToolCount: { httpjson: 2 },
         delayed: {},
-        delayedArray: [],
         jobToolMap: {},
         pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueuedCount: 0,
         pendingQueued: {},
         queued: {
           job1: {
@@ -160,7 +157,6 @@ export const startStateFilledConcurrency: RmState = {
             capId: "httpjson",
           },
         },
-        queuedArray: ["job1", "job2"],
       },
     },
   },

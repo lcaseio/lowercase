@@ -66,11 +66,12 @@ describe("workerProfileSubmittedPlanner", () => {
         perTool: {
           [toolId]: {
             activeJobCount: 0,
-            inFlight: {},
-            queue: {
-              ready: [],
-              delayed: [],
-            },
+            delayed: {},
+            pendingDelayed: {},
+            pendingDelayedCount: 0,
+            pendingQueued: {},
+            pendingQueuedCount: 1,
+            queued: {},
           },
         },
         perRun: {},

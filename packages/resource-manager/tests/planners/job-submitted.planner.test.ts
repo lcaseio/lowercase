@@ -18,9 +18,9 @@ describe("jobSubmittedPlanner", () => {
       [runId]: {
         activeJobsPerToolCount: { httpjson: 1 },
         delayed: {},
-        delayedArray: [],
         jobToolMap: { [jobId]: toolId },
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {
           [jobId]: {
             capId: jobSubmittedHttpJsonMsg.event.capid,
@@ -29,16 +29,16 @@ describe("jobSubmittedPlanner", () => {
             toolId,
           },
         },
+        pendingQueuedCount: 1,
         queued: {},
-        queuedArray: [],
       },
     };
     expectedState.runtime.perTool = {
       [toolId]: {
         activeJobCount: 1,
         delayed: {},
-        delayedArray: [],
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {
           [jobId]: {
             capId: jobSubmittedHttpJsonMsg.event.capid,
@@ -47,10 +47,8 @@ describe("jobSubmittedPlanner", () => {
             toolId,
           },
         },
+        pendingQueuedCount: 1,
         queued: {},
-        queuedArray: [],
-        toBeDelayed: null,
-        toBeQueued: jobId,
       },
     };
 

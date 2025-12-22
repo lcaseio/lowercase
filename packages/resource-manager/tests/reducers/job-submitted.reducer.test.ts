@@ -25,9 +25,9 @@ describe("jobSubmittedReducer", () => {
       [runId]: {
         activeJobsPerToolCount: { httpjson: 1 },
         delayed: {},
-        delayedArray: [],
         jobToolMap: { [jobId]: toolId },
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {
           [jobId]: {
             capId: jobSubmittedHttpJsonMsg.event.capid,
@@ -36,16 +36,16 @@ describe("jobSubmittedReducer", () => {
             toolId,
           },
         },
+        pendingQueuedCount: 1,
         queued: {},
-        queuedArray: [],
       },
     };
     expectedState.runtime.perTool = {
       [toolId]: {
         activeJobCount: 1,
         delayed: {},
-        delayedArray: [],
         pendingDelayed: {},
+        pendingDelayedCount: 0,
         pendingQueued: {
           [jobId]: {
             capId: jobSubmittedHttpJsonMsg.event.capid,
@@ -54,10 +54,8 @@ describe("jobSubmittedReducer", () => {
             toolId,
           },
         },
+        pendingQueuedCount: 1,
         queued: {},
-        queuedArray: [],
-        toBeDelayed: null,
-        toBeQueued: jobId,
       },
     };
     expect(result).toEqual(expectedState);
@@ -80,7 +78,6 @@ describe("jobSubmittedReducer", () => {
       [runId]: {
         activeJobsPerToolCount: { httpjson: 2 },
         delayed: {},
-        delayedArray: [],
         jobToolMap: { [jobId]: toolId },
         pendingDelayed: {
           [jobId]: {
@@ -90,7 +87,9 @@ describe("jobSubmittedReducer", () => {
             toolId,
           },
         },
+        pendingDelayedCount: 1,
         pendingQueued: {},
+        pendingQueuedCount: 0,
         queued: {
           job1: {
             jobId: "",
@@ -105,14 +104,12 @@ describe("jobSubmittedReducer", () => {
             capId: "httpjson",
           },
         },
-        queuedArray: ["job1", "job2"],
       },
     };
     expectedState.runtime.perTool = {
       [toolId]: {
         activeJobCount: 2,
         delayed: {},
-        delayedArray: [],
         pendingDelayed: {
           [jobId]: {
             capId: jobSubmittedHttpJsonMsg.event.capid,
@@ -121,7 +118,9 @@ describe("jobSubmittedReducer", () => {
             toolId,
           },
         },
+        pendingDelayedCount: 1,
         pendingQueued: {},
+        pendingQueuedCount: 0,
         queued: {
           job1: {
             jobId: "",
@@ -136,9 +135,6 @@ describe("jobSubmittedReducer", () => {
             capId: "httpjson",
           },
         },
-        queuedArray: ["job1", "job2"],
-        toBeDelayed: jobId,
-        toBeQueued: null,
       },
     };
     expect(result).toEqual(expectedState);

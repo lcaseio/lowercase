@@ -20,38 +20,47 @@ export const jobFinishedReducer: RmReducer<JobFinishedMsg> = (
     const tool = draft.runtime.perTool[toolId];
     const run = draft.runtime.perRun[runId];
 
+    // these things must exist in order for the system to work.
+    // in the future, emit an error as a side effect somehow, with an
+    // explanation of why this job event was not able to be processed
     if (!tool) return;
-    if (tool.activeJobCount === 0 || !tool.inFlight[jobId]) return;
+    if (tool.activeJobCount === 0 || tool.queuedArray.length === 0) return;
     if (!run) return;
-    if (run.activeToolCount[toolId] === 0 || run.jobTool[jobId] !== toolId) {
+    if (
+      run.activeJobsPerToolCount[toolId] === 0 ||
+      run.jobToolMap[jobId] !== toolId
+    ) {
       return;
     }
-    delete tool.inFlight[jobId];
+    delete tool.queued[jobId]; // could move to a completed or failed queue but not necessary
     tool.activeJobCount--;
 
-    delete run.jobTool[jobId];
-    run.activeToolCount[toolId]--;
+    delete run.jobToolMap[jobId];
+    run.activeJobsPerToolCount[toolId]--;
+    delete run.queued[jobId];
 
     // queue a delayed job if a worker is online
     if (!draft.registry.tools[toolId].hasOnlineWorker) return;
-    if (tool.queue.delayed.length === 0) return;
+    if (tool.delayedArray.length !== 0) return;
 
-    const delayedJob = tool.queue.delayed.shift();
+    const delayedJobId = tool.delayedArray[0];
+    if (!delayedJobId) return;
+
+    const delayedRun = draft.runtime.perRun[delayedJobId];
+    const delayedJob = delayedRun.delayed[jobId];
+    // if job is not delayed yet, it is still pending
+    // recheck on resolving that pending if concurrency is available.
     if (!delayedJob) return;
 
-    const delayedRun = draft.runtime.perRun[delayedJob.runId];
-    delete delayedRun.delayedJobs[delayedJob.jobId];
-
-    delayedRun.jobTool[delayedJob.jobId] = toolId;
-    delayedRun.activeToolCount[toolId] =
-      (delayedRun.activeToolCount[toolId] ?? 0) + 1;
-
-    tool.queue.ready.push(delayedJob.jobId);
-    tool.inFlight[delayedJob.jobId] = {
-      runId: delayedJob.runId,
-      startedAt: "",
-    };
-
+    // otherwise go ahead and try to queue the delayed job
     tool.activeJobCount++;
+    tool.toBeQueued = delayedJobId;
+    tool.toBeDelayed = null;
+    tool.pendingQueued[jobId] = delayedJob;
+
+    delayedRun.pendingQueued[delayedJobId] = delayedJob;
+    delayedRun.activeJobsPerToolCount[toolId] =
+      (delayedRun.activeJobsPerToolCount[toolId] ?? 0) + 1;
+    delayedRun.jobToolMap[delayedJobId] = toolId;
   });
 };
