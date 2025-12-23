@@ -72,6 +72,7 @@ describe("workerProfileSubmittedPlanner", () => {
             pendingQueued: {},
             pendingQueuedCount: 1,
             queued: {},
+            running: {},
           },
         },
         perRun: {},

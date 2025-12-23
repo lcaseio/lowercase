@@ -3,6 +3,7 @@ import {
   DomainEntityActionDescriptor,
 } from "../shared/otel-attributes.js";
 import {
+  WorkerJobDequeuedData,
   WorkerProfileAddedData,
   WorkerProfileSubmittedData as WorkerProfileSubmittedData,
   WorkerStartedData,
@@ -31,6 +32,12 @@ export type WorkerEventMap = {
     "profile",
     "added",
     WorkerProfileAddedData
+  >;
+  "worker.job.dequeued": DomainEntityActionDescriptor<
+    "worker",
+    "job",
+    "dequeued",
+    WorkerJobDequeuedData
   >;
 };
 

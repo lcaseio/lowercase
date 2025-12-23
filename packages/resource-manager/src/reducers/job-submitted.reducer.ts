@@ -21,6 +21,7 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       pendingQueued: {},
       pendingQueuedCount: 0,
       queued: {},
+      running: {},
     });
 
     const tool = (draft.runtime.perTool[toolId] ??= {
@@ -31,6 +32,7 @@ export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {
       pendingQueued: {},
       pendingQueuedCount: 0,
       queued: {},
+      running: {},
     });
 
     const jobEntry = { capId: event.capid, jobId, runId, toolId };

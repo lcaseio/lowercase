@@ -53,12 +53,14 @@ import {
   ToolStartedDataSchema,
 } from "../schemas/tool.data.schema.js";
 import {
+  WorkerJobDequeuedDataSchema,
   WorkerProfileAddedDataSchema,
   WorkerProfileSubmittedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
 } from "../schemas/worker.data.schema.js";
 import {
+  WorkerJobDequeuedSchema,
   WorkerProfileAddedSchema,
   WorkerProfileSubmittedSchema,
   WorkerStartedSchema,
@@ -228,6 +230,12 @@ export const eventRegistry = {
     schema: {
       event: WorkerProfileSubmittedSchema,
       data: WorkerProfileSubmittedDataSchema,
+    },
+  },
+  "worker.job.dequeued": {
+    schema: {
+      event: WorkerJobDequeuedSchema,
+      data: WorkerJobDequeuedDataSchema,
     },
   },
   "system.logged": {

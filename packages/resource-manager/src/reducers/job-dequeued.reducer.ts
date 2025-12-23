@@ -1,0 +1,33 @@
+import { produce } from "immer";
+import { RmState } from "../resource-manager.js";
+import { JobDequeuedMsg, RmReducer } from "../rm.types.js";
+
+export const jobDequeuedReducer: RmReducer<JobDequeuedMsg> = (
+  state: RmState,
+  message: JobDequeuedMsg
+): RmState => {
+  return produce(state, (draft) => {
+    const { jobId, toolId, runId } = message.event.data;
+    const tool = draft.runtime.perTool[toolId];
+    const run = draft.runtime.perRun[runId];
+
+    if (!tool) return;
+    if (!run) return;
+
+    // check and see if theres a job in queued, then delete it
+    if (tool.queued[jobId] !== undefined) {
+      const jobEntry = tool.queued[jobId];
+      delete tool.queued[jobId];
+      tool.running[jobId] = jobEntry;
+    }
+    if (run.queued[jobId] !== undefined) {
+      const jobEntry = run.queued[runId];
+      delete run.queued[jobId];
+      run.running[jobId] = jobEntry;
+    }
+
+    // later check and see if its also in pending,
+    // somehow mark start as already consumed, and check that when
+    // queued event comes back
+  });
+};

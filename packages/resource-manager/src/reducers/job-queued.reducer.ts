@@ -16,8 +16,11 @@ export const jobQueuedReducer: RmReducer<JobQueuedMsg> = (
 
     // update state of a runtime from pending to queued
 
-    if (!run || run.pendingQueued[jobId] === undefined) return;
-    if (!tool || tool.pendingQueued[jobId] === undefined) return;
+    if (!run) return;
+    if (!tool) return;
+
+    if (run.pendingQueued[jobId] === undefined) return;
+    if (tool.pendingQueued[jobId] === undefined) return;
 
     const pendingRunJobEntry = run.pendingQueued[jobId];
     delete run.pendingQueued[jobId];

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { RmState } from "../../src/resource-manager";
-import { JobDelayedMsg, JobQueuedMsg } from "../../src/rm.types";
+import { JobDelayedMsg } from "../../src/rm.types";
 import { jobDelayedReducer } from "../../src/reducers/job-delayed.reducer.js";
 
 describe("jobQueuedReducer", () => {
-  it("moves from pendingQueued to queued", () => {
+  it("moves from pendingDelayed to delayed", () => {
     const jobId = "test-jobid";
     const toolId = "test-toolid";
     const runId = "test-runid";
@@ -37,6 +37,7 @@ describe("jobQueuedReducer", () => {
             pendingQueued: {},
             pendingQueuedCount: 0,
             queued: {},
+            running: {},
           },
         },
         perRun: {
@@ -56,6 +57,7 @@ describe("jobQueuedReducer", () => {
             pendingQueued: {},
             pendingQueuedCount: 0,
             queued: {},
+            running: {},
           },
         },
       },
@@ -108,6 +110,7 @@ describe("jobQueuedReducer", () => {
       pendingQueued: {},
       pendingQueuedCount: 0,
       queued: {},
+      running: {},
     };
     expectedState.runtime.perTool[toolId] = {
       activeJobCount: 1,
@@ -124,6 +127,7 @@ describe("jobQueuedReducer", () => {
       pendingQueued: {},
       pendingQueuedCount: 0,
       queued: {},
+      running: {},
     };
 
     const newState = jobDelayedReducer(startState, jobDelayedMsg);

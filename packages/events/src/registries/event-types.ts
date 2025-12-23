@@ -35,6 +35,7 @@ export const eventTypes = [
   "worker.stopped",
   "worker.profile.added",
   "worker.profile.submitted",
+  "worker.job.dequeued",
   "system.logged",
 ] as const satisfies readonly EventType[];
 
@@ -71,6 +72,9 @@ export const actionTypes = [
   "failed",
   "logged",
   "submitted",
+  "dequeued",
+  "resumed",
+  "delayed",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [
@@ -87,4 +91,5 @@ export const domainTypes = [
 export const entityTypes = [
   "mcp",
   "httpjson",
+  "job",
 ] as const satisfies readonly EventEntities[];

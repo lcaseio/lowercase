@@ -6,6 +6,7 @@ import {
   WorkerStoppedDataSchema,
   WorkerProfileAddedDataSchema,
   WorkerProfileSubmittedDataSchema,
+  WorkerJobDequeuedDataSchema,
 } from "./worker.data.schema.js";
 
 export const WorkerContextSchema = z
@@ -66,3 +67,14 @@ export const WorkerProfileSubmittedSchema = CloudEventContextSchema.merge(
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.profile.submitted">>;
+
+export const WorkerJobDequeuedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...WorkerContextSchema.shape,
+    type: z.literal("worker.job.dequeued"),
+    entity: z.literal("job"),
+    action: z.literal("dequeued"),
+    data: WorkerJobDequeuedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"worker.job.dequeued">>;

@@ -18,3 +18,15 @@ export type WorkerStartedData = WorkerDescriptorData & {
 export type WorkerStoppedData = WorkerDescriptorData & {
   status: "stopped";
 };
+
+export type WorkerJobDequeuedData = {
+  eventId: string;
+  eventType: string;
+  spanId: string;
+  flowId: string;
+  runId: string;
+  stepId: string;
+  jobId: string;
+  capId: string;
+  toolId: string;
+};

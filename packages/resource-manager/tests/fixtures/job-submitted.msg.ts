@@ -75,6 +75,7 @@ export const jobSubmittedStartState = {
         pendingQueued: {},
         pendingQueuedCount: 0,
         queued: {},
+        running: {},
       },
     },
     perRun: {},
@@ -132,6 +133,7 @@ export const startStateFilledConcurrency: RmState = {
             capId: "httpjson",
           },
         },
+        running: {},
       },
     },
     perRun: {
@@ -157,6 +159,7 @@ export const startStateFilledConcurrency: RmState = {
             capId: "httpjson",
           },
         },
+        running: {},
       },
     },
   },

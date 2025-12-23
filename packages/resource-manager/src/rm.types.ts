@@ -5,6 +5,7 @@ import type {
   JobDelayedEvent,
   JobFailedEvent,
   JobQueuedEvent,
+  JobResumedEvent,
   JobSubmittedEvent,
   WorkerEvent,
   WorkerProfileAddedData,
@@ -17,11 +18,6 @@ export type JobSubmittedMsg = {
   event: JobSubmittedEvent;
 };
 
-export type JobFinishedMsg = {
-  type: "JobFinished";
-  event: JobCompletedEvent | JobFailedEvent;
-};
-
 export type JobQueuedMsg = {
   type: "JobQueued";
   event: JobQueuedEvent;
@@ -32,10 +28,19 @@ export type JobDelayedMsg = {
   event: JobDelayedEvent;
 };
 
-export type JobFailedMsg = {
-  type: "JobFailed";
-  runId: string;
-  parsed: JobFailedParsed;
+export type JobDequeuedMsg = {
+  type: "JobDequeued";
+  event: WorkerEvent<"worker.job.dequeued">;
+};
+
+export type JobResumedMsg = {
+  type: "JobResumed";
+  event: JobResumedEvent;
+};
+
+export type JobFinishedMsg = {
+  type: "JobFinished";
+  event: JobCompletedEvent | JobFailedEvent;
 };
 
 export type WorkerProfileSubmittedMsg = {
@@ -47,24 +52,26 @@ export type RmMessage =
   | JobSubmittedMsg
   | JobQueuedMsg
   | JobDelayedMsg
+  | JobResumedMsg
+  | JobDequeuedMsg
   | JobFinishedMsg
-  | JobFailedMsg
   | WorkerProfileSubmittedMsg;
 
 export type QueueJobFx = {
   type: "QueueJob";
   toolId: string;
-  event: JobSubmittedEvent | JobDelayedEvent;
+  event: JobSubmittedEvent | JobResumedEvent;
 };
 export type DelayJobFx = {
   type: "DelayJob";
   event: JobSubmittedEvent;
 };
 
-export type QueueDelayedJobFx = {
-  type: "QueueDelayedJob";
-  toolId: string;
+export type ResumeJobFx = {
+  type: "ResumeJob";
+  event: JobCompletedEvent | JobFailedEvent;
 };
+
 export type EmitWorkerProfileAddedFx = {
   type: "EmitWorkerProfileAdded";
   data: WorkerProfileAddedData;
@@ -72,7 +79,11 @@ export type EmitWorkerProfileAddedFx = {
   traceId: string;
 };
 
-export type RmEffect = QueueJobFx | DelayJobFx | EmitWorkerProfileAddedFx;
+export type RmEffect =
+  | QueueJobFx
+  | DelayJobFx
+  | ResumeJobFx
+  | EmitWorkerProfileAddedFx;
 
 export type RmReducer<M extends RmMessage = RmMessage> = (
   state: RmState,

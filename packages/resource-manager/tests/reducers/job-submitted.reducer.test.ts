@@ -38,6 +38,7 @@ describe("jobSubmittedReducer", () => {
         },
         pendingQueuedCount: 1,
         queued: {},
+        running: {},
       },
     };
     expectedState.runtime.perTool = {
@@ -56,6 +57,7 @@ describe("jobSubmittedReducer", () => {
         },
         pendingQueuedCount: 1,
         queued: {},
+        running: {},
       },
     };
     expect(result).toEqual(expectedState);
@@ -104,6 +106,7 @@ describe("jobSubmittedReducer", () => {
             capId: "httpjson",
           },
         },
+        running: {},
       },
     };
     expectedState.runtime.perTool = {
@@ -135,6 +138,7 @@ describe("jobSubmittedReducer", () => {
             capId: "httpjson",
           },
         },
+        running: {},
       },
     };
     expect(result).toEqual(expectedState);

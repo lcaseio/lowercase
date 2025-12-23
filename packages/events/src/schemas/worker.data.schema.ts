@@ -5,6 +5,7 @@ import type {
   WorkerStoppedData,
   WorkerProfileSubmittedData,
   WorkerProfileAddedData,
+  WorkerJobDequeuedData,
 } from "@lcase/types";
 
 const WorkerDescriptorDataSchema = z
@@ -42,3 +43,17 @@ export const WorkerProfileAddedDataSchema = z
     ok: z.literal(true),
   })
   .strict() satisfies z.ZodType<WorkerProfileAddedData>;
+
+export const WorkerJobDequeuedDataSchema = z
+  .object({
+    eventId: z.string(),
+    eventType: z.string(),
+    spanId: z.string(),
+    flowId: z.string(),
+    runId: z.string(),
+    stepId: z.string(),
+    jobId: z.string(),
+    capId: z.string(),
+    toolId: z.string(),
+  })
+  .strict() satisfies z.ZodType<WorkerJobDequeuedData>;

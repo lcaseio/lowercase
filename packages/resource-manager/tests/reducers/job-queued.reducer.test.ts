@@ -37,6 +37,7 @@ describe("jobQueuedReducer", () => {
             },
             pendingQueuedCount: 1,
             queued: {},
+            running: {},
           },
         },
         perRun: {
@@ -56,6 +57,7 @@ describe("jobQueuedReducer", () => {
             },
             pendingQueuedCount: 1,
             queued: {},
+            running: {},
           },
         },
       },
@@ -108,6 +110,7 @@ describe("jobQueuedReducer", () => {
           runId,
         },
       },
+      running: {},
     };
     expectedState.runtime.perTool[toolId] = {
       activeJobCount: 1,
@@ -124,6 +127,7 @@ describe("jobQueuedReducer", () => {
           runId,
         },
       },
+      running: {},
     };
 
     const newState = jobQueuedReducer(startState, jobQueuedMsg);

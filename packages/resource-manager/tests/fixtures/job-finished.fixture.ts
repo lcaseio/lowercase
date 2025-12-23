@@ -71,24 +71,53 @@ const startState: RmState = {
   runtime: {
     perTool: {
       [toolId]: {
-        activeJobCount: 1,
-        inFlight: {
+        activeJobCount: 2,
+        delayed: {},
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueued: {},
+        pendingQueuedCount: 0,
+        queued: {},
+        running: {
           [jobId]: {
-            runId,
-            startedAt: "test-startedAt",
+            jobId: jobId,
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
           },
-        },
-        queue: {
-          ready: [],
-          delayed: [],
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
         },
       },
     },
     perRun: {
-      [runId]: {
-        jobTool: { [jobId]: toolId },
-        activeToolCount: { [toolId]: 1 },
-        delayedJobs: {},
+      "test-runid": {
+        activeJobsPerToolCount: { [toolId]: 2 },
+        delayed: {},
+        jobToolMap: { [jobId]: toolId },
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueuedCount: 0,
+        pendingQueued: {},
+        queued: {},
+        running: {
+          [jobId]: {
+            jobId: jobId,
+            toolId: toolId,
+            runId: "",
+            capId: "httpjson",
+          },
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+        },
       },
     },
   },
@@ -100,19 +129,41 @@ const newState = {
   runtime: {
     perTool: {
       [toolId]: {
-        activeJobCount: 0,
-        inFlight: {},
-        queue: {
-          ready: [],
-          delayed: [],
+        activeJobCount: 1,
+        delayed: {},
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueued: {},
+        pendingQueuedCount: 0,
+        queued: {},
+        running: {
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
         },
       },
     },
     perRun: {
-      [runId]: {
-        jobTool: {},
-        activeToolCount: { [toolId]: 0 },
-        delayedJobs: {},
+      "test-runid": {
+        activeJobsPerToolCount: { [toolId]: 1 },
+        delayed: {},
+        jobToolMap: {},
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueuedCount: 0,
+        pendingQueued: {},
+        queued: {},
+        running: {
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+        },
       },
     },
   },
@@ -124,28 +175,58 @@ const startStateDelayed: RmState = {
   runtime: {
     perTool: {
       [toolId]: {
-        activeJobCount: 1,
-        inFlight: {
-          [jobId]: {
-            runId,
-            startedAt: "test-startedAt",
+        activeJobCount: 2,
+        delayed: {
+          delayedId: {
+            jobId: "delayed-jobid",
+            capId: "httpjson",
+            runId: "delayed-runid",
+            toolId: "delayed-toolid",
           },
         },
-        queue: {
-          ready: [],
-          delayed: [{ jobId: delayedJobId, runId }],
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueued: {},
+        pendingQueuedCount: 0,
+        queued: {},
+        running: {
+          [jobId]: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
         },
       },
     },
     perRun: {
       [runId]: {
-        jobTool: { [jobId]: toolId },
-        activeToolCount: { [toolId]: 1 },
-        delayedJobs: {
-          [delayedJobId]: {
-            toolId,
-            reason: "test-reason",
-            since: "test-since",
+        activeJobsPerToolCount: { [toolId]: 2 },
+        delayed: {},
+        jobToolMap: { [jobId]: toolId },
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueuedCount: 0,
+        pendingQueued: {},
+        queued: {},
+        running: {
+          [jobId]: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
           },
         },
       },
@@ -159,19 +240,48 @@ const newStateDelayed: RmState = {
   runtime: {
     perTool: {
       [toolId]: {
-        activeJobCount: 1,
-        inFlight: { [delayedJobId]: { runId, startedAt: "" } },
-        queue: {
-          ready: [delayedJobId],
-          delayed: [],
+        activeJobCount: 2,
+        delayed: {
+          delayedId: {
+            jobId: "delayed-jobid",
+            capId: "httpjson",
+            runId: "delayed-runid",
+            toolId: "delayed-toolid",
+          },
+        },
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueued: {},
+        pendingQueuedCount: 0,
+        queued: {},
+        running: {
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
         },
       },
     },
     perRun: {
       [runId]: {
-        jobTool: { [delayedJobId]: toolId },
-        activeToolCount: { [toolId]: 1 },
-        delayedJobs: {},
+        activeJobsPerToolCount: { [toolId]: 1 },
+        delayed: {},
+        jobToolMap: {},
+        pendingDelayed: {},
+        pendingDelayedCount: 0,
+        pendingQueuedCount: 0,
+        pendingQueued: {},
+        queued: {},
+        running: {
+          job2: {
+            jobId: "",
+            toolId: "",
+            runId: "",
+            capId: "httpjson",
+          },
+        },
       },
     },
   },
@@ -184,7 +294,7 @@ export const jobFinishedFixture = {
   runId,
   workerId,
   delayedJobId,
-  state: {
+  startState: {
     noDelayed: startState,
     delayed: startStateDelayed,
   },

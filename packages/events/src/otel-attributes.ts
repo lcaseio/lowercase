@@ -198,6 +198,11 @@ export const workerOtelAttributesMap = {
     domain: "worker",
     entity: "profile",
   },
+  "worker.job.dequeued": {
+    action: "dequeued",
+    domain: "worker",
+    entity: "job",
+  },
 } satisfies WorkerOtelAttributesMap;
 
 export const systemOtelAttributesMap = {

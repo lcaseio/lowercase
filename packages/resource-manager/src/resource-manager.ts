@@ -68,26 +68,6 @@ type WorkerRegistryEntry = {
   status: "online" | "offline";
 };
 
-/**
- * need to do something that describes whats happening
- *
- * ready to be queued
- * ready to be delayed
- *
- * actually queued
- * actually delayed
- *
- * started (or dequeued)
- * finished (failed or completed)
- *
- * per tool vs per run
- *
- * status: {
- *   queued: [], // or linked list
- *   delayed: [], // or linked list
- * }
- */
-
 type ToolRuntimeOld = {
   inFlight: Record<
     JobId,
@@ -117,6 +97,7 @@ type JobEntry = {
 export type ToolRuntime = {
   activeJobCount: number;
 
+  running: Record<JobId, JobEntry>;
   queued: Record<JobId, JobEntry>;
   delayed: Record<JobId, JobEntry>;
   pendingQueued: Record<JobId, JobEntry>;
@@ -129,6 +110,7 @@ export type ToolRuntime = {
 export type RunRuntime = {
   jobToolMap: Record<JobId, ToolId>;
   activeJobsPerToolCount: Record<ToolId, number>;
+  running: Record<JobId, JobEntry>;
   queued: Record<JobId, JobEntry>;
   delayed: Record<JobId, JobEntry>;
   pendingQueued: Record<JobId, JobEntry>;

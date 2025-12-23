@@ -31,6 +31,7 @@ describe("jobSubmittedPlanner", () => {
         },
         pendingQueuedCount: 1,
         queued: {},
+        running: {},
       },
     };
     expectedState.runtime.perTool = {
@@ -49,6 +50,7 @@ describe("jobSubmittedPlanner", () => {
         },
         pendingQueuedCount: 1,
         queued: {},
+        running: {},
       },
     };
 
