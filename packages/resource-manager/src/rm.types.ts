@@ -1,4 +1,3 @@
-import type { JobFailedParsed } from "@lcase/ports";
 import type {
   CloudScope,
   JobCompletedEvent,

@@ -1,3 +1,5 @@
+import { jobFinishedPlanner } from "../planners/job-finished.planner.js";
+import { jobResumedPlanner } from "../planners/job-resumed.planner.js";
 import { jobSubmittedPlanner } from "../planners/job-submitted.planner.js";
 import { workerProfileSubmittedPlanner } from "../planners/worker-profie-submitted.planner.js";
 import { RmPlannerRegistry } from "../rm.types.js";
@@ -10,5 +12,7 @@ import { RmPlannerRegistry } from "../rm.types.js";
  */
 export const planners: RmPlannerRegistry = {
   JobSubmitted: jobSubmittedPlanner,
+  JobResumed: jobResumedPlanner,
+  JobFinished: jobFinishedPlanner,
   WorkerProfileSubmitted: workerProfileSubmittedPlanner,
 };

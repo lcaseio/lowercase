@@ -6,11 +6,13 @@ import type {
 import type {
   EmitWorkerProfileAddedFx,
   QueueJobFx,
+  ResumeJobFx,
   RmEffectHandlerRegistry,
 } from "../rm.types.js";
 import type { AnyEvent } from "@lcase/types";
 import { queueJobEffect } from "../effects/queue-job.effect.js";
 import { emitWorkerProfileAdded } from "../effects/emit-worker-profile-added.effect.js";
+import { resumeJobEffect } from "../effects/resume-job.effect.js";
 
 /**
  * Function used commonly in effects to surface errors in observability.
@@ -51,6 +53,7 @@ export function wireEffectHandlers(deps: RmEffectDeps) {
     QueueJob: async (effect: QueueJobFx) => queueJobEffect(effect, deps),
     EmitWorkerProfileAdded: async (effect: EmitWorkerProfileAddedFx) =>
       emitWorkerProfileAdded(effect, deps),
+    ResumeJob: async (effect: ResumeJobFx) => resumeJobEffect(effect, deps),
   } satisfies RmEffectHandlerRegistry;
   return handlers;
 }

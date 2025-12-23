@@ -1,4 +1,8 @@
+import { jobDelayedReducer } from "../reducers/job-delayed.reducer.js";
+import { jobDequeuedReducer } from "../reducers/job-dequeued.reducer.js";
 import { jobFinishedReducer } from "../reducers/job-finished.reducer.js";
+import { jobQueuedReducer } from "../reducers/job-queued.reducer.js";
+import { jobResumedReducer } from "../reducers/job-resumed.reducer.js";
 import { jobSubmittedReducer } from "../reducers/job-submitted.reducer.js";
 import { workerProfileSubmittedReducer } from "../reducers/worker-profile-submitted.reducer.js";
 import type { RmReducerRegistry } from "../rm.types.js";
@@ -11,6 +15,10 @@ import type { RmReducerRegistry } from "../rm.types.js";
  */
 export const reducers: RmReducerRegistry = {
   JobSubmitted: jobSubmittedReducer,
-  WorkerProfileSubmitted: workerProfileSubmittedReducer,
+  JobDelayed: jobDelayedReducer,
+  JobResumed: jobResumedReducer,
+  JobQueued: jobQueuedReducer,
+  JobDequeued: jobDequeuedReducer,
   JobFinished: jobFinishedReducer,
+  WorkerProfileSubmitted: workerProfileSubmittedReducer,
 };
