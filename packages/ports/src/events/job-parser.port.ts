@@ -5,11 +5,12 @@ import {
   JobCompletedType,
   JobDelayedEvent,
   JobDelayedType,
-  JobEvent,
   JobFailedEvent,
   JobFailedType,
   JobQueuedEvent,
   JobQueuedType,
+  JobResumedEvent,
+  JobResumedType,
   JobStartedEvent,
   JobStartedType,
   JobSubmittedEvent,
@@ -26,6 +27,11 @@ export type JobDelayedParsed = {
   type: JobDelayedType;
   capId: string;
   event: JobDelayedEvent;
+};
+export type JobResumedParsed = {
+  type: JobResumedType;
+  capId: string;
+  event: JobResumedEvent;
 };
 export type JobQueuedParsed = {
   type: JobQueuedType;
@@ -52,6 +58,7 @@ export interface JobParserPort {
   /* parse types and event envelops */
   parseJobSubmitted(event: AnyEvent): JobSubmittedEvent | undefined;
   parseJobDelayed(event: AnyEvent): JobDelayedParsed | undefined;
+  parseJobResumed(event: AnyEvent): JobResumedEvent | undefined;
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined;
   parseJobStarted(event: AnyEvent): JobStartedParsed | undefined;
   parseJobCompleted(event: AnyEvent): JobCompletedParsed | undefined;
@@ -60,6 +67,7 @@ export interface JobParserPort {
   /* parse just type strings */
   parseJobSubmittedType(type: string): JobSubmittedType | undefined;
   parseJobDelayedType(type: string): JobDelayedType | undefined;
+  parseJobResumedType(type: string): JobResumedType | undefined;
   parseJobQueuedType(type: string): JobQueuedType | undefined;
   parseJobStartedType(type: string): JobStartedType | undefined;
   parseJobCompletedType(type: string): JobCompletedType | undefined;

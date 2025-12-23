@@ -8,6 +8,8 @@ import {
   JobEventType,
   JobFailedType,
   JobQueuedType,
+  JobResumedEvent,
+  JobResumedType,
   JobStartedType,
   JobSubmittedEvent,
   JobSubmittedType,
@@ -17,6 +19,7 @@ import {
   jobDelayedTypeSchema,
   jobFailedTypeSchema,
   jobQueuedTypeSchema,
+  jobResumedTypeSchema,
   jobStartedTypeSchema,
   jobSubmittedTypeSchema,
 } from "../schemas/job/job.category.schema.js";
@@ -26,6 +29,7 @@ import {
   JobFailedParsed,
   JobParserPort,
   JobQueuedParsed,
+  JobResumedParsed,
   JobStartedParsed,
   JobSubmittedParsed,
 } from "@lcase/ports";
@@ -43,6 +47,11 @@ export class JobParser implements JobParserPort {
   }
   parseJobDelayedType(type: string): JobDelayedType | undefined {
     const result = jobDelayedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobResumedType(type: string): JobResumedType | undefined {
+    const result = jobResumedTypeSchema.safeParse(type);
     if (result.error) return;
     return result.data;
   }
@@ -91,6 +100,14 @@ export class JobParser implements JobParserPort {
       capId,
       event: parsedEvent,
     };
+  }
+  parseJobResumed(event: AnyEvent): JobResumedEvent | undefined {
+    const type = this.parseJobResumedType(event.type);
+    if (!type) {
+      return;
+    }
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
+    return parsedEvent;
   }
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined {
     const type = this.parseJobQueuedType(event.type);
