@@ -27,6 +27,12 @@ export const mcpRegistry = {
       data: JobMcpDataSchema,
     },
   },
+  "job.mcp.resumed": {
+    schema: {
+      event: JobMcpDelayedSchema,
+      data: JobMcpDataSchema,
+    },
+  },
   "job.mcp.queued": {
     schema: {
       event: JobMcpQueuedSchema,

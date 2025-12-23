@@ -21,6 +21,12 @@ export type JobHttpJsonEventMap = {
     "queued",
     JobHttpJsonResolvedData
   >;
+  "job.httpjson.resumed": DomainEntityActionDescriptor<
+    "job",
+    "httpjson",
+    "resumed",
+    JobHttpJsonResolvedData
+  >;
   "job.httpjson.started": DomainEntityActionDescriptor<
     "job",
     "httpjson",

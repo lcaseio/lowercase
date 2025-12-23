@@ -22,6 +22,12 @@ export type JobMcpEventMap = {
     "delayed",
     JobMcpResolvedData
   >;
+  "job.mcp.resumed": DomainEntityActionDescriptor<
+    "job",
+    "mcp",
+    "resumed",
+    JobMcpResolvedData
+  >;
   "job.mcp.started": DomainEntityActionDescriptor<
     "job",
     "mcp",

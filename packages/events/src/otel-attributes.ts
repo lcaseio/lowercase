@@ -97,9 +97,13 @@ export const jobOtelAttributesMap = {
     domain: "job",
     entity: "mcp",
   },
-
   "job.mcp.queued": {
     action: "queued",
+    domain: "job",
+    entity: "mcp",
+  },
+  "job.mcp.resumed": {
+    action: "resumed",
     domain: "job",
     entity: "mcp",
   },
@@ -125,6 +129,11 @@ export const jobOtelAttributesMap = {
   },
   "job.httpjson.delayed": {
     action: "delayed",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.resumed": {
+    action: "resumed",
     domain: "job",
     entity: "httpjson",
   },

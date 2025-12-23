@@ -13,6 +13,7 @@ import type {
   JobEventType,
   JobFailedType,
   JobQueuedType,
+  JobResumedType,
   JobStartedType,
   JobSubmittedType,
 } from "./job/map.js";
@@ -77,6 +78,7 @@ export type AllJobEvents = AnyEvent<JobEventType>;
 export type JobSubmittedEvent = AnyEvent<JobSubmittedType>;
 export type JobQueuedEvent = AnyEvent<JobQueuedType>;
 export type JobDelayedEvent = AnyEvent<JobDelayedType>;
+export type JobResumedEvent = AnyEvent<JobResumedType>;
 export type JobStartedEvent = AnyEvent<JobStartedType>;
 export type JobCompletedEvent = AnyEvent<JobCompletedType>;
 export type JobFailedEvent = AnyEvent<JobFailedType>;
