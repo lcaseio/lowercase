@@ -2,18 +2,11 @@ import { describe, it, expect, vi } from "vitest";
 import { resumeJobEffect } from "../../src/effects/resume-job.effect.js";
 import type { ResumeJobFx } from "../../src/rm.types.js";
 import {
-  wireEffectHandlers,
   type EmitErrorFn,
   type RmEffectDeps,
 } from "../../src/registries/effect.registry.js";
 import { jobFinishedMsg } from "../fixtures/job-finished/message.js";
-import {
-  AnyEvent,
-  JobEvent,
-  JobHttpJsonData,
-  JobHttpJsonResolvedData,
-  JobResumedEvent,
-} from "@lcase/types";
+import { AnyEvent, JobResumedEvent } from "@lcase/types";
 import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
 
 describe("resumeJobEffect", () => {

@@ -16,14 +16,14 @@ export const jobDequeuedReducer: RmReducer<JobDequeuedMsg> = (
 
     // check and see if theres a job in queued, then delete it
     if (tool.queued[jobId] !== undefined) {
-      const jobEntry = tool.queued[jobId];
+      const jobEntry1 = tool.queued[jobId];
       delete tool.queued[jobId];
-      tool.running[jobId] = jobEntry;
+      tool.running[jobId] = jobEntry1;
     }
     if (run.queued[jobId] !== undefined) {
-      const jobEntry = run.queued[runId];
+      const jobEntry2 = run.queued[jobId];
       delete run.queued[jobId];
-      run.running[jobId] = jobEntry;
+      run.running[jobId] = jobEntry2;
     }
 
     // later check and see if its also in pending,

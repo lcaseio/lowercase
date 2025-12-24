@@ -43,8 +43,7 @@ export const workerProfileSubmittedPlanner: RmPlanner<
       traceId: message.event.traceid,
     } satisfies EmitWorkerProfileAddedFx;
     effects.push(emitWorkerRegisteredFx);
-    console.log(emitWorkerRegisteredFx);
   }
-  console.log(effects);
+
   return effects;
 };

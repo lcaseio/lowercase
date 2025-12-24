@@ -91,7 +91,7 @@ export const startState: RmState = {
     },
   },
 };
-export const endState = {
+export const endState: RmState = {
   policy: basePolicy,
   registry: baseRegistry,
   runtime: {
