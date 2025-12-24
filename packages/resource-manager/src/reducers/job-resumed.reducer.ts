@@ -28,6 +28,8 @@ export const jobResumedReducer: RmReducer<JobResumedMsg> = (
       delete run.delayed[jobId];
       run.pendingQueued[jobId] = jobEntry;
       run.pendingQueuedCount++;
+      run.activeJobsPerToolCount[toolId] =
+        (run.activeJobsPerToolCount[toolId] ?? 0) + 1;
     }
   });
 };
