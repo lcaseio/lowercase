@@ -30,6 +30,7 @@ export const queueJobEffect = async (
     return;
   }
   const emitter = ef.newJobEmitterFromEvent(e, "lowercase://rm");
-  const queuedEvent = await emitter.emit(job.type, job.event.data);
+  const queuedEvent = emitter.formEvent(job.type, job.event.data);
   await queue.enqueue(toolId, queuedEvent);
+  await emitter.emitFormedEvent(queuedEvent);
 };

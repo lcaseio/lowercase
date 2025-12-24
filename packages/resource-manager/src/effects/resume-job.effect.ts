@@ -33,6 +33,7 @@ export const resumeJobEffect = async (
   }
 
   const e = job.event as unknown as JobResumedEvent;
+
   e.type = `job.${job.event.capid}.resumed`;
   e.toolid = toolId;
   e.data.job.toolid = toolId;
@@ -47,5 +48,6 @@ export const resumeJobEffect = async (
     return;
   }
 
-  await queue.enqueue(e.type, e);
+  const emitter = ef.newJobEmitterFromEvent(job.event, "lowercase://rm");
+  await emitter.emit(e.type, e.data);
 };

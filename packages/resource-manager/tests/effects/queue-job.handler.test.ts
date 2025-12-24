@@ -27,9 +27,10 @@ describe("QueueJob Effect Handler", () => {
     });
     const jobParser = { parseJobQueued } as unknown as JobParserPort;
 
-    const emit = vi.fn(() => e);
+    const formEvent = vi.fn(() => e);
+    const emitFormedEvent = vi.fn(() => e);
     const newJobEmitterFromEvent = vi.fn(() => {
-      return { emit };
+      return { formEvent, emitFormedEvent };
     });
     const ef = { newJobEmitterFromEvent } as unknown as EmitterFactoryPort;
 
@@ -51,6 +52,7 @@ describe("QueueJob Effect Handler", () => {
       "lowercase://rm"
     );
     expect(enqueue).toHaveBeenCalledWith(queueJobFx.toolId, e);
+    expect(emitFormedEvent).toHaveBeenCalledWith(e);
   });
 
   it("emits failure event when parsing fails", async () => {

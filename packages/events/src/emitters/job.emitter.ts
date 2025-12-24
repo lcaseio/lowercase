@@ -8,7 +8,7 @@ import type {
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
-import { EventBusPort } from "@lcase/ports";
+import { EventBusPort, JobEmitterPort } from "@lcase/ports";
 import { jobOtelAttributesMap } from "../otel-attributes.js";
 import { eventRegistry } from "../registries/event-registry.js";
 
@@ -18,7 +18,7 @@ import { eventRegistry } from "../registries/event-registry.js";
  *
  * registry should move out.
  */
-export class JobEmitter extends BaseEmitter {
+export class JobEmitter extends BaseEmitter implements JobEmitterPort {
   protected otel: OtelContext;
   protected jobOtelAttributesMap: JobOtelAttributesMap;
   #jobScope: JobScope;
@@ -42,6 +42,20 @@ export class JobEmitter extends BaseEmitter {
     type: T,
     data: JobEventData<T>
   ): Promise<JobEvent<T>> {
+    const event = this.formEvent(type, data);
+
+    await this.emitFormedEvent(event);
+    return event;
+  }
+  async emitFormedEvent(event: JobEvent) {
+    await this.bus.publish(event.type, event);
+    return event;
+  }
+
+  formEvent<T extends JobEventType>(
+    type: T,
+    data: JobEventData<T>
+  ): JobEvent<T> {
     const event = {
       ...this.envelopeHeader(),
       ...this.#jobScope,
@@ -54,14 +68,13 @@ export class JobEmitter extends BaseEmitter {
         : {}),
     } satisfies JobEvent<T>;
 
-    const entry = eventRegistry[type];
+    const entry = eventRegistry[event.type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[job-emitter] error parsing event; ${type}; ${result.error}`
+        `[job-emitter] error parsing event; ${event.type}; ${result.error}`
       );
     }
-    await this.bus.publish(type, event);
     return event;
   }
 }

@@ -11,4 +11,5 @@ export type JobScope = {
   toolid: string | null;
 };
 
-export type JobEvent<T extends JobEventType> = CloudEvent<T> & JobScope;
+export type JobEvent<T extends JobEventType = JobEventType> = CloudEvent<T> &
+  JobScope;

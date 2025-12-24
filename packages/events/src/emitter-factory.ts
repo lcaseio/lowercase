@@ -23,7 +23,7 @@ import { OtelContext } from "./types.js";
 import { randomBytes } from "crypto";
 import { EngineEmitter } from "./emitters/engine.emitter.js";
 import { RunEmitter } from "./emitters/run.emitter.js";
-import { JobEmitter } from "./emitters/jobs.emitter.js";
+import { JobEmitter } from "./emitters/job.emitter.js";
 import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
