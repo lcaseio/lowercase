@@ -9,7 +9,7 @@ export const resumeJobEffect = async (
   const toolId = effect.event.data.job.toolid;
 
   const { jobParser, ef, emitErrorFn, queue } = deps;
-  const delayedJob = await queue.dequeue(toolId + "delayed");
+  const delayedJob = await queue.dequeue(toolId + "-delayed");
 
   // later emit a resource manager specific thing to handle state
   // updates correctly on failure

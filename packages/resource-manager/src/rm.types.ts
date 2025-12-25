@@ -63,6 +63,7 @@ export type QueueJobFx = {
 };
 export type DelayJobFx = {
   type: "DelayJob";
+  toolId: string;
   event: JobSubmittedEvent;
 };
 

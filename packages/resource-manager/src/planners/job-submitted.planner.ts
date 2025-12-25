@@ -36,6 +36,7 @@ export const jobSubmittedPlanner: RmPlanner<JobSubmittedMsg> = (
     // delay something
     const delayJobFx = {
       type: "DelayJob",
+      toolId,
       event: message.event,
     } satisfies DelayJobFx;
     effects.push(delayJobFx);

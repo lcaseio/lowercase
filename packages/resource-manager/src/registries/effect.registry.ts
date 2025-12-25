@@ -4,6 +4,7 @@ import type {
   QueuePort,
 } from "@lcase/ports";
 import type {
+  DelayJobFx,
   EmitWorkerProfileAddedFx,
   QueueJobFx,
   ResumeJobFx,
@@ -13,6 +14,7 @@ import type { AnyEvent } from "@lcase/types";
 import { queueJobEffect } from "../effects/queue-job.effect.js";
 import { emitWorkerProfileAdded } from "../effects/emit-worker-profile-added.effect.js";
 import { resumeJobEffect } from "../effects/resume-job.effect.js";
+import { delayJobEffect } from "../effects/delay-job.effect.js";
 
 /**
  * Function used commonly in effects to surface errors in observability.
@@ -54,6 +56,7 @@ export function wireEffectHandlers(deps: RmEffectDeps) {
     EmitWorkerProfileAdded: async (effect: EmitWorkerProfileAddedFx) =>
       emitWorkerProfileAdded(effect, deps),
     ResumeJob: async (effect: ResumeJobFx) => resumeJobEffect(effect, deps),
+    DelayJob: async (effect: DelayJobFx) => delayJobEffect(effect, deps),
   } satisfies RmEffectHandlerRegistry;
   return handlers;
 }
