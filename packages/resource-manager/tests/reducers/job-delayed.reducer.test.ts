@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { RmState } from "../../src/resource-manager";
+import type { RmState } from "../../src/rm.state.type.js";
 import { JobDelayedMsg } from "../../src/rm.types";
 import { jobDelayedReducer } from "../../src/reducers/job-delayed.reducer.js";
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { RmState } from "../../src/resource-manager";
-import { JobQueuedMsg } from "../../src/rm.types";
+import type { RmState } from "../../src/rm.state.type.js";
+import type { JobQueuedMsg } from "../../src/rm.types";
 import { jobQueuedReducer } from "../../src/reducers/job-queued.reducer.js";
 
 describe("jobQueuedReducer", () => {

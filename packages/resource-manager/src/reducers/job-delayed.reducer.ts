@@ -1,5 +1,5 @@
 import { produce } from "immer";
-import { RmState } from "../resource-manager.js";
+import type { RmState } from "../rm.state.type.js";
 import { JobDelayedMsg, RmReducer } from "../rm.types.js";
 
 export const jobDelayedReducer: RmReducer<JobDelayedMsg> = (

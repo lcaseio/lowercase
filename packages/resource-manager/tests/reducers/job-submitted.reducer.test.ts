@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { jobSubmittedReducer } from "../../src/reducers/job-submitted.reducer.js";
-import { RmState } from "../../src/resource-manager.js";
+import type { RmState } from "../../src/rm.state.type.js";
 
 import {
   jobSubmittedHttpJsonMsg,

@@ -13,6 +13,8 @@ import type {
   PipeData,
   ToolEvent,
   RateLimitPolicy,
+  JobEvent,
+  JobQueuedEvent,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
@@ -331,6 +333,28 @@ export class Worker {
             if (!ctx.newJobWaitersAllowed) break;
             continue;
           }
+
+          const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
+            {
+              source: "lowercase://worker",
+              workerid: this.#ctx.workerId,
+            },
+            event.traceid
+          );
+
+          const e = event as JobQueuedEvent;
+
+          await workerEmitter.emit("worker.job.dequeued", {
+            eventId: e.id,
+            eventType: e.type,
+            spanId: e.spanid,
+            flowId: e.flowid,
+            runId: e.runid,
+            stepId: e.stepid,
+            jobId: e.jobid,
+            capId: e.capid,
+            toolId: e.data.job.toolid,
+          });
 
           ctx.activeJobCount++;
           await this.handleRateLimit(ctx);

@@ -1,13 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import {
+import type {
   EmitErrorFn,
   RmEffectDeps,
-  wireEffectHandlers,
 } from "../../src/registries/effect.registry.js";
 import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
-import { DelayJobFx, QueueJobFx } from "../../src/rm.types.js";
+import { DelayJobFx } from "../../src/rm.types.js";
 import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
-import { JobDelayedEvent, JobQueuedEvent } from "@lcase/types";
+import { JobDelayedEvent } from "@lcase/types";
 import { delayJobEffect } from "../../src/effects/delay-job.effect.js";
 
 describe("delayJobEffect", () => {

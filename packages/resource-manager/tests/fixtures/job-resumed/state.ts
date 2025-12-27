@@ -1,4 +1,4 @@
-import { RmState } from "../../../src/resource-manager";
+import { RmState } from "../../../src/rm.state.type.js";
 const jobId = "test-jobid";
 const toolId = "httpjson";
 const runId = "test-runid";

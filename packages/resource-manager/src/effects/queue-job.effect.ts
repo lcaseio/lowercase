@@ -4,7 +4,7 @@ import type { RmEffectDeps } from "../registries/effect.registry.js";
 
 /**
  * Emits a `job.${capid}.queued` event and queues the same event.
- * Works from a `submitted` or `delayed` job event.
+ * Works from a `job.*.submitted` or `job.*.resumed` job event.
  * Forms the new envelope, parses it, emits, it, then queues it.
  * If parsing fails, emits an error.
  * @param effect The effect information - QueueJobFx object

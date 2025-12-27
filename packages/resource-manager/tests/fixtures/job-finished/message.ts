@@ -1,4 +1,4 @@
-import { JobFinishedMsg } from "../../../src/rm.types";
+import { JobFinishedMsg } from "../../../src/rm.types.js";
 const jobId = "test-jobid";
 const toolId = "test-toolid";
 const runId = "test-runid";

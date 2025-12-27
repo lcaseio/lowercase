@@ -1,13 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
 import { resumeJobEffect } from "../../src/effects/resume-job.effect.js";
 import type { ResumeJobFx } from "../../src/rm.types.js";
-import {
-  type EmitErrorFn,
-  type RmEffectDeps,
+import type {
+  EmitErrorFn,
+  RmEffectDeps,
 } from "../../src/registries/effect.registry.js";
 import { jobFinishedMsg } from "../fixtures/job-finished/message.js";
-import { AnyEvent, JobResumedEvent } from "@lcase/types";
-import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
+import type { AnyEvent, JobResumedEvent } from "@lcase/types";
+import type {
+  EmitterFactoryPort,
+  JobParserPort,
+  QueuePort,
+} from "@lcase/ports";
 
 describe("resumeJobEffect", () => {
   it("does the correct stuff", async () => {

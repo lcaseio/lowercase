@@ -13,16 +13,18 @@ const EntityCapIdSchema = z.object({
   capid: z.literal("httpjson"),
 });
 
-export const JobHttpJsonSubmittedSchema = z
-  .object({
-    ...CloudEventContextSchema.shape,
-    ...JobScopeSchema.shape,
-    ...EntityCapIdSchema.shape,
-    type: z.literal("job.httpjson.submitted"),
-    action: z.literal("submitted"),
-    data: JobHttpJsonDataSchema,
-  })
-  .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.submitted">>;
+export const JobHttpJsonSubmittedSchema: z.ZodType<
+  AnyEvent<"job.httpjson.submitted">
+> = CloudEventContextSchema.merge(JobScopeSchema)
+  .merge(EntityCapIdSchema)
+  .merge(
+    z.object({
+      type: z.literal("job.httpjson.submitted"),
+      action: z.literal("submitted"),
+      data: JobHttpJsonDataSchema,
+    })
+  )
+  .strict();
 
 export const JobHttpJsonDelayedSchema = z
   .object({
@@ -31,6 +33,7 @@ export const JobHttpJsonDelayedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.delayed"),
     action: z.literal("delayed"),
+
     data: JobHttpJsonResolvedDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.delayed">>;

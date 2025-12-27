@@ -1,5 +1,10 @@
-import { RmState } from "../resource-manager.js";
-import { JobResumedMsg, QueueJobFx, RmEffect, RmPlanner } from "../rm.types.js";
+import type { RmState } from "../rm.state.type.js";
+import type {
+  JobResumedMsg,
+  QueueJobFx,
+  RmEffect,
+  RmPlanner,
+} from "../rm.types.js";
 
 export const jobResumedPlanner: RmPlanner<JobResumedMsg> = (
   oldState: RmState,

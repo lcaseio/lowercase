@@ -1,7 +1,11 @@
 import { JobHttpJsonEventType } from "@lcase/types";
 import {
   JobHttpJsonCompletedSchema,
+  JobHttpJsonDelayedSchema,
   JobHttpJsonFailedSchema,
+  JobHttpJsonQueuedSchema,
+  JobHttpJsonResumedSchema,
+  JobHttpJsonStartedSchema,
   JobHttpJsonSubmittedSchema,
 } from "../../schemas/job/httpjson/httpjson.event.schema.js";
 import {
@@ -21,27 +25,27 @@ export const httpjsonRegistry = {
   },
   "job.httpjson.delayed": {
     schema: {
-      event: JobHttpJsonResolvedDataSchema,
-      data: JobHttpJsonDataSchema,
+      event: JobHttpJsonDelayedSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
   "job.httpjson.resumed": {
     schema: {
-      event: JobHttpJsonResolvedDataSchema,
-      data: JobHttpJsonDataSchema,
+      event: JobHttpJsonResumedSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
   "job.httpjson.queued": {
     schema: {
-      event: JobHttpJsonResolvedDataSchema,
-      data: JobHttpJsonDataSchema,
+      event: JobHttpJsonQueuedSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
 
   "job.httpjson.started": {
     schema: {
-      event: JobHttpJsonResolvedDataSchema,
-      data: JobHttpJsonDataSchema,
+      event: JobHttpJsonStartedSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
   "job.httpjson.completed": {

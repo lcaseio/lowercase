@@ -10,7 +10,7 @@ import type {
   WorkerProfileAddedData,
   WorkerScope,
 } from "@lcase/types";
-import type { RmState } from "./resource-manager.js";
+import type { RmState } from "./rm.state.type.js";
 
 export type JobSubmittedMsg = {
   type: "JobSubmitted";

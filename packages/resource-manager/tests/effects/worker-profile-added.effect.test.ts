@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { emitWorkerProfileAdded } from "../../src/effects/emit-worker-profile-added.effect";
-import { EmitWorkerProfileAddedFx } from "../../src/rm.types";
-import { RmEffectDeps } from "../../src/registries/effect.registry";
+import type { EmitWorkerProfileAddedFx } from "../../src/rm.types";
+import type { RmEffectDeps } from "../../src/registries/effect.registry";
 
 describe("workerProfileAddedEffect", () => {
   it("emits a worker.profile.added event", () => {

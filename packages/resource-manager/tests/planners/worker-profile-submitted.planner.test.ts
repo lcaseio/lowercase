@@ -4,7 +4,7 @@ import {
   EmitWorkerProfileAddedFx,
   WorkerProfileSubmittedMsg,
 } from "../../src/rm.types";
-import { RmState } from "../../src/resource-manager";
+import type { RmState } from "../../src/rm.state.type.js";
 import { workerProfileSubmittedPlanner } from "../../src/planners/worker-profie-submitted.planner";
 
 describe("workerProfileSubmittedPlanner", () => {

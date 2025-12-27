@@ -27,15 +27,15 @@ export const WorkerStoppedDataSchema = WorkerDescriptorDataSchema.merge(
   })
 ).strict() satisfies z.ZodType<WorkerStoppedData>;
 
-export const WorkerProfileSubmittedDataSchema =
-  WorkerDescriptorDataSchema.merge(
-    z.object({
+export const WorkerProfileSubmittedDataSchema: z.ZodType<WorkerProfileSubmittedData> =
+  z
+    .object({
       id: z.string(),
       name: z.string(),
       type: z.enum(["internal", "external"]),
       tools: z.array(z.enum(["mcp", "httpjson"])),
     })
-  ).strict() satisfies z.ZodType<WorkerProfileSubmittedData>;
+    .strict();
 
 export const WorkerProfileAddedDataSchema = z
   .object({

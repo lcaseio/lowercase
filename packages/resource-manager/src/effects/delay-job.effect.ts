@@ -1,10 +1,10 @@
-import type { JobDelayedEvent, JobQueuedEvent } from "@lcase/types";
-import type { DelayJobFx, QueueJobFx } from "../rm.types.js";
+import type { JobDelayedEvent } from "@lcase/types";
+import type { DelayJobFx } from "../rm.types.js";
 import type { RmEffectDeps } from "../registries/effect.registry.js";
 
 /**
- * Emits a `job.${capid}.queued` event and queues the same event.
- * Works from a `submitted` or `delayed` job event.
+ * Emits a `job.${capid}.delayed` event and delayed the same event.
+ * Works from a `job.*.submitted` event.
  * Forms the new envelope, parses it, emits, it, then queues it.
  * If parsing fails, emits an error.
  * @param effect The effect information - QueueJobFx object

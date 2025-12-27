@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { jobFinishedMsg } from "../fixtures/job-finished/message.js";
-import { startState, endState } from "../fixtures/job-finished/state.js";
 import {
   startStateDelayed,
   endStateDelayed,

@@ -1,12 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
 import {
-  EmitErrorFn,
+  type EmitErrorFn,
   wireEffectHandlers,
 } from "../../src/registries/effect.registry.js";
-import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
-import { QueueJobFx } from "../../src/rm.types.js";
+import type {
+  EmitterFactoryPort,
+  JobParserPort,
+  QueuePort,
+} from "@lcase/ports";
+import type { QueueJobFx } from "../../src/rm.types.js";
 import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
-import { JobQueuedEvent } from "@lcase/types";
+import type { JobQueuedEvent } from "@lcase/types";
 
 describe("QueueJob Effect Handler", () => {
   it("emits and queues the correct event when parsing succeeds", async () => {

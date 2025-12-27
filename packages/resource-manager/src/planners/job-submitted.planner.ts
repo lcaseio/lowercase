@@ -1,4 +1,4 @@
-import type { RmState } from "../resource-manager.js";
+import type { RmState } from "../rm.state.type.js";
 import type {
   DelayJobFx,
   JobSubmittedMsg,
@@ -22,8 +22,15 @@ export const jobSubmittedPlanner: RmPlanner<JobSubmittedMsg> = (
   const oldToolState = oldState.runtime.perTool[toolId];
   const newToolState = newState.runtime.perTool[toolId];
 
+  const oldPendingQueuedCount = oldToolState
+    ? oldToolState.pendingQueuedCount
+    : 0;
+  const oldPendingDelayedCount = oldToolState
+    ? oldToolState.pendingDelayedCount
+    : 0;
+
   // attempt to queue this job
-  if (newToolState.pendingQueuedCount > oldToolState.pendingQueuedCount) {
+  if (newToolState.pendingQueuedCount > oldPendingQueuedCount) {
     const queueJobFx = {
       type: "QueueJob",
       toolId,
@@ -32,7 +39,7 @@ export const jobSubmittedPlanner: RmPlanner<JobSubmittedMsg> = (
     effects.push(queueJobFx);
   }
   // attempt to delay this job
-  else if (newToolState.pendingDelayedCount > oldToolState.pendingQueuedCount) {
+  else if (newToolState.pendingDelayedCount > oldPendingDelayedCount) {
     // delay something
     const delayJobFx = {
       type: "DelayJob",

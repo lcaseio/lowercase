@@ -1,5 +1,8 @@
 import type { InternalToolsMap } from "@lcase/types";
-
+/**
+ * default internal tool settings. hardcoded for now in terms of concurrencies,
+ * and no rate limits are used globally at the resource manager level yet.
+ */
 export const internalToolConfig = {
   mcp: {
     id: "mcp",

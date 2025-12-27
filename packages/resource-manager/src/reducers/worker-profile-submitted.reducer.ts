@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { RmReducer, WorkerProfileSubmittedMsg } from "../rm.types.js";
-import { RmState } from "../resource-manager.js";
+import type { RmReducer, WorkerProfileSubmittedMsg } from "../rm.types.js";
+import type { RmState } from "../rm.state.type.js";
 
 export const workerProfileSubmittedReducer: RmReducer<
   WorkerProfileSubmittedMsg
@@ -11,12 +11,16 @@ export const workerProfileSubmittedReducer: RmReducer<
     const workerId = event.data.id;
     const tools = draft.registry.tools;
 
+    workers[workerId] ??= {
+      canRunTools: {},
+      name: event.data.name,
+      status: "online",
+      type: event.data.type,
+    };
+
+    workers[workerId].canRunTools = {};
     for (const tool of event.data.tools) {
       workers[workerId].canRunTools[tool] = true;
-      workers[workerId].name = event.data.name;
-      workers[workerId].status = "online";
-      workers[workerId].type = event.data.type;
-
       tools[tool].hasOnlineWorker = true;
     }
   });

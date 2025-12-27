@@ -1,4 +1,4 @@
-import { JobDequeuedMsg } from "../../../src/rm.types";
+import { JobDequeuedMsg } from "../../../src/rm.types.js";
 const jobId = "test-jobid";
 const toolId = "httpjson";
 const runId = "test-runid";

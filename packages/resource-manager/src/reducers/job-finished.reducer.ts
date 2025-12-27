@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { RmState } from "../resource-manager.js";
-import { JobFinishedMsg, RmReducer } from "../rm.types.js";
+import type { RmState } from "../rm.state.type.js";
+import type { JobFinishedMsg, RmReducer } from "../rm.types.js";
 
 /**
  * Updates active runtime state per tool and per job for a completed event

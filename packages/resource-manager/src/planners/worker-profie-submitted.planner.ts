@@ -1,5 +1,5 @@
-import { RmState } from "../resource-manager.js";
-import {
+import type { RmState } from "../rm.state.type.js";
+import type {
   EmitWorkerProfileAddedFx,
   RmEffect,
   RmPlanner,

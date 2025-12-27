@@ -1,6 +1,6 @@
 import { JobResumedEvent } from "@lcase/types";
-import { RmEffectDeps } from "../registries/effect.registry.js";
-import { ResumeJobFx } from "../rm.types.js";
+import type { RmEffectDeps } from "../registries/effect.registry.js";
+import type { ResumeJobFx } from "../rm.types.js";
 
 export const resumeJobEffect = async (
   effect: ResumeJobFx,

@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   EventBusPort,
+  JobParserPort,
   QueuePort,
   StreamRegistryPort,
   ToolBinding,
   ToolInstancePort,
 } from "@lcase/ports";
 import { Worker } from "../src/worker.js";
-import type { AnyEvent, Capability, ToolId } from "@lcase/types";
+import type { AnyEvent, ToolId } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
 import { ToolRegistry } from "@lcase/tools";
 
@@ -34,8 +35,11 @@ describe("worker", () => {
         console.log("emitting event");
       },
     });
+    const emit = vi.fn().mockReturnValue(undefined);
+    const newWorkerEmitterNewSpan = vi.fn().mockReturnValue({ emit });
     const ef = {
       newJobEmitterFromEvent,
+      newWorkerEmitterNewSpan,
     } as unknown as EmitterFactory;
 
     const maxConcurrency = 2;
@@ -63,12 +67,17 @@ describe("worker", () => {
       getBinding,
     } as unknown as ToolRegistry<ToolId>;
 
+    const jobParser = vi
+      .fn()
+      .mockReturnValue(undefined) as unknown as JobParserPort;
+
     const worker = new Worker("workerId", {
       bus,
       queue,
       emitterFactory: ef,
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
+      jobParser,
     });
 
     worker.handleNewJob = vi.fn().mockImplementation(async () => {
@@ -92,6 +101,7 @@ describe("worker", () => {
 
     expect(worker.getToolWaitersSize(toolId)).toBe(2);
     expect(reserve).toHaveBeenCalledTimes(2);
+    expect(emit).toHaveBeenCalledTimes(2);
     expect(worker.getToolActiveJobCount(toolId)).toBe(2);
     expect(worker.handleNewJob).toHaveBeenCalledWith(event);
     await worker.stopAllJobWaiters();
@@ -113,8 +123,11 @@ describe("worker", () => {
         console.log("emitting event2");
       },
     });
+    const emit = vi.fn().mockReturnValue(undefined);
+    const newWorkerEmitterNewSpan = vi.fn().mockReturnValue({ emit });
     const ef = {
       newJobEmitterFromEvent,
+      newWorkerEmitterNewSpan,
     } as unknown as EmitterFactory;
 
     const binding: ToolBinding = {
@@ -141,12 +154,17 @@ describe("worker", () => {
       getBinding,
     } as unknown as ToolRegistry<ToolId>;
 
+    const jobParser = vi
+      .fn()
+      .mockReturnValue(undefined) as unknown as JobParserPort;
+
     const worker = new Worker("workerId", {
       bus,
       queue,
       emitterFactory: ef,
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
+      jobParser,
     });
 
     worker.handleNewJob = vi.fn().mockImplementation(async () => {
@@ -159,6 +177,7 @@ describe("worker", () => {
     await worker.startToolJobWaiters(toolId);
 
     expect(reserve).toHaveBeenCalledTimes(2);
+    expect(emit).toHaveBeenCalledTimes(2);
     expect(worker.handleNewJob).toHaveBeenCalledTimes(2);
     expect(worker.getToolActiveJobCount(toolId)).toBe(0);
     expect(worker.getToolWaitersSize(toolId)).toBe(0);

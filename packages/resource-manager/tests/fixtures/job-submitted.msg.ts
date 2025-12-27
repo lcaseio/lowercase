@@ -1,6 +1,6 @@
 import type { JobEvent } from "@lcase/types";
 import type { JobSubmittedMsg } from "../../src/rm.types.js";
-import type { RmState } from "../../src/resource-manager.js";
+import type { RmState } from "../../src/rm.state.type.js";
 
 const toolId = "httpjson";
 const workerId = "test-workerid";

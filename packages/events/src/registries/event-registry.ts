@@ -1,4 +1,4 @@
-import type { ZodSchema } from "zod";
+import type { z, ZodSchema } from "zod";
 import type { EventType } from "@lcase/types";
 import {
   FlowCompletedSchema,
@@ -247,10 +247,10 @@ export const eventRegistry = {
   },
 } satisfies Record<
   EventType,
-  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+  { topic?: EventTopic; schema: { event: z.ZodSchema; data: z.ZodSchema } }
 >;
 
 export type EventSchemaRegistry = Record<
   EventType,
-  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+  { topic?: EventTopic; schema: { event: z.ZodSchema; data: z.ZodSchema } }
 >;

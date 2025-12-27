@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { WorkerProfileSubmittedMsg } from "../../src/rm.types.js";
-import { WorkerEvent } from "@lcase/types";
-import { RmState } from "../../src/resource-manager.js";
+import type { WorkerProfileSubmittedMsg } from "../../src/rm.types.js";
+import type { WorkerEvent } from "@lcase/types";
+import type { RmState } from "../../src/rm.state.type.js";
 import { workerProfileSubmittedReducer } from "../../src/reducers/worker-profile-submitted.reducer.js";
 
 describe("workerRegistrationRequestedReducer", () => {

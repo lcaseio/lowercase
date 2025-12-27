@@ -11,6 +11,7 @@ import type {
   CapId,
   JobMcpResolvedData,
   JobMcpData,
+  JobHttpJsonResolvedData,
 } from "@lcase/types";
 
 export const CapIdSchema = z.enum([
@@ -77,13 +78,19 @@ export const JobMcpBaseDataSchema = z.object({
   args: z.record(z.string(), z.unknown()).optional(),
   pipe: PipeDataSchema,
 });
-export const JobMcpDataSchema = JobDescriptorDataSchema.merge(
-  JobMcpBaseDataSchema
-).strict() satisfies z.ZodType<JobMcpData>;
+export const JobMcpDataSchema = z
+  .object({
+    ...JobMcpBaseDataSchema.shape,
+    ...JobDescriptorDataSchema.shape,
+  })
+  .strict() satisfies z.ZodType<JobMcpData>;
 
-export const JobMcpResolvedDataSchema = JobDescriptorResolvedDataSchema.merge(
-  JobMcpBaseDataSchema
-).strict() satisfies z.ZodType<JobMcpResolvedData>;
+export const JobMcpResolvedDataSchema = z
+  .object({
+    ...JobMcpBaseDataSchema.shape,
+    ...JobDescriptorResolvedDataSchema.shape,
+  })
+  .strict() satisfies z.ZodType<JobMcpResolvedData>;
 
 /* HttpJson */
 
@@ -102,10 +109,12 @@ export const JobHttpJsonDataSchema = JobDescriptorDataSchema.merge(
   JobHttpJsonBaseData
 ).strict() satisfies z.ZodType<JobHttpJsonData>;
 
-export const JobHttpJsonResolvedDataSchema =
-  JobDescriptorResolvedDataSchema.merge(
-    JobHttpJsonBaseData
-  ).strict() satisfies z.ZodType<JobHttpJsonData>;
+export const JobHttpJsonResolvedDataSchema = z
+  .object({
+    ...JobHttpJsonBaseData.shape,
+    ...JobDescriptorResolvedDataSchema.shape,
+  })
+  .strict() satisfies z.ZodType<JobHttpJsonResolvedData>;
 
 export const JobStartedDataSchema = JobDescriptorResolvedDataSchema.merge(
   z.object({

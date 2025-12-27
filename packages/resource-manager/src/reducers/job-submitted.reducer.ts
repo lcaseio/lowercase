@@ -1,5 +1,5 @@
 import { produce } from "immer";
-import type { RmState } from "../resource-manager.js";
+import type { RmState } from "../rm.state.type.js";
 import type { JobSubmittedMsg } from "../rm.types.js";
 
 export function jobSubmittedReducer(state: RmState, message: JobSubmittedMsg) {

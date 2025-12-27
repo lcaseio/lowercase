@@ -34,6 +34,7 @@ import {
   JobSubmittedParsed,
 } from "@lcase/ports";
 import { EventSchemaRegistry } from "../registries/event-registry.js";
+import z from "zod";
 
 export class JobParser implements JobParserPort {
   constructor(private readonly eventRegistry: EventSchemaRegistry) {}
@@ -172,7 +173,10 @@ export class JobParser implements JobParserPort {
     const schema = this.eventRegistry[event.type].schema.event;
     const parsedEvent = schema.safeParse(event);
     if (parsedEvent.error) {
-      console.log(parsedEvent.error);
+      console.log(
+        `job parse error: ${event.type}, ${event}`,
+        parsedEvent.error
+      );
       return;
     }
     return parsedEvent.data;

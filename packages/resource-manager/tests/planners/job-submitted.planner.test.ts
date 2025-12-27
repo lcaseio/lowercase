@@ -4,7 +4,7 @@ import {
   jobSubmittedHttpJsonMsg,
   jobSubmittedStartState,
 } from "../fixtures/job-submitted.msg.js";
-import { RmState } from "../../src/resource-manager.js";
+import type { RmState } from "../../src/rm.state.type.js";
 import { QueueJobFx } from "../../src/rm.types.js";
 describe("jobSubmittedPlanner", () => {
   it("should queue jobs when new job is added as ready", () => {
