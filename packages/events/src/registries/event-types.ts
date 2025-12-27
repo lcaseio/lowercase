@@ -33,8 +33,9 @@ export const eventTypes = [
   "tool.failed",
   "worker.started",
   "worker.stopped",
-  "worker.registered",
-  "worker.registration.requested",
+  "worker.profile.added",
+  "worker.profile.submitted",
+  "worker.job.dequeued",
   "system.logged",
 ] as const satisfies readonly EventType[];
 
@@ -64,14 +65,16 @@ export type CloudEventContext<T extends EventType> = Omit<
 export const actionTypes = [
   "completed",
   "queued",
-  "registered",
-  "requested",
+  "added",
   "started",
   "completed",
   "stopped",
   "failed",
   "logged",
   "submitted",
+  "dequeued",
+  "resumed",
+  "delayed",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [
@@ -87,6 +90,6 @@ export const domainTypes = [
 
 export const entityTypes = [
   "mcp",
-  "registration",
   "httpjson",
+  "job",
 ] as const satisfies readonly EventEntities[];

@@ -1,4 +1,4 @@
-import type { ZodSchema } from "zod";
+import type { z, ZodSchema } from "zod";
 import type { EventType } from "@lcase/types";
 import {
   FlowCompletedSchema,
@@ -53,14 +53,16 @@ import {
   ToolStartedDataSchema,
 } from "../schemas/tool.data.schema.js";
 import {
-  WorkerRegisteredDataSchema,
-  WorkerRegistrationRequestedDataSchema,
+  WorkerJobDequeuedDataSchema,
+  WorkerProfileAddedDataSchema,
+  WorkerProfileSubmittedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
 } from "../schemas/worker.data.schema.js";
 import {
-  WorkerRegisteredSchema,
-  WorkerRegistrationRequestedSchema,
+  WorkerJobDequeuedSchema,
+  WorkerProfileAddedSchema,
+  WorkerProfileSubmittedSchema,
   WorkerStartedSchema,
   WorkerStoppedSchema,
 } from "../schemas/worker.event.schema.js";
@@ -217,18 +219,23 @@ export const eventRegistry = {
       data: WorkerStoppedDataSchema,
     },
   },
-  "worker.registered": {
+  "worker.profile.added": {
     topic: "workers.lifecycle",
     schema: {
-      event: WorkerRegisteredSchema,
-      data: WorkerRegisteredDataSchema,
+      event: WorkerProfileAddedSchema,
+      data: WorkerProfileAddedDataSchema,
     },
   },
-  "worker.registration.requested": {
-    topic: "worker.registration.requested",
+  "worker.profile.submitted": {
     schema: {
-      event: WorkerRegistrationRequestedSchema,
-      data: WorkerRegistrationRequestedDataSchema,
+      event: WorkerProfileSubmittedSchema,
+      data: WorkerProfileSubmittedDataSchema,
+    },
+  },
+  "worker.job.dequeued": {
+    schema: {
+      event: WorkerJobDequeuedSchema,
+      data: WorkerJobDequeuedDataSchema,
     },
   },
   "system.logged": {
@@ -240,10 +247,10 @@ export const eventRegistry = {
   },
 } satisfies Record<
   EventType,
-  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+  { topic?: EventTopic; schema: { event: z.ZodSchema; data: z.ZodSchema } }
 >;
 
 export type EventSchemaRegistry = Record<
   EventType,
-  { topic?: EventTopic; schema: { event: ZodSchema; data: ZodSchema } }
+  { topic?: EventTopic; schema: { event: z.ZodSchema; data: z.ZodSchema } }
 >;

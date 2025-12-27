@@ -61,6 +61,11 @@ export interface JobEmitterPort {
     type: T,
     data: JobEventData<T>
   ): Promise<JobEvent<T>>;
+  formEvent<T extends JobEventType>(
+    type: T,
+    data: JobEventData<T>
+  ): JobEvent<T>;
+  emitFormedEvent(event: JobEvent): Promise<JobEvent>;
 }
 
 export interface EngineEmitterPort {

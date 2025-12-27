@@ -1,5 +1,6 @@
 import {
   AnyEvent,
+  CapId,
   EventType,
   JobCompletedType,
   JobDelayedType,
@@ -7,7 +8,10 @@ import {
   JobEventType,
   JobFailedType,
   JobQueuedType,
+  JobResumedEvent,
+  JobResumedType,
   JobStartedType,
+  JobSubmittedEvent,
   JobSubmittedType,
 } from "@lcase/types";
 import {
@@ -15,6 +19,7 @@ import {
   jobDelayedTypeSchema,
   jobFailedTypeSchema,
   jobQueuedTypeSchema,
+  jobResumedTypeSchema,
   jobStartedTypeSchema,
   jobSubmittedTypeSchema,
 } from "../schemas/job/job.category.schema.js";
@@ -24,10 +29,12 @@ import {
   JobFailedParsed,
   JobParserPort,
   JobQueuedParsed,
+  JobResumedParsed,
   JobStartedParsed,
   JobSubmittedParsed,
 } from "@lcase/ports";
 import { EventSchemaRegistry } from "../registries/event-registry.js";
+import z from "zod";
 
 export class JobParser implements JobParserPort {
   constructor(private readonly eventRegistry: EventSchemaRegistry) {}
@@ -41,6 +48,11 @@ export class JobParser implements JobParserPort {
   }
   parseJobDelayedType(type: string): JobDelayedType | undefined {
     const result = jobDelayedTypeSchema.safeParse(type);
+    if (result.error) return;
+    return result.data;
+  }
+  parseJobResumedType(type: string): JobResumedType | undefined {
+    const result = jobResumedTypeSchema.safeParse(type);
     if (result.error) return;
     return result.data;
   }
@@ -67,19 +79,14 @@ export class JobParser implements JobParserPort {
 
   /* full type and event parsers */
 
-  parseJobSubmitted(event: AnyEvent): JobSubmittedParsed | undefined {
+  parseJobSubmitted(event: AnyEvent): JobSubmittedEvent | undefined {
     const type = this.parseJobSubmittedType(event.type);
     if (!type) {
       return;
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
-    return {
-      type,
-      capId,
-      event: parsedEvent,
-    };
+    return parsedEvent;
   }
   parseJobDelayed(event: AnyEvent): JobDelayedParsed | undefined {
     const type = this.parseJobDelayedType(event.type);
@@ -95,6 +102,14 @@ export class JobParser implements JobParserPort {
       event: parsedEvent,
     };
   }
+  parseJobResumed(event: AnyEvent): JobResumedEvent | undefined {
+    const type = this.parseJobResumedType(event.type);
+    if (!type) {
+      return;
+    }
+    const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
+    return parsedEvent;
+  }
   parseJobQueued(event: AnyEvent): JobQueuedParsed | undefined {
     const type = this.parseJobQueuedType(event.type);
     if (!type) {
@@ -102,10 +117,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -116,10 +131,9 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -130,10 +144,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -144,10 +158,10 @@ export class JobParser implements JobParserPort {
     }
     const parsedEvent = this.parseJobEvent(event as JobEvent<typeof type>);
     if (!parsedEvent) return;
-    const capId = this.#getCapId(type);
+
     return {
       type,
-      capId,
+      capId: parsedEvent.capid,
       event: parsedEvent,
     };
   }
@@ -159,7 +173,10 @@ export class JobParser implements JobParserPort {
     const schema = this.eventRegistry[event.type].schema.event;
     const parsedEvent = schema.safeParse(event);
     if (parsedEvent.error) {
-      console.log(parsedEvent.error);
+      console.log(
+        `job parse error: ${event.type}, ${event}`,
+        parsedEvent.error
+      );
       return;
     }
     return parsedEvent.data;
@@ -168,6 +185,6 @@ export class JobParser implements JobParserPort {
   /** utility to split and extract middle portion as capability */
   #getCapId(type: JobEventType) {
     const parts = type.split(".");
-    return parts[1];
+    return parts[1] as CapId;
   }
 }

@@ -4,6 +4,7 @@ import {
   JobHttpJsonDelayedSchema,
   JobHttpJsonFailedSchema,
   JobHttpJsonQueuedSchema,
+  JobHttpJsonResumedSchema,
   JobHttpJsonStartedSchema,
   JobHttpJsonSubmittedSchema,
 } from "../../schemas/job/httpjson/httpjson.event.schema.js";
@@ -11,6 +12,7 @@ import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
+  JobHttpJsonResolvedDataSchema,
 } from "../../schemas/job/job.data.schema.js";
 import { ZodSchema } from "zod";
 
@@ -24,20 +26,26 @@ export const httpjsonRegistry = {
   "job.httpjson.delayed": {
     schema: {
       event: JobHttpJsonDelayedSchema,
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
+    },
+  },
+  "job.httpjson.resumed": {
+    schema: {
+      event: JobHttpJsonResumedSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
   "job.httpjson.queued": {
     schema: {
       event: JobHttpJsonQueuedSchema,
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
 
   "job.httpjson.started": {
     schema: {
       event: JobHttpJsonStartedSchema,
-      data: JobHttpJsonDataSchema,
+      data: JobHttpJsonResolvedDataSchema,
     },
   },
   "job.httpjson.completed": {

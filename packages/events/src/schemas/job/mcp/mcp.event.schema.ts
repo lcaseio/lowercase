@@ -9,78 +9,73 @@ import {
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 
-export const JobMcpSubmittedSchema = CloudEventContextSchema.merge(
-  JobScopeSchema
-)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.submitted"),
-      entity: z.literal("mcp"),
-      action: z.literal("submitted"),
-      capid: z.literal("mcp"),
-      data: JobMcpDataSchema,
-    })
-  )
+const EntityCapIdSchema = z.object({
+  entity: z.literal("mcp"),
+  capid: z.literal("mcp"),
+});
+
+export const JobMcpSubmittedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.submitted"),
+    action: z.literal("submitted"),
+    data: JobMcpDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.submitted">>;
 
-export const JobMcpDelayedSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.delayed"),
-      entity: z.literal("mcp"),
-      action: z.literal("delayed"),
-      capid: z.literal("mcp"),
-      data: JobMcpResolvedDataSchema,
-    })
-  )
+export const JobMcpDelayedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.delayed"),
+    action: z.literal("delayed"),
+    data: JobMcpResolvedDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.delayed">>;
 
-export const JobMcpQueuedSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.queued"),
-      entity: z.literal("mcp"),
-      action: z.literal("queued"),
-      capid: z.literal("mcp"),
-      data: JobMcpResolvedDataSchema,
-    })
-  )
+export const JobMcpQueuedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.queued"),
+    action: z.literal("queued"),
+    data: JobMcpResolvedDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
 
-export const JobMcpStartedSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.started"),
-      entity: z.literal("mcp"),
-      action: z.literal("started"),
-      capid: z.literal("mcp"),
-      data: JobMcpResolvedDataSchema,
-    })
-  )
+export const JobMcpStartedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.started"),
+    action: z.literal("started"),
+    data: JobMcpResolvedDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.started">>;
 
-export const JobMcpCompletedSchema = CloudEventContextSchema.merge(
-  JobScopeSchema
-)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.completed"),
-      entity: z.literal("mcp"),
-      action: z.literal("completed"),
-      capid: z.literal("mcp"),
-      data: JobCompletedDataSchema,
-    })
-  )
+export const JobMcpCompletedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.completed"),
+    action: z.literal("completed"),
+    data: JobCompletedDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.completed">>;
 
-export const JobMcpFailedSchema = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.mcp.failed"),
-      entity: z.literal("mcp"),
-      action: z.literal("failed"),
-      capid: z.literal("mcp"),
-      data: JobFailedDataSchema,
-    })
-  )
+export const JobMcpFailedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.mcp.failed"),
+    action: z.literal("failed"),
+    data: JobFailedDataSchema,
+  })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.failed">>;

@@ -97,9 +97,13 @@ export const jobOtelAttributesMap = {
     domain: "job",
     entity: "mcp",
   },
-
   "job.mcp.queued": {
     action: "queued",
+    domain: "job",
+    entity: "mcp",
+  },
+  "job.mcp.resumed": {
+    action: "resumed",
     domain: "job",
     entity: "mcp",
   },
@@ -125,6 +129,11 @@ export const jobOtelAttributesMap = {
   },
   "job.httpjson.delayed": {
     action: "delayed",
+    domain: "job",
+    entity: "httpjson",
+  },
+  "job.httpjson.resumed": {
+    action: "resumed",
     domain: "job",
     entity: "httpjson",
   },
@@ -179,15 +188,20 @@ export const workerOtelAttributesMap = {
     domain: "worker",
     entity: undefined,
   },
-  "worker.registered": {
-    action: "registered",
+  "worker.profile.submitted": {
+    action: "submitted",
     domain: "worker",
-    entity: undefined,
+    entity: "profile",
   },
-  "worker.registration.requested": {
-    action: "requested",
+  "worker.profile.added": {
+    action: "added",
     domain: "worker",
-    entity: "registration",
+    entity: "profile",
+  },
+  "worker.job.dequeued": {
+    action: "dequeued",
+    domain: "worker",
+    entity: "job",
   },
 } satisfies WorkerOtelAttributesMap;
 

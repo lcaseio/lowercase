@@ -3,8 +3,9 @@ import type {
   WorkerDescriptorData,
   WorkerStartedData,
   WorkerStoppedData,
-  WorkerRegistrationRequestedData,
-  WorkerRegisteredData,
+  WorkerProfileSubmittedData,
+  WorkerProfileAddedData,
+  WorkerJobDequeuedData,
 } from "@lcase/types";
 
 const WorkerDescriptorDataSchema = z
@@ -26,20 +27,33 @@ export const WorkerStoppedDataSchema = WorkerDescriptorDataSchema.merge(
   })
 ).strict() satisfies z.ZodType<WorkerStoppedData>;
 
-export const WorkerRegistrationRequestedDataSchema =
-  WorkerDescriptorDataSchema.merge(
-    z.object({
+export const WorkerProfileSubmittedDataSchema: z.ZodType<WorkerProfileSubmittedData> =
+  z
+    .object({
       id: z.string(),
       name: z.string(),
       type: z.enum(["internal", "external"]),
       tools: z.array(z.enum(["mcp", "httpjson"])),
     })
-  ).strict() satisfies z.ZodType<WorkerRegistrationRequestedData>;
+    .strict();
 
-export const WorkerRegisteredDataSchema = WorkerDescriptorDataSchema.merge(
-  z.object({
-    workerId: z.string(),
-    status: z.string(),
-    registeredAt: z.string(),
+export const WorkerProfileAddedDataSchema = z
+  .object({
+    status: z.literal("accepted"),
+    ok: z.literal(true),
   })
-).strict() satisfies z.ZodType<WorkerRegisteredData>;
+  .strict() satisfies z.ZodType<WorkerProfileAddedData>;
+
+export const WorkerJobDequeuedDataSchema = z
+  .object({
+    eventId: z.string(),
+    eventType: z.string(),
+    spanId: z.string(),
+    flowId: z.string(),
+    runId: z.string(),
+    stepId: z.string(),
+    jobId: z.string(),
+    capId: z.string(),
+    toolId: z.string(),
+  })
+  .strict() satisfies z.ZodType<WorkerJobDequeuedData>;

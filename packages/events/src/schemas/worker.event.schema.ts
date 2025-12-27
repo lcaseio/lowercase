@@ -4,8 +4,9 @@ import type { AnyEvent, WorkerScope } from "@lcase/types";
 import {
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
-  WorkerRegisteredDataSchema,
-  WorkerRegistrationRequestedDataSchema,
+  WorkerProfileAddedDataSchema,
+  WorkerProfileSubmittedDataSchema,
+  WorkerJobDequeuedDataSchema,
 } from "./worker.data.schema.js";
 
 export const WorkerContextSchema = z
@@ -41,28 +42,39 @@ export const WorkerStoppedSchema = CloudEventContextSchema.merge(
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.stopped">>;
 
-export const WorkerRegisteredSchema = CloudEventContextSchema.merge(
+export const WorkerProfileAddedSchema = CloudEventContextSchema.merge(
   WorkerContextSchema
 )
   .merge(
     z.object({
-      type: z.literal("worker.registered"),
-      entity: z.undefined().optional(),
-      action: z.literal("registered"),
-      data: WorkerRegisteredDataSchema,
+      type: z.literal("worker.profile.added"),
+      entity: z.literal("profile"),
+      action: z.literal("added"),
+      data: WorkerProfileAddedDataSchema,
     })
   )
-  .strict() satisfies z.ZodType<AnyEvent<"worker.registered">>;
+  .strict() satisfies z.ZodType<AnyEvent<"worker.profile.added">>;
 
-export const WorkerRegistrationRequestedSchema = CloudEventContextSchema.merge(
+export const WorkerProfileSubmittedSchema = CloudEventContextSchema.merge(
   WorkerContextSchema
 )
   .merge(
     z.object({
-      type: z.literal("worker.registration.requested"),
-      entity: z.literal("registration"),
-      action: z.literal("requested"),
-      data: WorkerRegistrationRequestedDataSchema,
+      type: z.literal("worker.profile.submitted"),
+      entity: z.literal("profile"),
+      action: z.literal("submitted"),
+      data: WorkerProfileSubmittedDataSchema,
     })
   )
-  .strict() satisfies z.ZodType<AnyEvent<"worker.registration.requested">>;
+  .strict() satisfies z.ZodType<AnyEvent<"worker.profile.submitted">>;
+
+export const WorkerJobDequeuedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...WorkerContextSchema.shape,
+    type: z.literal("worker.job.dequeued"),
+    entity: z.literal("job"),
+    action: z.literal("dequeued"),
+    data: WorkerJobDequeuedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"worker.job.dequeued">>;
