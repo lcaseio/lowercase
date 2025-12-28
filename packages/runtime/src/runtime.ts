@@ -26,7 +26,7 @@ import {
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService, ReplayService } from "@lcase/services";
-import { ResourceManager } from "@lcase/resource-manager";
+import { Scheduler } from "@lcase/scheduler";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
@@ -65,7 +65,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const flowStore = new FlowStore();
 
   const jobParser = new JobParser(eventRegistry);
-  const rm = new ResourceManager({
+  const scheduler = new Scheduler({
     bus,
     ef,
     queue,
@@ -102,7 +102,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     tap,
     sinks,
     ef,
-    rm,
+    scheduler,
     replay,
   };
 }

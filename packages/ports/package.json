@@ -20,9 +20,9 @@
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.js"
     },
-    "./rm": {
-      "types": "./dist/rm/index.d.ts",
-      "import": "./dist/rm/index.js"
+    "./scheduler": {
+      "types": "./dist/scheduler/index.d.ts",
+      "import": "./dist/scheduler/index.js"
     },
     "./engine": {
       "types": "./dist/engine/index.d.ts"
