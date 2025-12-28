@@ -1,9 +1,9 @@
-import type { RmState } from "../../../src/rm.state.type.js";
+import type { SchedulerState } from "../../../src/scheduler.state.type.js";
 const jobId = "test-jobid";
 const toolId = "httpjson";
 const runId = "test-runid";
 const workerId = "test-workerid";
-export const jobDequeuedStartState: RmState = {
+export const jobDequeuedStartState: SchedulerState = {
   policy: {
     defaultToolMap: {
       httpjson: "httpjson",
@@ -74,7 +74,7 @@ export const jobDequeuedStartState: RmState = {
   },
 };
 
-export const jobDequeuedEndState: RmState = {
+export const jobDequeuedEndState: SchedulerState = {
   policy: {
     defaultToolMap: {
       httpjson: "httpjson",

@@ -1,6 +1,6 @@
 import type { JobDelayedEvent } from "@lcase/types";
-import type { DelayJobFx } from "../rm.types.js";
-import type { RmEffectDeps } from "../registries/effect.registry.js";
+import type { DelayJobFx } from "../scheduler.types.js";
+import type { SchedulerEffectDeps } from "../registries/effect.registry.js";
 
 /**
  * Emits a `job.${capid}.delayed` event and delayed the same event.
@@ -13,7 +13,7 @@ import type { RmEffectDeps } from "../registries/effect.registry.js";
  */
 export const delayJobEffect = async (
   effect: DelayJobFx,
-  deps: RmEffectDeps
+  deps: SchedulerEffectDeps
 ) => {
   const { event, toolId } = effect;
   const { jobParser, ef, emitErrorFn, queue } = deps;

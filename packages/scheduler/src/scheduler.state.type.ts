@@ -9,7 +9,7 @@ import type {
 } from "@lcase/ports";
 import type { CapId, ToolSpec } from "@lcase/types";
 
-export type ResourceManagerDeps = {
+export type SchedulerDeps = {
   ef: EmitterFactoryPort;
   queue: QueuePort;
   jobParser: JobParserPort;
@@ -25,9 +25,6 @@ export type JobParsedAny =
   | JobCompletedParsed
   | JobFailedParsed;
 
-type ActiveJobsPerTool = {
-  [t in string]: number;
-};
 type ToolId = string;
 type WorkerId = string;
 type JobId = string;
@@ -73,8 +70,8 @@ export type RunRuntime = {
   pendingDelayedCount: number;
 };
 
-export type RmState = {
-  policy: RmPolicyState;
+export type SchedulerState = {
+  policy: SchedulerPolicyState;
   registry: {
     tools: Record<ToolId, ToolSpec & { hasOnlineWorker: boolean }>;
     workers: Record<WorkerId, WorkerRegistryEntry>;
@@ -84,6 +81,6 @@ export type RmState = {
     perRun: Record<RunId, RunRuntime>;
   };
 };
-export type RmPolicyState = {
+export type SchedulerPolicyState = {
   defaultToolMap: Record<CapId, string>;
 };

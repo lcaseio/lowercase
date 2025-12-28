@@ -10,7 +10,7 @@ import type {
   WorkerProfileAddedData,
   WorkerScope,
 } from "@lcase/types";
-import type { RmState } from "./rm.state.type.js";
+import type { SchedulerState } from "./scheduler.state.type.js";
 
 export type JobSubmittedMsg = {
   type: "JobSubmitted";
@@ -47,7 +47,7 @@ export type WorkerProfileSubmittedMsg = {
   event: WorkerEvent<"worker.profile.submitted">;
 };
 
-export type RmMessage =
+export type SchedulerMessage =
   | JobSubmittedMsg
   | JobQueuedMsg
   | JobDelayedMsg
@@ -79,35 +79,39 @@ export type EmitWorkerProfileAddedFx = {
   traceId: string;
 };
 
-export type RmEffect =
+export type SchedulerEffect =
   | QueueJobFx
   | DelayJobFx
   | ResumeJobFx
   | EmitWorkerProfileAddedFx;
 
-export type RmReducer<M extends RmMessage = RmMessage> = (
-  state: RmState,
+export type SchedulerReducer<M extends SchedulerMessage = SchedulerMessage> = (
+  state: SchedulerState,
   message: M
-) => RmState;
+) => SchedulerState;
 
-export type RmReducerRegistry = {
-  [T in RmMessage["type"]]?: RmReducer<Extract<RmMessage, { type: T }>>;
+export type SchedulerReducerRegistry = {
+  [T in SchedulerMessage["type"]]?: SchedulerReducer<
+    Extract<SchedulerMessage, { type: T }>
+  >;
 };
 
-export type RmPlanner<M extends RmMessage = RmMessage> = (
-  oldState: RmState,
-  newState: RmState,
+export type SchedulerPlanner<M extends SchedulerMessage = SchedulerMessage> = (
+  oldState: SchedulerState,
+  newState: SchedulerState,
   message: M
-) => RmEffect[];
+) => SchedulerEffect[];
 
-export type RmPlannerRegistry = {
-  [T in RmMessage["type"]]?: RmPlanner<Extract<RmMessage, { type: T }>>;
+export type SchedulerPlannerRegistry = {
+  [T in SchedulerMessage["type"]]?: SchedulerPlanner<
+    Extract<SchedulerMessage, { type: T }>
+  >;
 };
 
-export type RmEffectHandler<T extends RmEffect["type"]> = (
-  effect: Extract<RmEffect, { type: T }>
+export type SchedulerEffectHandler<T extends SchedulerEffect["type"]> = (
+  effect: Extract<SchedulerEffect, { type: T }>
 ) => void | Promise<void>;
 
-export type RmEffectHandlerRegistry = {
-  [T in RmEffect["type"]]?: RmEffectHandler<T>;
+export type SchedulerEffectHandlerRegistry = {
+  [T in SchedulerEffect["type"]]?: SchedulerEffectHandler<T>;
 };

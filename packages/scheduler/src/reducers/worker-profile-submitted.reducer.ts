@@ -1,10 +1,13 @@
 import { produce } from "immer";
-import type { RmReducer, WorkerProfileSubmittedMsg } from "../rm.types.js";
-import type { RmState } from "../rm.state.type.js";
+import type {
+  SchedulerReducer,
+  WorkerProfileSubmittedMsg,
+} from "../scheduler.types.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
 
-export const workerProfileSubmittedReducer: RmReducer<
+export const workerProfileSubmittedReducer: SchedulerReducer<
   WorkerProfileSubmittedMsg
-> = (state: RmState, message: WorkerProfileSubmittedMsg) => {
+> = (state: SchedulerState, message: WorkerProfileSubmittedMsg) => {
   return produce(state, (draft) => {
     const { event } = message;
     const workers = draft.registry.workers;

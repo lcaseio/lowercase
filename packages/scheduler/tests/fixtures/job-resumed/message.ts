@@ -1,4 +1,4 @@
-import { JobResumedMsg } from "../../../src/rm.types.js";
+import { JobResumedMsg } from "../../../src/scheduler.types.js";
 
 export const jobResumedMsg: JobResumedMsg = {
   type: "JobResumed",

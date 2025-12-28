@@ -1,6 +1,6 @@
 import type { JobEvent } from "@lcase/types";
-import type { JobSubmittedMsg } from "../../src/rm.types.js";
-import type { RmState } from "../../src/rm.state.type.js";
+import type { JobSubmittedMsg } from "../../src/scheduler.types.js";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
 
 const toolId = "httpjson";
 const workerId = "test-workerid";
@@ -80,9 +80,9 @@ export const jobSubmittedStartState = {
     },
     perRun: {},
   },
-} satisfies RmState;
+} satisfies SchedulerState;
 
-export const startStateFilledConcurrency: RmState = {
+export const startStateFilledConcurrency: SchedulerState = {
   policy: {
     defaultToolMap: {
       httpjson: "httpjson",

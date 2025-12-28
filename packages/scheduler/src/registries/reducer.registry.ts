@@ -5,7 +5,7 @@ import { jobQueuedReducer } from "../reducers/job-queued.reducer.js";
 import { jobResumedReducer } from "../reducers/job-resumed.reducer.js";
 import { jobSubmittedReducer } from "../reducers/job-submitted.reducer.js";
 import { workerProfileSubmittedReducer } from "../reducers/worker-profile-submitted.reducer.js";
-import type { RmReducerRegistry } from "../rm.types.js";
+import type { SchedulerReducerRegistry } from "../scheduler.types.js";
 
 /**
  * Simple flat literal map of message types to reducer functions.
@@ -13,7 +13,7 @@ import type { RmReducerRegistry } from "../rm.types.js";
  * DI later maybe.
  * @see resource-manager.ts in this package.
  */
-export const reducers: RmReducerRegistry = {
+export const reducers: SchedulerReducerRegistry = {
   JobSubmitted: jobSubmittedReducer,
   JobDelayed: jobDelayedReducer,
   JobResumed: jobResumedReducer,

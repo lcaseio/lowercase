@@ -1,10 +1,10 @@
 import { JobResumedEvent } from "@lcase/types";
-import type { RmEffectDeps } from "../registries/effect.registry.js";
-import type { ResumeJobFx } from "../rm.types.js";
+import type { SchedulerEffectDeps } from "../registries/effect.registry.js";
+import type { ResumeJobFx } from "../scheduler.types.js";
 
 export const resumeJobEffect = async (
   effect: ResumeJobFx,
-  deps: RmEffectDeps
+  deps: SchedulerEffectDeps
 ) => {
   const toolId = effect.event.data.job.toolid;
 

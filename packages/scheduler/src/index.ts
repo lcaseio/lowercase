@@ -1,1 +1,1 @@
-export * from "./resource-manager.js";
+export * from "./scheduler.js";

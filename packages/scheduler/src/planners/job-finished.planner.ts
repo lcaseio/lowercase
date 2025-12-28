@@ -1,17 +1,17 @@
-import type { RmState } from "../rm.state.type.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
 import type {
   JobFinishedMsg,
   ResumeJobFx,
-  RmEffect,
-  RmPlanner,
-} from "../rm.types.js";
+  SchedulerEffect,
+  SchedulerPlanner,
+} from "../scheduler.types.js";
 
-export const jobFinishedPlanner: RmPlanner<JobFinishedMsg> = (
-  oldState: RmState,
-  newState: RmState,
+export const jobFinishedPlanner: SchedulerPlanner<JobFinishedMsg> = (
+  oldState: SchedulerState,
+  newState: SchedulerState,
   message: JobFinishedMsg
-): RmEffect[] => {
-  const effects: RmEffect[] = [];
+): SchedulerEffect[] => {
+  const effects: SchedulerEffect[] = [];
 
   const oldTool = oldState.runtime.perTool[message.event.data.job.toolid];
   const newTool = newState.runtime.perTool[message.event.data.job.toolid];

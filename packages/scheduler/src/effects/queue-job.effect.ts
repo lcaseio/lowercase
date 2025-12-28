@@ -1,6 +1,6 @@
 import type { JobQueuedEvent } from "@lcase/types";
-import type { QueueJobFx } from "../rm.types.js";
-import type { RmEffectDeps } from "../registries/effect.registry.js";
+import type { QueueJobFx } from "../scheduler.types.js";
+import type { SchedulerEffectDeps } from "../registries/effect.registry.js";
 
 /**
  * Emits a `job.${capid}.queued` event and queues the same event.
@@ -13,7 +13,7 @@ import type { RmEffectDeps } from "../registries/effect.registry.js";
  */
 export const queueJobEffect = async (
   effect: QueueJobFx,
-  deps: RmEffectDeps
+  deps: SchedulerEffectDeps
 ) => {
   const { event, toolId } = effect;
   const { jobParser, ef, emitErrorFn, queue } = deps;

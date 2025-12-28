@@ -2,7 +2,7 @@ import { jobFinishedPlanner } from "../planners/job-finished.planner.js";
 import { jobResumedPlanner } from "../planners/job-resumed.planner.js";
 import { jobSubmittedPlanner } from "../planners/job-submitted.planner.js";
 import { workerProfileSubmittedPlanner } from "../planners/worker-profie-submitted.planner.js";
-import { RmPlannerRegistry } from "../rm.types.js";
+import { SchedulerPlannerRegistry } from "../scheduler.types.js";
 
 /**
  * Simple object map for look up planners to execute per message type.
@@ -10,7 +10,7 @@ import { RmPlannerRegistry } from "../rm.types.js";
  * DI in the future if we need to mock this.
  * @see ../resource-manager.ts
  */
-export const planners: RmPlannerRegistry = {
+export const planners: SchedulerPlannerRegistry = {
   JobSubmitted: jobSubmittedPlanner,
   JobResumed: jobResumedPlanner,
   JobFinished: jobFinishedPlanner,

@@ -1,18 +1,18 @@
-import type { RmState } from "../rm.state.type.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
 import type {
   DelayJobFx,
   JobSubmittedMsg,
   QueueJobFx,
-  RmEffect,
-  RmPlanner,
-} from "../rm.types.js";
+  SchedulerEffect,
+  SchedulerPlanner,
+} from "../scheduler.types.js";
 
-export const jobSubmittedPlanner: RmPlanner<JobSubmittedMsg> = (
-  oldState: RmState,
-  newState: RmState,
+export const jobSubmittedPlanner: SchedulerPlanner<JobSubmittedMsg> = (
+  oldState: SchedulerState,
+  newState: SchedulerState,
   message: JobSubmittedMsg
-): RmEffect[] => {
-  const effects: RmEffect[] = [];
+): SchedulerEffect[] => {
+  const effects: SchedulerEffect[] = [];
   const runId = message.event.runid;
   const jobId = message.event.jobid;
 

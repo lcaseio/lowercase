@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { RmState } from "../../src/rm.state.type.js";
-import type { JobQueuedMsg } from "../../src/rm.types";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
+import type { JobQueuedMsg } from "../../src/scheduler.types.js";
 import { jobQueuedReducer } from "../../src/reducers/job-queued.reducer.js";
 
 describe("jobQueuedReducer", () => {
@@ -9,7 +9,7 @@ describe("jobQueuedReducer", () => {
     const toolId = "test-toolid";
     const runId = "test-runid";
 
-    const startState: RmState = {
+    const startState: SchedulerState = {
       policy: {
         defaultToolMap: {
           httpjson: "httpjson",

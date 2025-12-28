@@ -1,11 +1,11 @@
 import { produce } from "immer";
-import type { RmState } from "../rm.state.type.js";
-import { JobDequeuedMsg, RmReducer } from "../rm.types.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
+import { JobDequeuedMsg, SchedulerReducer } from "../scheduler.types.js";
 
-export const jobDequeuedReducer: RmReducer<JobDequeuedMsg> = (
-  state: RmState,
+export const jobDequeuedReducer: SchedulerReducer<JobDequeuedMsg> = (
+  state: SchedulerState,
   message: JobDequeuedMsg
-): RmState => {
+): SchedulerState => {
   return produce(state, (draft) => {
     const { jobId, toolId, runId } = message.event.data;
     const tool = draft.runtime.perTool[toolId];

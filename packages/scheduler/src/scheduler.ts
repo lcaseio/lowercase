@@ -4,7 +4,7 @@ import type {
   JobFailedParsed,
   JobParserPort,
 } from "@lcase/ports/events";
-import type { ResourceManagerPort } from "../../ports/dist/rm/resource-manager.port.js";
+import { SchedulerPort } from "@lcase/ports/scheduler";
 import type { AnyEvent, InternalToolsMap, WorkerEvent } from "@lcase/types";
 import { internalToolConfig } from "./internal-tools.map.js";
 import type {
@@ -14,26 +14,26 @@ import type {
   JobQueuedMsg,
   JobResumedMsg,
   JobSubmittedMsg,
-  RmEffect,
-  RmEffectHandler,
-  RmEffectHandlerRegistry,
-  RmMessage,
-  RmPlanner,
-  RmReducer,
+  SchedulerEffect,
+  SchedulerEffectHandler,
+  SchedulerEffectHandlerRegistry,
+  SchedulerMessage,
+  SchedulerPlanner,
+  SchedulerReducer,
   WorkerProfileSubmittedMsg,
-} from "./rm.types.js";
+} from "./scheduler.types.js";
 import { emitError, wireEffectHandlers } from "./registries/effect.registry.js";
 import { reducers } from "./registries/reducer.registry.js";
 import { planners } from "./registries/planner.registry.js";
-import type { ResourceManagerDeps, RmState } from "./rm.state.type.js";
+import type { SchedulerDeps, SchedulerState } from "./scheduler.state.type.js";
 import path from "path";
-import { appendFileSync, writeFileSync } from "fs";
+import { appendFileSync } from "fs";
 
 /**
- * the resource manager handles queueing jobs for workers.
+ * the scheduler handles queueing jobs for workers.
  *
  * workers register the tools which they support here.
- * when a job arrives, the resource manager looks at worker availability and
+ * when a job arrives, the scheduler looks at worker availability and
  * concurrency settings per tool.
  *
  * if a worker is available and concurrency rules allow it, the job is placed
@@ -42,7 +42,7 @@ import { appendFileSync, writeFileSync } from "fs";
  * if a worker is not available or concurrency rules do not allow the job to
  * run currently, it is placed in a delayed queue per tool.
  *
- * when a worker concurrency slot opens, the resource manager grabs the first
+ * when a worker concurrency slot opens, the scheduler grabs the first
  * job from the delayed queue per tool, and queues it for a worker.
  *
  * the state follows the same reducer -> planner -> effects pattern the engine
@@ -50,11 +50,11 @@ import { appendFileSync, writeFileSync } from "fs";
  * being the source of truth, and an internal message queue to chain logical operations.
  *
  * side effects like queueing a job or emitting an event are all done outside
- * the synchronous state update, and never hook directly back into the resource manager.
+ * the synchronous state update, and never hook directly back into the scheduler.
  * they communicate back through events to keep operations simple and observable,
  * if perhaps a bit verbose.
  *
- * the resource manager also handles capabilities to tool resolution, but
+ * the scheduler also handles capabilities to tool resolution, but
  * currently every tool is the always the same as the capability.
  * see internal-tools.map.ts.
  *
@@ -62,20 +62,20 @@ import { appendFileSync, writeFileSync } from "fs";
  * are all complex topics at different layers, and not explained fully here.
  * this project in the alpha stage and API around the layers are still formining.
  */
-export class ResourceManager implements ResourceManagerPort {
+export class Scheduler implements SchedulerPort {
   #bus: EventBusPort;
   #jobParser: JobParserPort;
 
   #internalTools: InternalToolsMap;
   busStopTopics = new Map<string, () => void>();
 
-  messages: RmMessage[] = [];
+  messages: SchedulerMessage[] = [];
   isProcessing = false;
   enableSideEffects = true;
-  state: RmState;
-  handlers: RmEffectHandlerRegistry;
+  state: SchedulerState;
+  handlers: SchedulerEffectHandlerRegistry;
 
-  constructor(deps: ResourceManagerDeps) {
+  constructor(deps: SchedulerDeps) {
     this.#bus = deps.bus;
     this.#jobParser = deps.jobParser;
     this.#internalTools = internalToolConfig;
@@ -200,8 +200,8 @@ export class ResourceManager implements ResourceManagerPort {
     const message = this.messages.shift();
     if (!message) return;
 
-    const reducer = reducers[message.type] as RmReducer | undefined;
-    const planner = planners[message.type] as RmPlanner | undefined;
+    const reducer = reducers[message.type] as SchedulerReducer | undefined;
+    const planner = planners[message.type] as SchedulerPlanner | undefined;
 
     let newState = reducer ? reducer(this.state, message) : undefined;
     newState ??= this.state; // default to current state if new state is undefined
@@ -216,9 +216,9 @@ export class ResourceManager implements ResourceManagerPort {
       this.executeEffect(effect);
     }
   }
-  executeEffect(effect: RmEffect) {
+  executeEffect(effect: SchedulerEffect) {
     const handler = this.handlers[effect.type] as
-      | RmEffectHandler<any>
+      | SchedulerEffectHandler<any>
       | undefined;
     if (!handler) return;
     handler(effect);

@@ -1,4 +1,4 @@
-import type { RmState } from "../../../src/rm.state.type.js";
+import type { SchedulerState } from "../../../src/scheduler.state.type.js";
 
 const jobId = "test-jobid";
 const toolId = "test-toolid";
@@ -6,13 +6,13 @@ const runId = "test-runid";
 const workerId = "test-workerid";
 const delayedJobId = "delayed-jobid";
 
-const basePolicy: RmState["policy"] = {
+const basePolicy: SchedulerState["policy"] = {
   defaultToolMap: {
     httpjson: "httpjson",
     mcp: "mcp",
   },
 };
-const baseRegistry: RmState["registry"] = {
+const baseRegistry: SchedulerState["registry"] = {
   tools: {
     [toolId]: {
       id: toolId,
@@ -33,7 +33,7 @@ const baseRegistry: RmState["registry"] = {
     },
   },
 };
-export const startStateDelayed: RmState = {
+export const startStateDelayed: SchedulerState = {
   policy: basePolicy,
   registry: baseRegistry,
   runtime: {
@@ -98,7 +98,7 @@ export const startStateDelayed: RmState = {
   },
 };
 
-export const endStateDelayed: RmState = {
+export const endStateDelayed: SchedulerState = {
   policy: basePolicy,
   registry: baseRegistry,
   runtime: {

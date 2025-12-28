@@ -1,15 +1,15 @@
 import { produce } from "immer";
-import type { RmState } from "../rm.state.type.js";
-import type { JobFinishedMsg, RmReducer } from "../rm.types.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
+import type { JobFinishedMsg, SchedulerReducer } from "../scheduler.types.js";
 
 /**
  * Updates active runtime state per tool and per job for a completed event
- * @param state RmState - current state
+ * @param state SchedulerState - current state
  * @param message JobCompletedMsg
- * @returns RmState - new state
+ * @returns SchedulerState - new state
  */
-export const jobFinishedReducer: RmReducer<JobFinishedMsg> = (
-  state: RmState,
+export const jobFinishedReducer: SchedulerReducer<JobFinishedMsg> = (
+  state: SchedulerState,
   message: JobFinishedMsg
 ) => {
   return produce(state, (draft) => {

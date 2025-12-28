@@ -8,7 +8,7 @@ import type {
   JobParserPort,
   QueuePort,
 } from "@lcase/ports";
-import type { QueueJobFx } from "../../src/rm.types.js";
+import type { QueueJobFx } from "../../src/scheduler.types.js";
 import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
 import type { JobQueuedEvent } from "@lcase/types";
 

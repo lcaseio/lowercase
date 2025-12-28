@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import type { WorkerProfileSubmittedMsg } from "../../src/rm.types.js";
+import type { WorkerProfileSubmittedMsg } from "../../src/scheduler.types.js";
 import type { WorkerEvent } from "@lcase/types";
-import type { RmState } from "../../src/rm.state.type.js";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
 import { workerProfileSubmittedReducer } from "../../src/reducers/worker-profile-submitted.reducer.js";
 
 describe("workerRegistrationRequestedReducer", () => {
@@ -63,7 +63,7 @@ describe("workerRegistrationRequestedReducer", () => {
         perTool: {},
         perRun: {},
       },
-    } satisfies RmState;
+    } satisfies SchedulerState;
 
     const expectedState = structuredClone(state);
 

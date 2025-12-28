@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { resumeJobEffect } from "../../src/effects/resume-job.effect.js";
-import type { ResumeJobFx } from "../../src/rm.types.js";
+import type { ResumeJobFx } from "../../src/scheduler.types.js";
 import type {
   EmitErrorFn,
-  RmEffectDeps,
+  SchedulerEffectDeps,
 } from "../../src/registries/effect.registry.js";
 import { jobFinishedMsg } from "../fixtures/job-finished/message.js";
 import type { AnyEvent, JobResumedEvent } from "@lcase/types";
@@ -83,7 +83,7 @@ describe("resumeJobEffect", () => {
 
     const emitErrorFn = {} as EmitErrorFn;
 
-    const deps: RmEffectDeps = {
+    const deps: SchedulerEffectDeps = {
       ef,
       jobParser,
       queue,

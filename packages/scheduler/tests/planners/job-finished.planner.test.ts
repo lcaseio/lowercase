@@ -5,7 +5,7 @@ import {
   endStateDelayed,
 } from "../fixtures/job-finished/delayed-state.js";
 import { jobFinishedPlanner } from "../../src/planners/job-finished.planner.js";
-import type { ResumeJobFx } from "../../src/rm.types.js";
+import type { ResumeJobFx } from "../../src/scheduler.types.js";
 import {} from "../fixtures/job-finished/message.js";
 
 describe("jobFinishedPlanner", () => {

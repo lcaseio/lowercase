@@ -4,8 +4,8 @@ import {
   jobSubmittedHttpJsonMsg,
   jobSubmittedStartState,
 } from "../fixtures/job-submitted.msg.js";
-import type { RmState } from "../../src/rm.state.type.js";
-import { QueueJobFx } from "../../src/rm.types.js";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
+import { QueueJobFx } from "../../src/scheduler.types.js";
 describe("jobSubmittedPlanner", () => {
   it("should queue jobs when new job is added as ready", () => {
     const toolId = "httpjson";
@@ -13,7 +13,9 @@ describe("jobSubmittedPlanner", () => {
     const runId = jobSubmittedHttpJsonMsg.event.runid;
     const jobId = "test-jobid";
 
-    const expectedState = structuredClone(jobSubmittedStartState) as RmState;
+    const expectedState = structuredClone(
+      jobSubmittedStartState
+    ) as SchedulerState;
     expectedState.runtime.perRun = {
       [runId]: {
         activeJobsPerToolCount: { httpjson: 1 },

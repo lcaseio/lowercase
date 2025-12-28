@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { jobSubmittedReducer } from "../../src/reducers/job-submitted.reducer.js";
-import type { RmState } from "../../src/rm.state.type.js";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
 
 import {
   jobSubmittedHttpJsonMsg,
@@ -19,7 +19,9 @@ describe("jobSubmittedReducer", () => {
       jobSubmittedHttpJsonMsg
     );
 
-    const expectedState = structuredClone(jobSubmittedStartState) as RmState;
+    const expectedState = structuredClone(
+      jobSubmittedStartState
+    ) as SchedulerState;
 
     expectedState.runtime.perRun = {
       [runId]: {
@@ -74,7 +76,7 @@ describe("jobSubmittedReducer", () => {
 
     const expectedState = structuredClone(
       startStateFilledConcurrency
-    ) as RmState;
+    ) as SchedulerState;
 
     expectedState.runtime.perRun = {
       [runId]: {

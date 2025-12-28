@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest";
 import {
   EmitWorkerProfileAddedFx,
   WorkerProfileSubmittedMsg,
-} from "../../src/rm.types";
-import type { RmState } from "../../src/rm.state.type.js";
+} from "../../src/scheduler.types.js";
+import type { SchedulerState } from "../../src/scheduler.state.type.js";
 import { workerProfileSubmittedPlanner } from "../../src/planners/worker-profie-submitted.planner";
 
 describe("workerProfileSubmittedPlanner", () => {
@@ -34,7 +34,7 @@ describe("workerProfileSubmittedPlanner", () => {
       } satisfies WorkerEvent<"worker.profile.submitted">,
     } satisfies WorkerProfileSubmittedMsg;
 
-    const oldState: RmState = {
+    const oldState: SchedulerState = {
       policy: {
         defaultToolMap: {
           httpjson: "httpjson",

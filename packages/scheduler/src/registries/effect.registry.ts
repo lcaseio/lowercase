@@ -8,8 +8,8 @@ import type {
   EmitWorkerProfileAddedFx,
   QueueJobFx,
   ResumeJobFx,
-  RmEffectHandlerRegistry,
-} from "../rm.types.js";
+  SchedulerEffectHandlerRegistry,
+} from "../scheduler.types.js";
 import type { AnyEvent } from "@lcase/types";
 import { queueJobEffect } from "../effects/queue-job.effect.js";
 import { emitWorkerProfileAdded } from "../effects/emit-worker-profile-added.effect.js";
@@ -38,7 +38,7 @@ export const emitError = async (
 };
 export type EmitErrorFn = typeof emitError;
 
-export type RmEffectDeps = {
+export type SchedulerEffectDeps = {
   ef: EmitterFactoryPort;
   jobParser: JobParserPort;
   queue: QueuePort;
@@ -50,13 +50,13 @@ export type RmEffectDeps = {
  * @param deps Common deps for effect handlers
  * @returns RmEffectHandlerRegistry object.  key by effect type, value is the effect handler.
  */
-export function wireEffectHandlers(deps: RmEffectDeps) {
+export function wireEffectHandlers(deps: SchedulerEffectDeps) {
   const handlers = {
     QueueJob: async (effect: QueueJobFx) => queueJobEffect(effect, deps),
     EmitWorkerProfileAdded: async (effect: EmitWorkerProfileAddedFx) =>
       emitWorkerProfileAdded(effect, deps),
     ResumeJob: async (effect: ResumeJobFx) => resumeJobEffect(effect, deps),
     DelayJob: async (effect: DelayJobFx) => delayJobEffect(effect, deps),
-  } satisfies RmEffectHandlerRegistry;
+  } satisfies SchedulerEffectHandlerRegistry;
   return handlers;
 }

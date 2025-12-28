@@ -25,7 +25,7 @@
     "@lcase/adapters": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/observability": "workspace:*",
-    "@lcase/resource-manager": "workspace:*",
+    "@lcase/scheduler": "workspace:*",
     "@lcase/services": "workspace:*",
     "@lcase/replay": "workspace:*"
   },

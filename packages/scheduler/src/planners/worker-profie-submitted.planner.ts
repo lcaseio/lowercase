@@ -1,10 +1,10 @@
-import type { RmState } from "../rm.state.type.js";
+import type { SchedulerState } from "../scheduler.state.type.js";
 import type {
   EmitWorkerProfileAddedFx,
-  RmEffect,
-  RmPlanner,
+  SchedulerEffect,
+  SchedulerPlanner,
   WorkerProfileSubmittedMsg,
-} from "../rm.types.js";
+} from "../scheduler.types.js";
 /**
  * Currently responds with `worker.registered` when either a worker is added
  * or it already exists.
@@ -13,14 +13,14 @@ import type {
  * @param message  WorkerSubmittedMsg
  * @returns RmEffect
  */
-export const workerProfileSubmittedPlanner: RmPlanner<
+export const workerProfileSubmittedPlanner: SchedulerPlanner<
   WorkerProfileSubmittedMsg
 > = (
-  oldState: RmState,
-  newState: RmState,
+  oldState: SchedulerState,
+  newState: SchedulerState,
   message: WorkerProfileSubmittedMsg
-): RmEffect[] => {
-  const effects: RmEffect[] = [];
+): SchedulerEffect[] => {
+  const effects: SchedulerEffect[] = [];
 
   const oldWorkers = oldState.registry.workers;
   const newWorkers = newState.registry.workers;

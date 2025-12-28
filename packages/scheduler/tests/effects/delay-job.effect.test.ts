@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import type {
   EmitErrorFn,
-  RmEffectDeps,
+  SchedulerEffectDeps,
 } from "../../src/registries/effect.registry.js";
 import { EmitterFactoryPort, JobParserPort, QueuePort } from "@lcase/ports";
-import { DelayJobFx } from "../../src/rm.types.js";
+import { DelayJobFx } from "../../src/scheduler.types.js";
 import { jobSubmittedHttpJsonMsg } from "../fixtures/job-submitted.msg.js";
 import { JobDelayedEvent } from "@lcase/types";
 import { delayJobEffect } from "../../src/effects/delay-job.effect.js";
@@ -42,7 +42,7 @@ describe("delayJobEffect", () => {
 
     const emitErrorFn = {} as EmitErrorFn;
 
-    const deps: RmEffectDeps = { queue, ef, emitErrorFn, jobParser };
+    const deps: SchedulerEffectDeps = { queue, ef, emitErrorFn, jobParser };
 
     await delayJobEffect(delayJobFx, deps);
 
@@ -77,7 +77,7 @@ describe("delayJobEffect", () => {
     const emitErrorFn = vi
       .fn()
       .mockReturnValue(undefined) as unknown as EmitErrorFn;
-    const deps: RmEffectDeps = { queue, ef, emitErrorFn, jobParser };
+    const deps: SchedulerEffectDeps = { queue, ef, emitErrorFn, jobParser };
 
     await delayJobEffect(delayJobFx, deps);
 

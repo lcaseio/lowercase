@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { emitWorkerProfileAdded } from "../../src/effects/emit-worker-profile-added.effect";
-import type { EmitWorkerProfileAddedFx } from "../../src/rm.types";
-import type { RmEffectDeps } from "../../src/registries/effect.registry";
+import type { EmitWorkerProfileAddedFx } from "../../src/scheduler.types.js";
+import type { SchedulerEffectDeps } from "../../src/registries/effect.registry";
 
 describe("workerProfileAddedEffect", () => {
   it("emits a worker.profile.added event", () => {
@@ -21,7 +21,7 @@ describe("workerProfileAddedEffect", () => {
     const emit = vi.fn().mockReturnValue({});
     const newWorkerEmitterNewSpan = vi.fn().mockReturnValue({ emit });
     const ef = { newWorkerEmitterNewSpan };
-    const deps = { ef } as unknown as RmEffectDeps;
+    const deps = { ef } as unknown as SchedulerEffectDeps;
     emitWorkerProfileAdded(effect, deps);
     expect(newWorkerEmitterNewSpan).toHaveBeenCalledExactlyOnceWith(
       effect.scope,

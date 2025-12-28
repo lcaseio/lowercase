@@ -1,5 +1,5 @@
-import { RmEffectDeps } from "../registries/effect.registry.js";
-import type { EmitWorkerProfileAddedFx } from "../rm.types.js";
+import { SchedulerEffectDeps } from "../registries/effect.registry.js";
+import type { EmitWorkerProfileAddedFx } from "../scheduler.types.js";
 
 /**
  * Effect that emits an event to the event bus, letting the worker know
@@ -10,7 +10,7 @@ import type { EmitWorkerProfileAddedFx } from "../rm.types.js";
  */
 export const emitWorkerProfileAdded = async (
   effect: EmitWorkerProfileAddedFx,
-  deps: RmEffectDeps
+  deps: SchedulerEffectDeps
 ) => {
   console.log("greetings");
   const emitter = deps.ef.newWorkerEmitterNewSpan(effect.scope, effect.traceId);
