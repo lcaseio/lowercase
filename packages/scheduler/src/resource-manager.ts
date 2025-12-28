@@ -26,6 +26,8 @@ import { emitError, wireEffectHandlers } from "./registries/effect.registry.js";
 import { reducers } from "./registries/reducer.registry.js";
 import { planners } from "./registries/planner.registry.js";
 import type { ResourceManagerDeps, RmState } from "./rm.state.type.js";
+import path from "path";
+import { appendFileSync, writeFileSync } from "fs";
 
 /**
  * the resource manager handles queueing jobs for workers.
@@ -191,6 +193,7 @@ export class ResourceManager implements ResourceManagerPort {
     while (this.messages.length > 0) {
       this.processNext();
     }
+    this.writeStateToDisk();
     this.isProcessing = false;
   }
   processNext() {
@@ -208,7 +211,7 @@ export class ResourceManager implements ResourceManagerPort {
     // set after in order to supply both to the planner above
     this.state = newState;
 
-    console.log(this.state.runtime);
+    if (!this.enableSideEffects) return;
     for (const effect of effects) {
       this.executeEffect(effect);
     }
@@ -300,5 +303,13 @@ export class ResourceManager implements ResourceManagerPort {
     };
     this.messages.push(message);
     if (!this.isProcessing) this.processAll();
+  }
+
+  writeStateToDisk() {
+    const fileName = `output-rm-runtime.temp.json`;
+    const fullPath = path.join(process.cwd(), fileName);
+    appendFileSync(fullPath, JSON.stringify(this.state) + "\n", {
+      encoding: "utf8",
+    });
   }
 }
