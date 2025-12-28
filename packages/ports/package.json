@@ -32,6 +32,9 @@
     },
     "./replay": {
       "types": "./dist/replay/index.d.ts"
+    },
+    "./throttler": {
+      "types": "./dist/throttler/throttler.port.d.ts"
     }
   },
   "scripts": {
