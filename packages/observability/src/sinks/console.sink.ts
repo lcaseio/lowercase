@@ -23,7 +23,7 @@ export class ConsoleSink implements EventSink {
     system: "\x1b[38;2;170;170;190m",
     replay: "\x1b[38;2;170;170;190m",
     scheduler: "\x1b[38;2;170;170;190m",
-    throttler: "\x1b[38;2;170;170;190m",
+    concurrency: "\x1b[38;2;170;170;190m",
   };
 
   constructor(private readonly ctx: ConsoleSinkContext) {}

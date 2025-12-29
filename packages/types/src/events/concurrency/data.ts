@@ -1,18 +1,18 @@
-export type ThrottlerToolGrantedData = {
+export type ConcurrencyToolGrantedData = {
   runId: string;
   toolId: string;
   status: "granted";
 };
 
-export type ThrottlerToolDeniedData = {
+export type ConcurrencyToolDeniedData = {
   runId: string;
   toolId: string;
   status: "denied";
 };
-export type ThrottlerStartedData = {
+export type ConcurrencyStartedData = {
   status: "started";
 };
 
-export type ThrottlerStoppedData = {
+export type ConcurrencyStoppedData = {
   status: "stopped";
 };

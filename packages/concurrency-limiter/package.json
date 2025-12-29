@@ -1,5 +1,5 @@
 {
-  "name": "@lcase/throttler",
+  "name": "@lcase/concurrency-limiter",
   "version": "0.1.0-alpha.8",
   "private": true,
   "type": "module",

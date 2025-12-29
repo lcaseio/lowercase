@@ -9,14 +9,14 @@ import { httpjsonEventTypes } from "./job/httpjson.types.js";
 import { mcpEventTypes } from "./job/mcp.types.js";
 import { replayEventTypes } from "./replay/replay.types.js";
 import { schedulerEventTypes } from "./scheduler/event-types.js";
-import { throttlerEventTypes } from "./throttler/event-types.js";
+import { concurrencyEventTypes } from "./concurrency/event-types.js";
 
 export const eventTypes = [
   ...httpjsonEventTypes,
   ...mcpEventTypes,
   ...replayEventTypes,
   ...schedulerEventTypes,
-  ...throttlerEventTypes,
+  ...concurrencyEventTypes,
   "flow.queued",
   "flow.submitted",
   "flow.started",
@@ -94,7 +94,7 @@ export const domainTypes = [
   "worker",
   "system",
   "scheduler",
-  "throttler",
+  "concurrency",
 ] as const satisfies readonly EventDomains[];
 
 export const entityTypes = [

@@ -1,1 +1,1 @@
-export * from "./throttler.js";
+export * from "./concurrency-limiter.js";

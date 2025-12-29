@@ -27,9 +27,9 @@ import type { ReplayEventType } from "./replay/map.js";
 import type { ReplayScope } from "./replay/event.js";
 import type { SchedulerEventType } from "./scheduler/map.js";
 import type { SchedulerScope } from "./scheduler/event.js";
-import { ThrottlerEventType } from "./throttler/map.js";
-import { ThrottlerScope } from "./throttler/event.js";
-import { SystemEventType } from "./system/map.js";
+import type { SystemEventType } from "./system/map.js";
+import type { ConcurrencyEventType } from "./concurrency/map.js";
+import type { ConcurrencyScope } from "./concurrency/event.js";
 
 /**
  * The varying base fields that are required for each event type.
@@ -56,8 +56,8 @@ export type ScopeFor<T extends EventType> = T extends StepEventType
   ? WorkerScope
   : T extends SchedulerEventType
   ? SchedulerScope
-  : T extends ThrottlerEventType
-  ? ThrottlerScope
+  : T extends ConcurrencyEventType
+  ? ConcurrencyScope
   : T extends ReplayEventType
   ? ReplayScope
   : T extends SystemEventType

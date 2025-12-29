@@ -1,4 +1,4 @@
-import type { ThrottlerPort } from "@lcase/ports/throttler";
+import type { ConcurrencyLimiterPort } from "@lcase/ports";
 import type { EventBusPort } from "@lcase/ports/bus";
 import type { EmitterFactoryPort } from "@lcase/ports/events";
 import type { AnyEvent } from "@lcase/types";
@@ -13,7 +13,7 @@ type ToolCounters = {
   };
 };
 
-export class Throttler implements ThrottlerPort {
+export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
   busTopics = new Map<BusTopic, Unsubscribe>();
   toolCounters: ToolCounters = {};
 

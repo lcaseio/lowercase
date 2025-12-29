@@ -1,6 +1,6 @@
 import { AnyEvent } from "@lcase/types";
 
-export interface ThrottlerPort {
+export interface ConcurrencyLimiterPort {
   handleToolRequested(event: AnyEvent): Promise<void>;
   start(): void;
   stop(): void;

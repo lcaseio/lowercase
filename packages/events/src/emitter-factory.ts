@@ -1,4 +1,8 @@
-import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
+import type {
+  EmitterFactoryPort,
+  EventBusPort,
+  SchedulerEmitterPort,
+} from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -16,6 +20,8 @@ import type {
   JobFailedEvent,
   JobStartedType,
   ReplayScope,
+  ConcurrencyScope,
+  SchedulerScope,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -28,6 +34,8 @@ import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
 import { ReplayEmitter } from "./emitters/replay.emitter.js";
+import { ConcurrencyEmitter } from "./emitters/concurrency.emitter.js";
+import { SchedulerEmitter } from "./emitters/scheduler.emitter.js";
 
 /**
  * NOTE: This class is currently in between being refactored.
@@ -57,6 +65,45 @@ import { ReplayEmitter } from "./emitters/replay.emitter.js";
 
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
+
+  newConcurrencyEmitterNewTrace(scope: CloudScope & ConcurrencyScope) {
+    const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new ConcurrencyEmitter(this.bus, combinedScope);
+  }
+
+  newConcurrencyEmitterFromEvent(
+    event: AnyEvent,
+    scope: ConcurrencyScope & { source: string }
+  ): ConcurrencyEmitter {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return new ConcurrencyEmitter(this.bus, {
+      ...scope,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
+  }
+
+  newSchedulerEmitterFromEvent(
+    event: AnyEvent,
+    scope: SchedulerScope & { source: string }
+  ): SchedulerEmitter {
+    const { spanId, traceParent } = this.makeNewSpan(event.traceid);
+    return new SchedulerEmitter(this.bus, {
+      ...scope,
+      traceId: event.traceid,
+      spanId,
+      traceParent,
+    });
+  }
+
+  newSchedulerEmitterNewSpan(
+    scope: CloudScope & SchedulerScope,
+    traceId: string
+  ): SchedulerEmitter {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
+    return new SchedulerEmitter(this.bus, combinedScope);
+  }
 
   newReplayEmitterNewTrace(
     scope: CloudScope & ReplayScope,

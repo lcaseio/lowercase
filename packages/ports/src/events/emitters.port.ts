@@ -20,7 +20,6 @@ import type {
   RunEventType,
   RunEventData,
   RunEvent,
-  AnyEvent,
   ToolEvent,
   ReplayEventType,
   ReplayEventData,
@@ -28,10 +27,13 @@ import type {
   SchedulerEventType,
   SchedulerEvent,
   SchedulerEventData,
-  ThrottlerEventType,
-  THrottlerEventData,
-  ThrottlerEvent,
+  ConcurrencyEventType,
+  ConcurrencyEventData,
+  ConcurrencyEvent,
 } from "@lcase/types";
+
+export interface BaseEmitterPort {}
+
 export type EnvelopeHeader = {
   id: string;
   time: string;
@@ -41,8 +43,6 @@ export type EnvelopeHeader = {
   spanid: string;
   parentspanid?: string;
 } & CloudScope;
-
-export interface BaseEmitterPort {}
 
 export interface StepEmitterPort {
   emit<T extends StepEventType>(type: T, data: StepEventData<T>): Promise<void>;
@@ -116,9 +116,9 @@ export interface SchedulerEmitterPort {
   ): Promise<SchedulerEvent<T>>;
 }
 
-export interface ThrottlerEmitterPort {
-  emit<T extends ThrottlerEventType>(
+export interface ConcurrencyEmitterPort {
+  emit<T extends ConcurrencyEventType>(
     type: T,
-    data: THrottlerEventData<T>
-  ): Promise<ThrottlerEvent<T>>;
+    data: ConcurrencyEventData<T>
+  ): Promise<ConcurrencyEvent<T>>;
 }
