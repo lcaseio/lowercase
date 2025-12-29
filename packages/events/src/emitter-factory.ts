@@ -28,7 +28,6 @@ import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
 import { ReplayEmitter } from "./emitters/replay.emitter.js";
-import { boolean } from "zod/v4";
 
 /**
  * NOTE: This class is currently in between being refactored.
@@ -48,7 +47,7 @@ import { boolean } from "zod/v4";
  * @member setScope(scope: BaseScope): void
  * @member newStepEmitter(): StepEmitter
  *
- * @example
+ * @examplegi
  * ```
  * const emitterFactory = new EmitterFactory();
  * const stepEmitter = newStepEmitter({...});

@@ -6,7 +6,7 @@ import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine, PipeResolver } from "@lcase/engine";
 
-import { EmitterFactory, eventRegistry } from "@lcase/events";
+import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import { EventBusPort, JobParserPort, StreamRegistryPort } from "@lcase/ports";
 import {
   makeBusFactory,
@@ -64,7 +64,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const streamRegistry = new InMemoryStreamRegistry();
   const flowStore = new FlowStore();
 
-  const jobParser = new JobParser(eventRegistry);
+  const jobParser = new JobParser(eventSchemaRegistry);
   const scheduler = new Scheduler({
     bus,
     ef,

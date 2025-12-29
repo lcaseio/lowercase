@@ -1,4 +1,4 @@
-import {
+import type {
   AllJobEvents,
   AnyEvent,
   CloudScope,
@@ -8,17 +8,16 @@ import {
   JobEventType,
   JobFailedEvent,
   JobScope,
-  JobStartedData,
-  JobStartedEvent,
   ReplayScope,
   RunScope,
+  SchedulerScope,
   StepScope,
   SystemScope,
-  ToolEventType,
+  ThrottlerScope,
   ToolScope,
   WorkerScope,
 } from "@lcase/types";
-import {
+import type {
   EngineEmitterPort,
   FlowEmitterPort,
   JobEmitterPort,
@@ -28,6 +27,7 @@ import {
   SystemEmitterPort,
   ToolEmitterPort,
   WorkerEmitterPort,
+  SchedulerEmitterPort,
 } from "./emitters.port.js";
 
 export type OtelContext = {
@@ -38,6 +38,25 @@ export type OtelContext = {
 };
 
 export interface EmitterFactoryPort {
+  newThrottlerEmitterFromEvent(
+    event: AnyEvent,
+    scope: ThrottlerScope & { source: string }
+  ): SchedulerEmitterPort;
+
+  newSchedulerEmitterNewSpan(
+    scope: CloudScope & SchedulerScope,
+    traceId: string
+  ): SchedulerEmitterPort;
+  newSchedulerEmitterFromEvent(
+    event: AnyEvent,
+    scope: SchedulerScope & { source: string }
+  ): SchedulerEmitterPort;
+
+  newSchedulerEmitterNewSpan(
+    scope: CloudScope & SchedulerScope,
+    traceId: string
+  ): SchedulerEmitterPort;
+
   newReplayEmitterNewTrace(
     scope: CloudScope & ReplayScope,
     internal?: boolean

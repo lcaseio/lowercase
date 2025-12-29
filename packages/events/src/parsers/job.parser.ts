@@ -33,7 +33,7 @@ import {
   JobStartedParsed,
   JobSubmittedParsed,
 } from "@lcase/ports";
-import { EventSchemaRegistry } from "../registries/event-registry.js";
+import { EventSchemaRegistry } from "../registries/event-schema.registry.js";
 import z from "zod";
 
 export class JobParser implements JobParserPort {

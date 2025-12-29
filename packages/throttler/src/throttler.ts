@@ -38,7 +38,9 @@ export class Throttler implements ThrottlerPort {
     this.busTopics.clear();
   }
 
-  handleToolRequested(event: AnyEvent) {
-    // check type or parse
+  async handleToolRequested(event: AnyEvent) {
+    // check type or parsed
+    // "throttler.tool.granted"
+    // "throttler.tool.denied",
   }
 }

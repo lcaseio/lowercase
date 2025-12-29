@@ -25,6 +25,12 @@ import type {
   ReplayEventType,
   ReplayEventData,
   ReplayEvent,
+  SchedulerEventType,
+  SchedulerEvent,
+  SchedulerEventData,
+  ThrottlerEventType,
+  THrottlerEventData,
+  ThrottlerEvent,
 } from "@lcase/types";
 export type EnvelopeHeader = {
   id: string;
@@ -101,4 +107,18 @@ export interface ToolEmitterPort {
     type: T,
     data: ToolEventData<T>
   ): Promise<ToolEvent<T>>;
+}
+
+export interface SchedulerEmitterPort {
+  emit<T extends SchedulerEventType>(
+    type: T,
+    data: SchedulerEventData<T>
+  ): Promise<SchedulerEvent<T>>;
+}
+
+export interface ThrottlerEmitterPort {
+  emit<T extends ThrottlerEventType>(
+    type: T,
+    data: THrottlerEventData<T>
+  ): Promise<ThrottlerEvent<T>>;
 }

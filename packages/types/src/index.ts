@@ -12,6 +12,8 @@ export * from "./events/run/index.js";
 export * from "./events/flow/index.js";
 export * from "./events/job/index.js";
 export * from "./events/replay/index.js";
+export * from "./events/scheduler/index.js";
+export * from "./events/throttler/index.js";
 
 export * from "./events/step/map.js";
 export * from "./events/step/event.js";

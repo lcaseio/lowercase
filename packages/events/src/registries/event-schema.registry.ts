@@ -71,6 +71,8 @@ import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
 import { httpjsonRegistry } from "./job/httpjson.registry.js";
 import { mcpRegistry } from "./job/mcp.registry.js";
 import { replayRegistry } from "./replay/replay.registry.js";
+import { schedulerSchemaMap } from "./scheduler/schema.map.js";
+import { throttlerSchemaMap } from "./throttler/schema.map.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -89,10 +91,12 @@ export type EventTopic =
 
 // simple hardcoded registry mapping event types to schemas, as well as
 // topics to publish the event to
-export const eventRegistry = {
+export const eventSchemaRegistry = {
   ...httpjsonRegistry,
   ...mcpRegistry,
   ...replayRegistry,
+  ...schedulerSchemaMap,
+  ...throttlerSchemaMap,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {
