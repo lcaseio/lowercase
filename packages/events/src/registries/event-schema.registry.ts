@@ -56,6 +56,8 @@ import {
   WorkerJobDequeuedDataSchema,
   WorkerProfileAddedDataSchema,
   WorkerProfileSubmittedDataSchema,
+  WorkerSlotFinishedDataSchema,
+  WorkerSlotRequestedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
 } from "../schemas/worker.data.schema.js";
@@ -63,6 +65,8 @@ import {
   WorkerJobDequeuedSchema,
   WorkerProfileAddedSchema,
   WorkerProfileSubmittedSchema,
+  WorkerSlotFinishedSchema,
+  WorkerSlotRequestedSchema,
   WorkerStartedSchema,
   WorkerStoppedSchema,
 } from "../schemas/worker.event.schema.js";
@@ -240,6 +244,18 @@ export const eventSchemaRegistry = {
     schema: {
       event: WorkerJobDequeuedSchema,
       data: WorkerJobDequeuedDataSchema,
+    },
+  },
+  "worker.slot.requested": {
+    schema: {
+      event: WorkerSlotRequestedSchema,
+      data: WorkerSlotRequestedDataSchema,
+    },
+  },
+  "worker.slot.finished": {
+    schema: {
+      event: WorkerSlotFinishedSchema,
+      data: WorkerSlotFinishedDataSchema,
     },
   },
   "system.logged": {

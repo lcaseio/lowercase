@@ -1,7 +1,16 @@
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent, ToolSpec } from "@lcase/types";
+export type ToolQueueEntry = {
+  workerId: string;
+  runId: string;
+  jobId: string;
+  traceId: string;
+};
 
+export type ConcurrencyResult = ToolQueueEntry & {
+  granted: boolean;
+};
 export interface ConcurrencyLimiterPort {
-  handleToolRequested(event: AnyEvent): Promise<void>;
-  start(): void;
-  stop(): void;
+  slotRequestResults(event: AnyEvent): ConcurrencyResult[];
+  slotFinishedResults(event: AnyEvent): ConcurrencyResult[];
+  loadConfig(toolSpecs: ToolSpec[]): void;
 }

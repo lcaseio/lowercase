@@ -6,6 +6,8 @@ import type {
   WorkerProfileSubmittedData,
   WorkerProfileAddedData,
   WorkerJobDequeuedData,
+  WorkerSlotRequestedData,
+  WorkerSlotFinishedData,
 } from "@lcase/types";
 
 const WorkerDescriptorDataSchema = z
@@ -57,3 +59,15 @@ export const WorkerJobDequeuedDataSchema = z
     toolId: z.string(),
   })
   .strict() satisfies z.ZodType<WorkerJobDequeuedData>;
+
+export const WorkerSlotRequestedDataSchema = z.object({
+  jobId: z.string(),
+  runId: z.string(),
+  toolId: z.string(),
+}) satisfies z.ZodType<WorkerSlotRequestedData>;
+
+export const WorkerSlotFinishedDataSchema = z.object({
+  jobId: z.string(),
+  runId: z.string(),
+  toolId: z.string(),
+}) satisfies z.ZodType<WorkerSlotFinishedData>;

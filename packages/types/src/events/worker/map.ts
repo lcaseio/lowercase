@@ -6,6 +6,7 @@ import {
   WorkerJobDequeuedData,
   WorkerProfileAddedData,
   WorkerProfileSubmittedData as WorkerProfileSubmittedData,
+  WorkerSlotRequestedData,
   WorkerStartedData,
   WorkerStoppedData,
 } from "./data.js";
@@ -38,6 +39,18 @@ export type WorkerEventMap = {
     "job",
     "dequeued",
     WorkerJobDequeuedData
+  >;
+  "worker.slot.requested": DomainEntityActionDescriptor<
+    "worker",
+    "slot",
+    "requested",
+    WorkerSlotRequestedData
+  >;
+  "worker.slot.finished": DomainEntityActionDescriptor<
+    "worker",
+    "slot",
+    "finished",
+    WorkerSlotRequestedData
   >;
 };
 

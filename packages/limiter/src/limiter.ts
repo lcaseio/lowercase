@@ -1,0 +1,125 @@
+import {
+  ConcurrencyLimiterPort,
+  ConcurrencyResult,
+  EmitterFactoryPort,
+  EventBusPort,
+} from "@lcase/ports";
+import { AnyEvent } from "@lcase/types";
+
+type BusTopic = string;
+type Unsubscribe = ReturnType<EventBusPort["subscribe"]>;
+
+export type LimiterDeps = {
+  bus: EventBusPort;
+  ef: EmitterFactoryPort;
+  cl: ConcurrencyLimiterPort;
+};
+
+export class Limiter {
+  id: string;
+  scope: string;
+  source: string;
+  busTopics = new Map<BusTopic, Unsubscribe>();
+  constructor(id: string, scope: string, private readonly deps: LimiterDeps) {
+    this.id = id;
+    this.scope = scope;
+    this.source = `lowercase://limiter/${scope}/${id}`;
+  }
+
+  async start() {
+    const slot = "worker.slot.requested";
+    const token = "worker.token.requested";
+    const slotFinished = "worker.slot.finished";
+    this.busTopics.set(
+      slot,
+      this.deps.bus.subscribe(slot, async (event) =>
+        this.handleSlotRequested(event)
+      )
+    );
+    this.busTopics.set(
+      slotFinished,
+      this.deps.bus.subscribe(slotFinished, async (event) =>
+        this.handleSlotFinished(event)
+      )
+    );
+    // rate limiting not yet implemented
+    // this.busTopics.set(
+    //   token,
+    //   this.deps.bus.subscribe(token, async () => {})
+    // );
+
+    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
+      {
+        limiterid: this.id,
+        source: this.source,
+      },
+      this.deps.ef.generateTraceId()
+    );
+
+    await emitter.emit("limiter.started", { status: "started" });
+  }
+  // unsubscribe from all bus topics
+  async stop() {
+    for (const unsubscribe of this.busTopics.values()) {
+      unsubscribe();
+    }
+    this.busTopics.clear();
+    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
+      {
+        limiterid: this.id,
+        source: this.source,
+      },
+      this.deps.ef.generateTraceId()
+    );
+
+    await emitter.emit("limiter.stopped", { status: "stopped" });
+  }
+
+  async handleSlotRequested(event: AnyEvent) {
+    // see if concurrency is at limit
+    if (event.type !== "worker.slot.requested") return;
+    const e = event as AnyEvent<"worker.slot.requested">;
+    const concurrencyResults = this.deps.cl.slotRequestResults(event);
+
+    for (const result of concurrencyResults) {
+      await this.emitResponse(result, e.data.toolId);
+    }
+  }
+
+  async handleSlotFinished(event: AnyEvent) {
+    if (event.type !== "worker.slot.finished") return;
+    const e = event as AnyEvent<"worker.slot.finished">;
+
+    const concurencyResults = this.deps.cl.slotFinishedResults(event);
+    for (const result of concurencyResults) {
+      await this.emitResponse(result, e.data.toolId);
+    }
+  }
+
+  async emitResponse(result: ConcurrencyResult, toolId: string) {
+    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
+      {
+        limiterid: this.id,
+        source: this.source,
+      },
+      result.traceId
+    );
+    if (result.granted) {
+      await emitter.emit("limiter.slot.granted", {
+        jobId: result.jobId,
+        runId: result.runId,
+        toolId,
+        workerId: result.workerId,
+        status: "granted",
+      });
+    } else {
+      await emitter.emit("limiter.slot.denied", {
+        jobId: result.jobId,
+        runId: result.runId,
+        toolId,
+        workerId: result.workerId,
+        status: "denied",
+      });
+    }
+  }
+}

@@ -40,6 +40,8 @@ export const eventTypes = [
   "worker.profile.added",
   "worker.profile.submitted",
   "worker.job.dequeued",
+  "worker.slot.requested",
+  "worker.slot.finished",
   "system.logged",
 ] as const satisfies readonly EventType[];
 
@@ -101,4 +103,5 @@ export const entityTypes = [
   "mcp",
   "httpjson",
   "job",
+  "slot",
 ] as const satisfies readonly EventEntities[];
