@@ -1,4 +1,4 @@
-import type { ConcurrencyLimiterPort, ConcurrencyResult } from "@lcase/ports";
+import type { ConcurrencyLimiterPort, SlotAccessDecision } from "@lcase/ports";
 import type { EventBusPort } from "@lcase/ports/bus";
 import type { EmitterFactoryPort } from "@lcase/ports/events";
 import type { AnyEvent, ToolSpec } from "@lcase/types";
@@ -10,15 +10,15 @@ export type ToolCounters = {
   };
 };
 
-export type ToolQueueEntry = {
+export type JobEntry = {
   workerId: string;
   runId: string;
   jobId: string;
   traceId: string;
 };
 
-type ToolQueues = {
-  [ToolId in string]: ToolQueueEntry[];
+export type ToolQueues = {
+  [ToolId in string]: JobEntry[];
 };
 /**
  * Implements concurrency logic per tool, either globally or per runtime.
@@ -60,16 +60,15 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @param event AnyEvent<"worker.slot.requested">
    * @returns ConcurrencyResult[]
    */
-  slotRequestResults(
+  slotRequestDecisions(
     event: AnyEvent<"worker.slot.requested">
-  ): ConcurrencyResult[] {
-    const concurrencyResult: ConcurrencyResult[] = [];
+  ): SlotAccessDecision[] {
+    const concurrencyResult: SlotAccessDecision[] = [];
     const { toolId } = event.data;
     if (!this.toolCounters[toolId]) return concurrencyResult;
 
-    concurrencyResult.concat(this.getQueuedSlots(toolId));
+    this.addQueuedSlots(toolId, concurrencyResult);
     concurrencyResult.push(this.grantOrDenyEvent(event));
-
     return concurrencyResult;
   }
 
@@ -81,19 +80,19 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    */
   grantOrDenyEvent(
     event: AnyEvent<"worker.slot.requested">
-  ): ConcurrencyResult {
+  ): SlotAccessDecision {
     const { toolId } = event.data;
     if (!this.hasSlot(toolId)) {
       this.toolQueues[toolId].push({
         workerId: event.workerid,
         runId: event.data.runId,
-        jobId: event.data.toolId,
+        jobId: event.data.jobId,
         traceId: event.traceid,
       });
       return {
         workerId: event.workerid,
         runId: event.data.runId,
-        jobId: event.data.toolId,
+        jobId: event.data.jobId,
         traceId: event.traceid,
         granted: false,
       };
@@ -103,7 +102,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
     return {
       workerId: event.workerid,
       runId: event.data.runId,
-      jobId: event.data.toolId,
+      jobId: event.data.jobId,
       traceId: event.traceid,
       granted: true,
     };
@@ -115,21 +114,23 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @param toolId string tool id
    * @returns ConcurrencyResult[]
    */
-  getQueuedSlots(toolId: string): ConcurrencyResult[] {
+  addQueuedSlots(
+    toolId: string,
+    decisions: SlotAccessDecision[]
+  ): SlotAccessDecision[] {
     const queue = this.toolQueues[toolId];
-    const queuedSlots: ConcurrencyResult[] = [];
 
-    while (!this.hasSlot(toolId) && this.toolQueues[toolId].length > 0) {
+    while (this.hasSlot(toolId) && this.toolQueues[toolId].length > 0) {
       const result = queue.shift();
       if (result) {
-        queuedSlots.push({
+        decisions.push({
           ...result,
           granted: true,
         });
         this.toolCounters[toolId].count++;
       }
     }
-    return queuedSlots;
+    return decisions;
   }
 
   /**
@@ -137,13 +138,13 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @param event AnyEvent<"worker.slot.finished">
    * @returns boolean
    */
-  slotFinishedResults(
+  slotFinishedDecisions(
     event: AnyEvent<"worker.slot.finished">
-  ): ConcurrencyResult[] {
-    const concurrencyResult: ConcurrencyResult[] = [];
+  ): SlotAccessDecision[] {
+    const concurrencyResult: SlotAccessDecision[] = [];
     const { toolId } = event.data;
     if (this.toolCounters[toolId].count > 0) this.toolCounters[toolId].count--;
-    concurrencyResult.concat(this.getQueuedSlots(toolId));
+    this.addQueuedSlots(toolId, concurrencyResult);
     return concurrencyResult;
   }
 

@@ -1,6 +1,6 @@
-import {
+import type {
   ConcurrencyLimiterPort,
-  ConcurrencyResult,
+  SlotAccessDecision,
   EmitterFactoryPort,
   EventBusPort,
 } from "@lcase/ports";
@@ -79,7 +79,7 @@ export class Limiter {
     // see if concurrency is at limit
     if (event.type !== "worker.slot.requested") return;
     const e = event as AnyEvent<"worker.slot.requested">;
-    const concurrencyResults = this.deps.cl.slotRequestResults(event);
+    const concurrencyResults = this.deps.cl.slotRequestDecisions(event);
 
     for (const result of concurrencyResults) {
       await this.emitResponse(result, e.data.toolId);
@@ -90,34 +90,34 @@ export class Limiter {
     if (event.type !== "worker.slot.finished") return;
     const e = event as AnyEvent<"worker.slot.finished">;
 
-    const concurencyResults = this.deps.cl.slotFinishedResults(event);
+    const concurencyResults = this.deps.cl.slotFinishedDecisions(event);
     for (const result of concurencyResults) {
       await this.emitResponse(result, e.data.toolId);
     }
   }
 
-  async emitResponse(result: ConcurrencyResult, toolId: string) {
+  async emitResponse(decision: SlotAccessDecision, toolId: string) {
     const emitter = this.deps.ef.newLimiterEmitterNewTrace(
       {
         limiterid: this.id,
         source: this.source,
       },
-      result.traceId
+      decision.traceId
     );
-    if (result.granted) {
+    if (decision.granted) {
       await emitter.emit("limiter.slot.granted", {
-        jobId: result.jobId,
-        runId: result.runId,
+        jobId: decision.jobId,
+        runId: decision.runId,
         toolId,
-        workerId: result.workerId,
+        workerId: decision.workerId,
         status: "granted",
       });
     } else {
       await emitter.emit("limiter.slot.denied", {
-        jobId: result.jobId,
-        runId: result.runId,
+        jobId: decision.jobId,
+        runId: decision.runId,
         toolId,
-        workerId: result.workerId,
+        workerId: decision.workerId,
         status: "denied",
       });
     }

@@ -6,11 +6,11 @@ export type ToolQueueEntry = {
   traceId: string;
 };
 
-export type ConcurrencyResult = ToolQueueEntry & {
+export type SlotAccessDecision = ToolQueueEntry & {
   granted: boolean;
 };
 export interface ConcurrencyLimiterPort {
-  slotRequestResults(event: AnyEvent): ConcurrencyResult[];
-  slotFinishedResults(event: AnyEvent): ConcurrencyResult[];
+  slotRequestDecisions(event: AnyEvent): SlotAccessDecision[];
+  slotFinishedDecisions(event: AnyEvent): SlotAccessDecision[];
   loadConfig(toolSpecs: ToolSpec[]): void;
 }
