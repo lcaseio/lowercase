@@ -79,10 +79,10 @@ export class Limiter {
     // see if concurrency is at limit
     if (event.type !== "worker.slot.requested") return;
     const e = event as AnyEvent<"worker.slot.requested">;
-    const concurrencyResults = this.deps.cl.slotRequestDecisions(event);
+    const concurrencyDecisions = this.deps.cl.slotRequestDecisions(event);
 
-    for (const result of concurrencyResults) {
-      await this.emitResponse(result, e.data.toolId);
+    for (const decision of concurrencyDecisions) {
+      await this.emitResponse(decision, e.data.toolId);
     }
   }
 
@@ -90,9 +90,9 @@ export class Limiter {
     if (event.type !== "worker.slot.finished") return;
     const e = event as AnyEvent<"worker.slot.finished">;
 
-    const concurencyResults = this.deps.cl.slotFinishedDecisions(event);
-    for (const result of concurencyResults) {
-      await this.emitResponse(result, e.data.toolId);
+    const concurrencyDecisions = this.deps.cl.slotFinishedDecisions(event);
+    for (const decision of concurrencyDecisions) {
+      await this.emitResponse(decision, e.data.toolId);
     }
   }
 
