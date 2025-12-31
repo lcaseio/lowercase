@@ -72,7 +72,7 @@ import { httpjsonRegistry } from "./job/httpjson.registry.js";
 import { mcpRegistry } from "./job/mcp.registry.js";
 import { replayRegistry } from "./replay/replay.registry.js";
 import { schedulerSchemaMap } from "./scheduler/schema.map.js";
-import { concurrencySchemaMap } from "./concurrency/schema.map.js";
+import { limiterSchemaMap } from "./limiter/schema.map.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -96,7 +96,7 @@ export const eventSchemaRegistry = {
   ...mcpRegistry,
   ...replayRegistry,
   ...schedulerSchemaMap,
-  ...concurrencySchemaMap,
+  ...limiterSchemaMap,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {

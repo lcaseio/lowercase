@@ -3,7 +3,7 @@ import type { SchedulerEventType } from "@lcase/types";
 export const schedulerEventTypes = [
   "scheduler.started",
   "scheduler.stopped",
-  "scheduler.tool.requested",
+  "scheduler.slot.requested",
 ] as const satisfies SchedulerEventType[];
 
 type MissingSchedulerTypes = Exclude<

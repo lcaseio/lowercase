@@ -1,15 +1,15 @@
 import type {
   CloudScope,
-  ConcurrencyScope,
-  ConcurrencyOtelAttributesMap,
-  ConcurrencyEventType,
-  ConcurrencyEventData,
-  ConcurrencyEvent,
+  LimiterScope,
+  LimiterOtelAttributesMap,
+  LimiterEventType,
+  LimiterEventData,
+  LimiterEvent,
 } from "@lcase/types";
 import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
-import { concurrencyOtelAttributesMap } from "../registries/concurrency/otel.map.js";
+import { limiterOtelAttributesMap } from "../registries/limiter/otel.map.js";
 import { eventSchemaRegistry } from "../registries/event-schema.registry.js";
 
 /**
@@ -18,48 +18,48 @@ import { eventSchemaRegistry } from "../registries/event-schema.registry.js";
  *
  * registry should move out.
  */
-export class ConcurrencyEmitter extends BaseEmitter {
+export class LimiterEmitter extends BaseEmitter {
   protected otel: OtelContext;
-  protected concurrencyOtelAttributesMap: ConcurrencyOtelAttributesMap;
-  #concurrencyScope: ConcurrencyScope;
+  protected limiterOtelAttributesMap: LimiterOtelAttributesMap;
+  #limiterScope: LimiterScope;
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & ConcurrencyScope & CloudScope,
+    scope: OtelContext & LimiterScope & CloudScope,
     private internal: boolean = false
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { concurrencyid } = scope;
+    const { limiterid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#concurrencyScope = { concurrencyid };
-    this.concurrencyOtelAttributesMap = concurrencyOtelAttributesMap;
+    this.#limiterScope = { limiterid };
+    this.limiterOtelAttributesMap = limiterOtelAttributesMap;
     this.bus = bus;
   }
 
-  async emit<T extends ConcurrencyEventType>(
+  async emit<T extends LimiterEventType>(
     type: T,
-    data: ConcurrencyEventData<T>
-  ): Promise<ConcurrencyEvent<T>> {
+    data: LimiterEventData<T>
+  ): Promise<LimiterEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
-      ...this.#concurrencyScope,
+      ...this.#limiterScope,
       data,
       type,
-      domain: this.concurrencyOtelAttributesMap[type].domain,
-      action: this.concurrencyOtelAttributesMap[type].action,
-      ...(this.concurrencyOtelAttributesMap[type].entity
-        ? { entity: this.concurrencyOtelAttributesMap[type].entity }
+      domain: this.limiterOtelAttributesMap[type].domain,
+      action: this.limiterOtelAttributesMap[type].action,
+      ...(this.limiterOtelAttributesMap[type].entity
+        ? { entity: this.limiterOtelAttributesMap[type].entity }
         : {}),
-    } satisfies ConcurrencyEvent<T>;
+    } satisfies LimiterEvent<T>;
 
     const entry = eventSchemaRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[concurrency-emitter] error parsing event; ${type}; ${result.error}`
+        `[limiter-emitter] error parsing event; ${type}; ${result.error}`
       );
     }
     await this.bus.publish(type, event, { internal: this.internal });

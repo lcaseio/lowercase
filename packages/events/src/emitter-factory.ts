@@ -1,8 +1,4 @@
-import type {
-  EmitterFactoryPort,
-  EventBusPort,
-  SchedulerEmitterPort,
-} from "@lcase/ports";
+import type { EmitterFactoryPort, EventBusPort } from "@lcase/ports";
 import type {
   StepScope,
   CloudScope,
@@ -20,8 +16,8 @@ import type {
   JobFailedEvent,
   JobStartedType,
   ReplayScope,
-  ConcurrencyScope,
   SchedulerScope,
+  LimiterScope,
 } from "@lcase/types";
 import { StepEmitter } from "./emitters/step.emitter.js";
 import { FlowEmitter } from "./emitters/flow.emitter.js";
@@ -34,7 +30,7 @@ import { ToolEmitter } from "./emitters/tool.emitter.js";
 import { WorkerEmitter } from "./emitters/worker.emitter.js";
 import { SystemEmitter } from "./emitters/system.emitter.js";
 import { ReplayEmitter } from "./emitters/replay.emitter.js";
-import { ConcurrencyEmitter } from "./emitters/concurrency.emitter.js";
+import { LimiterEmitter } from "./emitters/limiter.emitter.js";
 import { SchedulerEmitter } from "./emitters/scheduler.emitter.js";
 
 /**
@@ -66,17 +62,17 @@ import { SchedulerEmitter } from "./emitters/scheduler.emitter.js";
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
-  newConcurrencyEmitterNewTrace(scope: CloudScope & ConcurrencyScope) {
+  newLimiterEmitterNewTrace(scope: CloudScope & LimiterScope) {
     const combinedScope = { ...scope, ...this.startNewTrace() };
-    return new ConcurrencyEmitter(this.bus, combinedScope);
+    return new LimiterEmitter(this.bus, combinedScope);
   }
 
-  newConcurrencyEmitterFromEvent(
+  newLimiterEmitterFromEvent(
     event: AnyEvent,
-    scope: ConcurrencyScope & { source: string }
-  ): ConcurrencyEmitter {
+    scope: LimiterScope & { source: string }
+  ): LimiterEmitter {
     const { spanId, traceParent } = this.makeNewSpan(event.traceid);
-    return new ConcurrencyEmitter(this.bus, {
+    return new LimiterEmitter(this.bus, {
       ...scope,
       traceId: event.traceid,
       spanId,

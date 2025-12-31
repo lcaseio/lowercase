@@ -1,4 +1,5 @@
-export type SchedulerToolRequestedData = {
+export type SchedulerSlotRequestedData = {
+  jobId: string;
   runId: string;
   toolId: string;
 };

@@ -27,9 +27,9 @@ import type {
   SchedulerEventType,
   SchedulerEvent,
   SchedulerEventData,
-  ConcurrencyEventType,
-  ConcurrencyEventData,
-  ConcurrencyEvent,
+  LimiterEventType,
+  LimiterEvent,
+  LimiterEventData,
 } from "@lcase/types";
 
 export interface BaseEmitterPort {}
@@ -116,9 +116,9 @@ export interface SchedulerEmitterPort {
   ): Promise<SchedulerEvent<T>>;
 }
 
-export interface ConcurrencyEmitterPort {
-  emit<T extends ConcurrencyEventType>(
+export interface LimiterEmitterPort {
+  emit<T extends LimiterEventType>(
     type: T,
-    data: ConcurrencyEventData<T>
-  ): Promise<ConcurrencyEvent<T>>;
+    data: LimiterEventData<T>
+  ): Promise<LimiterEvent<T>>;
 }

@@ -5,16 +5,16 @@ import type {
 import type {
   SchedulerStartedData,
   SchedulerStoppedData,
-  SchedulerToolRequestedData,
+  SchedulerSlotRequestedData,
 } from "./data.js";
 
 type Scheduler = "scheduler";
 export type SchedulerEventMap = {
-  "scheduler.tool.requested": DomainEntityActionDescriptor<
+  "scheduler.slot.requested": DomainEntityActionDescriptor<
     Scheduler,
-    "tool",
+    "slot",
     "requested",
-    SchedulerToolRequestedData
+    SchedulerSlotRequestedData
   >;
   "scheduler.started": DomainActionDescriptor<
     Scheduler,

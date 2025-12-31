@@ -2,13 +2,13 @@ import type {
   AllJobEvents,
   AnyEvent,
   CloudScope,
-  ConcurrencyScope,
   EngineScope,
   FlowScope,
   JobCompletedEvent,
   JobEventType,
   JobFailedEvent,
   JobScope,
+  LimiterScope,
   ReplayScope,
   RunScope,
   SchedulerScope,
@@ -28,7 +28,7 @@ import type {
   ToolEmitterPort,
   WorkerEmitterPort,
   SchedulerEmitterPort,
-  ConcurrencyEmitterPort,
+  LimiterEmitterPort,
 } from "./emitters.port.js";
 
 export type OtelContext = {
@@ -39,14 +39,14 @@ export type OtelContext = {
 };
 
 export interface EmitterFactoryPort {
-  newConcurrencyEmitterFromEvent(
+  newLimiterEmitterFromEvent(
     event: AnyEvent,
-    scope: ConcurrencyScope & { source: string }
-  ): ConcurrencyEmitterPort;
-  newConcurrencyEmitterNewTrace(
-    scope: ConcurrencyScope & CloudScope,
+    scope: LimiterScope & { source: string }
+  ): LimiterEmitterPort;
+  newLimiterEmitterNewTrace(
+    scope: LimiterScope & CloudScope,
     traceId: string
-  ): ConcurrencyEmitterPort;
+  ): LimiterEmitterPort;
 
   newSchedulerEmitterNewSpan(
     scope: CloudScope & SchedulerScope,

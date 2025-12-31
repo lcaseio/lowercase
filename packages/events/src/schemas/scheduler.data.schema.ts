@@ -1,16 +1,17 @@
 import type {
+  SchedulerSlotRequestedData,
   SchedulerStartedData,
   SchedulerStoppedData,
-  SchedulerToolRequestedData,
 } from "@lcase/types";
 import { z } from "zod";
 
 export const SchedulerToolRequestedDataSchema = z
   .object({
+    jobId: z.string(),
     runId: z.string(),
     toolId: z.string(),
   })
-  .strict() satisfies z.ZodType<SchedulerToolRequestedData>;
+  .strict() satisfies z.ZodType<SchedulerSlotRequestedData>;
 
 export const SchedulerStartedDataSchema = z
   .object({

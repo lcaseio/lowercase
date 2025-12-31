@@ -1,10 +1,10 @@
 import { SchedulerOtelAttributesMap } from "@lcase/types";
 
 export const schedulerOtelAttributesMap: SchedulerOtelAttributesMap = {
-  "scheduler.tool.requested": {
+  "scheduler.slot.requested": {
     action: "requested",
     domain: "scheduler",
-    entity: "tool",
+    entity: "slot",
   },
   "scheduler.started": {
     action: "started",

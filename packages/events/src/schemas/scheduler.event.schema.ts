@@ -18,12 +18,12 @@ export const SchedulerToolRequestedSchema = z
     ...CloudEventContextSchema.shape,
     ...SchedulerScopeSchema.shape,
     data: SchedulerToolRequestedDataSchema,
-    type: z.literal("scheduler.tool.requested"),
+    type: z.literal("scheduler.slot.requested"),
     domain: z.literal("scheduler"),
-    entity: z.literal("tool"),
+    entity: z.literal("slot"),
     action: z.literal("requested"),
   })
-  .strict() satisfies z.ZodType<SchedulerEvent<"scheduler.tool.requested">>;
+  .strict() satisfies z.ZodType<SchedulerEvent<"scheduler.slot.requested">>;
 
 export const SchedulerStartedSchema = z
   .object({

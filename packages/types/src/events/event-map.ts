@@ -8,7 +8,7 @@ import type { FlowEventMap } from "./flow/map.js";
 import type { SystemEventMap } from "./system/map.js";
 import type { ReplayEventMap } from "./replay/map.js";
 import type { SchedulerEventMap } from "./scheduler/map.js";
-import type { ConcurrencyEventMap } from "./concurrency/map.js";
+import type { LimiterEventMap } from "./limiter/map.js";
 
 export type EventMap = EngineEventMap &
   FlowEventMap &
@@ -18,7 +18,7 @@ export type EventMap = EngineEventMap &
   ToolEventMap &
   WorkerEventMap &
   SchedulerEventMap &
-  ConcurrencyEventMap &
+  LimiterEventMap &
   ReplayEventMap &
   SystemEventMap;
 

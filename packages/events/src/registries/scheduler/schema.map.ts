@@ -16,7 +16,7 @@ type SchedulerSchemaMap = Record<
   { schema: { event: ZodSchema; data: ZodSchema } }
 >;
 export const schedulerSchemaMap: SchedulerSchemaMap = {
-  "scheduler.tool.requested": {
+  "scheduler.slot.requested": {
     schema: {
       event: SchedulerToolRequestedSchema,
       data: SchedulerToolRequestedDataSchema,
