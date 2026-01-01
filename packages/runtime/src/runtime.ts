@@ -31,6 +31,8 @@ import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
 import { ReplayEngine } from "@lcase/replay";
+import { createLimiter } from "./wire-functions/create-limiter.js";
+import { ConcurrencyLimiter } from "@lcase/limiter";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -86,6 +88,9 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const { tap, sinks } = createObservability(config.observability, bus);
 
+  const cl = new ConcurrencyLimiter(bus, ef);
+  const limiter = createLimiter(config.limiter, { bus, ef, cl });
+
   const replay = new ReplayEngine(
     new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
     bus,
@@ -104,6 +109,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     scheduler,
     replay,
+    limiter,
   };
 }
 

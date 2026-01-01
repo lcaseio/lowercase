@@ -1,13 +1,18 @@
 import type { Registry } from "../types/registry.js";
 import { busRegistry } from "../registries/bus.registry.js";
 import { queueRegistry } from "../registries/queue.registry.js";
+import { limiterRegistry } from "../registries/limiter.registry.js";
 
 export function makeRegistryFactory<R extends Registry>(registry: R) {
   return function createFactory<
-    P extends keyof R,
-    T extends keyof R[P],
-    S extends keyof R[P][T]
-  >(placement: P, transport: T, store: S): R[P][T][S] {
+    Placement extends keyof R,
+    Transport extends keyof R[Placement],
+    Store extends keyof R[Placement][Transport]
+  >(
+    placement: Placement,
+    transport: Transport,
+    store: Store
+  ): R[Placement][Transport][Store] {
     const placementRegistry = registry[placement];
     if (!placementRegistry) {
       throw new Error(
@@ -33,3 +38,4 @@ export function makeRegistryFactory<R extends Registry>(registry: R) {
 
 export const makeQueueFactory = makeRegistryFactory(queueRegistry);
 export const makeBusFactory = makeRegistryFactory(busRegistry);
+export const makeLimiterFactory = makeRegistryFactory(limiterRegistry);

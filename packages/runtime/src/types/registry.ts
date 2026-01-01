@@ -1,5 +1,3 @@
-
-
 export type Placement = "embedded" | "remote";
 export type Transport =
   | "local"
@@ -11,9 +9,8 @@ export type Transport =
   | "http";
 export type Store = "none" | "jsonl" | "sqlite";
 
-
-
-export type Factory = (args?: unknown) => unknown;
+export type Factory = (...args: any[]) => unknown;
+// export type Factory = unknown;
 export type Registry = Partial<{
   [P in Placement]: Partial<{
     [T in Transport]: Partial<{

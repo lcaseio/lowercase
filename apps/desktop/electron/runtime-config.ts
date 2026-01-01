@@ -29,4 +29,11 @@ export const runtimeConfig = {
     id: "",
     sinks: ["console-log-sink", "replay-jsonl-sink"],
   },
+  limiter: {
+    id: "electron-limiter",
+    placement: "embedded",
+    scope: "electron-global",
+    store: "none",
+    transport: "event-emitter",
+  },
 } satisfies RuntimeConfig;

@@ -27,7 +27,8 @@
     "@lcase/observability": "workspace:*",
     "@lcase/scheduler": "workspace:*",
     "@lcase/services": "workspace:*",
-    "@lcase/replay": "workspace:*"
+    "@lcase/replay": "workspace:*",
+    "@lcase/limiter": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",
