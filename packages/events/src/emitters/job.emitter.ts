@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort, JobEmitterPort } from "@lcase/ports";
 import { jobOtelAttributesMap } from "../otel-attributes.js";
-import { eventRegistry } from "../registries/event-registry.js";
+import { eventSchemaRegistry } from "../registries/event-schema.registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -68,7 +68,7 @@ export class JobEmitter extends BaseEmitter implements JobEmitterPort {
         : {}),
     } satisfies JobEvent<T>;
 
-    const entry = eventRegistry[event.type];
+    const entry = eventSchemaRegistry[event.type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(

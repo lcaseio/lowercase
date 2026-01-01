@@ -22,6 +22,8 @@ export class ConsoleSink implements EventSink {
     run: "\x1b[38;2;235;172;106m",
     system: "\x1b[38;2;170;170;190m",
     replay: "\x1b[38;2;170;170;190m",
+    scheduler: "\x1b[38;2;170;170;190m",
+    limiter: "\x1b[38;2;170;170;190m",
   };
 
   constructor(private readonly ctx: ConsoleSinkContext) {}

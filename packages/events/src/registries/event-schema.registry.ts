@@ -56,6 +56,8 @@ import {
   WorkerJobDequeuedDataSchema,
   WorkerProfileAddedDataSchema,
   WorkerProfileSubmittedDataSchema,
+  WorkerSlotFinishedDataSchema,
+  WorkerSlotRequestedDataSchema,
   WorkerStartedDataSchema,
   WorkerStoppedDataSchema,
 } from "../schemas/worker.data.schema.js";
@@ -63,6 +65,8 @@ import {
   WorkerJobDequeuedSchema,
   WorkerProfileAddedSchema,
   WorkerProfileSubmittedSchema,
+  WorkerSlotFinishedSchema,
+  WorkerSlotRequestedSchema,
   WorkerStartedSchema,
   WorkerStoppedSchema,
 } from "../schemas/worker.event.schema.js";
@@ -71,6 +75,8 @@ import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
 import { httpjsonRegistry } from "./job/httpjson.registry.js";
 import { mcpRegistry } from "./job/mcp.registry.js";
 import { replayRegistry } from "./replay/replay.registry.js";
+import { schedulerSchemaMap } from "./scheduler/schema.map.js";
+import { limiterSchemaMap } from "./limiter/schema.map.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -89,10 +95,12 @@ export type EventTopic =
 
 // simple hardcoded registry mapping event types to schemas, as well as
 // topics to publish the event to
-export const eventRegistry = {
+export const eventSchemaRegistry = {
   ...httpjsonRegistry,
   ...mcpRegistry,
   ...replayRegistry,
+  ...schedulerSchemaMap,
+  ...limiterSchemaMap,
   "flow.queued": {
     topic: "flows.lifecycle",
     schema: {
@@ -236,6 +244,18 @@ export const eventRegistry = {
     schema: {
       event: WorkerJobDequeuedSchema,
       data: WorkerJobDequeuedDataSchema,
+    },
+  },
+  "worker.slot.requested": {
+    schema: {
+      event: WorkerSlotRequestedSchema,
+      data: WorkerSlotRequestedDataSchema,
+    },
+  },
+  "worker.slot.finished": {
+    schema: {
+      event: WorkerSlotFinishedSchema,
+      data: WorkerSlotFinishedDataSchema,
     },
   },
   "system.logged": {

@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { AnyEvent } from "../../types/src";
 import { EventParser } from "../src/parsers/event-parser.js";
-import { eventRegistry } from "../src/registries/event-registry.js";
+import { eventSchemaRegistry } from "../src/registries/event-schema.registry.js";
 
 describe("parser", () => {
   it("should not throw for parsing valid event payloads", () => {
-    const ep = new EventParser(eventRegistry);
+    const ep = new EventParser(eventSchemaRegistry);
     const testEvent1 = {
       id: "",
       source: "",
@@ -40,7 +40,7 @@ describe("parser", () => {
     }).not.toThrow();
   });
   it("should throw when parsing mismatched event payloads", () => {
-    const ep = new EventParser(eventRegistry);
+    const ep = new EventParser(eventSchemaRegistry);
     const testEvent1 = {
       id: "",
       source: "",

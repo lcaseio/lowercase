@@ -23,6 +23,7 @@ export class WorkflowRuntime {
       await this.ctx.worker.start();
 
       this.ctx.scheduler.start();
+      await this.ctx.limiter.start();
 
       await this.ctx.worker.requestRegistration();
 

@@ -30,3 +30,15 @@ export type WorkerJobDequeuedData = {
   capId: string;
   toolId: string;
 };
+
+export type WorkerSlotRequestedData = {
+  jobId: string;
+  runId: string;
+  toolId: string;
+};
+
+export type WorkerSlotFinishedData = {
+  jobId: string;
+  runId: string;
+  toolId: string;
+};

@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort } from "@lcase/ports";
 import { replayOtelAttributesMap } from "../registries/replay/replay.otel.js";
-import { eventRegistry } from "../registries/event-registry.js";
+import { eventSchemaRegistry } from "../registries/event-schema.registry.js";
 
 /**
  * strongly typed scoped emitter for engine events.
@@ -55,7 +55,7 @@ export class ReplayEmitter extends BaseEmitter {
         : {}),
     } satisfies ReplayEvent<T>;
 
-    const entry = eventRegistry[type];
+    const entry = eventSchemaRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(

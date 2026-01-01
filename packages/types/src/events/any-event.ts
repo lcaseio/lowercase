@@ -22,14 +22,19 @@ import type { ToolEventType } from "./tool/map.js";
 import type { ToolScope } from "./tool/event.js";
 import type { WorkerEventType } from "./worker/map.js";
 import type { WorkerScope } from "./worker/event.js";
-import { SystemScope } from "./system/event.js";
-import { ReplayEventType } from "./replay/map.js";
-import { ReplayScope } from "./replay/event.js";
+import type { SystemScope } from "./system/event.js";
+import type { ReplayEventType } from "./replay/map.js";
+import type { ReplayScope } from "./replay/event.js";
+import type { SchedulerEventType } from "./scheduler/map.js";
+import type { SchedulerScope } from "./scheduler/event.js";
+import type { SystemEventType } from "./system/map.js";
+import type { LimiterEventType } from "./limiter/map.js";
+import type { LimiterScope } from "./limiter/event.js";
 
 /**
  * The varying base fields that are required for each event type.
  * @example
- * ScopeFor<"job.mcp.queue"> = {
+ * ScopeFor<"job.mcp.queued"> = {
  *   flowid: string;
  *   jobid: string;
  *   ...
@@ -49,9 +54,13 @@ export type ScopeFor<T extends EventType> = T extends StepEventType
   ? ToolScope
   : T extends WorkerEventType
   ? WorkerScope
+  : T extends SchedulerEventType
+  ? SchedulerScope
+  : T extends LimiterEventType
+  ? LimiterScope
   : T extends ReplayEventType
   ? ReplayScope
-  : T extends SystemScope
+  : T extends SystemEventType
   ? SystemScope
   : {};
 

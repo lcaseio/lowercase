@@ -8,11 +8,15 @@ import type {
 import { httpjsonEventTypes } from "./job/httpjson.types.js";
 import { mcpEventTypes } from "./job/mcp.types.js";
 import { replayEventTypes } from "./replay/replay.types.js";
+import { schedulerEventTypes } from "./scheduler/event-types.js";
+import { limiterEventTypes } from "./limiter/event-types.js";
 
 export const eventTypes = [
   ...httpjsonEventTypes,
   ...mcpEventTypes,
   ...replayEventTypes,
+  ...schedulerEventTypes,
+  ...limiterEventTypes,
   "flow.queued",
   "flow.submitted",
   "flow.started",
@@ -36,6 +40,8 @@ export const eventTypes = [
   "worker.profile.added",
   "worker.profile.submitted",
   "worker.job.dequeued",
+  "worker.slot.requested",
+  "worker.slot.finished",
   "system.logged",
 ] as const satisfies readonly EventType[];
 
@@ -75,6 +81,9 @@ export const actionTypes = [
   "dequeued",
   "resumed",
   "delayed",
+  "granted",
+  "denied",
+  "requested",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [
@@ -86,10 +95,13 @@ export const domainTypes = [
   "engine",
   "worker",
   "system",
+  "scheduler",
+  "limiter",
 ] as const satisfies readonly EventDomains[];
 
 export const entityTypes = [
   "mcp",
   "httpjson",
   "job",
+  "slot",
 ] as const satisfies readonly EventEntities[];

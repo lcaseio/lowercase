@@ -203,6 +203,16 @@ export const workerOtelAttributesMap = {
     domain: "worker",
     entity: "job",
   },
+  "worker.slot.requested": {
+    action: "requested",
+    domain: "worker",
+    entity: "slot",
+  },
+  "worker.slot.finished": {
+    action: "finished",
+    domain: "worker",
+    entity: "slot",
+  },
 } satisfies WorkerOtelAttributesMap;
 
 export const systemOtelAttributesMap = {

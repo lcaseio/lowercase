@@ -7,6 +7,8 @@ import {
   WorkerProfileAddedDataSchema,
   WorkerProfileSubmittedDataSchema,
   WorkerJobDequeuedDataSchema,
+  WorkerSlotRequestedDataSchema,
+  WorkerSlotFinishedDataSchema,
 } from "./worker.data.schema.js";
 
 export const WorkerContextSchema = z
@@ -78,3 +80,25 @@ export const WorkerJobDequeuedSchema = z
     data: WorkerJobDequeuedDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"worker.job.dequeued">>;
+
+export const WorkerSlotRequestedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...WorkerContextSchema.shape,
+    type: z.literal("worker.slot.requested"),
+    entity: z.literal("slot"),
+    action: z.literal("requested"),
+    data: WorkerSlotRequestedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"worker.slot.requested">>;
+
+export const WorkerSlotFinishedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...WorkerContextSchema.shape,
+    type: z.literal("worker.slot.finished"),
+    entity: z.literal("slot"),
+    action: z.literal("finished"),
+    data: WorkerSlotFinishedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"worker.slot.finished">>;

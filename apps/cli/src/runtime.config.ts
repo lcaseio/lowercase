@@ -29,4 +29,11 @@ export const config = {
     id: "",
     sinks: ["console-log-sink", "replay-jsonl-sink"],
   },
+  limiter: {
+    id: "cli-limiter",
+    placement: "embedded",
+    scope: "cli-global",
+    store: "none",
+    transport: "event-emitter",
+  },
 } satisfies RuntimeConfig;

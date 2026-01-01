@@ -1,4 +1,9 @@
-import type { EventBusPort, RouterPort, QueuePort } from "@lcase/ports";
+import type {
+  EventBusPort,
+  RouterPort,
+  QueuePort,
+  LimiterPort,
+} from "@lcase/ports";
 import { Worker } from "@lcase/worker";
 import { FlowStore } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
@@ -30,4 +35,5 @@ export type RuntimeContext = {
   ef: EmitterFactory;
   scheduler: Scheduler;
   replay: ReplayEngine;
+  limiter: LimiterPort;
 };
