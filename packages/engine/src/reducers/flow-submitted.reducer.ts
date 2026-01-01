@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import { RunContext, StepContext } from "@lcase/types/engine";
 import {
   EngineState,
@@ -10,52 +11,56 @@ import { StepDefinition } from "@lcase/types";
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   state: EngineState,
   message: FlowSubmittedMsg
-): Patch | void => {
-  // make step context for all steps
-  const { definition } = message;
+): EngineState | void => {
+  return produce(state, (draft) => {
+    // make step context for all steps
+    const { definition, flowId, runId } = message;
+    const flow = draft.flows[flowId];
 
-  const initAllStepContexts: Record<string, StepContext> = {};
+    const initAllStepContexts: Record<string, StepContext> = {};
 
-  const joinMap = makeJoinSetsForSteps(definition.steps);
+    const joinMap = makeJoinSetsForSteps(definition.steps);
 
-  for (const step of Object.keys(definition.steps)) {
-    const stepContext: StepContext = {
-      status: "pending",
-      attempt: 0,
+    for (const step of Object.keys(definition.steps)) {
+      const stepContext: StepContext = {
+        status: "pending",
+        attempt: 0,
+        exports: {},
+        result: {},
+        stepId: step,
+        joins: joinMap[step] ?? new Set<string>(),
+        resolved: {},
+      };
+
+      initAllStepContexts[step] = stepContext;
+    }
+
+    const runCtx = {
+      flowId: message.flowId,
+      flowName: definition.name,
+      definition: definition,
+      runId: message.runId,
+      traceId: message.meta.traceId,
+      runningSteps: new Set<string>(),
+      queuedSteps: new Set<string>(),
+      doneSteps: new Set<string>(),
+      activeJoinSteps: new Set<string>(),
+      outstandingSteps: 0,
+      inputs: definition.inputs ?? {},
       exports: {},
-      result: {},
-      stepId: step,
-      joins: joinMap[step] ?? new Set<string>(),
-      resolved: {},
-    };
+      globals: {},
+      status: "started",
+      steps: initAllStepContexts,
+    } satisfies RunContext;
 
-    initAllStepContexts[step] = stepContext;
-  }
+    // store flow seperately for easier snapshots possibly
+    draft.runs[runId] = runCtx;
+    flow.definition ??= definition;
+    flow.runIds ??= {};
+    flow.runIds[runId] = true;
 
-  const runCtx = {
-    flowId: message.flowId,
-    flowName: definition.name,
-    definition: definition,
-    runId: message.runId,
-    traceId: message.meta.traceId,
-    runningSteps: new Set<string>(),
-    queuedSteps: new Set<string>(),
-    doneSteps: new Set<string>(),
-    activeJoinSteps: new Set<string>(),
-    outstandingSteps: 0,
-    inputs: definition.inputs ?? {},
-    exports: {},
-    globals: {},
-    status: "pending",
-    steps: initAllStepContexts,
-  } satisfies RunContext;
-
-  return {
-    runs: {
-      ...state.runs,
-      [message.runId]: runCtx,
-    },
-  };
+    return draft;
+  });
 };
 
 /**

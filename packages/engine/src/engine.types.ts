@@ -17,6 +17,12 @@ import type { RunContext } from "@lcase/types/engine";
 
 export type EngineState = {
   runs: Record<string, RunContext>;
+  flows: Record<string, FlowContext>;
+};
+
+export type FlowContext = {
+  runIds: Record<string, boolean>;
+  definition: FlowDefinition;
 };
 export type Patch = Partial<EngineState>;
 

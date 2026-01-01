@@ -17,13 +17,19 @@ export type RunContext = FlowContext & {
   exports: Record<string, unknown>;
   globals: Record<string, unknown>;
 
-  status: "started" | "completed" | "failed" | "pending";
+  status: "started" | "completed" | "failed" | "pending" | "planned";
 
   steps: Record<string, StepContext>;
 };
 
 export type StepContext = {
-  status: "initialized" | "pending" | "started" | "completed" | "failed";
+  status:
+    | "initialized"
+    | "pending"
+    | "started"
+    | "completed"
+    | "failed"
+    | "planned";
   reason?: string;
   attempt: number;
   exports: Record<string, unknown>;
