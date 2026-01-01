@@ -15,6 +15,7 @@ import type {
   RateLimitPolicy,
   JobEvent,
   JobQueuedEvent,
+  ToolContext,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
@@ -29,6 +30,7 @@ export type ToolWaitersCtx = {
   inQueue: number;
   rateLimitPolicy?: RateLimitPolicy;
   rateLimitTs?: number;
+  waitingJobQueuedEvents: Map<string, JobQueuedEvent>;
 };
 export type WorkerContext = {
   workerId: string;
@@ -113,6 +115,11 @@ export class Worker {
       const e = event as AnyEvent<"replay.mode.submitted">;
       this.handleReplayModeSubmitted(e);
     });
+
+    this.#bus.subscribe(
+      "limiter.slot.granted",
+      async (event: AnyEvent) => await this.handleGranted(event)
+    );
   }
 
   #buildToolCtx() {
@@ -128,6 +135,7 @@ export class Worker {
         jobWaiters: new Set(),
         inQueue: 0,
         rateLimitPolicy: binding.spec.rateLimit,
+        waitingJobQueuedEvents: new Map<string, JobQueuedEvent>(),
       });
     }
   }
@@ -136,7 +144,33 @@ export class Worker {
     this.enableSideEffects = event.data.enableSideEffects;
   }
 
-  async handleNewJob(event: AnyEvent): Promise<void> {
+  async handleGranted(event: AnyEvent) {
+    if (event.type !== "limiter.slot.granted") return;
+    const e = event as AnyEvent<"limiter.slot.granted">;
+    if (e.data.workerId !== this.#ctx.workerId) return;
+
+    const { toolId, jobId } = e.data;
+    const toolCtx = this.#ctx.tools.get(toolId);
+    if (!toolCtx) return;
+    const job = toolCtx.waitingJobQueuedEvents.get(jobId);
+    if (!job) return;
+
+    this.startWaitingJob(job, toolCtx);
+  }
+
+  startWaitingJob(event: JobQueuedEvent, ctx: ToolWaitersCtx) {
+    const waiter = this.handleNewJob(event).finally(async () => {
+      ctx.jobWaiters.delete(waiter);
+      ctx.activeJobCount--;
+      if (ctx.capacityRelease) {
+        ctx.capacityRelease.resolve();
+      }
+    });
+
+    ctx.jobWaiters.add(waiter);
+  }
+
+  async handleNewJob(event: JobQueuedEvent): Promise<void> {
     const job = this.#jobParser.parseJobQueued(event);
     if (!job) return;
     const e = job.event;
@@ -203,6 +237,19 @@ export class Worker {
       });
       return;
     }
+
+    const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
+      {
+        source: `lowercase://worker/${this.#ctx.workerId}`,
+        workerid: this.#ctx.workerId,
+      },
+      e.traceid
+    );
+    await workerEmitter.emit("worker.slot.finished", {
+      jobId: e.jobid,
+      runId: e.runid,
+      toolId: e.data.job.toolid,
+    });
 
     const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
       e,
@@ -357,16 +404,17 @@ export class Worker {
           });
 
           ctx.activeJobCount++;
+          await this.requestSlot(e);
           await this.handleRateLimit(ctx);
-          const waiter = this.handleNewJob(event).finally(async () => {
-            ctx.jobWaiters.delete(waiter);
-            ctx.activeJobCount--;
-            if (ctx.capacityRelease) {
-              ctx.capacityRelease.resolve();
-            }
-          });
+          // const waiter = this.handleNewJob(event).finally(async () => {
+          //   ctx.jobWaiters.delete(waiter);
+          //   ctx.activeJobCount--;
+          //   if (ctx.capacityRelease) {
+          //     ctx.capacityRelease.resolve();
+          //   }
+          // });
 
-          ctx.jobWaiters.add(waiter);
+          // ctx.jobWaiters.add(waiter);
         } catch (err) {
           console.log(err);
           if (!ctx.newJobWaitersAllowed) break;
@@ -398,6 +446,23 @@ export class Worker {
         setTimeout(res, delayMs);
       });
     }
+  }
+
+  async requestSlot(event: JobQueuedEvent) {
+    const ctx = this.#ctx.tools.get(event.data.job.toolid);
+    if (ctx) ctx.waitingJobQueuedEvents.set(event.jobid, event);
+    const emitter = this.#emitterFactory.newWorkerEmitterNewSpan(
+      {
+        source: `lowercase://worker/${this.#ctx.workerId}`,
+        workerid: this.#ctx.workerId,
+      },
+      event.traceid
+    );
+    await emitter.emit("worker.slot.requested", {
+      jobId: event.jobid,
+      runId: event.runid,
+      toolId: event.data.job.toolid,
+    });
   }
 
   /**

@@ -44,6 +44,10 @@ export interface EmitterFactoryPort {
     scope: LimiterScope & { source: string }
   ): LimiterEmitterPort;
   newLimiterEmitterNewTrace(
+    scope: LimiterScope & CloudScope
+  ): LimiterEmitterPort;
+
+  newLimiterEmitterNewSpan(
     scope: LimiterScope & CloudScope,
     traceId: string
   ): LimiterEmitterPort;

@@ -62,8 +62,15 @@ import { SchedulerEmitter } from "./emitters/scheduler.emitter.js";
 export class EmitterFactory implements EmitterFactoryPort {
   constructor(private readonly bus: EventBusPort) {}
 
-  newLimiterEmitterNewTrace(scope: CloudScope & LimiterScope) {
+  newLimiterEmitterNewTrace(
+    scope: CloudScope & LimiterScope & { traceid: string }
+  ) {
     const combinedScope = { ...scope, ...this.startNewTrace() };
+    return new LimiterEmitter(this.bus, combinedScope);
+  }
+
+  newLimiterEmitterNewSpan(scope: CloudScope & LimiterScope, traceId: string) {
+    const combinedScope = { ...scope, ...this.makeNewSpan(traceId), traceId };
     return new LimiterEmitter(this.bus, combinedScope);
   }
 

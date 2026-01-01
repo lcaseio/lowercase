@@ -53,7 +53,7 @@ describe("Limiter handleSlotFinished()", () => {
     const cl = { slotRequestDecisions } as unknown as ConcurrencyLimiterPort;
     const deps: LimiterDeps = { bus, ef, cl };
 
-    const limiter = new Limiter("limiter-id", "global", deps);
+    const limiter = new Limiter("limiter-id", "global", deps, false);
     const emitResponse = vi
       .spyOn(limiter, "emitResponse")
       .mockImplementation(async () => undefined);
@@ -72,7 +72,7 @@ describe("Limiter handleSlotFinished()", () => {
     const cl = { slotRequestDecisions } as unknown as ConcurrencyLimiterPort;
     const deps: LimiterDeps = { bus, ef, cl };
 
-    const limiter = new Limiter("limiter-id", "global", deps);
+    const limiter = new Limiter("limiter-id", "global", deps, false);
     const emitResponse = vi
       .spyOn(limiter, "emitResponse")
       .mockImplementation(async () => undefined);

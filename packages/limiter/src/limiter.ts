@@ -5,6 +5,7 @@ import type {
   EventBusPort,
 } from "@lcase/ports";
 import { AnyEvent } from "@lcase/types";
+import { defaultToolsConfig } from "./default-tools.config.js";
 
 type BusTopic = string;
 type Unsubscribe = ReturnType<EventBusPort["subscribe"]>;
@@ -20,10 +21,16 @@ export class Limiter {
   scope: string;
   source: string;
   busTopics = new Map<BusTopic, Unsubscribe>();
-  constructor(id: string, scope: string, private readonly deps: LimiterDeps) {
+  constructor(
+    id: string,
+    scope: string,
+    private readonly deps: LimiterDeps,
+    defaultConfig = true
+  ) {
     this.id = id;
     this.scope = scope;
     this.source = `lowercase://limiter/${scope}/${id}`;
+    if (defaultConfig) this.deps.cl.loadConfig(defaultToolsConfig);
   }
 
   async start() {
@@ -48,13 +55,10 @@ export class Limiter {
     //   this.deps.bus.subscribe(token, async () => {})
     // );
 
-    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
-      {
-        limiterid: this.id,
-        source: this.source,
-      },
-      this.deps.ef.generateTraceId()
-    );
+    const emitter = this.deps.ef.newLimiterEmitterNewTrace({
+      limiterid: this.id,
+      source: this.source,
+    });
 
     await emitter.emit("limiter.started", { status: "started" });
   }
@@ -64,13 +68,10 @@ export class Limiter {
       unsubscribe();
     }
     this.busTopics.clear();
-    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
-      {
-        limiterid: this.id,
-        source: this.source,
-      },
-      this.deps.ef.generateTraceId()
-    );
+    const emitter = this.deps.ef.newLimiterEmitterNewTrace({
+      limiterid: this.id,
+      source: this.source,
+    });
 
     await emitter.emit("limiter.stopped", { status: "stopped" });
   }
@@ -97,7 +98,7 @@ export class Limiter {
   }
 
   async emitResponse(decision: SlotAccessDecision, toolId: string) {
-    const emitter = this.deps.ef.newLimiterEmitterNewTrace(
+    const emitter = this.deps.ef.newLimiterEmitterNewSpan(
       {
         limiterid: this.id,
         source: this.source,

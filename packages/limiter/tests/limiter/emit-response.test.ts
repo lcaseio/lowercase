@@ -32,8 +32,8 @@ describe("Limiter emitResponse()", () => {
   it("emits limiter.slot.granted or limiter.slot.denied correctly for each decision", async () => {
     const bus = {} as unknown as EventBusPort;
     const emit = vi.fn().mockReturnValue({});
-    const newLimiterEmitterNewTrace = vi.fn().mockReturnValue({ emit });
-    const ef = { newLimiterEmitterNewTrace } as unknown as EmitterFactoryPort;
+    const newLimiterEmitterNewSpan = vi.fn().mockReturnValue({ emit });
+    const ef = { newLimiterEmitterNewSpan } as unknown as EmitterFactoryPort;
 
     const decisions: SlotAccessDecision[] = [
       {
@@ -55,12 +55,12 @@ describe("Limiter emitResponse()", () => {
     const cl = {} as unknown as ConcurrencyLimiterPort;
     const deps: LimiterDeps = { bus, ef, cl };
 
-    const limiter = new Limiter("limiter-id", "global", deps);
+    const limiter = new Limiter("limiter-id", "global", deps, false);
 
     await limiter.emitResponse(decisions[0], toolId);
     await limiter.emitResponse(decisions[1], toolId);
 
-    expect(newLimiterEmitterNewTrace).toHaveBeenNthCalledWith(
+    expect(newLimiterEmitterNewSpan).toHaveBeenNthCalledWith(
       1,
       {
         limiterid: "limiter-id",
@@ -68,7 +68,7 @@ describe("Limiter emitResponse()", () => {
       },
       decisions[0].traceId
     );
-    expect(newLimiterEmitterNewTrace).toHaveBeenNthCalledWith(
+    expect(newLimiterEmitterNewSpan).toHaveBeenNthCalledWith(
       2,
       {
         limiterid: "limiter-id",
