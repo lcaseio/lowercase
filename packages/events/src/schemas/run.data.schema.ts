@@ -5,6 +5,7 @@ import type {
   RunFailedData,
 } from "@lcase/types";
 
+// removed descriptor for now to reduce duplication of data
 const RunDescriptorSchema = z.object({
   run: z.object({
     id: z.string(),
@@ -14,22 +15,12 @@ const RunDescriptorSchema = z.object({
     id: z.string(),
   }),
 });
-export const RunStartedDataSchema = RunDescriptorSchema.merge(
-  z.object({
-    status: z.literal("started"),
-  })
-).strict() satisfies z.ZodType<RunStartedData>;
 
-export const RunCompletedDataSchema = RunDescriptorSchema.merge(
-  z.object({
-    status: z.literal("success"),
-    message: z.string(),
-  })
-).strict() satisfies z.ZodType<RunCompletedData>;
+export const RunStartedDataSchema =
+  z.null() satisfies z.ZodType<RunStartedData>;
 
-export const RunFailedDataSchema = RunDescriptorSchema.merge(
-  z.object({
-    status: z.literal("failure"),
-    message: z.string(),
-  })
-).strict() satisfies z.ZodType<RunFailedData>;
+export const RunCompletedDataSchema =
+  RunStartedDataSchema satisfies z.ZodType<RunCompletedData>;
+
+export const RunFailedDataSchema =
+  RunStartedDataSchema satisfies z.ZodType<RunFailedData>;

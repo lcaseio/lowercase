@@ -3,48 +3,33 @@ import {
   EngineEffect,
   EngineState,
   FlowSubmittedMsg,
+  EmitRunStartedFx,
 } from "../engine.types.js";
 
-export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
-  oldState: EngineState;
-  newState: EngineState;
-  message: FlowSubmittedMsg;
-}): EngineEffect[] | void => {
-  const { newState, message } = args;
+export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
+  oldState: EngineState,
+  newState: EngineState,
+  message: FlowSubmittedMsg
+): EngineEffect[] | void => {
+  const runId = message.event.runid;
+  const newRunState = newState.runs[runId];
 
   const effects: EngineEffect[] = [];
 
-  const newRunState = newState.runs[message.runId];
-  if (!newRunState) return;
+  if (!newRunState) return effects;
+  if (newRunState.status !== "started") return effects;
 
-  if (newRunState.status === "pending") {
-    effects.push({
-      kind: "EmitFlowStartedEvent",
-      eventType: "flow.started",
-      data: {
-        flow: {
-          id: message.flowId,
-          name: message.definition.name,
-          version: message.definition.version,
-        },
-        run: { id: message.runId },
-      },
-      scope: {
-        flowid: message.flowId,
-        runid: message.runId,
-        source: "lowercase://engine",
-      },
-      traceId: message.meta.traceId,
-    });
-    effects.push({
-      kind: "DispatchInternal",
-      message: {
-        type: "StepReadyToStart",
-        runId: message.runId,
-        stepId: message.definition.start,
-      },
-    });
-  }
+  effects.push({
+    type: "EmitRunStarted",
+    eventType: "run.started",
+    data: null,
+    scope: {
+      flowid: newRunState.flowId,
+      runid: newRunState.runId,
+      source: "lowercase://engine",
+    },
+    traceId: newRunState.traceId,
+  } satisfies EmitRunStartedFx);
 
   return effects;
 };

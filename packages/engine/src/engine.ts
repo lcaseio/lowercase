@@ -11,7 +11,7 @@ import { planners } from "./planners/planner-registry.js";
 import {
   EffectHandlerRegistry,
   wireEffectHandlers,
-} from "./handlers/handler-registry.js";
+} from "./effects/handler-registry.js";
 import {
   EffectHandler,
   EngineEffect,

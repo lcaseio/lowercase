@@ -1,35 +1,30 @@
-import { PipeData } from "../events/shared/pipe.js";
-import { FlowDefinition } from "../flow/flow-definition.js";
+import type { PipeData } from "../events/shared/pipe.js";
+import type { FlowDefinition } from "../flow/flow-definition.js";
 
 // marking fields with "move" if they need to move out of Engine context
+
+type StepId = string;
 export type RunContext = FlowContext & {
   runId: string;
-  traceId: string; // move
-
-  runningSteps: Set<string>;
-  queuedSteps: Set<string>;
-  activeJoinSteps: Set<string>;
-  doneSteps: Set<string>;
-  outstandingSteps: number;
+  traceId: string;
 
   inputs: Record<string, unknown>;
-
   exports: Record<string, unknown>;
   globals: Record<string, unknown>;
 
-  status: "started" | "completed" | "failed" | "pending" | "planned";
+  startedSteps: Record<StepId, boolean>;
+  plannedSteps: Record<StepId, boolean>;
+  completedSteps: Record<StepId, boolean>;
+  failedSteps: Record<StepId, boolean>;
+  activeJoinSteps: Record<StepId, boolean>;
+  outstandingSteps: number;
 
+  status: "started" | "completed" | "failed";
   steps: Record<string, StepContext>;
 };
 
 export type StepContext = {
-  status:
-    | "initialized"
-    | "pending"
-    | "started"
-    | "completed"
-    | "failed"
-    | "planned";
+  status: "initialized" | "planned" | "started" | "completed" | "failed";
   reason?: string;
   attempt: number;
   exports: Record<string, unknown>;
@@ -38,11 +33,11 @@ export type StepContext = {
   args?: Record<string, unknown>;
   pipe?: PipeData;
   stepId: string;
-  joins: Set<string>;
+  joins: Record<StepId, boolean>;
 };
 
 export type FlowContext = {
   flowId: string;
   flowName: string;
-  definition: FlowDefinition;
+  flowVersion: string;
 };

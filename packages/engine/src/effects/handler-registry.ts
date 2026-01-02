@@ -4,7 +4,7 @@ import {
   EmitEventFx,
   EmitFlowCompletedFx,
   EmitFlowFailedFx,
-  EmitFlowStartedFx,
+  EmitRunStartedFx,
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
   EmitJoinStepStartedFx,
@@ -32,7 +32,7 @@ export function wireEffectHandlers(
     },
 
     EmitFlowStartedEvent: function (
-      effect: EmitFlowStartedFx
+      effect: EmitRunStartedFx
     ): void | Promise<void> {
       const emitter = ef.newFlowEmitterNewSpan(
         {

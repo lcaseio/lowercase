@@ -1,21 +1,25 @@
 import { produce } from "immer";
 import { RunContext, StepContext } from "@lcase/types/engine";
-import {
-  EngineState,
-  FlowSubmittedMsg,
-  Patch,
-  Reducer,
-} from "../engine.types.js";
+import { EngineState, FlowSubmittedMsg, Reducer } from "../engine.types.js";
 import { StepDefinition } from "@lcase/types";
 
+/**
+ *
+ * @param state
+ * @param message
+ * @returns EngineState
+ */
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   state: EngineState,
   message: FlowSubmittedMsg
-): EngineState | void => {
+): EngineState => {
   return produce(state, (draft) => {
     // make step context for all steps
-    const { definition, flowId, runId } = message;
-    const flow = draft.flows[flowId];
+    const flowId = message.event.flowid;
+    const runId = message.event.runid;
+    const traceId = message.event.traceid;
+    const definition = message.event.data.definition;
+    const flowCtx = draft.flows[flowId] ?? {};
 
     const initAllStepContexts: Record<string, StepContext> = {};
 
@@ -23,12 +27,12 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
 
     for (const step of Object.keys(definition.steps)) {
       const stepContext: StepContext = {
-        status: "pending",
+        status: "initialized",
         attempt: 0,
         exports: {},
         result: {},
         stepId: step,
-        joins: joinMap[step] ?? new Set<string>(),
+        joins: joinMap[step] ?? {},
         resolved: {},
       };
 
@@ -36,15 +40,16 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     }
 
     const runCtx = {
-      flowId: message.flowId,
+      flowId,
       flowName: definition.name,
-      definition: definition,
-      runId: message.runId,
-      traceId: message.meta.traceId,
-      runningSteps: new Set<string>(),
-      queuedSteps: new Set<string>(),
-      doneSteps: new Set<string>(),
-      activeJoinSteps: new Set<string>(),
+      flowVersion: definition.version,
+      runId,
+      traceId,
+      startedSteps: {},
+      plannedSteps: {},
+      completedSteps: {},
+      failedSteps: {},
+      activeJoinSteps: {},
       outstandingSteps: 0,
       inputs: definition.inputs ?? {},
       exports: {},
@@ -54,12 +59,11 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     } satisfies RunContext;
 
     // store flow seperately for easier snapshots possibly
+    flowCtx.definition ??= definition;
+    flowCtx.runIds ??= {};
+    flowCtx.runIds[runId] = true;
     draft.runs[runId] = runCtx;
-    flow.definition ??= definition;
-    flow.runIds ??= {};
-    flow.runIds[runId] = true;
-
-    return draft;
+    draft.flows[flowId] = flowCtx;
   });
 };
 
@@ -72,14 +76,14 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
  */
 export function makeJoinSetsForSteps(
   steps: Record<string, StepDefinition>
-): Record<string, Set<string>> {
-  const joinMap: Record<string, Set<string>> = {};
-  for (const [stepId, definition] of Object.entries(steps)) {
+): Record<string, Record<string, boolean>> {
+  const joinMap: Record<string, Record<string, boolean>> = {};
+  for (const definition of Object.values(steps)) {
     if (definition.type !== "join") continue;
 
     for (const joinTarget of definition.steps) {
-      joinMap[joinTarget] ??= new Set();
-      joinMap[joinTarget].add(stepId);
+      joinMap[joinTarget] ??= {};
+      joinMap[joinTarget] = { stepId: true };
     }
   }
   return joinMap;
