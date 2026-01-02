@@ -13,5 +13,5 @@ export const emitRunStartedFx: EffectHandler<"EmitRunStarted"> = async (
     traceid: effect.traceId,
   });
 
-  await emitter.emit("run.started", null);
+  await emitter.emit("run.started", effect.data);
 };

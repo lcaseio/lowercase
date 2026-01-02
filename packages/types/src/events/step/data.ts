@@ -7,6 +7,8 @@ export type StepDescriptor = {
     parallelSteps?: string[];
   };
 };
+
+export type StepPlannedData = StepDescriptor;
 export type StepStartedData = StepDescriptor & {
   status: "started";
 };

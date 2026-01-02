@@ -1,7 +1,13 @@
 import type { DomainActionDescriptor } from "../shared/otel-attributes.js";
-import { StepCompletedData, StepFailedData, StepStartedData } from "./data.js";
+import {
+  StepCompletedData,
+  StepFailedData,
+  StepPlannedData,
+  StepStartedData,
+} from "./data.js";
 
 export type StepEventMap = {
+  "step.planned": DomainActionDescriptor<"step", "planned", StepPlannedData>;
   "step.started": DomainActionDescriptor<"step", "started", StepStartedData>;
   "step.completed": DomainActionDescriptor<
     "step",

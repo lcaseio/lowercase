@@ -14,6 +14,7 @@ import type {
   RunStartedData,
   StepCompletedData,
   StepFailedData,
+  StepPlannedData,
   StepScope,
   StepStartedData,
 } from "@lcase/types";
@@ -35,6 +36,11 @@ export type Patch = Partial<EngineState>;
 export type FlowSubmittedMsg = {
   type: "FlowSubmitted";
   event: AnyEvent<"flow.submitted">;
+};
+
+export type RunStartedMsg = {
+  type: "RunStarted";
+  event: AnyEvent<"run.started">;
 };
 
 export type StepReadyToStartMsg = {
@@ -99,6 +105,7 @@ export type UpdateJoinMsg = {
 
 export type EngineMessage =
   | FlowSubmittedMsg
+  | RunStartedMsg
   | StepReadyToStartMsg
   | StartParallelMsg
   | StartHttpJsonStepMsg
@@ -130,6 +137,12 @@ export type EmitStepStartedFx = {
   eventType: "step.started";
   scope: StepScope & CloudScope;
   data: StepStartedData;
+  traceId: string;
+};
+export type EmitStepPlannedFx = {
+  type: "EmitStepPlanned";
+  scope: StepScope & CloudScope;
+  data: StepPlannedData;
   traceId: string;
 };
 export type EmitJoinStepStartedFx = {
@@ -194,13 +207,14 @@ export type DispatchInternalFx = {
 export type EngineEffect =
   | EmitEventFx
   | DispatchInternalFx
+  | EmitRunStartedFx
+  | EmitStepPlannedFx
   | EmitStepStartedFx
-  | EmitJoinStepStartedFx
   | EmitStepCompletedFx
   | EmitStepFailedFx
+  | EmitJoinStepStartedFx
   | EmitJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
-  | EmitRunStartedFx
   | EmitFlowCompletedFx
   | EmitFlowFailedFx
   | WriteContextToDiskFx;
@@ -212,7 +226,7 @@ export type Reducer<M extends EngineMessage = EngineMessage> = (
 ) => EngineState;
 
 export type ReducerRegistry = {
-  [T in EngineMessage["type"]]: Reducer<Extract<EngineMessage, { type: T }>>;
+  [T in EngineMessage["type"]]?: Reducer<Extract<EngineMessage, { type: T }>>;
 };
 
 // planners
@@ -223,7 +237,7 @@ export type Planner<M extends EngineMessage = EngineMessage> = (
 ) => EngineEffect[] | void;
 
 export type PlannerRegistry = {
-  [T in EngineMessage["type"]]: Planner<Extract<EngineMessage, { type: T }>>;
+  [T in EngineMessage["type"]]?: Planner<Extract<EngineMessage, { type: T }>>;
 };
 
 // handlers

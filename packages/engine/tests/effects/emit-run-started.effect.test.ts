@@ -7,7 +7,7 @@ import type {
 import { EmitterFactoryPort } from "@lcase/ports";
 
 describe("flowSubmittedEffect", () => {
-  it("works", async () => {
+  it("creates an emitter and emits with the correct args", async () => {
     const emit = vi.fn().mockReturnValue({});
     const newRunEmitterNewSpan = vi.fn().mockReturnValue({ emit });
     const ef = { newRunEmitterNewSpan } as unknown as EmitterFactoryPort;
