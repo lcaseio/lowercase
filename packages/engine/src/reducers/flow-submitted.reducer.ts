@@ -4,9 +4,11 @@ import { EngineState, FlowSubmittedMsg, Reducer } from "../engine.types.js";
 import { StepDefinition } from "@lcase/types";
 
 /**
- *
- * @param state
- * @param message
+ * Invoked after a `flow.submitted` event received.
+ * Initializes state for the run, steps, and flow.
+ * Sets runs status to `started`.
+ * @param state EngineState
+ * @param message FlowSubmittedMsg
  * @returns EngineState
  */
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (

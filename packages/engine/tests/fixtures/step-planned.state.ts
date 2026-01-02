@@ -5,14 +5,8 @@ import type {
   FlowSubmittedMsg,
 } from "../../src/engine.types";
 import { flowSubmittedEvent } from "./flow-submitted.event";
-
 const stepId = "test-stepid";
-export const flowSubmittedOldState: EngineState = {
-  runs: {},
-  flows: {},
-};
-
-export const flowSubmittedNewState: EngineState = {
+export const stepPlannedNewState: EngineState = {
   runs: {},
   flows: {},
 };
@@ -29,11 +23,11 @@ const runCtx = {
   runId: message.event.runid,
   traceId: message.event.traceid,
   activeJoinSteps: {},
-  plannedSteps: {},
-  startedSteps: {},
+  plannedSteps: {}, // remove step to object for set like lookup
+  startedSteps: { [stepId]: true },
   completedSteps: {},
   failedSteps: {},
-  outstandingSteps: 0,
+  outstandingSteps: 1,
 
   inputs: message.event.data.definition.inputs ?? {},
   exports: {},
@@ -41,7 +35,7 @@ const runCtx = {
   status: "started",
   steps: {
     [stepId]: {
-      status: "initialized",
+      status: "started", // changed from planned to started
       attempt: 0,
       exports: {},
       result: {},
@@ -57,5 +51,5 @@ const flowCtx: FlowContext = {
   runIds: { [message.event.runid]: true },
 };
 
-flowSubmittedNewState.runs[message.event.runid] = runCtx;
-flowSubmittedNewState.flows[message.event.flowid] = flowCtx;
+stepPlannedNewState.runs[message.event.runid] = runCtx;
+stepPlannedNewState.flows[message.event.flowid] = flowCtx;

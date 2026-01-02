@@ -1,4 +1,4 @@
-import { EmitterFactoryPort, QueuePort } from "@lcase/ports";
+import type { EmitterFactoryPort, QueuePort } from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
@@ -19,6 +19,7 @@ import type {
   StepStartedData,
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types/engine";
+import type { StepPlannedMsg } from "./message.types.js";
 
 type FlowId = string;
 export type EngineState = {
@@ -106,6 +107,7 @@ export type UpdateJoinMsg = {
 export type EngineMessage =
   | FlowSubmittedMsg
   | RunStartedMsg
+  | StepPlannedMsg
   | StepReadyToStartMsg
   | StartParallelMsg
   | StartHttpJsonStepMsg
@@ -234,7 +236,7 @@ export type Planner<M extends EngineMessage = EngineMessage> = (
   oldState: EngineState,
   newState: EngineState,
   message: M
-) => EngineEffect[] | void;
+) => EngineEffect[];
 
 export type PlannerRegistry = {
   [T in EngineMessage["type"]]?: Planner<Extract<EngineMessage, { type: T }>>;

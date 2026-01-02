@@ -6,6 +6,14 @@ import type {
   RunStartedMsg,
 } from "../engine.types.js";
 
+/**
+ * Plans an EmitStepPlanned effect if the status of the start step
+ * changes from "initialized" to "pending".
+ * @param oldState EngineState
+ * @param newState EngineState
+ * @param message RunStartedMsg
+ * @returns EngineEffect[]
+ */
 export const runStartedPlanner: Planner<RunStartedMsg> = (
   oldState: EngineState,
   newState: EngineState,

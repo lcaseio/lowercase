@@ -1,5 +1,5 @@
 import { AnyEvent } from "@lcase/types";
-
+const stepId = "test-stepid";
 export const flowSubmittedEvent = {
   id: "test-id",
   source: "test-source",
@@ -20,9 +20,9 @@ export const flowSubmittedEvent = {
       description: "test-flowdescription",
       inputs: {},
       outputs: {},
-      start: "start",
+      start: stepId,
       steps: {
-        start: {
+        [stepId]: {
           type: "httpjson",
           url: "test-url",
         },
@@ -31,7 +31,7 @@ export const flowSubmittedEvent = {
   },
   domain: "flow",
   action: "submitted",
-  traceparent: "",
+  traceparent: "test-traceparent",
   traceid: "test-traceid",
   spanid: "test-spanid",
   flowid: "test-flowid",

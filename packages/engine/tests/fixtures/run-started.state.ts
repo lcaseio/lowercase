@@ -6,6 +6,7 @@ import type {
 } from "../../src/engine.types";
 import { flowSubmittedEvent } from "./flow-submitted.event";
 
+const stepId = "test-stepid";
 export const runStartedNewState: EngineState = {
   runs: {},
   flows: {},
@@ -23,7 +24,7 @@ const runCtx = {
   runId: message.event.runid,
   traceId: message.event.traceid,
   activeJoinSteps: {},
-  plannedSteps: { start: true }, // add step to object for set like lookup
+  plannedSteps: { [stepId]: true }, // add step to object for set like lookup
   startedSteps: {},
   completedSteps: {},
   failedSteps: {},
@@ -34,12 +35,12 @@ const runCtx = {
   globals: {},
   status: "started",
   steps: {
-    start: {
+    [stepId]: {
       status: "planned", // changed from initialized to planned
       attempt: 0,
       exports: {},
       result: {},
-      stepId: "start",
+      stepId: stepId,
       joins: {},
       resolved: {},
     },

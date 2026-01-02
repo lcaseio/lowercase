@@ -1,6 +1,15 @@
 import { produce } from "immer";
 import type { EngineState, Reducer, RunStartedMsg } from "../engine.types.js";
 
+/**
+ * Invoked after a `run.started` event is received, generally after
+ * a `flow.submitted` event is received and processed.
+ *
+ * Looks at the start step for the floor and moves it to pending state
+ * @param state EngineState
+ * @param message RunStartedMsg
+ * @returns EngineState
+ */
 export const runStartedReducer: Reducer<RunStartedMsg> = (
   state: EngineState,
   message: RunStartedMsg

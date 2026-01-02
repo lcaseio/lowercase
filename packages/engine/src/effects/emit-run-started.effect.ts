@@ -4,6 +4,12 @@ import type {
   EmitRunStartedFx,
 } from "../engine.types.js";
 
+/**
+ * Emits new `run.started` event, used to kick off the
+ * runStarted reducer + planner + effects.
+ * @param effect EmitRunStartedFx
+ * @param deps EffectHandlerDeps
+ */
 export const emitRunStartedFx: EffectHandler<"EmitRunStarted"> = async (
   effect: EmitRunStartedFx,
   deps: EffectHandlerDeps
