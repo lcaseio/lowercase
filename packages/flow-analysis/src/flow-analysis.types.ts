@@ -2,19 +2,23 @@ type StepId = string;
 
 export type EdgeType = "control" | "join";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
+type EdgeId = string;
 
 export type Edge = {
-  from: StepId;
-  to: StepId;
+  startStepId: StepId;
+  endStepId: StepId;
   type: EdgeType;
   gate: EdgeGate;
 };
 
+export type OutEdges = Record<StepId, Edge[]>;
+export type InEdges = Record<StepId, Edge[]>;
+
 export type FlowAnalysis = {
   nodes: StepId[];
 
-  inEdges: Record<StepId, Edge[]>;
-  outEdges: Record<StepId, Edge[]>;
+  inEdges: InEdges;
+  outEdges: OutEdges;
 
   joinReqs: Record<StepId, StepId[]>;
 
@@ -23,8 +27,8 @@ export type FlowAnalysis = {
 
 export type UnknownStepReferenceProblem = {
   type: "UnknownStepReference";
-  from: StepId;
-  to: StepId;
+  startStepId: StepId;
+  endStepId: StepId;
 };
 
 export type DuplicateStepIdProblem = {
@@ -41,3 +45,5 @@ export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
   | SelfReferencedProblem;
+
+export type ProblemType = FlowProblem["type"];
