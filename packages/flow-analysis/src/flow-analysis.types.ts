@@ -2,7 +2,6 @@ type StepId = string;
 
 export type EdgeType = "control" | "join";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
-type EdgeId = string;
 
 export type Edge = {
   startStepId: StepId;
@@ -20,7 +19,7 @@ export type FlowAnalysis = {
   inEdges: InEdges;
   outEdges: OutEdges;
 
-  joinReqs: Record<StepId, StepId[]>;
+  joinDeps: Record<StepId, StepId[]>;
 
   problems?: FlowProblem[];
 };

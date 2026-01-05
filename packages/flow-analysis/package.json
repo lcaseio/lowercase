@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "echo test",
+    "test": "vitest",
     "lint": "echo lint",
     "clean-dist": "rm -rf ./dist",
     "clean-node-modules": "rm -rf ./node_modules"

@@ -15,29 +15,29 @@ import type {
 } from "./flow-analysis.types.js";
 
 /**
- * Given a flow definition, it looks at each steps dependencies and dependents.
+ * Given a flow definition, look at each steps dependencies and dependents.
  * In the language of the analyzer, inEdges are dependencies for a step (node).
- * outEdges are dependents for a step (node).  Just easier to understand from
+ * outEdges are dependents for a step.  In/Out is easier to understand from
  * any step's point of view.
  *
- * Builds those edges, and saves the nodes.  Saves an array of "problems" for
- * when duplicate stepIds are found, or invalid references are made.
+ * Builds those edge objects, and saves the nodes.  Saves an array of "problems" for
+ * when duplicate stepIds are found, or invalid references are made.  Also stores
+ * a quick look each join step, and which steps they depend or wait on.  This
+ * separates control flow from the flow definition.
  *
- * This will need to grow and combine with a system that also searches for
- * interpolated strings inside flow definitions, so see if they refer to
+ * Eventually, combine with a system that also searches for
+ * interpolated strings inside flow definitions, to see if they refer to
  * proper steps.
  *
- * This should also be combined with DAG output, probably to be used in some
- * engine execution contexts during stitched replay, where only some steps are
- * rerun, and others frozen.  A DAG could help solve the problem of execution
- * order when that occurs.  Meaning, follow it, but skip over the frozen steps.
- * And continue until done.
+ * If toposort becomes useful, that may be added here as well.
  *
- * But here for now we are just calculating edges for the engine to easily see
- * what possible steps are being waited on, and which ones might be next.
+ * For now we are just calculating edges for the engine to easily see
+ * control flow semantics. Edges have a gate, which should be used to inform how
+ * to process path, and when to take them.  That field is experiment and will
+ * need to be proven out in the engine.
  *
  * This pure function core logic should be usable within UI or CLI layers in
- * addition to the engine in the future.
+ * addition to the engine.
  *
  * @param flow
  * @returns FlowAnalysis object
@@ -47,7 +47,7 @@ export function analyzeFlow(flow: FlowDefinition): FlowAnalysis {
     inEdges: {},
     outEdges: {},
     nodes: [],
-    joinReqs: {},
+    joinDeps: {},
     problems: [],
   };
 
@@ -85,7 +85,8 @@ export function addParallelEdges(
     const hasProblems = checkAndAddProblems(
       flow.steps[endStepId],
       (fa.problems ??= []),
-      stepId
+      stepId,
+      endStepId
     );
     if (hasProblems) continue;
 
@@ -119,6 +120,7 @@ export function addJoinEdges(
       type: "join",
       gate: "always",
     });
+    (fa.joinDeps[stepId] ??= []).push(startStepId);
   }
 
   const hasProblems = checkAndAddProblems(
