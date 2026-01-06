@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { addCapEdges } from "../src/analyze-flow.js";
 import type {
+  FlowDefinition,
+  StepHttpJson,
   FlowAnalysis,
   InEdges,
   OutEdges,
   SelfReferencedProblem,
   UnknownStepReferenceProblem,
-} from "../src/flow-analysis.types.js";
-import type { FlowDefinition, StepHttpJson } from "@lcase/types";
+} from "@lcase/types";
 
 describe("addCapEdges()", () => {
   it("adds corrent new edges when there are no problems", () => {

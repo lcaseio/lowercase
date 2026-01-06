@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { analyzeFlow } from "../src/analyze-flow.js";
-import type { FlowAnalysis } from "../src/flow-analysis.types.js";
 import type {
+  FlowAnalysis,
   FlowDefinition,
   StepHttpJson,
   StepJoin,

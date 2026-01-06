@@ -5,14 +5,12 @@ import type {
   StepMcp,
   StepParallel,
   StepJoin,
-} from "@lcase/types";
-import type {
   Edge,
   FlowAnalysis,
   FlowProblem,
   InEdges,
   OutEdges,
-} from "./flow-analysis.types.js";
+} from "@lcase/types";
 
 /**
  * Given a flow definition, look at each steps dependencies and dependents.
