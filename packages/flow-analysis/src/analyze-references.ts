@@ -1,4 +1,4 @@
-import type { FlowDefinition } from "@lcase/types";
+import type { FlowDefinition, StepDefinition } from "@lcase/types";
 import type { FlowAnalysis } from "./flow-analysis.types.js";
 
 // find the references / interpolated strings
@@ -12,6 +12,17 @@ import type { FlowAnalysis } from "./flow-analysis.types.js";
 // looks through and finds references
 // then tries to parse them, and gets a parsed result
 
-export function analyzeReferences(flowDef: FlowDefinition, fa: FlowAnalysis) {}
+export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {}
 
-export function parseReference() {}
+export function parseRefs<D extends StepDefinition>(step: D) {
+  for (const key in step) {
+    const k = key as keyof D;
+    const refs = findAndParseRefs({ [k]: step[k] });
+  }
+}
+export function findAndParseRefs(value: unknown) {
+  if (typeof value === "object") {
+  }
+}
+
+export function parseRef() {}

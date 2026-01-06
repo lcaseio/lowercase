@@ -50,3 +50,10 @@ export type FlowProblem =
 export type ProblemType = FlowProblem["type"];
 
 /*-- --*/
+export type Path = Array<string | number>;
+export type Ref = {
+  path: Path;
+  scope: "steps" | "imports" | "env";
+  stepId: StepId;
+  location: string;
+};
