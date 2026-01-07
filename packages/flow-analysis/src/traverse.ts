@@ -1,4 +1,4 @@
-import { Path } from "@lcase/types";
+import type { Path } from "@lcase/types";
 /**
  * Generic function to traverse through objects/array structures,
  * then process a primitive value with a callback.
