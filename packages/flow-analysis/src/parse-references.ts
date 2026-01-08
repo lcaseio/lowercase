@@ -1,11 +1,12 @@
-import type { Path, Ref, StepDefinition } from "@lcase/types";
+import type { FlowProblem, Path, Ref, StepDefinition } from "@lcase/types";
 import { traverse } from "./traverse.js";
 
 export function parseStepRefs<D extends StepDefinition>(
   step: D,
   stepId: string
-): Ref[] {
+): { refs: Ref[]; problems: FlowProblem[] } {
   const refs: Ref[] = [];
+  const problems: FlowProblem[] = [];
   for (const key in step) {
     const k = key as keyof D;
     if (k === "type") continue;
@@ -13,19 +14,18 @@ export function parseStepRefs<D extends StepDefinition>(
       String(k),
     ]);
   }
-  return refs;
+  return { refs, problems };
 }
 
 export function parseRef(
   value: unknown,
   stepPath: Path,
   stepId: string,
-  refs: Ref[] = []
+  refs: Ref[] = [],
+  problems: FlowProblem[] = []
 ): void {
   if (typeof value !== "string") return;
   const matches = getRefStrings(value);
-  console.log(matches);
-  if (!matches) return;
 
   for (let i = 0; i < matches.length; i++) {
     const matchedString = matches[i][i + 1];
@@ -42,17 +42,19 @@ export function parseRef(
     };
     if (matchedScope === "steps") {
       refs.push(ref);
-      return;
-    }
-    if (matchedScope === "input") {
+    } else if (matchedScope === "input") {
       ref.scope = "input";
       refs.push(ref);
-      return;
-    }
-    if (matchedScope === "env") {
+    } else if (matchedScope === "env") {
       ref.scope = "env";
       refs.push(ref);
-      return;
+    } else {
+      problems.push({
+        type: "InvalidRefScope",
+        refString: matchedString,
+        stepId,
+        stepPath,
+      });
     }
   }
 }

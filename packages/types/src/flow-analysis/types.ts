@@ -1,6 +1,5 @@
 type StepId = string;
 
-// ed
 export type EdgeType = "control" | "join";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
 
@@ -23,6 +22,7 @@ export type FlowAnalysis = {
   joinDeps: Record<StepId, StepId[]>;
 
   problems?: FlowProblem[];
+  refs: Ref[];
 };
 
 /*-- problem types for flor analysis to surface in UI/validation --*/
@@ -42,14 +42,33 @@ export type SelfReferencedProblem = {
   stepId: StepId;
 };
 
+export type InvalidRefScopeProblem = {
+  type: "InvalidRefScope";
+  stepId: StepId;
+  stepPath: Path;
+  refString: string;
+};
+export type InvalidRefStepIdProblem = {
+  type: "InvalidRefStepId";
+  ref: Ref;
+  targetStepId: StepId;
+};
+export type UnreachableRefProblem = {
+  type: "UnreachableRef";
+  ref: Ref;
+  targetStepId: StepId;
+};
+
 export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
-  | SelfReferencedProblem;
+  | SelfReferencedProblem
+  | InvalidRefStepIdProblem
+  | UnreachableRefProblem
+  | InvalidRefScopeProblem;
 
 export type ProblemType = FlowProblem["type"];
 
-/*-- --*/
 export type Path = Array<string | number>;
 export type Ref = {
   path: Path;

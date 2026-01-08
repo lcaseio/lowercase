@@ -29,6 +29,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {
@@ -91,6 +92,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {
@@ -155,6 +157,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {

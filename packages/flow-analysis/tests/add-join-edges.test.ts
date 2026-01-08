@@ -29,6 +29,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {
@@ -97,6 +98,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {
@@ -167,6 +169,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {

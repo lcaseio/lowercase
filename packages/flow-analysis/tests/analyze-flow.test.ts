@@ -118,6 +118,7 @@ describe("analyzeFlow()", () => {
       joinDeps: { d: ["b", "c"] },
       nodes: ["a", "b", "c", "d", "e", "f", "g"],
       problems: [],
+      refs: [],
     };
 
     expect(analysis).toEqual(expectedAnalysis);

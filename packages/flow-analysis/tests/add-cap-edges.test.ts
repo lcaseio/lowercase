@@ -29,6 +29,7 @@ describe("addCapEdges()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const httpJsonStep: StepHttpJson = {
@@ -116,6 +117,7 @@ describe("addCapEdges()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const httpJsonStep: StepHttpJson = {
@@ -195,6 +197,7 @@ describe("addCapEdges()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const httpJsonStep: StepHttpJson = {

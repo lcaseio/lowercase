@@ -11,16 +11,13 @@ describe("parseStepRefs()", () => {
       url: "test",
     };
     const r = parseStepRefs(httpStep, "stepId");
-    const expectedRefs: Ref[] = [
-      {
-        path: ["steps", "foo"],
-        scope: "steps",
-        stepPath: ["url"],
-        stepId: "stepId",
-        string: "steps.foo",
-      },
-    ];
-    expect(r).toEqual([]);
+
+    const expectedOutput = {
+      refs: [],
+      problems: [],
+    };
+
+    expect(r).toEqual(expectedOutput);
   });
   it("returns correct ref when parse is valid", () => {
     const refs: Ref[] = [];
@@ -40,6 +37,11 @@ describe("parseStepRefs()", () => {
         string: "steps.foo",
       },
     ];
-    expect(r).toEqual(expectedRefs);
+
+    const expectedOutput = {
+      refs: expectedRefs,
+      problems: [],
+    };
+    expect(r).toEqual(expectedOutput);
   });
 });

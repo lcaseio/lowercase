@@ -47,6 +47,7 @@ export function analyzeFlow(flow: FlowDefinition): FlowAnalysis {
     nodes: [],
     joinDeps: {},
     problems: [],
+    refs: [],
   };
 
   for (const stepId in flow.steps) {
