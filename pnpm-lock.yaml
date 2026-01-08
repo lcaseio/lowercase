@@ -284,6 +284,9 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@lcase/flow-analysis':
+        specifier: workspace:*
+        version: link:../flow-analysis
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs

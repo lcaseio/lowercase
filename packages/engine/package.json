@@ -18,7 +18,8 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/adapters": "workspace:*",
-    "@lcase/specs": "workspace:*"
+    "@lcase/specs": "workspace:*",
+    "@lcase/flow-analysis": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",
