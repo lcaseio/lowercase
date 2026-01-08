@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { addJoinEdges } from "../src/analyze-flow.js";
 import type {
+  FlowDefinition,
+  StepJoin,
   FlowAnalysis,
   InEdges,
   OutEdges,
   SelfReferencedProblem,
   UnknownStepReferenceProblem,
-} from "../src/flow-analysis.types.js";
-import type { FlowDefinition, StepJoin } from "@lcase/types";
+} from "@lcase/types";
 
 describe("addJoinEdge()", () => {
   it("adds corrent new edges when there are no problems", () => {
@@ -28,6 +29,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {
@@ -96,6 +98,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {
@@ -166,6 +169,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const joinStep: StepJoin = {

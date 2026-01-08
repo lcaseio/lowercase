@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addEdge } from "../src/analyze-flow.js";
-import type { Edge, InEdges, OutEdges } from "../src/flow-analysis.types.js";
+import type { Edge, InEdges, OutEdges } from "@lcase/types";
 
 describe("addEdge()", () => {
   it("adds new edge to inEdges and outEdges", () => {

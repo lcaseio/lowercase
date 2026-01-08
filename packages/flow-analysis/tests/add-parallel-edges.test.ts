@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { addParallelEdges } from "../src/analyze-flow.js";
 import type {
+  FlowDefinition,
+  StepParallel,
   FlowAnalysis,
   InEdges,
   OutEdges,
   SelfReferencedProblem,
   UnknownStepReferenceProblem,
-} from "../src/flow-analysis.types.js";
-import type { FlowDefinition, StepParallel } from "@lcase/types";
+} from "@lcase/types";
 
 describe("addJoinEdge()", () => {
   it("adds corrent new edges when there are no problems", () => {
@@ -28,6 +29,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {
@@ -90,6 +92,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {
@@ -154,6 +157,7 @@ describe("addJoinEdge()", () => {
       nodes: [],
       joinDeps: {},
       problems: [],
+      refs: [],
     };
 
     const parallelStep: StepParallel = {
