@@ -4,7 +4,7 @@ export type JobDescriptor = {
   job: {
     id: string;
     capid: CapId;
-    toolid: string | null;
+    toolid: string;
   };
 };
 export type JobDescriptorResolved = {

@@ -4,6 +4,8 @@ import {
   EngineState,
   FlowSubmittedMsg,
   EmitRunStartedFx,
+  EmitFlowAnalyzedFx,
+  EmitFlowFailedFx,
 } from "../engine.types.js";
 
 /**
@@ -26,20 +28,68 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
   const effects: EngineEffect[] = [];
 
   if (!newRunState) return effects;
-  if (newRunState.status !== "started") return effects;
+  if (newRunState.status !== "started" && newRunState.status !== "failed")
+    return effects;
   if (oldRunState !== undefined) return effects;
 
-  effects.push({
-    type: "EmitRunStarted",
-    eventType: "run.started",
-    data: null,
+  const emitFlowAnalyzedFx: EmitFlowAnalyzedFx = {
+    type: "EmitFlowAnalyzed",
     scope: {
       flowid: newRunState.flowId,
       runid: newRunState.runId,
       source: "lowercase://engine",
     },
+    data: {
+      flow: {
+        id: newRunState.flowId,
+        name: newRunState.flowName,
+        version: newRunState.flowVersion,
+      },
+      run: {
+        id: newRunState.runId,
+      },
+      analysis: newRunState.flowAnalysis,
+    },
     traceId: newRunState.traceId,
-  } satisfies EmitRunStartedFx);
+  };
+
+  effects.push(emitFlowAnalyzedFx);
+
+  if (newRunState.status === "started") {
+    effects.push({
+      type: "EmitRunStarted",
+      eventType: "run.started",
+      data: null,
+      scope: {
+        flowid: newRunState.flowId,
+        runid: newRunState.runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    } satisfies EmitRunStartedFx);
+  } else if (newRunState.status === "failed") {
+    effects.push({
+      type: "EmitFlowFailed",
+      eventType: "flow.failed",
+      data: {
+        flow: {
+          id: newRunState.flowId,
+          name: newRunState.flowName,
+          version: newRunState.flowVersion,
+        },
+        run: {
+          id: newRunState.runId,
+        },
+        status: "failure",
+      },
+      scope: {
+        flowid: newRunState.flowId,
+        runid: newRunState.runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    } satisfies EmitFlowFailedFx);
+  }
 
   return effects;
 };

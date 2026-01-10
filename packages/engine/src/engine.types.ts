@@ -2,6 +2,7 @@ import type { EmitterFactoryPort, QueuePort } from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
+  FlowAnalyzedData,
   FlowCompletedData,
   FlowDefinition,
   FlowFailedData,
@@ -19,7 +20,7 @@ import type {
   StepStartedData,
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types/engine";
-import type { StepPlannedMsg } from "./message.types.js";
+import type { StepPlannedMsg, StepStartedMsg } from "./types/message.types.js";
 
 type FlowId = string;
 export type EngineState = {
@@ -93,6 +94,7 @@ export type FlowFailedMsg = {
 };
 export type StartJoinMsg = {
   type: "StartJoin";
+  event: AnyEvent<"step.started">;
   runId: string;
   stepId: string;
   joinStepId: string;
@@ -108,6 +110,7 @@ export type EngineMessage =
   | FlowSubmittedMsg
   | RunStartedMsg
   | StepPlannedMsg
+  | StepStartedMsg
   | StepReadyToStartMsg
   | StartParallelMsg
   | StartHttpJsonStepMsg
@@ -127,18 +130,17 @@ export type EmitEventFx = {
   eventType: string;
   data: unknown;
 };
+export type EmitFlowAnalyzedFx = {
+  type: "EmitFlowAnalyzed";
+  scope: FlowScope & CloudScope;
+  data: FlowAnalyzedData;
+  traceId: string;
+};
 export type EmitRunStartedFx = {
   type: "EmitRunStarted";
   eventType: "run.started";
   scope: RunScope & CloudScope;
   data: RunStartedData;
-  traceId: string;
-};
-export type EmitStepStartedFx = {
-  type: "EmitStepStarted";
-  eventType: "step.started";
-  scope: StepScope & CloudScope;
-  data: StepStartedData;
   traceId: string;
 };
 export type EmitStepPlannedFx = {
@@ -147,6 +149,13 @@ export type EmitStepPlannedFx = {
   data: StepPlannedData;
   traceId: string;
 };
+export type EmitStepStartedFx = {
+  type: "EmitStepStarted";
+  scope: StepScope & CloudScope;
+  data: StepStartedData;
+  traceId: string;
+};
+
 export type EmitJoinStepStartedFx = {
   type: "EmitJoinStepStarted";
   scope: StepScope & CloudScope;
@@ -168,17 +177,15 @@ export type EmitStepFailedFx = {
   traceId: string;
 };
 export type EmitJobHttpJsonSubmittedFx = {
-  type: "EmitJobHttpjsonSubmittedEvent";
-  eventType: "job.httpjson.submitted";
-  scope: JobScope & CloudScope;
+  type: "EmitJobHttpJsonSubmitted";
+  scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
   data: JobHttpJsonData;
   traceId: string;
 };
 
 export type EmitJobMcpSubmittedFx = {
   type: "EmitJobMcpSubmittedEvent";
-  eventType: "job.mcp.submitted";
-  scope: JobScope & CloudScope;
+  scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
   data: JobMcpData;
   traceId: string;
 };
@@ -217,6 +224,7 @@ export type EngineEffect =
   | EmitJoinStepStartedFx
   | EmitJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
+  | EmitFlowAnalyzedFx
   | EmitFlowCompletedFx
   | EmitFlowFailedFx
   | WriteContextToDiskFx;

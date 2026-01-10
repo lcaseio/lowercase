@@ -1,6 +1,7 @@
 import type { z, ZodSchema } from "zod";
 import type { EventType } from "@lcase/types";
 import {
+  FlowAnalyzedSchema,
   FlowCompletedSchema,
   FlowFailedSchema,
   FlowQueuedSchema,
@@ -8,6 +9,7 @@ import {
   FlowSubmittedSchema,
 } from "../schemas/flow-event.schema.js";
 import {
+  FlowAnalyzedDataSchema,
   FlowCompletedDataSchema,
   FlowFailedDataSchema,
   FlowQueuedDataSchema,
@@ -35,11 +37,13 @@ import {
 import {
   StepCompletedSchema,
   StepFailedSchema,
+  StepPlannedSchema,
   StepStartedSchema,
 } from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
+  StepPlannedDataSchema,
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
@@ -115,6 +119,12 @@ export const eventSchemaRegistry = {
       data: FlowSubmittedDataSchema,
     },
   },
+  "flow.analyzed": {
+    schema: {
+      event: FlowAnalyzedSchema,
+      data: FlowAnalyzedDataSchema,
+    },
+  },
   "flow.started": {
     topic: "flows.lifecycle",
     schema: {
@@ -169,6 +179,13 @@ export const eventSchemaRegistry = {
     schema: {
       event: RunFailedSchema,
       data: RunFailedDataSchema,
+    },
+  },
+  "step.planned": {
+    topic: "steps.lifecycle",
+    schema: {
+      event: StepPlannedSchema,
+      data: StepPlannedDataSchema,
     },
   },
   "step.started": {

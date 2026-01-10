@@ -1,4 +1,5 @@
 import type { PipeData } from "../events/shared/pipe.js";
+import { FlowAnalysis } from "../flow-analysis/types.js";
 import type { FlowDefinition } from "../flow/flow-definition.js";
 
 // marking fields with "move" if they need to move out of Engine context
@@ -21,6 +22,8 @@ export type RunContext = FlowContext & {
 
   status: "started" | "completed" | "failed";
   steps: Record<string, StepContext>;
+
+  flowAnalysis: FlowAnalysis;
 };
 
 export type StepContext = {

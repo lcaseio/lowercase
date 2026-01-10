@@ -21,7 +21,7 @@ export type FlowAnalysis = {
 
   joinDeps: Record<StepId, StepId[]>;
 
-  problems?: FlowProblem[];
+  problems: FlowProblem[];
   refs: Ref[];
 };
 
@@ -76,4 +76,5 @@ export type Ref = {
   stepId: StepId;
   stepPath: Path;
   string: string;
+  interpolated: boolean;
 };

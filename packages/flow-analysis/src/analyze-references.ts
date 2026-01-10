@@ -18,7 +18,7 @@ export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
 
   for (const ref of fa.refs) {
     const problem = validateRefTargetStep(ref, fd, fa);
-    if (problem) (fa.problems ??= []).push(problem);
+    if (problem) fa.problems.push(problem);
   }
   return fa;
 }
@@ -37,7 +37,7 @@ export function findAndParseRefs(
 ) {
   const { refs, problems } = parseStepRefs(fd.steps[stepId], stepId);
   fa.refs = fa.refs.concat(refs);
-  fa.problems = (fa.problems ?? []).concat(problems);
+  fa.problems = fa.problems.concat(problems);
 }
 
 /**

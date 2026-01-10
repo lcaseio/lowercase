@@ -54,6 +54,14 @@ describe("flowSubmittedPlanner", () => {
           resolved: {},
         },
       },
+      flowAnalysis: {
+        nodes: ["start"],
+        inEdges: {},
+        outEdges: {},
+        joinDeps: {},
+        refs: [],
+        problems: [],
+      },
     } satisfies RunContext;
 
     newState.flows[message.event.flowid] = {
@@ -64,6 +72,33 @@ describe("flowSubmittedPlanner", () => {
     const effectPlans = flowSubmittedPlanner(oldState, newState, message);
 
     const expectedEffectPlans: EngineEffect[] = [
+      {
+        type: "EmitFlowAnalyzed",
+        data: {
+          analysis: {
+            nodes: ["start"],
+            inEdges: {},
+            outEdges: {},
+            joinDeps: {},
+            refs: [],
+            problems: [],
+          },
+          flow: {
+            id: message.event.flowid,
+            name: message.event.data.flow.name,
+            version: message.event.data.flow.version,
+          },
+          run: {
+            id: message.event.runid,
+          },
+        },
+        scope: {
+          flowid: message.event.flowid,
+          runid: message.event.runid,
+          source: "lowercase://engine",
+        },
+        traceId: message.event.traceid,
+      },
       {
         type: "EmitRunStarted",
         eventType: "run.started",

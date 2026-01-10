@@ -9,7 +9,7 @@ import { flowSubmittedReducer } from "../../src/reducers/flow-submitted.reducer.
 import { flowSubmittedEvent } from "../fixtures/flow-submitted.event.js";
 
 describe("flowSubmittedReducer", () => {
-  it("initializes run and flow state", () => {
+  it("initializes run and flow state as started when analysis passes", () => {
     const startState: EngineState = {
       runs: {},
       flows: {},
@@ -52,6 +52,14 @@ describe("flowSubmittedReducer", () => {
           joins: {},
           resolved: {},
         },
+      },
+      flowAnalysis: {
+        nodes: ["start"],
+        inEdges: {},
+        outEdges: {},
+        joinDeps: {},
+        refs: [],
+        problems: [],
       },
     } satisfies RunContext;
 

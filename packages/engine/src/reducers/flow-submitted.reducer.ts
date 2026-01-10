@@ -2,6 +2,7 @@ import { produce } from "immer";
 import { RunContext, StepContext } from "@lcase/types/engine";
 import { EngineState, FlowSubmittedMsg, Reducer } from "../engine.types.js";
 import { StepDefinition } from "@lcase/types";
+import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
 
 /**
  * Invoked after a `flow.submitted` event received.
@@ -41,6 +42,10 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
       initAllStepContexts[step] = stepContext;
     }
 
+    const flowAnalysis = analyzeFlow(definition);
+    analyzeRefs(definition, flowAnalysis);
+
+    const status = flowAnalysis.problems.length ? "failed" : "started";
     const runCtx = {
       flowId,
       flowName: definition.name,
@@ -56,8 +61,9 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
       inputs: definition.inputs ?? {},
       exports: {},
       globals: {},
-      status: "started",
+      status,
       steps: initAllStepContexts,
+      flowAnalysis,
     } satisfies RunContext;
 
     // store flow seperately for easier snapshots possibly

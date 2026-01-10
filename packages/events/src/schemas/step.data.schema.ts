@@ -3,6 +3,7 @@ import type {
   StepStartedData,
   StepCompletedData,
   StepFailedData,
+  StepPlannedData,
 } from "@lcase/types";
 
 const RunDescriptorSchema = z.object({
@@ -32,3 +33,7 @@ export const StepFailedDataSchema = RunDescriptorSchema.merge(
     reason: z.string(),
   })
 ).strict() satisfies z.ZodType<StepFailedData>;
+
+export const StepPlannedDataSchema = z
+  .object({ ...RunDescriptorSchema.shape })
+  .strict() satisfies z.ZodType<StepPlannedData>;

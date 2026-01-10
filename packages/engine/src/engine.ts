@@ -21,7 +21,9 @@ import {
   JobCompletedMsg,
   JobFailedMsg,
   Reducer,
+  StartJoinMsg,
 } from "./engine.types.js";
+import { StepPlannedMsg } from "./types/message.types.js";
 /**
  * Engine class runs flows as the orchestration center.
  * It handles multiple runs in one instance.
@@ -70,6 +72,9 @@ export class Engine {
       this.handleJobFailed(e);
     });
     this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>
+      this.handleReplayModeSubmitted(e)
+    );
+    this.bus.subscribe("step.planned", async (e: AnyEvent) =>
       this.handleReplayModeSubmitted(e)
     );
   }
@@ -243,5 +248,25 @@ export class Engine {
     const event = e as AnyEvent<"replay.mode.submitted">;
 
     this.enableSideEffects = event.data.enableSideEffects;
+  }
+
+  handleStepStarted(e: AnyEvent) {
+    if (e.type !== "step.planned") return;
+    const event = e as AnyEvent<"step.planned">;
+    const stepPlannedMsg: StepPlannedMsg = {
+      type: "StepPlanned",
+      event,
+    }
+    switch (event.steptype) {
+      case "join":
+        const startJoinMsg: StartJoinMsg = {
+          joinStepId: "e
+        }
+        this.enqueue(
+        break;
+
+      default:
+        break;
+    }
   }
 }

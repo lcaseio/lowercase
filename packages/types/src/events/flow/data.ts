@@ -1,3 +1,4 @@
+import { FlowAnalysis } from "../../flow-analysis/types.js";
 import { FlowDefinition } from "../../flow/flow-definition.js";
 
 export type FlowDescriptor = {
@@ -27,4 +28,8 @@ export type FlowCompletedData = FlowDescriptor & {
 };
 export type FlowFailedData = FlowDescriptor & {
   status: "failure";
+};
+
+export type FlowAnalyzedData = FlowDescriptor & {
+  analysis: FlowAnalysis;
 };

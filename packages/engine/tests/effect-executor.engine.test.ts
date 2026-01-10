@@ -77,6 +77,14 @@ describe("submitExternal", () => {
           resolved: {},
         },
       },
+      flowAnalysis: {
+        nodes: ["first"],
+        inEdges: {},
+        outEdges: {},
+        joinDeps: {},
+        refs: [],
+        problems: [],
+      },
     } satisfies RunContext;
     const testNewState = { runs: { ["test-id"]: runCtx } };
 

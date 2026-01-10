@@ -53,7 +53,7 @@ export function analyzeFlow(flow: FlowDefinition): FlowAnalysis {
   for (const stepId in flow.steps) {
     const step = flow.steps[stepId];
     if (fa.nodes.includes(stepId)) {
-      addProblem({ type: "DuplicateStepId", stepId }, (fa.problems ??= []));
+      addProblem({ type: "DuplicateStepId", stepId }, fa.problems);
       continue;
     }
     fa.nodes.push(stepId);
@@ -83,7 +83,7 @@ export function addParallelEdges(
   for (const endStepId of step.steps) {
     const hasProblems = checkAndAddProblems(
       flow.steps[endStepId],
-      (fa.problems ??= []),
+      fa.problems,
       stepId,
       endStepId
     );
@@ -146,7 +146,7 @@ export function addCapEdges(
   if (step.on?.success) {
     const hasProblems = checkAndAddProblems(
       flow.steps[step.on.success],
-      (fa.problems ??= []),
+      fa.problems,
       stepId,
       step.on.success
     );
@@ -162,7 +162,7 @@ export function addCapEdges(
   if (step.on?.failure) {
     const hasProblems = checkAndAddProblems(
       flow.steps[step.on.failure],
-      (fa.problems ??= []),
+      fa.problems,
       stepId,
       step.on.failure
     );
