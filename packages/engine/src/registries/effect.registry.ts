@@ -1,6 +1,8 @@
 import { emitFlowAnalyzedFx } from "../effects/emit-flow-analyzed.effect.js";
+import { emitJobHttpJsonSubmittedFx } from "../effects/emit-job-httpjson-submitted.effect.js";
 import { emitRunStartedFx } from "../effects/emit-run-started.effect.js";
 import { emitStepPlannedFx } from "../effects/emit-step-planned.effect.js";
+import { emitStepStartedFx } from "../effects/emit-step-started.effect.js";
 import type {
   EffectHandlerDeps,
   EffectHandlerRegistry,
@@ -35,5 +37,9 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
       emitStepPlannedFx(effect, deps),
     EmitFlowAnalyzed: async (effect: EmitFlowAnalyzedFx) =>
       emitFlowAnalyzedFx(effect, deps),
+    EmitStepStarted: async (effect: EmitStepStartedFx) =>
+      emitStepStartedFx(effect, deps),
+    EmitJobHttpJsonSubmitted: async (effect: EmitJobHttpJsonSubmittedFx) =>
+      emitJobHttpJsonSubmittedFx(effect, deps),
   } satisfies EffectHandlerRegistry;
 }

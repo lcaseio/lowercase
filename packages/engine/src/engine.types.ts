@@ -184,7 +184,7 @@ export type EmitJobHttpJsonSubmittedFx = {
 };
 
 export type EmitJobMcpSubmittedFx = {
-  type: "EmitJobMcpSubmittedEvent";
+  type: "EmitJobMcpSubmitted";
   scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
   data: JobMcpData;
   traceId: string;

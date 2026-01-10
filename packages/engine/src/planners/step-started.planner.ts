@@ -1,5 +1,6 @@
 import type {
   EmitJobHttpJsonSubmittedFx,
+  EmitStepPlannedFx,
   EmitStepStartedFx,
   EngineEffect,
   EngineState,
@@ -16,44 +17,45 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
   const runId = message.event.runid;
   const flowId = message.event.flowid;
   const stepId = message.event.stepid;
+  const stepType = message.event.steptype;
 
   const newRunState = newState.runs[runId];
 
-  if (!newRunState) return;
+  if (!newRunState) return effects;
   const flowDef = newState.flows[flowId];
-  if (!flowDef) return;
+  if (!flowDef) return effects;
+
+  const fa = newRunState.flowAnalysis;
 
   const stepDef = flowDef.definition.steps[stepId];
-  if (!stepDef) return;
+  if (!stepDef) return effects;
 
-  const emitStepStarted: EmitStepStartedFx = {
-    type: "EmitStepStarted",
-    scope: {
-      flowid: flowId,
-      runid: runId,
-      stepid: stepId,
-      steptype: stepDef.type,
-      source: "lowercase://engine",
-    },
-    data: {
-      status: "started",
-      step: {
-        id: stepId,
-        name: stepId,
-        type: stepDef.type,
-      },
-    },
-    traceId: newRunState.traceId,
-  };
-  effects.push(emitStepStarted);
-
-  // could look up by function and return the correct data structure
-  // could keep it generic, but how
-
-  const job: EmitJobHttpJsonSubmittedFx = {
-    type: "EmitJobHttpjsonSubmittedEvent",
-    data: {},
-  };
+  if (stepType === "parallel") {
+    for (const edge of fa.outEdges[stepId]) {
+      const step = newRunState.steps[edge.endStepId];
+      if (!step) continue;
+      if (step.status !== "planned") continue;
+      const emitStepPlanned: EmitStepPlannedFx = {
+        type: "EmitStepPlanned",
+        scope: {
+          flowid: flowId,
+          runid: runId,
+          source: "lowercase://engine",
+          stepid: stepId,
+          steptype: stepType,
+        },
+        data: {
+          step: {
+            id: stepId,
+            name: stepId,
+            type: stepType,
+          },
+        },
+        traceId: newRunState.traceId,
+      };
+      effects.push(emitStepPlanned);
+    }
+  }
 
   return effects;
 };

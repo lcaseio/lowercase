@@ -1,27 +1,21 @@
-import {
-  Ref,
-  StepDefinition,
-  StepHttpJson,
-  StepJoin,
-  StepMcp,
-} from "@lcase/types";
+import type { StepHttpJson, StepMcp } from "@lcase/types";
 import type {
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
-  EmitJoinStepStartedFx,
   EmitStepStartedFx,
   EngineEffect,
   EngineState,
   Planner,
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
-import { StepContext } from "@lcase/types/engine";
+
+import { bindStepRefs } from "../references/bind.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
   newState: EngineState,
   message: StepPlannedMsg
-) => {
+): EngineEffect[] => {
   const effects: EngineEffect[] = [];
 
   const runId = message.event.runid;
@@ -32,10 +26,11 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const newRun = newState.runs[runId];
   const flow = newState.flows[flowId];
   const step = flow.definition.steps[stepId];
+  const refs = newRun.flowAnalysis.refs.filter((ref) => ref.stepId === stepId);
 
-  if (!newRun) return;
-  if (!flow) return;
-  if (!step) return;
+  if (!newRun) return effects;
+  if (!flow) return effects;
+  if (!step) return effects;
 
   const emitStepStarted: EmitStepStartedFx = {
     type: "EmitStepStarted",
@@ -59,7 +54,11 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   effects.push(emitStepStarted);
 
   if (stepType === "httpjson") {
-    const httpJsonStep = step as StepHttpJson;
+    const materializedStep = bindStepRefs(
+      refs,
+      newRun.steps[stepId].resolved,
+      step as StepHttpJson
+    );
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
       scope: {
@@ -69,14 +68,18 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         capid: "httpjson",
         toolid: "httpjson",
       },
-      data: { ...httpJsonStep },
+      data: { ...materializedStep },
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
   } else if (stepType === "mcp") {
-    const mcpStep = step as StepMcp;
+    const materializedStep = bindStepRefs(
+      refs,
+      newRun.steps[stepId].resolved,
+      step as StepMcp
+    );
     const emitJob: EmitJobMcpSubmittedFx = {
-      type: "EmitJobMcpSubmittedEvent",
+      type: "EmitJobMcpSubmitted",
       scope: {
         flowid: flowId,
         capid: "mcp",
@@ -84,29 +87,11 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         stepid: stepId,
         toolid: "mcp",
       },
-      data: { ...mcpStep },
+      data: { ...materializedStep },
       traceId: newRun.traceId,
     };
+    effects.push(emitJob);
   }
-
-  // see if old state was planned
-  // see if new state is started
-  // form step.started effect
-  // form job.started effect
-  //
 
   return effects;
 };
-
-// export const startedEffectGenerators: StartedEffectRegistry = {};
-
-export type StartedEffectRegistry = Record<
-  StepDefinition["type"],
-  () => EngineEffect[]
->;
-
-function joinStartedGenerator(
-  step: StepJoin,
-  context: StepContext,
-  refs: Ref[] = []
-) {}

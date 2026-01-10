@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import { RunContext } from "@lcase/types/engine";
 import type {
   EngineState,
@@ -10,6 +11,7 @@ export const startHttpJsonStepReducer: Reducer<StartHttpJsonStepMsg> = (
   state: EngineState,
   message: StartHttpJsonStepMsg
 ) => {
+  return produce(state, (draft) => {});
   const { runId, stepId } = message;
   const runCtx = { ...state.runs[runId] };
   const stepDef = { ...runCtx.definition.steps[stepId] };
