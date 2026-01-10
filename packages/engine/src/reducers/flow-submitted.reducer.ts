@@ -26,16 +26,11 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
 
     const initAllStepContexts: Record<string, StepContext> = {};
 
-    const joinMap = makeJoinSetsForSteps(definition.steps);
-
     for (const step of Object.keys(definition.steps)) {
       const stepContext: StepContext = {
         status: "initialized",
         attempt: 0,
-        exports: {},
-        result: {},
-        stepId: step,
-        joins: joinMap[step] ?? {},
+        output: {},
         resolved: {},
       };
 
@@ -56,11 +51,8 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
       plannedSteps: {},
       completedSteps: {},
       failedSteps: {},
-      activeJoinSteps: {},
       outstandingSteps: 0,
-      inputs: definition.inputs ?? {},
-      exports: {},
-      globals: {},
+      input: definition.inputs ?? {},
       status,
       steps: initAllStepContexts,
       flowAnalysis,

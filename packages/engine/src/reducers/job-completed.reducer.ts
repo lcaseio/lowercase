@@ -1,48 +1,69 @@
-import { RunContext, StepContext } from "@lcase/types/engine";
+import { produce } from "immer";
+import type { RunContext, StepContext } from "@lcase/types/engine";
 import type { EngineState, JobCompletedMsg, Reducer } from "../engine.types.js";
 
 export const jobCompletedReducer: Reducer<JobCompletedMsg> = (
   state: EngineState,
   message: JobCompletedMsg
 ) => {
-  const { runId, stepId } = message;
-  const runCtx = { ...state.runs[runId] };
-  const steps = state.runs[runId].steps;
-  const stepCtx = { ...steps[stepId] };
+  return produce(state, (draft) => {
+    const runId = message.event.runid;
+    const stepId = message.event.stepid;
 
-  const newStepCtx = {
-    ...stepCtx,
-    status: "completed",
-    result: message.result,
-  } satisfies StepContext;
+    const run = draft.runs[runId];
+    const step = run.steps[stepId];
 
-  const stepsSlice = { ...steps, [stepId]: newStepCtx };
+    if (!run) return;
+    if (!step) return;
 
-  const runningSteps = new Set([...runCtx.runningSteps]);
-  runningSteps.delete(stepId);
-  const doneSteps = new Set([...runCtx.doneSteps, stepId]);
+    const fa = run.flowAnalysis;
 
-  const outstandingSteps = Math.abs(runCtx.outstandingSteps - 1);
-  let status = runCtx.status;
-  if (
-    runningSteps.size === 0 &&
-    outstandingSteps === 0 &&
-    runCtx.activeJoinSteps.size === 0
-  ) {
-    status = "completed";
-  }
-  const newRunContext = {
-    ...state.runs[runId],
-    steps: stepsSlice,
-    outstandingSteps,
-    runningSteps,
-    doneSteps,
-    status,
-  } satisfies RunContext;
+    step.status = "completed";
+    run.completedSteps[stepId] = true;
+    delete run.startedSteps[stepId];
 
-  const newState = {
-    runs: { ...state.runs, [runId]: newRunContext },
-  } satisfies EngineState;
+    step.output = message.event.data.output;
+    run.outstandingSteps = Math.abs(run.outstandingSteps - 1);
 
-  return newState;
+    for (const edge of fa.outEdges[stepId]) {
+      if (run.steps[edge.endStepId] === undefined) continue;
+      if (
+        edge.type === "control" &&
+        (edge.gate === "always" || edge.gate === "onSuccess") &&
+        run.steps[edge.endStepId].status === "initialized"
+      ) {
+        run.steps[edge.endStepId].status === "planned";
+        run.outstandingSteps++;
+        run.plannedSteps[edge.endStepId] = true;
+      }
+      // see if join steps have dependencies all finished
+      else if (edge.type === "join") {
+        // if they all succeeded, succeed/complete join
+        // if all either completed or failed, but not succeeded, fail join
+        let allCompleted = true;
+        let allFinished = true;
+        for (const stepId of fa.joinDeps[edge.endStepId]) {
+          const step = run.steps[stepId];
+          if (!step) {
+            allCompleted = false;
+            allFinished = false;
+            break;
+          }
+          if (step.status !== "completed") allCompleted = false;
+          if (step.status !== "completed" && step.status !== "failed") {
+            allFinished = false;
+          }
+        }
+        if (allCompleted) {
+          run.steps[edge.endStepId].status === "completed";
+          run.outstandingSteps++;
+          run.completedSteps[edge.endStepId] = true;
+        } else if (allFinished === true) {
+          run.steps[edge.endStepId].status === "failed";
+          run.outstandingSteps++;
+          run.failedSteps[edge.endStepId] = true;
+        }
+      }
+    }
+  });
 };

@@ -8,6 +8,7 @@ import type {
   FlowFailedData,
   FlowScope,
   FlowStartedData,
+  JobCompletedEvent,
   JobHttpJsonData,
   JobMcpData,
   JobScope,
@@ -70,9 +71,7 @@ export type StartParallelMsg = {
 
 export type JobCompletedMsg = {
   type: "JobCompleted";
-  runId: string;
-  stepId: string;
-  result: Record<string, unknown>;
+  event: JobCompletedEvent;
 };
 
 export type JobFailedMsg = {

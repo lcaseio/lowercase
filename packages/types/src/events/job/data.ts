@@ -21,12 +21,12 @@ export type JobStartedData = JobDescriptor & {
 
 export type JobCompletedData = JobDescriptorResolved & {
   status: "success";
-  result?: Record<string, unknown>;
+  output: Record<string, unknown> | null;
 };
 
 export type JobFailedData = JobDescriptorResolved & {
   status: "failure";
-  result?: Record<string, unknown>;
+  output: Record<string, unknown> | null;
   reason: string;
 };
 

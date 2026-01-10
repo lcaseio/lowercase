@@ -21,6 +21,7 @@ export const stepStartedReducer: Reducer<StepStartedMsg> = (
         if (run.steps[edge.endStepId].status === "initialized") {
           run.steps[edge.endStepId].status = "planned";
           run.plannedSteps[edge.endStepId] = true;
+          run.outstandingSteps++;
         }
       }
     }

@@ -1,7 +1,5 @@
 import type {
-  EmitJobHttpJsonSubmittedFx,
   EmitStepPlannedFx,
-  EmitStepStartedFx,
   EngineEffect,
   EngineState,
   Planner,

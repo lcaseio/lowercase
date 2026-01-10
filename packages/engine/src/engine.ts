@@ -216,7 +216,7 @@ export class Engine {
       runId: job.event.runid,
       stepId: job.event.stepid,
       reason: job.event.data.reason,
-      result: job.event.data.result ?? {},
+      result: job.event.data.output ?? {},
     } satisfies JobFailedMsg;
 
     this.enqueue(jobFailedMsg);

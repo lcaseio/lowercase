@@ -36,21 +36,9 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
     for (const ref of refs) {
       const value = resolvePath(ref.path, {
         steps: run.steps,
-        input: run.inputs,
+        input: run.input,
       });
       run.steps[stepId].resolved = { [ref.string]: value };
     }
   });
 };
-
-// resolve args per step type
-
-// registry for resolving args by step type
-
-/**
- * const httpjsonResolver: Resolver = (step: StepHttpJson) => {
- *
- *
- *
- * };
- */
