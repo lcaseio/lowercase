@@ -12,3 +12,18 @@ export type StepStartedMsg = {
 export type JoinStepPlannedMsg = {
   type: "JoinStepPlanned";
 };
+
+export type StepCompletedMsg = {
+  type: "StepCompleted";
+  event: AnyEvent<"step.completed">;
+};
+
+export type StepFailedMsg = {
+  type: "StepFailed";
+  event: AnyEvent<"step.failed">;
+};
+
+export type StepFinishedMsg = {
+  type: "StepFinished";
+  event: AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+};

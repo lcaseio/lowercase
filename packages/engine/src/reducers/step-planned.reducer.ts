@@ -38,7 +38,7 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
         steps: run.steps,
         input: run.input,
       });
-      run.steps[stepId].resolved = { [ref.string]: value };
+      run.steps[stepId].resolved[ref.string] = value;
     }
   });
 };

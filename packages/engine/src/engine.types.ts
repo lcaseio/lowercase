@@ -9,9 +9,12 @@ import type {
   FlowScope,
   FlowStartedData,
   JobCompletedEvent,
+  JobFailedEvent,
   JobHttpJsonData,
   JobMcpData,
   JobScope,
+  RunCompletedData,
+  RunFailedData,
   RunScope,
   RunStartedData,
   StepCompletedData,
@@ -21,7 +24,13 @@ import type {
   StepStartedData,
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types/engine";
-import type { StepPlannedMsg, StepStartedMsg } from "./types/message.types.js";
+import type {
+  StepCompletedMsg,
+  StepFailedMsg,
+  StepFinishedMsg,
+  StepPlannedMsg,
+  StepStartedMsg,
+} from "./types/message.types.js";
 
 type FlowId = string;
 export type EngineState = {
@@ -73,13 +82,14 @@ export type JobCompletedMsg = {
   type: "JobCompleted";
   event: JobCompletedEvent;
 };
+export type JobFinishedMsg = {
+  type: "JobFinished";
+  event: JobCompletedEvent | JobFailedEvent;
+};
 
 export type JobFailedMsg = {
   type: "JobFailed";
-  runId: string;
-  stepId: string;
-  reason: string;
-  result: Record<string, unknown>;
+  event: JobFailedEvent;
 };
 export type FlowCompletedMsg = {
   type: "FlowCompleted";
@@ -110,12 +120,14 @@ export type EngineMessage =
   | RunStartedMsg
   | StepPlannedMsg
   | StepStartedMsg
+  | StepCompletedMsg
+  | StepFailedMsg
+  | StepFinishedMsg
   | StepReadyToStartMsg
   | StartParallelMsg
   | StartHttpJsonStepMsg
   | StartMcpStepMsg
-  | JobCompletedMsg
-  | JobFailedMsg
+  | JobFinishedMsg
   | FlowCompletedMsg
   | FlowFailedMsg
   | StartJoinMsg
@@ -163,14 +175,12 @@ export type EmitJoinStepStartedFx = {
 };
 export type EmitStepCompletedFx = {
   type: "EmitStepCompleted";
-  eventType: "step.completed";
   scope: StepScope & CloudScope;
   data: StepCompletedData;
   traceId: string;
 };
 export type EmitStepFailedFx = {
   type: "EmitStepFailed";
-  eventType: "step.failed";
   scope: StepScope & CloudScope;
   data: StepFailedData;
   traceId: string;
@@ -188,6 +198,20 @@ export type EmitJobMcpSubmittedFx = {
   data: JobMcpData;
   traceId: string;
 };
+
+export type EmitRunCompletedFx = {
+  type: "EmitRunCompleted";
+  scope: RunScope & CloudScope;
+  data: RunCompletedData;
+  traceId: string;
+};
+export type EmitRunFailedFx = {
+  type: "EmitRunFailed";
+  scope: RunScope & CloudScope;
+  data: RunFailedData;
+  traceId: string;
+};
+
 export type EmitFlowFailedFx = {
   type: "EmitFlowFailed";
   eventType: "flow.failed";
@@ -223,6 +247,8 @@ export type EngineEffect =
   | EmitJoinStepStartedFx
   | EmitJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
+  | EmitRunCompletedFx
+  | EmitRunFailedFx
   | EmitFlowAnalyzedFx
   | EmitFlowCompletedFx
   | EmitFlowFailedFx
