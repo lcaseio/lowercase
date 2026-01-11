@@ -58,7 +58,6 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
   if (newRunState.status === "started") {
     effects.push({
       type: "EmitRunStarted",
-      eventType: "run.started",
       data: null,
       scope: {
         flowid: newRunState.flowId,
@@ -70,7 +69,6 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
   } else if (newRunState.status === "failed") {
     effects.push({
       type: "EmitFlowFailed",
-      eventType: "flow.failed",
       data: {
         flow: {
           id: newRunState.flowId,

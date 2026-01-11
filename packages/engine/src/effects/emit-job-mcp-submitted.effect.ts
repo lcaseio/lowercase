@@ -2,7 +2,6 @@ import { randomUUID } from "crypto";
 import type {
   EffectHandler,
   EffectHandlerDeps,
-  EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
 } from "../engine.types.js";
 
@@ -12,7 +11,7 @@ import type {
  * @param effect EmitStepPlannedFx
  * @param deps EffectHandlerDeps
  */
-export const emitJobHttpJsonSubmittedFx: EffectHandler<
+export const emitJobMcpSubmittedFx: EffectHandler<
   "EmitJobMcpSubmitted"
 > = async (effect: EmitJobMcpSubmittedFx, deps: EffectHandlerDeps) => {
   const emitter = deps.ef.newJobEmitterNewSpan(

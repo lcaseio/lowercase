@@ -1,16 +1,16 @@
 import type {
   EffectHandler,
   EffectHandlerDeps,
-  EmitFlowAnalyzedFx,
+  EmitFlowCompletedFx,
 } from "../engine.types.js";
 
-export const emitFlowAnalyzedFx: EffectHandler<"EmitFlowAnalyzed"> = async (
-  effect: EmitFlowAnalyzedFx,
+export const emitFlowCompletedFx: EffectHandler<"EmitFlowCompleted"> = async (
+  effect: EmitFlowCompletedFx,
   deps: EffectHandlerDeps
 ) => {
   const emitter = deps.ef.newFlowEmitterNewSpan(
     { ...effect.scope },
     effect.traceId
   );
-  await emitter.emit("flow.analyzed", effect.data);
+  await emitter.emit("flow.completed", effect.data);
 };

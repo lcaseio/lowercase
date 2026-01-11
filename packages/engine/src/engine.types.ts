@@ -25,8 +25,6 @@ import type {
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types/engine";
 import type {
-  StepCompletedMsg,
-  StepFailedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
@@ -93,8 +91,11 @@ export type JobFailedMsg = {
 };
 export type FlowCompletedMsg = {
   type: "FlowCompleted";
-  runId: string;
-  stepId: string;
+  event: AnyEvent<"flow.completed"> | AnyEvent<"flow.failed">;
+};
+export type RunFinishedMsg = {
+  type: "RunFinished";
+  event: AnyEvent<"run.completed"> | AnyEvent<"run.failed">;
 };
 export type FlowFailedMsg = {
   type: "FlowFailed";
@@ -118,20 +119,11 @@ export type UpdateJoinMsg = {
 export type EngineMessage =
   | FlowSubmittedMsg
   | RunStartedMsg
+  | RunFinishedMsg
   | StepPlannedMsg
   | StepStartedMsg
-  | StepCompletedMsg
-  | StepFailedMsg
   | StepFinishedMsg
-  | StepReadyToStartMsg
-  | StartParallelMsg
-  | StartHttpJsonStepMsg
-  | StartMcpStepMsg
-  | JobFinishedMsg
-  | FlowCompletedMsg
-  | FlowFailedMsg
-  | StartJoinMsg
-  | UpdateJoinMsg;
+  | JobFinishedMsg;
 
 export type MessageType = EngineMessage["type"];
 
@@ -149,7 +141,6 @@ export type EmitFlowAnalyzedFx = {
 };
 export type EmitRunStartedFx = {
   type: "EmitRunStarted";
-  eventType: "run.started";
   scope: RunScope & CloudScope;
   data: RunStartedData;
   traceId: string;
@@ -214,14 +205,12 @@ export type EmitRunFailedFx = {
 
 export type EmitFlowFailedFx = {
   type: "EmitFlowFailed";
-  eventType: "flow.failed";
   scope: FlowScope & CloudScope;
   data: FlowFailedData;
   traceId: string;
 };
 export type EmitFlowCompletedFx = {
   type: "EmitFlowCompleted";
-  eventType: "flow.completed";
   scope: FlowScope & CloudScope;
   data: FlowCompletedData;
   traceId: string;
@@ -237,22 +226,19 @@ export type DispatchInternalFx = {
 };
 
 export type EngineEffect =
-  | EmitEventFx
-  | DispatchInternalFx
   | EmitRunStartedFx
-  | EmitStepPlannedFx
-  | EmitStepStartedFx
-  | EmitStepCompletedFx
-  | EmitStepFailedFx
-  | EmitJoinStepStartedFx
   | EmitJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
   | EmitRunCompletedFx
   | EmitRunFailedFx
+  | EmitStepPlannedFx
+  | EmitStepStartedFx
+  | EmitStepCompletedFx
+  | EmitStepFailedFx
   | EmitFlowAnalyzedFx
   | EmitFlowCompletedFx
-  | EmitFlowFailedFx
-  | WriteContextToDiskFx;
+  | WriteContextToDiskFx
+  | EmitFlowFailedFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
@@ -261,7 +247,7 @@ export type Reducer<M extends EngineMessage = EngineMessage> = (
 ) => EngineState;
 
 export type ReducerRegistry = {
-  [T in EngineMessage["type"]]?: Reducer<Extract<EngineMessage, { type: T }>>;
+  [T in EngineMessage["type"]]: Reducer<Extract<EngineMessage, { type: T }>>;
 };
 
 // planners
@@ -281,12 +267,13 @@ export type EffectHandler<T extends EngineEffect["type"]> = (
   deps: EffectHandlerDeps
 ) => void | Promise<void>;
 
+export type EffectHandlerWrapped<T extends EngineEffect["type"]> = (
+  effect: Extract<EngineEffect, { type: T }>
+) => void | Promise<void>;
+
 export type EffectHandlerRegistry = {
-  [T in EngineEffect["type"]]?: (
-    effect: Extract<EngineEffect, { type: T }>
-  ) => void | Promise<void>;
+  [T in EngineEffect["type"]]: EffectHandlerWrapped<T>;
 };
 export type EffectHandlerDeps = {
-  queue: QueuePort;
   ef: EmitterFactoryPort;
 };
