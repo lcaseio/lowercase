@@ -19,7 +19,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   const flowId = message.event.flowid;
   const stepId = message.event.stepid;
 
-  const oldRun = newState.runs[runId];
+  const oldRun = oldState.runs[runId];
   const newRun = newState.runs[runId];
   const flow = newState.flows[flowId];
 
@@ -27,7 +27,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   if (!flow) return effects;
 
   const newPlannedStepIds = Object.keys(newRun.plannedSteps).filter(
-    (stepId) => oldRun.plannedSteps[stepId] === undefined
+    (id) => oldRun.plannedSteps[id] === undefined
   );
 
   for (const plannedStepId of newPlannedStepIds) {
@@ -54,6 +54,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
       traceId: newRun.traceId,
     };
     effects.push(emitStepPlannedFx);
+    console.log("planning:", plannedStepId);
   }
 
   if (newRun.outstandingSteps === 0 && newRun.status === "completed") {

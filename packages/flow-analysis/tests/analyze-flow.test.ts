@@ -81,7 +81,12 @@ describe("analyzeFlow()", () => {
           { type: "join", gate: "always", startStepId: "c", endStepId: "d" },
         ],
         e: [
-          { type: "join", gate: "onSuccess", startStepId: "d", endStepId: "e" },
+          {
+            type: "control",
+            gate: "onSuccess",
+            startStepId: "d",
+            endStepId: "e",
+          },
         ],
         f: [
           {
@@ -118,7 +123,12 @@ describe("analyzeFlow()", () => {
         b: [{ type: "join", gate: "always", startStepId: "b", endStepId: "d" }],
         c: [{ type: "join", gate: "always", startStepId: "c", endStepId: "d" }],
         d: [
-          { type: "join", gate: "onSuccess", startStepId: "d", endStepId: "e" },
+          {
+            type: "control",
+            gate: "onSuccess",
+            startStepId: "d",
+            endStepId: "e",
+          },
         ],
         e: [
           {

@@ -13,7 +13,7 @@ export function planControlEdge(
     (edge.gate === "always" || edge.gate === gate) &&
     run.steps[edge.endStepId].status === "initialized"
   ) {
-    run.steps[edge.endStepId].status === "planned";
+    run.steps[edge.endStepId].status = "planned";
     run.outstandingSteps++;
     run.plannedSteps[edge.endStepId] = true;
   }

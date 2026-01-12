@@ -9,8 +9,8 @@ export function setRunStatus(run: WritableDraft<RunContext>) {
   }
   console.log("outstandingSteps", run.outstandingSteps);
   console.log("run.status", run.status);
-  console.log("run.completedSteps", run.completedSteps.length);
-  console.log("run.failedSteps", run.failedSteps.length);
-  console.log("run.plannedSteps", JSON);
-  console.log(JSON.stringify(run, null, 2));
+  // console.log("run.completedSteps", run.completedSteps.length);
+  // console.log("run.failedSteps", run.failedSteps.length);
+  // console.log("run.plannedSteps", JSON);
+  // console.log(JSON.stringify(run, null, 2));
 }

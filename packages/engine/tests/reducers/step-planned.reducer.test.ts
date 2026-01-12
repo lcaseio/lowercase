@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { stepPlannedReducer } from "../../src/reducers/step-planned.reducer.js";
 import { runStartedNewState } from "../fixtures/run-started.state.js";
-import { StepPlannedMsg } from "../../src/message.types.js";
+import { StepPlannedMsg } from "../../src/types/message.types.js";
 import { stepPlannedEvent } from "../fixtures/step-planned.event.js";
 import { stepPlannedNewState } from "../fixtures/step-planned.state.js";
 describe("stepPlannedReducer", () => {

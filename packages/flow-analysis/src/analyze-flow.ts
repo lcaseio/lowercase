@@ -132,7 +132,7 @@ export function addJoinEdges(
   addEdge(fa.inEdges, fa.outEdges, {
     startStepId: stepId,
     endStepId: step.next,
-    type: "join",
+    type: "control",
     gate: "onSuccess",
   });
 }

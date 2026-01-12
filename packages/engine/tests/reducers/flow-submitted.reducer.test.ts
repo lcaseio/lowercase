@@ -10,6 +10,7 @@ import { flowSubmittedEvent } from "../fixtures/flow-submitted.event.js";
 
 describe("flowSubmittedReducer", () => {
   it("initializes run and flow state as started when analysis passes", () => {
+    const stepId = "test-stepid";
     const startState: EngineState = {
       runs: {},
       flows: {},
@@ -40,7 +41,7 @@ describe("flowSubmittedReducer", () => {
       input: message.event.data.definition.inputs ?? {},
       status: "started",
       steps: {
-        start: {
+        [stepId]: {
           status: "initialized",
           attempt: 0,
           output: {},
@@ -48,7 +49,7 @@ describe("flowSubmittedReducer", () => {
         },
       },
       flowAnalysis: {
-        nodes: ["start"],
+        nodes: [stepId],
         inEdges: {},
         outEdges: {},
         joinDeps: {},

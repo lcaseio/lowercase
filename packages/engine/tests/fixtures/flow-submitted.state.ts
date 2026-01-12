@@ -28,27 +28,31 @@ const runCtx = {
   flowVersion: message.event.data.flow.version,
   runId: message.event.runid,
   traceId: message.event.traceid,
-  activeJoinSteps: {},
+
   plannedSteps: {},
   startedSteps: {},
   completedSteps: {},
   failedSteps: {},
   outstandingSteps: 0,
 
-  inputs: message.event.data.definition.inputs ?? {},
-  exports: {},
-  globals: {},
+  input: message.event.data.definition.inputs ?? {},
+
   status: "started",
   steps: {
     [stepId]: {
       status: "initialized",
       attempt: 0,
-      exports: {},
-      result: {},
-      stepId: stepId,
-      joins: {},
+      output: {},
       resolved: {},
     },
+  },
+  flowAnalysis: {
+    nodes: [],
+    inEdges: {},
+    outEdges: {},
+    joinDeps: {},
+    problems: [],
+    refs: [],
   },
 } satisfies RunContext;
 

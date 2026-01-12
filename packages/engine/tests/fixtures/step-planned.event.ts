@@ -1,6 +1,6 @@
 import { AnyEvent } from "@lcase/types";
 
-export const stepPlannedEvent = {
+export const stepPlannedEvent: AnyEvent<"step.planned"> = {
   data: {
     step: {
       id: "test-stepid",
@@ -22,4 +22,4 @@ export const stepPlannedEvent = {
   runid: "test-runid",
   stepid: "test-stepid",
   steptype: "httpjson",
-} satisfies AnyEvent<"step.planned">;
+};

@@ -1,6 +1,7 @@
 import { produce } from "immer";
 import { StepStartedMsg } from "../types/message.types.js";
 import { EngineState, Reducer } from "../engine.types.js";
+import { completeParallelEdge } from "./utils/complete-parallel-edge.reducer.js";
 
 export const stepStartedReducer: Reducer<StepStartedMsg> = (
   state: EngineState,
@@ -28,10 +29,11 @@ export const stepStartedReducer: Reducer<StepStartedMsg> = (
     } else {
       if (fa.inEdges[stepId] !== undefined) {
         for (const edge of fa.inEdges[stepId]) {
-          if (edge.type === "control") {
-          }
+          if (edge.type === "parallel") completeParallelEdge(edge, run);
         }
       }
     }
+
+    console.log("outstandingSteps", run.outstandingSteps);
   });
 };

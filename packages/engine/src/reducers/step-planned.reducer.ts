@@ -10,23 +10,23 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
   return produce(state, (draft) => {
     const runId = message.event.runid;
     const flowId = message.event.flowid;
-    const stepId = message.event.data.step.id;
+    const stepId = message.event.stepid;
 
     const run = draft.runs[runId];
     const flow = draft.flows[flowId];
 
     if (!run) return;
     if (!flow) return;
-    const step = flow.definition.steps[stepId];
-    const runStepCtx = run.steps[stepId];
+    const stepDef = flow.definition.steps[stepId];
+    const stepContext = run.steps[stepId];
 
-    if (!step) return;
-    if (!runStepCtx) return;
+    if (!stepDef) return;
+    if (!stepContext) return;
 
-    if (runStepCtx.status !== "planned") return;
+    if (stepContext.status !== "planned") return;
     if (!run.plannedSteps[stepId]) return;
 
-    runStepCtx.status = "started";
+    stepContext.status = "started";
     delete run.plannedSteps[stepId];
     run.startedSteps[stepId] = true;
 

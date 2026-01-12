@@ -13,7 +13,6 @@ describe("flowSubmittedEffect", () => {
     const ef = { newRunEmitterNewSpan } as unknown as EmitterFactoryPort;
     const effect = {
       type: "EmitRunStarted",
-      eventType: "run.started",
       data: null,
       scope: {
         flowid: "test-flowid",

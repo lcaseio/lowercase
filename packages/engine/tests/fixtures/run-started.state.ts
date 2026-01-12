@@ -23,27 +23,29 @@ const runCtx = {
   flowVersion: message.event.data.flow.version,
   runId: message.event.runid,
   traceId: message.event.traceid,
-  activeJoinSteps: {},
   plannedSteps: { [stepId]: true }, // add step to object for set like lookup
   startedSteps: {},
   completedSteps: {},
   failedSteps: {},
   outstandingSteps: 1, // incremented as planned is considered outstanding
 
-  inputs: message.event.data.definition.inputs ?? {},
-  exports: {},
-  globals: {},
+  input: message.event.data.definition.inputs ?? {},
   status: "started",
   steps: {
     [stepId]: {
       status: "planned", // changed from initialized to planned
       attempt: 0,
-      exports: {},
-      result: {},
-      stepId: stepId,
-      joins: {},
+      output: {},
       resolved: {},
     },
+  },
+  flowAnalysis: {
+    nodes: [],
+    inEdges: {},
+    outEdges: {},
+    joinDeps: {},
+    problems: [],
+    refs: [],
   },
 } satisfies RunContext;
 

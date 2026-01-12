@@ -1,4 +1,5 @@
 import type {
+  EmitStepCompletedFx,
   EmitStepPlannedFx,
   EngineEffect,
   EngineState,
@@ -17,9 +18,10 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
   const stepId = message.event.stepid;
   const stepType = message.event.steptype;
 
+  const oldRunState = oldState.runs[runId];
   const newRunState = newState.runs[runId];
 
-  if (!newRunState) return effects;
+  if (!newRunState || !oldRunState) return effects;
   const flowDef = newState.flows[flowId];
   if (!flowDef) return effects;
 
@@ -53,6 +55,34 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
       };
       effects.push(emitStepPlanned);
     }
+  }
+
+  // used for parallel steps that complete when all steps have started
+  const completedSteps = Object.keys(newRunState.completedSteps).filter(
+    (stepId) => oldRunState.completedSteps[stepId] === undefined
+  );
+
+  for (const completedStepId of completedSteps) {
+    const emitStepCompletedFx: EmitStepCompletedFx = {
+      type: "EmitStepCompleted",
+      scope: {
+        flowid: newRunState.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+        stepid: completedStepId,
+        steptype: flowDef.definition.steps[completedStepId].type,
+      },
+      data: {
+        status: "success",
+        step: {
+          id: completedStepId,
+          name: completedStepId,
+          type: flowDef.definition.steps[completedStepId].type,
+        },
+      },
+      traceId: newRunState.traceId,
+    };
+    effects.push(emitStepCompletedFx);
   }
 
   return effects;
