@@ -1,6 +1,6 @@
 type StepId = string;
 
-export type EdgeType = "control" | "join";
+export type EdgeType = "control" | "join" | "parallel";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
 
 export type Edge = {

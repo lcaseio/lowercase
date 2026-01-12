@@ -15,7 +15,6 @@ import {
 } from "@lcase/observability";
 import { EmitterFactory } from "@lcase/events";
 import { ReplayEngine } from "@lcase/replay";
-import { Scheduler } from "@lcase/scheduler";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
@@ -33,7 +32,6 @@ export type RuntimeContext = {
   tap: ObservabilityTap;
   sinks: SinkMap;
   ef: EmitterFactory;
-  scheduler: Scheduler;
   replay: ReplayEngine;
   limiter: LimiterPort;
 };

@@ -12,11 +12,10 @@ import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
-  JobHttpJsonResolvedDataSchema,
 } from "../../schemas/job/job.data.schema.js";
 import { ZodSchema } from "zod";
 
-export const httpjsonRegistry = {
+export const httpjsonSchemaMap = {
   "job.httpjson.submitted": {
     schema: {
       event: JobHttpJsonSubmittedSchema,
@@ -26,26 +25,26 @@ export const httpjsonRegistry = {
   "job.httpjson.delayed": {
     schema: {
       event: JobHttpJsonDelayedSchema,
-      data: JobHttpJsonResolvedDataSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
   "job.httpjson.resumed": {
     schema: {
       event: JobHttpJsonResumedSchema,
-      data: JobHttpJsonResolvedDataSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
   "job.httpjson.queued": {
     schema: {
       event: JobHttpJsonQueuedSchema,
-      data: JobHttpJsonResolvedDataSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
 
   "job.httpjson.started": {
     schema: {
       event: JobHttpJsonStartedSchema,
-      data: JobHttpJsonResolvedDataSchema,
+      data: JobHttpJsonDataSchema,
     },
   },
   "job.httpjson.completed": {

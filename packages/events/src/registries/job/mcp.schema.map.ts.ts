@@ -14,7 +14,7 @@ import {
 } from "../../schemas/job/job.data.schema.js";
 import { ZodSchema } from "zod";
 
-export const mcpRegistry = {
+export const mcpSchemaMap = {
   "job.mcp.submitted": {
     schema: {
       event: JobMcpSubmittedSchema,

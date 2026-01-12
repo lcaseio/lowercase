@@ -76,11 +76,11 @@ import {
 } from "../schemas/worker.event.schema.js";
 import { SystemLoggedSchema } from "../schemas/system.event.schema.js";
 import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
-import { httpjsonRegistry } from "./job/httpjson.registry.js";
-import { mcpRegistry } from "./job/mcp.registry.js";
-import { replayRegistry } from "./replay/replay.registry.js";
+import { mcpSchemaMap } from "./job/mcp.schema.map.ts.js";
+import { replaySchemaMap } from "./replay/schema.map.js";
 import { schedulerSchemaMap } from "./scheduler/schema.map.js";
 import { limiterSchemaMap } from "./limiter/schema.map.js";
+import { httpjsonSchemaMap } from "./job/httpjson.schema.map.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -100,9 +100,9 @@ export type EventTopic =
 // simple hardcoded registry mapping event types to schemas, as well as
 // topics to publish the event to
 export const eventSchemaRegistry = {
-  ...httpjsonRegistry,
-  ...mcpRegistry,
-  ...replayRegistry,
+  ...httpjsonSchemaMap,
+  ...mcpSchemaMap,
+  ...replaySchemaMap,
   ...schedulerSchemaMap,
   ...limiterSchemaMap,
   "flow.queued": {

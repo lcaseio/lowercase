@@ -24,6 +24,14 @@ export const stepStartedReducer: Reducer<StepStartedMsg> = (
           run.outstandingSteps++;
         }
       }
+    } else if (stepType === "join") {
+    } else {
+      if (fa.inEdges[stepId] !== undefined) {
+        for (const edge of fa.inEdges[stepId]) {
+          if (edge.type === "control") {
+          }
+        }
+      }
     }
   });
 };

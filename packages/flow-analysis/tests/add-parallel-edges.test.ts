@@ -10,16 +10,16 @@ import type {
   UnknownStepReferenceProblem,
 } from "@lcase/types";
 
-describe("addJoinEdge()", () => {
+describe("addParallelEdges()", () => {
   it("adds corrent new edges when there are no problems", () => {
     const inEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
     const outEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
 
@@ -49,23 +49,23 @@ describe("addJoinEdge()", () => {
 
     const expectedInEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       c: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
       ],
       d: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "d" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "d" },
       ],
     };
 
     const expectedOutEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       b: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
-        { type: "control", gate: "always", startStepId: "b", endStepId: "d" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "d" },
       ],
     };
 
@@ -77,12 +77,12 @@ describe("addJoinEdge()", () => {
   it("adds an UnknownStepReference problem when it references an invalid stepId", () => {
     const inEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
     const outEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
 
@@ -112,19 +112,19 @@ describe("addJoinEdge()", () => {
 
     const expectedInEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       c: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
       ],
     };
 
     const expectedOutEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       b: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
       ],
     };
 
@@ -142,12 +142,12 @@ describe("addJoinEdge()", () => {
   it("adds an SelfReferencedProblem problem when it references itself", () => {
     const inEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
     const outEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
     };
 
@@ -177,19 +177,19 @@ describe("addJoinEdge()", () => {
 
     const expectedInEdges: InEdges = {
       b: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       c: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
       ],
     };
 
     const expectedOutEdges: OutEdges = {
       a: [
-        { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+        { type: "parallel", gate: "always", startStepId: "a", endStepId: "b" },
       ],
       b: [
-        { type: "control", gate: "always", startStepId: "b", endStepId: "c" },
+        { type: "parallel", gate: "always", startStepId: "b", endStepId: "c" },
       ],
     };
 

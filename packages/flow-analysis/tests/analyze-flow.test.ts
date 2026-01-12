@@ -61,10 +61,20 @@ describe("analyzeFlow()", () => {
     const expectedAnalysis: FlowAnalysis = {
       inEdges: {
         b: [
-          { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
+          {
+            type: "parallel",
+            gate: "always",
+            startStepId: "a",
+            endStepId: "b",
+          },
         ],
         c: [
-          { type: "control", gate: "always", startStepId: "a", endStepId: "c" },
+          {
+            type: "parallel",
+            gate: "always",
+            startStepId: "a",
+            endStepId: "c",
+          },
         ],
         d: [
           { type: "join", gate: "always", startStepId: "b", endStepId: "d" },
@@ -92,8 +102,18 @@ describe("analyzeFlow()", () => {
       },
       outEdges: {
         a: [
-          { type: "control", gate: "always", startStepId: "a", endStepId: "b" },
-          { type: "control", gate: "always", startStepId: "a", endStepId: "c" },
+          {
+            type: "parallel",
+            gate: "always",
+            startStepId: "a",
+            endStepId: "b",
+          },
+          {
+            type: "parallel",
+            gate: "always",
+            startStepId: "a",
+            endStepId: "c",
+          },
         ],
         b: [{ type: "join", gate: "always", startStepId: "b", endStepId: "d" }],
         c: [{ type: "join", gate: "always", startStepId: "c", endStepId: "d" }],

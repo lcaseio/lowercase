@@ -4,27 +4,23 @@ import type {
   JobParserPort,
 } from "@lcase/ports";
 import type { EngineDeps } from "@lcase/ports/engine";
-import type { AnyEvent } from "@lcase/types";
+import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
 
 import { reducers } from "./registries/reducer.registry.js";
 import { planners } from "./registries/planner.registry.js";
 import { wireEffectHandlers } from "./registries/effect.registry.js";
 import type {
-  EffectHandler,
   EffectHandlerRegistry,
   EffectHandlerWrapped,
   EngineEffect,
   EngineMessage,
   EngineState,
   FlowSubmittedMsg,
-  JobCompletedMsg,
-  JobFailedMsg,
   JobFinishedMsg,
   Planner,
   Reducer,
   RunFinishedMsg,
   RunStartedMsg,
-  StartJoinMsg,
 } from "./engine.types.js";
 import {
   StepFinishedMsg,
@@ -211,12 +207,14 @@ export class Engine {
 
   handleJobFinished(event: AnyEvent): void {
     // parse event
-    const job = this.jobParser.parseJobCompleted(event);
-    if (!job) throw new Error("[engine] not a job completed event");
+    if (!event.type.endsWith(".completed") && !event.type.endsWith(".failed"))
+      return;
+    // const job = this.jobParser.parseJobCompleted(event);
+    // if (!job) throw new Error("[engine] not a job completed event");
 
     const JobFinishedMsg = {
       type: "JobFinished",
-      event: job.event,
+      event: event as JobCompletedEvent | JobFailedEvent,
     } satisfies JobFinishedMsg;
 
     this.enqueue(JobFinishedMsg);

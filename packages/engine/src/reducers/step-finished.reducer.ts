@@ -29,15 +29,17 @@ export const stepFinishedReducer: Reducer<StepFinishedMsg> = (
 
     run.outstandingSteps = Math.abs(run.outstandingSteps - 1);
 
-    for (const edge of fa.outEdges[stepId]) {
-      if (run.steps[edge.endStepId] === undefined) continue;
+    if (fa.outEdges[stepId] !== undefined) {
+      for (const edge of fa.outEdges[stepId]) {
+        if (run.steps[edge.endStepId] === undefined) continue;
 
-      if (edge.type === "join") planJoinEdge(edge, run);
-      else if (edge.type === "control") {
-        if (message.event.data.status === "success") {
-          planControlEdge(edge, run, "onSuccess");
-        } else if (message.event.data.status === "failure") {
-          planControlEdge(edge, run, "onFailure");
+        if (edge.type === "join") planJoinEdge(edge, run);
+        else if (edge.type === "control") {
+          if (message.event.data.status === "success") {
+            planControlEdge(edge, run, "onSuccess");
+          } else if (message.event.data.status === "failure") {
+            planControlEdge(edge, run, "onFailure");
+          }
         }
       }
     }

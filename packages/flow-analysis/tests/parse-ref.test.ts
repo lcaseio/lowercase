@@ -5,7 +5,7 @@ import { Ref } from "@lcase/types";
 describe("getRegStrings()", () => {
   it("parses simple strings correctly", () => {
     const refs: Ref[] = [];
-    parseRef("{{steps.bar}}", ["foo"], "stepId", refs);
+    parseRef("{{steps.bar}}", ["foo"], "stepId", refs, []);
     const expectedRefs: Ref[] = [
       {
         path: ["steps", "bar"],
@@ -13,6 +13,7 @@ describe("getRegStrings()", () => {
         stepPath: ["foo"],
         stepId: "stepId",
         string: "steps.bar",
+        interpolated: false,
       },
     ];
     expect(refs).toEqual(expectedRefs);

@@ -32,25 +32,19 @@ describe("flowSubmittedPlanner", () => {
       flowVersion: message.event.data.flow.version,
       runId: message.event.runid,
       traceId: message.event.traceid,
-      activeJoinSteps: {},
       plannedSteps: {},
       startedSteps: {},
       completedSteps: {},
       failedSteps: {},
       outstandingSteps: 0,
 
-      inputs: message.event.data.definition.inputs ?? {},
-      exports: {},
-      globals: {},
+      input: message.event.data.definition.inputs ?? {},
       status: "started",
       steps: {
         start: {
           status: "initialized",
           attempt: 0,
-          exports: {},
-          result: {},
-          stepId: "start",
-          joins: {},
+          output: {},
           resolved: {},
         },
       },
@@ -101,7 +95,6 @@ describe("flowSubmittedPlanner", () => {
       },
       {
         type: "EmitRunStarted",
-        eventType: "run.started",
         data: null,
         scope: {
           flowid: message.event.flowid,

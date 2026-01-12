@@ -7,27 +7,21 @@ export type JobDescriptor = {
     toolid: string;
   };
 };
-export type JobDescriptorResolved = {
-  job: {
-    id: string;
-    capid: CapId;
-    toolid: string;
-  };
-};
 
-export type JobStartedData = JobDescriptor & {
+export type JobStartedData = {
   status: "started";
 };
 
-export type JobCompletedData = JobDescriptorResolved & {
+export type JobCompletedData = {
   status: "success";
   output: Record<string, unknown> | null;
+  message?: string;
 };
 
-export type JobFailedData = JobDescriptorResolved & {
+export type JobFailedData = {
   status: "failure";
   output: Record<string, unknown> | null;
-  reason: string;
+  message?: string;
 };
 
 export type JobDelayedData = {

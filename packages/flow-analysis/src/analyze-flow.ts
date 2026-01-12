@@ -90,7 +90,7 @@ export function addParallelEdges(
     if (hasProblems) continue;
 
     addEdge(fa.inEdges, fa.outEdges, {
-      type: "control",
+      type: "parallel",
       gate: "always",
       startStepId: stepId,
       endStepId,

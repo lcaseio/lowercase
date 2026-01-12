@@ -67,7 +67,7 @@ export const FlowAnalyzedDataSchema = z
       inEdges: z.record(z.string(), z.any()),
       outEdges: z.record(z.string(), z.any()),
       joinDeps: z.record(z.string(), z.any()),
-      problems: z.array(z.any()).optional(),
+      problems: z.array(z.any()),
       refs: z.array(z.any()),
     }),
   })

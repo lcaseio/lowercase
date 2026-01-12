@@ -64,7 +64,7 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
         steptype: flow.definition.steps[stepId].type,
       },
       data: {
-        reason: e.data.reason,
+        reason: e.data.message ?? "",
         status: e.data.status,
         step: {
           id: stepId,
