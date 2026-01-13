@@ -1,4 +1,4 @@
-import { writeFileSync } from "fs";
+import { appendFileSync, writeFileSync } from "fs";
 import {
   EffectHandler,
   EffectHandlerDeps,
@@ -10,9 +10,9 @@ export const writeContextToDiskFx: EffectHandler<"WriteContextToDisk"> = (
   effect: WriteContextToDiskFx,
   deps: EffectHandlerDeps
 ) => {
-  const filename = `run-${effect.runId.slice(0, 5)}-original.temp.json`;
+  const filename = `${effect.runId.slice(0, 8)}-original.temp.jsonl`;
   const fullFilePath = path.join(process.cwd(), filename);
-  writeFileSync(fullFilePath, JSON.stringify(effect.context), {
+  appendFileSync(fullFilePath, JSON.stringify(effect.context) + "\n", {
     encoding: "utf8",
   });
 };

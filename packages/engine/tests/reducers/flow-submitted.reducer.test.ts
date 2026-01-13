@@ -7,6 +7,7 @@ import type {
 } from "../../src/engine.types.js";
 import { flowSubmittedReducer } from "../../src/reducers/flow-submitted.reducer.js";
 import { flowSubmittedEvent } from "../fixtures/flow-submitted.event.js";
+import { flowAnalysis } from "../fixtures/flow-analysis.state.js";
 
 describe("flowSubmittedReducer", () => {
   it("initializes run and flow state as started when analysis passes", () => {
@@ -41,6 +42,12 @@ describe("flowSubmittedReducer", () => {
       input: message.event.data.definition.inputs ?? {},
       status: "started",
       steps: {
+        parallel: {
+          status: "initialized",
+          attempt: 0,
+          output: {},
+          resolved: {},
+        },
         [stepId]: {
           status: "initialized",
           attempt: 0,
@@ -48,14 +55,7 @@ describe("flowSubmittedReducer", () => {
           resolved: {},
         },
       },
-      flowAnalysis: {
-        nodes: [stepId],
-        inEdges: {},
-        outEdges: {},
-        joinDeps: {},
-        refs: [],
-        problems: [],
-      },
+      flowAnalysis: flowAnalysis,
     } satisfies RunContext;
 
     const flowCtx: FlowContext = {

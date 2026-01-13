@@ -7,6 +7,7 @@ import type {
   EmitStepCompletedFx,
   JobFinishedMsg,
   EmitStepFailedFx,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 
 export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
@@ -76,6 +77,13 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
     };
     effects.push(emitStepFailedFx);
   }
+
+  const writeEffect = {
+    type: "WriteContextToDisk",
+    context: newRunState,
+    runId,
+  } satisfies WriteContextToDiskFx;
+  effects.push(writeEffect);
 
   return effects;
 };

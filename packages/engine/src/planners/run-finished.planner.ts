@@ -69,7 +69,6 @@ export const runFinishedPlanner: Planner<RunFinishedMsg> = (
     context: newRunState,
     runId,
   } satisfies WriteContextToDiskFx;
-
   effects.push(writeEffect);
 
   return effects;

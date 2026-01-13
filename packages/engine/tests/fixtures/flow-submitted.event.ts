@@ -20,8 +20,12 @@ export const flowSubmittedEvent = {
       description: "test-flowdescription",
       inputs: {},
       outputs: {},
-      start: stepId,
+      start: "parallel",
       steps: {
+        parallel: {
+          type: "parallel",
+          steps: [stepId],
+        },
         [stepId]: {
           type: "httpjson",
           url: "test-url",

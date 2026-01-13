@@ -4,6 +4,7 @@ import type {
   EngineEffect,
   EngineState,
   Planner,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 import type { StepStartedMsg } from "../types/message.types.js";
 
@@ -84,6 +85,13 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
     };
     effects.push(emitStepCompletedFx);
   }
+
+  const writeEffect = {
+    type: "WriteContextToDisk",
+    context: newRunState,
+    runId,
+  } satisfies WriteContextToDiskFx;
+  effects.push(writeEffect);
 
   return effects;
 };

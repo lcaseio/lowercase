@@ -3,8 +3,9 @@ import type {
   EngineState,
   FlowContext,
   FlowSubmittedMsg,
-} from "../../src/engine.types";
-import { flowSubmittedEvent } from "./flow-submitted.event";
+} from "../../src/engine.types.js";
+import { flowSubmittedEvent } from "./flow-submitted.event.js";
+import { flowAnalysis } from "./flow-analysis.state.js";
 
 const stepId = "test-stepid";
 export const flowSubmittedOldState: EngineState = {
@@ -39,6 +40,13 @@ const runCtx = {
 
   status: "started",
   steps: {
+    parallel: {
+      attempt: 0,
+      output: {},
+      resolved: {},
+      status: "initialized",
+    },
+
     [stepId]: {
       status: "initialized",
       attempt: 0,
@@ -46,14 +54,7 @@ const runCtx = {
       resolved: {},
     },
   },
-  flowAnalysis: {
-    nodes: [stepId],
-    inEdges: {},
-    outEdges: {},
-    joinDeps: {},
-    problems: [],
-    refs: [],
-  },
+  flowAnalysis: flowAnalysis,
 } satisfies RunContext;
 
 const flowCtx: FlowContext = {

@@ -6,6 +6,7 @@ import {
   EmitRunStartedFx,
   EmitFlowAnalyzedFx,
   EmitFlowFailedFx,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 
 /**
@@ -88,6 +89,13 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
       traceId: newRunState.traceId,
     } satisfies EmitFlowFailedFx);
   }
+
+  const writeEffect = {
+    type: "WriteContextToDisk",
+    context: newRunState,
+    runId,
+  } satisfies WriteContextToDiskFx;
+  effects.push(writeEffect);
 
   return effects;
 };

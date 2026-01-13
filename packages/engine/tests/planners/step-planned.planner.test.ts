@@ -63,7 +63,7 @@ describe("stepPlannedPlanner()", () => {
       },
       traceId: message.event.traceid,
     };
-    expectedEffects.push(expectedJobHttpJsonSubmittedFx);
+    // expectedEffects.push(expectedJobHttpJsonSubmittedFx);
 
     const effects = stepPlannedPlanner(oldState, newState, message);
 

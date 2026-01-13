@@ -1,25 +1,26 @@
 import { AnyEvent } from "@lcase/types";
 
-export const stepPlannedEvent: AnyEvent<"step.planned"> = {
+export const stepStartedEvent = {
   data: {
     step: {
-      id: "parallel",
-      name: "parallel",
-      type: "parallel",
+      id: "test-stepid",
+      name: "test-stepid",
+      type: "httpjson",
     },
+    status: "started",
   },
   id: "test-id",
   source: "test-source",
   specversion: "1.0",
   time: "test-time",
-  type: "step.planned",
+  type: "step.started",
   domain: "step",
-  action: "planned",
+  action: "started",
   traceparent: "test-traceparent",
   traceid: "test-traceid",
   spanid: "test-spanid",
   flowid: "test-flowid",
   runid: "test-runid",
-  stepid: "parallel",
-  steptype: "parallel",
-};
+  stepid: "test-stepid",
+  steptype: "httpjson",
+} satisfies AnyEvent<"step.started">;
