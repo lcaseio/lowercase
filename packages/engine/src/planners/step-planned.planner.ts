@@ -70,10 +70,12 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       },
       data: {
         url: materializedStep.url,
-        body: materializedStep.body,
-        headers: materializedStep.headers,
-        method: materializedStep.method,
-        args: materializedStep.args,
+        ...(materializedStep.body ? { body: materializedStep.body } : {}),
+        ...(materializedStep.headers
+          ? { headers: materializedStep.headers }
+          : {}),
+        ...(materializedStep.method ? { method: materializedStep.method } : {}),
+        ...(materializedStep.args ? { args: materializedStep.args } : {}),
       },
       traceId: newRun.traceId,
     };
@@ -93,7 +95,12 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         stepid: stepId,
         toolid: "mcp",
       },
-      data: { ...materializedStep },
+      data: {
+        url: materializedStep.url,
+        feature: materializedStep.feature,
+        transport: materializedStep.transport,
+        ...(materializedStep.args ? { args: materializedStep.args } : {}),
+      },
       traceId: newRun.traceId,
     };
     effects.push(emitJob);

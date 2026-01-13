@@ -47,7 +47,7 @@ const runCtx = {
     },
   },
   flowAnalysis: {
-    nodes: [],
+    nodes: [stepId],
     inEdges: {},
     outEdges: {},
     joinDeps: {},
