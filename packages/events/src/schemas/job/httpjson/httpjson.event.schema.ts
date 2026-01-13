@@ -1,11 +1,10 @@
 import { z } from "zod";
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
 import { CloudEventContextSchema } from "../../cloud-context.schema.js";
 import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
-  JobHttpJsonResolvedDataSchema,
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 const EntityCapIdSchema = z.object({
@@ -15,15 +14,15 @@ const EntityCapIdSchema = z.object({
 
 export const JobHttpJsonSubmittedSchema: z.ZodType<
   AnyEvent<"job.httpjson.submitted">
-> = CloudEventContextSchema.merge(JobScopeSchema)
-  .merge(EntityCapIdSchema)
-  .merge(
-    z.object({
-      type: z.literal("job.httpjson.submitted"),
-      action: z.literal("submitted"),
-      data: JobHttpJsonDataSchema,
-    })
-  )
+> = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...JobScopeSchema.shape,
+    ...EntityCapIdSchema.shape,
+    type: z.literal("job.httpjson.submitted"),
+    action: z.literal("submitted"),
+    data: JobHttpJsonDataSchema,
+  })
   .strict();
 
 export const JobHttpJsonDelayedSchema = z
@@ -34,7 +33,7 @@ export const JobHttpJsonDelayedSchema = z
     type: z.literal("job.httpjson.delayed"),
     action: z.literal("delayed"),
 
-    data: JobHttpJsonResolvedDataSchema,
+    data: JobHttpJsonDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.delayed">>;
 
@@ -45,7 +44,7 @@ export const JobHttpJsonResumedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.resumed"),
     action: z.literal("resumed"),
-    data: JobHttpJsonResolvedDataSchema,
+    data: JobHttpJsonDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.resumed">>;
 
@@ -56,7 +55,7 @@ export const JobHttpJsonQueuedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.queued"),
     action: z.literal("queued"),
-    data: JobHttpJsonResolvedDataSchema,
+    data: JobHttpJsonDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.queued">>;
 
@@ -67,7 +66,7 @@ export const JobHttpJsonStartedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.started"),
     action: z.literal("started"),
-    data: JobHttpJsonResolvedDataSchema,
+    data: JobHttpJsonDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.started">>;
 

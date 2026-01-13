@@ -1,6 +1,7 @@
 import type { z, ZodSchema } from "zod";
 import type { EventType } from "@lcase/types";
 import {
+  FlowAnalyzedSchema,
   FlowCompletedSchema,
   FlowFailedSchema,
   FlowQueuedSchema,
@@ -8,6 +9,7 @@ import {
   FlowSubmittedSchema,
 } from "../schemas/flow-event.schema.js";
 import {
+  FlowAnalyzedDataSchema,
   FlowCompletedDataSchema,
   FlowFailedDataSchema,
   FlowQueuedDataSchema,
@@ -35,11 +37,13 @@ import {
 import {
   StepCompletedSchema,
   StepFailedSchema,
+  StepPlannedSchema,
   StepStartedSchema,
 } from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
+  StepPlannedDataSchema,
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
@@ -72,11 +76,11 @@ import {
 } from "../schemas/worker.event.schema.js";
 import { SystemLoggedSchema } from "../schemas/system.event.schema.js";
 import { SystemLoggedDataSchema } from "../schemas/system.data.schema.js";
-import { httpjsonRegistry } from "./job/httpjson.registry.js";
-import { mcpRegistry } from "./job/mcp.registry.js";
-import { replayRegistry } from "./replay/replay.registry.js";
+import { mcpSchemaMap } from "./job/mcp.schema.map.ts.js";
+import { replaySchemaMap } from "./replay/schema.map.js";
 import { schedulerSchemaMap } from "./scheduler/schema.map.js";
 import { limiterSchemaMap } from "./limiter/schema.map.js";
+import { httpjsonSchemaMap } from "./job/httpjson.schema.map.js";
 
 export type EventTopic =
   | "steps.lifecycle"
@@ -96,9 +100,9 @@ export type EventTopic =
 // simple hardcoded registry mapping event types to schemas, as well as
 // topics to publish the event to
 export const eventSchemaRegistry = {
-  ...httpjsonRegistry,
-  ...mcpRegistry,
-  ...replayRegistry,
+  ...httpjsonSchemaMap,
+  ...mcpSchemaMap,
+  ...replaySchemaMap,
   ...schedulerSchemaMap,
   ...limiterSchemaMap,
   "flow.queued": {
@@ -113,6 +117,12 @@ export const eventSchemaRegistry = {
     schema: {
       event: FlowSubmittedSchema,
       data: FlowSubmittedDataSchema,
+    },
+  },
+  "flow.analyzed": {
+    schema: {
+      event: FlowAnalyzedSchema,
+      data: FlowAnalyzedDataSchema,
     },
   },
   "flow.started": {
@@ -169,6 +179,13 @@ export const eventSchemaRegistry = {
     schema: {
       event: RunFailedSchema,
       data: RunFailedDataSchema,
+    },
+  },
+  "step.planned": {
+    topic: "steps.lifecycle",
+    schema: {
+      event: StepPlannedSchema,
+      data: StepPlannedDataSchema,
     },
   },
   "step.started": {

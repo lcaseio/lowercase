@@ -1,6 +1,6 @@
 {
   "name": "Parallel Flow Test",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "start": "p",
   "steps": {
     "p": {
@@ -39,7 +39,7 @@
 
     "five": {
       "type": "httpjson",
-      "url": "${two.result.body.homeworld}",
+      "url": "{{steps.two.output.body.result.properties.homeworld}}",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"

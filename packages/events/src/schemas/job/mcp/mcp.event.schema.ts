@@ -5,7 +5,6 @@ import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobMcpDataSchema,
-  JobMcpResolvedDataSchema,
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 
@@ -32,7 +31,7 @@ export const JobMcpDelayedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.mcp.delayed"),
     action: z.literal("delayed"),
-    data: JobMcpResolvedDataSchema,
+    data: JobMcpDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.delayed">>;
 
@@ -43,7 +42,7 @@ export const JobMcpQueuedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.mcp.queued"),
     action: z.literal("queued"),
-    data: JobMcpResolvedDataSchema,
+    data: JobMcpDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
 
@@ -54,7 +53,7 @@ export const JobMcpStartedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.mcp.started"),
     action: z.literal("started"),
-    data: JobMcpResolvedDataSchema,
+    data: JobMcpDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.started">>;
 

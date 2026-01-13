@@ -271,8 +271,8 @@ export class EmitterFactory implements EmitterFactoryPort {
       traceId: event.traceid,
       spanId,
       traceParent,
-      capid: event.data.job.capid,
-      toolid: event.data.job.toolid,
+      capid: event.capid,
+      toolid: event.toolid,
     });
   }
 

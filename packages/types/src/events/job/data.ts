@@ -4,30 +4,24 @@ export type JobDescriptor = {
   job: {
     id: string;
     capid: CapId;
-    toolid: string | null;
-  };
-};
-export type JobDescriptorResolved = {
-  job: {
-    id: string;
-    capid: CapId;
     toolid: string;
   };
 };
 
-export type JobStartedData = JobDescriptor & {
+export type JobStartedData = {
   status: "started";
 };
 
-export type JobCompletedData = JobDescriptorResolved & {
+export type JobCompletedData = {
   status: "success";
-  result?: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  message?: string;
 };
 
-export type JobFailedData = JobDescriptorResolved & {
+export type JobFailedData = {
   status: "failure";
-  result?: Record<string, unknown>;
-  reason: string;
+  output: Record<string, unknown> | null;
+  message?: string;
 };
 
 export type JobDelayedData = {

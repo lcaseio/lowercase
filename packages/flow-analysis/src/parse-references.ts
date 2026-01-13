@@ -10,9 +10,11 @@ export function parseStepRefs<D extends StepDefinition>(
   for (const key in step) {
     const k = key as keyof D;
     if (k === "type") continue;
-    traverse(step[k], (value, path) => parseRef(value, path, stepId, refs), [
-      String(k),
-    ]);
+    traverse(
+      step[k],
+      (value, path) => parseRef(value, path, stepId, refs, problems),
+      [String(k)]
+    );
   }
   return { refs, problems };
 }
@@ -21,8 +23,8 @@ export function parseRef(
   value: unknown,
   stepPath: Path,
   stepId: string,
-  refs: Ref[] = [],
-  problems: FlowProblem[] = []
+  refs: Ref[],
+  problems: FlowProblem[]
 ): void {
   if (typeof value !== "string") return;
   const matches = getRefStrings(value);
@@ -39,6 +41,7 @@ export function parseRef(
       stepId,
       stepPath,
       string: matchedString,
+      interpolated: false,
     };
     if (matchedScope === "steps") {
       refs.push(ref);

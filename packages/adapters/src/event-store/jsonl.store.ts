@@ -69,7 +69,7 @@ export class JsonlEventLog implements EventStorePort {
   }
 
   getFilePath(runId: string) {
-    const fileName = `${runId}.events.jsonl`;
+    const fileName = `${runId.slice(0, 8)}.events.temp.jsonl`;
     return path.join(this.dir, fileName);
   }
 

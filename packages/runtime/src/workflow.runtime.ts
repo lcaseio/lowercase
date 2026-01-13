@@ -21,8 +21,6 @@ export class WorkflowRuntime {
 
       await this.ctx.engine.start();
       await this.ctx.worker.start();
-
-      this.ctx.scheduler.start();
       await this.ctx.limiter.start();
 
       await this.ctx.worker.requestRegistration();
@@ -55,7 +53,6 @@ export class WorkflowRuntime {
       }
 
       this.ctx.tap.stop();
-      this.ctx.scheduler.stop();
       await this.ctx.router.stop();
       await this.ctx.bus.close();
       return "stopped";

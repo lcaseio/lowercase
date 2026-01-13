@@ -35,6 +35,7 @@ describe("parseStepRefs()", () => {
         stepPath: ["url"],
         stepId: "stepId",
         string: "steps.foo",
+        interpolated: false,
       },
     ];
 

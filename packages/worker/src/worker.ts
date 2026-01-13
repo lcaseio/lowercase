@@ -176,26 +176,23 @@ export class Worker {
     const e = job.event;
 
     const jobContext: JobContext = {
-      jobId: e.data.job.id,
-      toolId: e.data.job.toolid ?? "",
-      capability: e.stepid,
+      jobId: e.jobid,
+      toolId: e.toolid,
+      capability: e.capid,
       flowId: e.flowid,
       runId: e.runid,
       stepId: e.stepid,
-      stepType: e.entity!,
+      stepType: e.capid,
       workerId: this.#ctx.workerId,
       startedAt: new Date().toISOString(),
     };
 
-    const deps = this.#makeTookDeps(
-      e.data.pipe ?? {},
+    const deps = this.#makToolDeps(
+      {},
       this.#emitterFactory,
       this.#streamRegistry
     );
-    const tool = this.#toolRegistry.createInstance(
-      e.data.job.toolid as ToolId,
-      deps
-    );
+    const tool = this.#toolRegistry.createInstance(e.toolid as ToolId, deps);
 
     this.#ctx.jobs.set(jobContext.jobId, jobContext);
 
@@ -231,9 +228,9 @@ export class Worker {
         "lowercase://worker/handle-new-job/job-executor/run"
       );
       await jobEmitter.emit(type, {
-        job: e.data.job,
         status: "failure",
-        reason: `"Error executing job.  ${err}`,
+        output: null,
+        message: `"Error executing job.  ${err}`,
       });
       return;
     }
@@ -248,7 +245,7 @@ export class Worker {
     await workerEmitter.emit("worker.slot.finished", {
       jobId: e.jobid,
       runId: e.runid,
-      toolId: e.data.job.toolid,
+      toolId: e.toolid,
     });
 
     const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
@@ -263,9 +260,8 @@ export class Worker {
         throw new Error(`[worker] invalid type; could not parse ${manualType}`);
       }
       await jobEmitter.emit(type, {
-        job: e.data.job,
         status: "success",
-        ...(toolEvent.data.payload ? { result: toolEvent.data.payload } : {}),
+        output: toolEvent.data.payload ? toolEvent.data.payload : null,
       });
     } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
@@ -274,14 +270,14 @@ export class Worker {
         throw new Error(`[worker] invalid type; could not parse ${manualType}`);
       }
       await jobEmitter.emit(type, {
-        job: e.data.job,
         status: "failure",
-        reason: toolEvent.data.reason,
+        output: toolEvent.data.payload ? toolEvent.data.payload : null,
+        message: toolEvent.data.reason,
       });
     }
   }
 
-  #makeTookDeps(
+  #makToolDeps(
     pipe: PipeData,
     ef: EmitterFactoryPort,
     sr: StreamRegistryPort
@@ -400,7 +396,7 @@ export class Worker {
             stepId: e.stepid,
             jobId: e.jobid,
             capId: e.capid,
-            toolId: e.data.job.toolid,
+            toolId: e.toolid,
           });
 
           ctx.activeJobCount++;
@@ -449,7 +445,7 @@ export class Worker {
   }
 
   async requestSlot(event: JobQueuedEvent) {
-    const ctx = this.#ctx.tools.get(event.data.job.toolid);
+    const ctx = this.#ctx.tools.get(event.toolid);
     if (ctx) ctx.waitingJobQueuedEvents.set(event.jobid, event);
     const emitter = this.#emitterFactory.newWorkerEmitterNewSpan(
       {
@@ -461,7 +457,7 @@ export class Worker {
     await emitter.emit("worker.slot.requested", {
       jobId: event.jobid,
       runId: event.runid,
-      toolId: event.data.job.toolid,
+      toolId: event.toolid,
     });
   }
 

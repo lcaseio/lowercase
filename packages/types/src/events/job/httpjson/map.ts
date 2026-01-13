@@ -1,6 +1,6 @@
-import { DomainEntityActionDescriptor } from "../../shared/otel-attributes.js";
-import { JobCompletedData, JobFailedData } from "../data.js";
-import { JobHttpJsonData, JobHttpJsonResolvedData } from "./data.js";
+import type { DomainEntityActionDescriptor } from "../../shared/otel-attributes.js";
+import type { JobCompletedData, JobFailedData } from "../data.js";
+import type { JobHttpJsonData } from "./data.js";
 
 export type JobHttpJsonEventMap = {
   "job.httpjson.submitted": DomainEntityActionDescriptor<
@@ -13,25 +13,25 @@ export type JobHttpJsonEventMap = {
     "job",
     "httpjson",
     "delayed",
-    JobHttpJsonResolvedData
+    JobHttpJsonData
   >;
   "job.httpjson.queued": DomainEntityActionDescriptor<
     "job",
     "httpjson",
     "queued",
-    JobHttpJsonResolvedData
+    JobHttpJsonData
   >;
   "job.httpjson.resumed": DomainEntityActionDescriptor<
     "job",
     "httpjson",
     "resumed",
-    JobHttpJsonResolvedData
+    JobHttpJsonData
   >;
   "job.httpjson.started": DomainEntityActionDescriptor<
     "job",
     "httpjson",
     "started",
-    JobHttpJsonResolvedData
+    JobHttpJsonData
   >;
   "job.httpjson.completed": DomainEntityActionDescriptor<
     "job",

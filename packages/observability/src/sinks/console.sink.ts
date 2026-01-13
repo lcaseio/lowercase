@@ -55,7 +55,7 @@ export class ConsoleSink implements EventSink {
     );
 
     if (this.ctx.allVerbose || this.ctx.verboseEvents.has(event.type)) {
-      console.log("data:", event.data);
+      // console.log("data:", event.data);
     }
   }
 }

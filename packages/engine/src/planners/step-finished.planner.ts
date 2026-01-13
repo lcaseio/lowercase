@@ -1,0 +1,95 @@
+import {
+  EmitRunCompletedFx,
+  EmitRunFailedFx,
+  EmitStepPlannedFx,
+  EngineEffect,
+  EngineState,
+  Planner,
+  WriteContextToDiskFx,
+} from "../engine.types.js";
+import { StepFinishedMsg } from "../types/message.types.js";
+
+export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
+  oldState: EngineState,
+  newState: EngineState,
+  message: StepFinishedMsg
+): EngineEffect[] => {
+  const effects: EngineEffect[] = [];
+
+  const runId = message.event.runid;
+  const flowId = message.event.flowid;
+  const stepId = message.event.stepid;
+
+  const oldRun = oldState.runs[runId];
+  const newRun = newState.runs[runId];
+  const flow = newState.flows[flowId];
+
+  if (!newRun || !oldRun) return effects;
+  if (!flow) return effects;
+
+  const newPlannedStepIds = Object.keys(newRun.plannedSteps).filter(
+    (id) => oldRun.plannedSteps[id] === undefined
+  );
+
+  for (const plannedStepId of newPlannedStepIds) {
+    if (oldRun.steps[plannedStepId].status !== "initialized") continue;
+    const step = flow.definition.steps[plannedStepId];
+    if (!step) continue;
+
+    const emitStepPlannedFx: EmitStepPlannedFx = {
+      type: "EmitStepPlanned",
+      scope: {
+        flowid: newRun.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+        stepid: plannedStepId,
+        steptype: step.type,
+      },
+      data: {
+        step: {
+          id: plannedStepId,
+          name: plannedStepId,
+          type: step.type,
+        },
+      },
+      traceId: newRun.traceId,
+    };
+    effects.push(emitStepPlannedFx);
+    console.log("planning:", plannedStepId);
+  }
+
+  if (newRun.outstandingSteps === 0 && newRun.status === "completed") {
+    const emitRunCompletedFx: EmitRunCompletedFx = {
+      type: "EmitRunCompleted",
+      scope: {
+        flowid: newRun.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+      },
+      data: null,
+      traceId: newRun.traceId,
+    };
+    effects.push(emitRunCompletedFx);
+  } else if (newRun.outstandingSteps === 0 && newRun.status === "failed") {
+    const emitRunFailedFx: EmitRunFailedFx = {
+      type: "EmitRunFailed",
+      scope: {
+        flowid: newRun.flowId,
+        runid: runId,
+        source: "lowercase://engine",
+      },
+      data: null,
+      traceId: newRun.traceId,
+    };
+    effects.push(emitRunFailedFx);
+  }
+
+  const writeEffect = {
+    type: "WriteContextToDisk",
+    context: newRun,
+    runId,
+  } satisfies WriteContextToDiskFx;
+  effects.push(writeEffect);
+
+  return effects;
+};

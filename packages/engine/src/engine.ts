@@ -4,24 +4,30 @@ import type {
   JobParserPort,
 } from "@lcase/ports";
 import type { EngineDeps } from "@lcase/ports/engine";
-import type { AnyEvent } from "@lcase/types";
+import type { AnyEvent, JobCompletedEvent, JobFailedEvent } from "@lcase/types";
 
-import { reducers } from "./reducers/reducer-registry.js";
-import { planners } from "./planners/planner-registry.js";
-import {
+import { reducers } from "./registries/reducer.registry.js";
+import { planners } from "./registries/planner.registry.js";
+import { wireEffectHandlers } from "./registries/effect.registry.js";
+import type {
   EffectHandlerRegistry,
-  wireEffectHandlers,
-} from "./handlers/handler-registry.js";
-import {
-  EffectHandler,
+  EffectHandlerWrapped,
   EngineEffect,
   EngineMessage,
   EngineState,
   FlowSubmittedMsg,
-  JobCompletedMsg,
-  JobFailedMsg,
+  JobFinishedMsg,
+  Planner,
   Reducer,
+  RunFinishedMsg,
+  RunStartedMsg,
+  WriteContextToDiskFx,
 } from "./engine.types.js";
+import {
+  StepFinishedMsg,
+  StepPlannedMsg,
+  StepStartedMsg,
+} from "./types/message.types.js";
 /**
  * Engine class runs flows as the orchestration center.
  * It handles multiple runs in one instance.
@@ -34,7 +40,7 @@ import {
 export class Engine {
   id = "internal-engine";
   version = "0.1.0-alpha.8";
-  state: EngineState = { runs: {} };
+  state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;
 
@@ -51,7 +57,7 @@ export class Engine {
     this.ef = this.deps.ef;
     this.jobParser = this.deps.jobParser;
 
-    this.handlers = wireEffectHandlers(this.ef);
+    this.handlers = wireEffectHandlers({ ef: this.ef });
   }
 
   subscribeToTopics(): void {
@@ -62,15 +68,34 @@ export class Engine {
     });
 
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
-      // TODO: parse evenvelope
-      this.handleJobCompleted(e);
+      this.handleJobFinished(e);
     });
     this.bus.subscribe("job.*.failed", async (e: AnyEvent) => {
-      // TODO: parse evenvelope
-      this.handleJobFailed(e);
+      this.handleJobFinished(e);
     });
     this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>
       this.handleReplayModeSubmitted(e)
+    );
+    this.bus.subscribe("step.planned", async (e: AnyEvent) =>
+      this.handleStepPlanned(e)
+    );
+    this.bus.subscribe("step.started", async (e: AnyEvent) =>
+      this.handleStepStarted(e)
+    );
+    this.bus.subscribe("step.completed", async (e: AnyEvent) =>
+      this.handleStepFinished(e)
+    );
+    this.bus.subscribe("step.failed", async (e: AnyEvent) =>
+      this.handleStepFinished(e)
+    );
+    this.bus.subscribe("run.started", async (e: AnyEvent) =>
+      this.handleRunStarted(e)
+    );
+    this.bus.subscribe("run.completed", async (e: AnyEvent) =>
+      this.handleRunFinished(e)
+    );
+    this.bus.subscribe("run.failed", async (e: AnyEvent) =>
+      this.handleRunFinished(e)
     );
   }
 
@@ -128,47 +153,33 @@ export class Engine {
     this.queue.push(message);
   }
 
-  executeEffect(effect: EngineEffect): void {
-    if (effect.kind === "DispatchInternal") {
-      this.queue.push(effect.message);
-      return;
-    }
+  executeEffect<T extends EngineEffect["type"]>(
+    effect: Extract<EngineEffect, { type: T }>
+  ): void {
+    if (!this.enableSideEffects && effect.type !== "WriteContextToDisk") return;
 
-    if (!this.enableSideEffects && effect.kind !== "WriteContextToDisk") return;
-
-    // TODO: fix `any` here
-    const handler = this.handlers[effect.kind] as
-      | EffectHandler<any>
-      | undefined;
-    if (!handler) return;
-
+    const handler = this.handlers[effect.type] as EffectHandlerWrapped<T>;
     handler(effect);
   }
   processNext(): void {
     const message = this.queue.shift();
     if (!message) return;
 
-    const reducer = reducers[message.type] as Reducer | undefined;
-    const planner = planners[message.type] ?? [];
+    const reducer = reducers[message.type] as Reducer<
+      Extract<EngineMessage, { type: typeof message.type }>
+    >;
+    const planner = planners[message.type] as Planner<
+      Extract<EngineMessage, { type: typeof message.type }>
+    >;
 
     const oldState = this.state;
-    const patch = reducer ? reducer({ ...oldState }, message) : undefined;
+    let newState = reducer(oldState, message);
+    if (newState === undefined) newState = oldState;
 
-    const newState =
-      patch && Object.keys(patch).length > 0
-        ? {
-            ...oldState,
-            ...patch,
-          }
-        : oldState;
-
+    const effects = planner(oldState, newState, message);
     this.state = newState;
 
-    const allEffects: EngineEffect[] = [];
-
-    // TODO: fix `any` here
-    const effects = planner({ oldState, newState, message } as any) ?? [];
-
+    this.executeEffect;
     for (const effect of effects) {
       this.executeEffect(effect);
     }
@@ -188,52 +199,28 @@ export class Engine {
   }
 
   handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
-    const message: FlowSubmittedMsg = {
-      type: "FlowSubmitted",
-      flowId: event.data.flow.id,
-      runId: event.data.run.id,
-      definition: event.data.definition,
-      meta: {
-        traceId: event.traceid,
-      },
-    };
+    if (event.type !== "flow.submitted") return;
+    const message: FlowSubmittedMsg = { type: "FlowSubmitted", event };
 
     this.enqueue(message);
     if (!this.isProcessing) this.processAll();
     return;
   }
 
-  handleJobFailed(event: AnyEvent): void {
-    const job = this.jobParser.parseJobFailed(event);
-    if (!job) throw new Error("[engine] not a job failed event");
-    const jobFailedMsg = {
-      type: "JobFailed",
-      runId: job.event.runid,
-      stepId: job.event.stepid,
-      reason: job.event.data.reason,
-      result: job.event.data.result ?? {},
-    } satisfies JobFailedMsg;
-
-    this.enqueue(jobFailedMsg);
-    if (!this.isProcessing) this.processAll();
-    return;
-  }
-
-  handleJobCompleted(event: AnyEvent): void {
+  handleJobFinished(event: AnyEvent): void {
     // parse event
-    const job = this.jobParser.parseJobCompleted(event);
-    if (!job) throw new Error("[engine] not a job completed event");
+    if (!event.type.endsWith(".completed") && !event.type.endsWith(".failed"))
+      return;
+    // const job = this.jobParser.parseJobCompleted(event);
+    // if (!job) throw new Error("[engine] not a job completed event");
 
-    const jobCompletedMsg = {
-      type: "JobCompleted",
-      runId: job.event.runid,
-      stepId: job.event.stepid,
-      result: job.event.data.result ?? {},
-    } satisfies JobCompletedMsg;
+    const JobFinishedMsg = {
+      type: "JobFinished",
+      event: event as JobCompletedEvent | JobFailedEvent,
+    } satisfies JobFinishedMsg;
 
-    this.enqueue(jobCompletedMsg);
+    this.enqueue(JobFinishedMsg);
     if (!this.isProcessing) this.processAll();
-    return;
   }
 
   handleReplayModeSubmitted(e: AnyEvent) {
@@ -243,5 +230,55 @@ export class Engine {
     const event = e as AnyEvent<"replay.mode.submitted">;
 
     this.enableSideEffects = event.data.enableSideEffects;
+  }
+  handleStepPlanned(e: AnyEvent): void {
+    if (e.type !== "step.planned") return;
+    const event = e as AnyEvent<"step.planned">;
+    const stepPlannedMsg: StepPlannedMsg = {
+      type: "StepPlanned",
+      event,
+    };
+    this.enqueue(stepPlannedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleStepStarted(e: AnyEvent): void {
+    if (e.type !== "step.started") return;
+    const event = e as AnyEvent<"step.started">;
+    const stepStartedMsg: StepStartedMsg = {
+      type: "StepStarted",
+      event,
+    };
+    this.enqueue(stepStartedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleStepFinished(e: AnyEvent): void {
+    if (e.type !== "step.completed" && e.type !== "step.failed") return;
+    const event = e as AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+    const stepFinishedMsg: StepFinishedMsg = {
+      type: "StepFinished",
+      event,
+    };
+    this.enqueue(stepFinishedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleRunStarted(e: AnyEvent): void {
+    if (e.type !== "run.started") return;
+    const event = e as AnyEvent<"run.started">;
+    const runStartedMsg: RunStartedMsg = {
+      type: "RunStarted",
+      event,
+    };
+    this.enqueue(runStartedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleRunFinished(e: AnyEvent): void {
+    if (e.type !== "run.completed" && e.type !== "run.failed") return;
+    const event = e as AnyEvent<"run.completed"> | AnyEvent<"run.failed">;
+    const runFinishedMsg: RunFinishedMsg = {
+      type: "RunFinished",
+      event,
+    };
+    this.enqueue(runFinishedMsg);
+    if (!this.isProcessing) this.processAll();
   }
 }

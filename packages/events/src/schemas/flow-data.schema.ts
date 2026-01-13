@@ -7,6 +7,7 @@ import type {
   FlowQueuedData,
   FlowStartedData,
   FlowSubmittedData,
+  FlowAnalyzedData,
 } from "@lcase/types";
 
 export const FlowDescriptorSchema = z
@@ -57,3 +58,17 @@ export const FlowFailedDataSchema = z
     status: z.literal("failure"),
   })
   .strict() satisfies z.ZodType<FlowFailedData>;
+
+export const FlowAnalyzedDataSchema = z
+  .object({
+    ...FlowDescriptorSchema.shape,
+    analysis: z.object({
+      nodes: z.array(z.string()),
+      inEdges: z.record(z.string(), z.any()),
+      outEdges: z.record(z.string(), z.any()),
+      joinDeps: z.record(z.string(), z.any()),
+      problems: z.array(z.any()),
+      refs: z.array(z.any()),
+    }),
+  })
+  .strict() satisfies z.ZodType<FlowAnalyzedData>;

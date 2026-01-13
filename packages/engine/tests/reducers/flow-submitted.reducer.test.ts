@@ -1,66 +1,71 @@
-import type { RunContext } from "@lcase/types/engine";
-import { flowSubmittedReducer } from "../../src/reducers/flow-submitted.reducer.js";
-import type { FlowSubmittedMsg, EngineState } from "../../src/engine.types.js";
 import { describe, it, expect } from "vitest";
+import type { RunContext } from "@lcase/types/engine";
+import type {
+  FlowSubmittedMsg,
+  EngineState,
+  FlowContext,
+} from "../../src/engine.types.js";
+import { flowSubmittedReducer } from "../../src/reducers/flow-submitted.reducer.js";
+import { flowSubmittedEvent } from "../fixtures/flow-submitted.event.js";
+import { flowAnalysis } from "../fixtures/flow-analysis.state.js";
 
 describe("flowSubmittedReducer", () => {
-  it("updates empty state correctly", () => {
-    const state = {
+  it("initializes run and flow state as started when analysis passes", () => {
+    const stepId = "test-stepid";
+    const startState: EngineState = {
       runs: {},
-    } satisfies EngineState;
+      flows: {},
+    };
 
-    const flowSubmittedMessage: FlowSubmittedMsg = {
+    const expectedState: EngineState = {
+      runs: {},
+      flows: {},
+    };
+
+    const message: FlowSubmittedMsg = {
       type: "FlowSubmitted",
-      flowId: "test-id",
-      runId: "test-id",
-      definition: {
-        name: "test",
-        version: "test",
-        description: "test",
-        inputs: {},
-        outputs: {},
-        start: "",
-        steps: {
-          start: {
-            type: "httpjson",
-            url: "",
-          },
-        },
-      },
-      meta: {
-        traceId: "test",
-      },
+      event: flowSubmittedEvent,
     };
 
     const runCtx = {
-      flowId: flowSubmittedMessage.flowId,
-      flowName: flowSubmittedMessage.definition.name,
-      definition: flowSubmittedMessage.definition,
-      runId: flowSubmittedMessage.runId,
-      traceId: flowSubmittedMessage.meta.traceId,
-      runningSteps: new Set<string>(),
-      activeJoinSteps: new Set<string>(),
-      queuedSteps: new Set<string>(),
-      doneSteps: new Set<string>(),
+      flowId: message.event.flowid,
+      flowName: message.event.data.flow.name,
+      flowVersion: message.event.data.flow.version,
+      runId: message.event.runid,
+      traceId: message.event.traceid,
+      plannedSteps: {},
+      startedSteps: {},
+      completedSteps: {},
+      failedSteps: {},
       outstandingSteps: 0,
-      inputs: flowSubmittedMessage.definition.inputs ?? {},
-      exports: {},
-      globals: {},
-      status: "pending",
+
+      input: message.event.data.definition.inputs ?? {},
+      status: "started",
       steps: {
-        start: {
-          status: "pending",
+        parallel: {
+          status: "initialized",
           attempt: 0,
-          exports: {},
-          result: {},
-          stepId: "start",
-          joins: new Set(),
+          output: {},
+          resolved: {},
+        },
+        [stepId]: {
+          status: "initialized",
+          attempt: 0,
+          output: {},
           resolved: {},
         },
       },
+      flowAnalysis: flowAnalysis,
     } satisfies RunContext;
-    const expectedState = { runs: { ["test-id"]: runCtx } };
-    const newState = flowSubmittedReducer(state, flowSubmittedMessage);
+
+    const flowCtx: FlowContext = {
+      definition: message.event.data.definition,
+      runIds: { [message.event.runid]: true },
+    };
+    expectedState.runs[message.event.runid] = runCtx;
+    expectedState.flows[message.event.flowid] = flowCtx;
+
+    const newState = flowSubmittedReducer(startState, message);
     expect(newState).toEqual(expectedState);
   });
 });

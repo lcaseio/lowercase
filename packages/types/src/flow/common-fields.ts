@@ -2,7 +2,6 @@ import { PipeFields } from "./pipe.fields.js";
 
 export type StepCapCommonFields = {
   args?: Record<string, unknown>;
-  pipe?: PipeFields;
   tool?: string;
 };
 

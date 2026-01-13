@@ -57,7 +57,12 @@ describe("addJoinEdge()", () => {
         { type: "join", gate: "always", startStepId: "b", endStepId: "c" },
       ],
       d: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 
@@ -68,7 +73,12 @@ describe("addJoinEdge()", () => {
       ],
       b: [{ type: "join", gate: "always", startStepId: "b", endStepId: "c" }],
       c: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 
@@ -123,7 +133,12 @@ describe("addJoinEdge()", () => {
       ],
       c: [{ type: "join", gate: "always", startStepId: "a", endStepId: "c" }],
       d: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 
@@ -133,7 +148,12 @@ describe("addJoinEdge()", () => {
         { type: "join", gate: "always", startStepId: "a", endStepId: "c" },
       ],
       c: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 
@@ -194,7 +214,12 @@ describe("addJoinEdge()", () => {
       ],
       c: [{ type: "join", gate: "always", startStepId: "a", endStepId: "c" }],
       d: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 
@@ -204,7 +229,12 @@ describe("addJoinEdge()", () => {
         { type: "join", gate: "always", startStepId: "a", endStepId: "c" },
       ],
       c: [
-        { type: "join", gate: "onSuccess", startStepId: "c", endStepId: "d" },
+        {
+          type: "control",
+          gate: "onSuccess",
+          startStepId: "c",
+          endStepId: "d",
+        },
       ],
     };
 

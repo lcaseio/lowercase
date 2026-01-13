@@ -4,7 +4,7 @@ import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import { Engine, PipeResolver } from "@lcase/engine";
+import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import { EventBusPort, JobParserPort, StreamRegistryPort } from "@lcase/ports";
@@ -26,7 +26,6 @@ import {
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
 import { FlowService, ReplayService } from "@lcase/services";
-import { Scheduler } from "@lcase/scheduler";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
@@ -67,14 +66,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const flowStore = new FlowStore();
 
   const jobParser = new JobParser(eventSchemaRegistry);
-  const scheduler = new Scheduler({
-    bus,
-    ef,
-    queue,
-    jobParser,
-  });
 
-  const engine = createInProcessEngine(bus, streamRegistry, ef, jobParser);
+  const engine = createInProcessEngine(bus, ef, jobParser);
 
   const worker = createInProcessWorker(
     config.worker.id,
@@ -107,7 +100,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     tap,
     sinks,
     ef,
-    scheduler,
     replay,
     limiter,
   };
@@ -161,12 +153,9 @@ export function createObservability(
 
 export function createInProcessEngine(
   bus: EventBusPort,
-  streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort
 ): Engine {
-  const pipeResolver = new PipeResolver(streamRegistry);
-
   const engine = new Engine({
     bus,
     ef: emitterFactory,

@@ -10,6 +10,11 @@ import {
 } from "@lcase/types";
 
 export const stepOtelAttributes = {
+  "step.planned": {
+    action: "planned",
+    domain: "step",
+    entity: undefined,
+  },
   "step.started": {
     action: "started",
     domain: "step",
@@ -35,6 +40,11 @@ export const flowOtelAttributes = {
   },
   "flow.submitted": {
     action: "submitted",
+    domain: "flow",
+    entity: undefined,
+  },
+  "flow.analyzed": {
+    action: "analyzed",
     domain: "flow",
     entity: undefined,
   },

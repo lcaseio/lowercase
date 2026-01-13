@@ -1,11 +1,6 @@
 import { z } from "zod";
-import type { AnyEvent, JobScope } from "@lcase/types";
-import { CloudEventContextSchema } from "../cloud-context.schema.js";
-import {
-  CapIdSchema,
-  JobMcpDataSchema,
-  JobMcpResolvedDataSchema,
-} from "./job.data.schema.js";
+import type { JobScope } from "@lcase/types";
+import { CapIdSchema } from "./job.data.schema.js";
 
 export const JobScopeSchema = z
   .object({
@@ -14,7 +9,7 @@ export const JobScopeSchema = z
     stepid: z.string(),
     jobid: z.string(),
     capid: CapIdSchema,
-    toolid: z.string().nullable(),
+    toolid: z.string(),
     domain: z.literal("job"),
   })
   .strict() satisfies z.ZodType<JobScope>;

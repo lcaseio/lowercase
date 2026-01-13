@@ -57,6 +57,7 @@ describe("findAndParseRefs()", () => {
           stepPath: ["url"],
           stepId: "bar",
           string: "steps.foo",
+          interpolated: false,
         },
       ],
       problems: [],
