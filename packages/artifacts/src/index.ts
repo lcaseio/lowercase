@@ -1,1 +1,1 @@
-export * from "./artifact-manager.js";
+export * from "./artifacts.js";

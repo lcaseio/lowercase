@@ -1,1 +1,1 @@
-export class Artifacts {}
+export class Artifacts
