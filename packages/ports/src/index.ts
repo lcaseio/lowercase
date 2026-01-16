@@ -18,3 +18,4 @@ export * from "./bus/index.js";
 export * from "./concurrency-limiter/concurrency-limiter.port.js";
 export * from "./limiter/limiter.port.js";
 export * from "./artifacts/artifact-store.port.js";
+export * from "./artifacts/artifacts.port.js";

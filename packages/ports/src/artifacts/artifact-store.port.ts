@@ -1,10 +1,8 @@
-export type getBytesReturn = {
-  contentType: string;
-  body: Buffer;
-};
+export type ArtifactStorePutResult =
+  | { ok: true; path: string }
+  | { ok: false; cause: string };
+
 export type ArtifactStorePort = {
-  putBytes(contentType: string, bytes: unknown): Promise<void>;
-  getBytes(hash: string): Promise<getBytesReturn>;
-  putJson(object: Record<string, unknown>): Promise<string>;
-  getJson(hash: string): Promise<Record<string, unknown>>;
+  putBytes(hash: string, bytes: Uint8Array): Promise<ArtifactStorePutResult>;
+  getBytes(hash: string): Promise<Uint8Array | null>;
 };
