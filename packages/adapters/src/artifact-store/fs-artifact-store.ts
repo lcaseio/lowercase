@@ -11,8 +11,10 @@ import path from "node:path";
 
 export class FsArtifactStore implements ArtifactStorePort {
   baseDir: string;
-  constructor() {
-    this.baseDir = path.join(process.cwd(), "artifacts");
+  rootPath: string;
+  constructor(rootPath: string) {
+    this.rootPath = rootPath;
+    this.baseDir = path.join(this.rootPath, "artifacts");
   }
   async putBytes(
     hash: string,
@@ -60,14 +62,14 @@ export class FsArtifactStore implements ArtifactStorePort {
     }
   }
 
-  getAbsoluteFilePath(hash: string, tmp?: boolean): string {
+  getAbsoluteFilePath(hash: string, tmp: boolean = false): string {
     return path.join(
       this.getAbsoluteDirPath(hash),
       this.getFileName(hash, tmp)
     );
   }
 
-  getFileName(hash: string, tmp?: boolean): string {
+  getFileName(hash: string, tmp: boolean = false): string {
     const extension = ".json" + (tmp ? ".tmp" : "");
     return hash.slice(4) + extension;
   }
