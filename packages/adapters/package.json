@@ -42,13 +42,13 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.19.1",
-    "@lcase/ports": "workspace:*",
     "@lcase/specs": "workspace:*",
-    "@lcase/types": "workspace:*",
     "@lcase/events": "workspace:*",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@lcase/types": "workspace:*",
+    "@lcase/ports": "workspace:*"
   }
 }

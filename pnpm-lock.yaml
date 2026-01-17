@@ -266,6 +266,18 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
+  packages/artifacts:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
   packages/controller:
     dependencies:
       '@lcase/runtime':
@@ -404,9 +416,6 @@ importers:
       '@lcase/replay':
         specifier: workspace:*
         version: link:../replay
-      '@lcase/scheduler':
-        specifier: workspace:*
-        version: link:../scheduler
       '@lcase/services':
         specifier: workspace:*
         version: link:../services
@@ -423,22 +432,6 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
-
-  packages/scheduler:
-    dependencies:
-      immer:
-        specifier: ^11.0.1
-        version: 11.0.1
-    devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
   packages/services:
     dependencies:
