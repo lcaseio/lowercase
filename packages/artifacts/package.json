@@ -19,6 +19,7 @@
   "dependencies": {},
   "devDependencies": {
     "@lcase/ports": "workspace:*",
-    "@lcase/types": "workspace:*"
+    "@lcase/types": "workspace:*",
+    "vitest": "^3.2.4"
   }
 }

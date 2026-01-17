@@ -11,7 +11,6 @@ describe("FsArtifactStore getBytes()", () => {
   it("opens the a file for a hash that exists", async () => {
     const store = new FsArtifactStore(testPath);
     const bytes = await store.getBytes(testHash);
-    console.log("p:", testPath);
 
     expect(bytes).not.toBe(null);
   });
