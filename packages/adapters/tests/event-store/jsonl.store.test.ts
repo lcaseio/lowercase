@@ -27,8 +27,10 @@ describe("jsonl store adapter", () => {
   it("produces the expected output file path", () => {
     const store = new JsonlEventLog(absoluteDirPath);
     const filePath = store.getFilePath("12345-abc");
+    console.log(filePath);
 
     const expectedPath = path.join(absoluteDirPath, "12345-abc.events.jsonl");
+    console.log(expectedPath);
     expect(filePath).toBe(expectedPath);
   });
 

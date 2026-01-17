@@ -13,12 +13,6 @@ describe("parser", () => {
       time: "",
       type: "job.httpjson.submitted",
       data: {
-        job: {
-          id: "",
-          toolid: "httpjson",
-          capid: "httpjson",
-        },
-        pipe: {},
         url: "",
       },
       domain: "job",
@@ -32,7 +26,7 @@ describe("parser", () => {
       stepid: "",
       jobid: "",
       capid: "httpjson",
-      toolid: null,
+      toolid: "httpjson",
     } as AnyEvent;
 
     expect(() => {
@@ -48,12 +42,6 @@ describe("parser", () => {
       time: "",
       type: "job.httpjson.queued",
       data: {
-        job: {
-          id: "",
-          toolid: "httpjson",
-          capid: "httpjson",
-        },
-        pipe: {},
         url: "",
       },
       domain: "job",
@@ -67,7 +55,7 @@ describe("parser", () => {
       stepid: "",
       jobid: "",
       capid: "httpjson",
-      toolid: null,
+      toolid: "httpjson",
     } as AnyEvent;
 
     const e = expect(() => {
