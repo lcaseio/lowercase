@@ -55,7 +55,6 @@ export class Artifacts implements ArtifactsPort {
         error: {
           code: "STORE_GET_FAILED",
           message: "Store returned null",
-          cause: "Unknown",
         },
       };
     const json = this.decoder.decode(bytes);
@@ -67,7 +66,7 @@ export class Artifacts implements ArtifactsPort {
         ok: false,
         error: {
           code: "JSON_PARSE_FAILED",
-          message: "Error parsing json.",
+          message: "Error parsing json",
           ...(e instanceof Error ? { cause: e.message } : {}),
         },
       };

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
 import { ArtifactStorePort } from "@lcase/ports";
+
 describe("Artifacts hashJson()", () => {
   it("creates a valid hash for supplied json", () => {
     const data = { foo: "bar" };
