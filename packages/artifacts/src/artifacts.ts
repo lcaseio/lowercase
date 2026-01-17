@@ -20,7 +20,7 @@ export class Artifacts implements ArtifactsPort {
       const sortedJsonValue = this.sortJson(value);
       const json = JSON.stringify(sortedJsonValue);
       const bytes = this.encoder.encode(json);
-      const hash = this.hashJson(bytes);
+      const hash = this.hashBytes(bytes);
       const result = await this.store.putBytes(hash, bytes);
 
       if (!result.ok) {
@@ -74,7 +74,7 @@ export class Artifacts implements ArtifactsPort {
     }
   }
 
-  hashJson(bytes: Uint8Array): string {
+  hashBytes(bytes: Uint8Array): string {
     return createHash("sha256").update(bytes).digest("hex");
   }
 
