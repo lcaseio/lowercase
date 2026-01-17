@@ -1,7 +1,9 @@
 import type {
+  ArtifactsPort,
   EmitterFactoryPort,
   EventBusPort,
   JobParserPort,
+  JsonValue,
   QueuePort,
   StreamRegistryPort,
   ToolDeps,
@@ -56,6 +58,7 @@ export type WorkerDeps = {
   emitterFactory: EmitterFactoryPort;
   streamRegistry: StreamRegistryPort;
   jobParser: JobParserPort;
+  artifacts: ArtifactsPort;
 };
 
 export class Worker {
@@ -76,6 +79,7 @@ export class Worker {
   #emitterFactory;
   #streamRegistry;
   #jobParser;
+  artifacts: ArtifactsPort;
   constructor(workerId: string, deps: WorkerDeps) {
     this.#ctx.workerId = workerId;
     this.#bus = deps.bus;
@@ -84,6 +88,7 @@ export class Worker {
     this.#emitterFactory = deps.emitterFactory;
     this.#streamRegistry = deps.streamRegistry;
     this.#jobParser = deps.jobParser;
+    this.artifacts = deps.artifacts;
     this.#buildToolCtx();
   }
 
@@ -170,11 +175,7 @@ export class Worker {
     ctx.jobWaiters.add(waiter);
   }
 
-  async handleNewJob(event: JobQueuedEvent): Promise<void> {
-    const job = this.#jobParser.parseJobQueued(event);
-    if (!job) return;
-    const e = job.event;
-
+  setJobContext(e: JobQueuedEvent) {
     const jobContext: JobContext = {
       jobId: e.jobid,
       toolId: e.toolid,
@@ -186,54 +187,49 @@ export class Worker {
       workerId: this.#ctx.workerId,
       startedAt: new Date().toISOString(),
     };
+    this.#ctx.jobs.set(jobContext.jobId, jobContext);
+  }
+  async emitJobStarted(event: JobQueuedEvent) {
+    if (!this.enableSideEffects) return;
+    const manualType = `job.${event.capid}.started`;
+    const type = this.#jobParser.parseJobStartedType(manualType);
+
+    if (!type) {
+      throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+    }
+
+    const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
+      event,
+      "lowercase://worker/handle-new-job"
+    );
+
+    if (!this.enableSideEffects) return;
+    await jobEmitter.emit(type, event.data);
+    return true;
+  }
+
+  async handleNewJob(event: JobQueuedEvent): Promise<void> {
+    const job = this.#jobParser.parseJobQueued(event);
+    if (!job) return;
+    const e = job.event;
+
+    this.setJobContext(e);
 
     const deps = this.#makToolDeps(
       {},
       this.#emitterFactory,
       this.#streamRegistry
     );
-    const tool = this.#toolRegistry.createInstance(e.toolid as ToolId, deps);
-
-    this.#ctx.jobs.set(jobContext.jobId, jobContext);
-
+    const tool = this.#toolRegistry.createInstance(e.toolid, deps);
     let toolEvent: ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">;
-    try {
-      const manualType = `job.${job.capId}.started`;
-      const type = this.#jobParser.parseJobStartedType(manualType);
 
-      if (!type) {
-        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
-      }
+    const hasStarted = await this.emitJobStarted(e);
+    if (!hasStarted) return;
 
-      const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
-        e,
-        "lowercase://worker/handle-new-job"
-      );
-
-      if (!this.enableSideEffects) return;
-      await jobEmitter.emit(type, e.data);
-
-      toolEvent = await tool.invoke(event);
-    } catch (err) {
-      const manualType = `job.${job.capId}.failed`;
-      const type = this.#jobParser.parseJobFailedType(manualType);
-
-      if (!type) {
-        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
-      }
-
-      if (!this.enableSideEffects) return;
-      const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
-        e,
-        "lowercase://worker/handle-new-job/job-executor/run"
-      );
-      await jobEmitter.emit(type, {
-        status: "failure",
-        output: null,
-        message: `"Error executing job.  ${err}`,
-      });
-      return;
-    }
+    toolEvent = await tool.invoke(event);
+    const storeHash = await this.storeJsonArtifact(
+      toolEvent.data.payload as JsonValue
+    );
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
       {
@@ -250,7 +246,7 @@ export class Worker {
 
     const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
       e,
-      "lowercase://worker/handle-new-job/221"
+      `lowercase://worker/${this.#ctx.workerId}`
     );
 
     if (toolEvent.type === "tool.completed") {
@@ -259,9 +255,10 @@ export class Worker {
       if (!type) {
         throw new Error(`[worker] invalid type; could not parse ${manualType}`);
       }
+
       await jobEmitter.emit(type, {
         status: "success",
-        output: toolEvent.data.payload ? toolEvent.data.payload : null,
+        output: storeHash ? storeHash : null,
       });
     } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
@@ -271,7 +268,7 @@ export class Worker {
       }
       await jobEmitter.emit(type, {
         status: "failure",
-        output: toolEvent.data.payload ? toolEvent.data.payload : null,
+        output: storeHash ? storeHash : null,
         message: toolEvent.data.reason,
       });
     }
@@ -346,6 +343,20 @@ export class Worker {
     });
   }
   stop(): void {}
+
+  async storeJsonArtifact(
+    output: JsonValue | undefined
+  ): Promise<string | undefined> {
+    if (output === undefined) return;
+    const result = await this.artifacts.putJson(output);
+    if (result.ok) return result.value;
+
+    console.log(
+      "Error storing json artifact",
+      result.error.code,
+      result.error.message
+    );
+  }
 
   /**
    * Start job waiters (deferred promises) on a queue.

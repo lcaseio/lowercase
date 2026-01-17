@@ -90,7 +90,7 @@ export const JobStartedDataSchema = z
 export const JobCompletedDataSchema = z
   .object({
     status: z.literal("success"),
-    output: z.record(z.string(), z.unknown()).nullable(),
+    output: z.string().nullable(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobCompletedData>;
@@ -98,7 +98,7 @@ export const JobCompletedDataSchema = z
 export const JobFailedDataSchema = z
   .object({
     status: z.literal("failure"),
-    output: z.record(z.string(), z.unknown()).nullable(),
+    output: z.string().nullable(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobFailedData>;

@@ -44,6 +44,7 @@ describe("flowSubmittedPlanner", () => {
         start: {
           status: "initialized",
           attempt: 0,
+          outputHash: null,
           output: {},
           resolved: {},
         },

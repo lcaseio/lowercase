@@ -14,13 +14,13 @@ export type JobStartedData = {
 
 export type JobCompletedData = {
   status: "success";
-  output: Record<string, unknown> | null;
+  output: string | null; // hash value for JSON CAS
   message?: string;
 };
 
 export type JobFailedData = {
   status: "failure";
-  output: Record<string, unknown> | null;
+  output: string | null; // hash value for JSON CAS
   message?: string;
 };
 
