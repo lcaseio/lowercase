@@ -9,12 +9,20 @@ import { parseStepRefs } from "./parse-references.js";
 /**
  * Takes a flow definition, loops through steps, parses, and adds references
  * found in step definitions to the provided flow analysis object.
+ *
+ * Skips control flow step types including "parallel" and "join".
+ * Support for references in control flow steps will be added in the future.
  * @param fd FlowDefinition object
  * @param fa FlowAnalysis object
  * @returns FlowAnalysis
  */
 export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
-  for (const stepId of Object.keys(fd.steps)) findAndParseRefs(stepId, fd, fa);
+  for (const stepId of Object.keys(fd.steps)) {
+    const stepType = fd.steps[stepId].type;
+    // skip control flow step types for now
+    if (stepType === "parallel" || stepType === "join") continue;
+    findAndParseRefs(stepId, fd, fa);
+  }
 
   for (const ref of fa.refs) {
     const problem = validateRefTargetStep(ref, fd, fa);

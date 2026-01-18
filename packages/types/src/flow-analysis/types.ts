@@ -25,7 +25,7 @@ export type FlowAnalysis = {
   refs: Ref[];
 };
 
-/*-- problem types for flor analysis to surface in UI/validation --*/
+/*-- problem types for flow analysis to surface in UI/validation --*/
 export type UnknownStepReferenceProblem = {
   type: "UnknownStepReference";
   startStepId: StepId;
@@ -74,7 +74,7 @@ export type Ref = {
   path: Path;
   scope: "steps" | "input" | "env";
   stepId: StepId;
-  stepPath: Path;
+  stepPath: Path; // path inside the step for where the reference is found
   string: string;
   interpolated: boolean;
 };

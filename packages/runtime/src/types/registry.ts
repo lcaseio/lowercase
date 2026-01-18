@@ -7,7 +7,7 @@ export type Transport =
   | "redis"
   | "kafka"
   | "http";
-export type Store = "none" | "jsonl" | "sqlite";
+export type Store = "none" | "jsonl" | "sqlite" | "fs";
 
 export type Factory = (...args: any[]) => unknown;
 // export type Factory = unknown;

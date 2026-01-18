@@ -5,6 +5,8 @@ import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobMcpDataSchema,
+  JobMcpQueuedDataSchema,
+  JobMcpSubmittedDataSchema,
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 
@@ -20,7 +22,7 @@ export const JobMcpSubmittedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.mcp.submitted"),
     action: z.literal("submitted"),
-    data: JobMcpDataSchema,
+    data: JobMcpSubmittedDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.submitted">>;
 
@@ -42,7 +44,7 @@ export const JobMcpQueuedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.mcp.queued"),
     action: z.literal("queued"),
-    data: JobMcpDataSchema,
+    data: JobMcpQueuedDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.mcp.queued">>;
 

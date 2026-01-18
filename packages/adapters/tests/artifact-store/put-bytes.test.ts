@@ -6,7 +6,7 @@ import { afterEach } from "vitest";
 import { rm, stat } from "node:fs/promises";
 
 const filePath = path.dirname(fileURLToPath(import.meta.url));
-const testPath = path.join(filePath, "test-files");
+const testPath = path.join(filePath, "test-artifacts");
 
 const testHash =
   "2fde28ecc973a1fe910c4000b9afade87085cedb17f3da379148ffc75a9339b8";
@@ -23,13 +23,7 @@ describe("FsArtifactStore getBytes()", () => {
     const bytes = new TextEncoder().encode(json);
     const result = await store.putBytes(testHash, bytes);
 
-    const expectedPath = path.join(
-      testPath,
-      "artifacts",
-      "2f",
-      "de",
-      testFileName
-    );
+    const expectedPath = path.join(testPath, "2f", "de", testFileName);
     expect(result).toEqual({ ok: true, path: expectedPath });
   });
   it("does not write a file for a hash that already exists", async () => {
@@ -38,13 +32,7 @@ describe("FsArtifactStore getBytes()", () => {
     const bytes = new TextEncoder().encode(json);
     const result = await store.putBytes(testHash, bytes);
 
-    const expectedPath = path.join(
-      testPath,
-      "artifacts",
-      "2f",
-      "de",
-      testFileName
-    );
+    const expectedPath = path.join(testPath, "2f", "de", testFileName);
     expect(result).toEqual({ ok: true, path: expectedPath });
 
     if (!result.ok) return;

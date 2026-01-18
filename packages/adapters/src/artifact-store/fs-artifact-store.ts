@@ -14,7 +14,7 @@ export class FsArtifactStore implements ArtifactStorePort {
   rootPath: string;
   constructor(rootPath: string) {
     this.rootPath = rootPath;
-    this.baseDir = path.join(this.rootPath, "artifacts");
+    this.baseDir = path.join(this.rootPath);
   }
   async putBytes(
     hash: string,

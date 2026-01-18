@@ -7,9 +7,11 @@ export function parseStepRefs<D extends StepDefinition>(
 ): { refs: Ref[]; problems: FlowProblem[] } {
   const refs: Ref[] = [];
   const problems: FlowProblem[] = [];
+  
   for (const key in step) {
     const k = key as keyof D;
-    if (k === "type") continue;
+    // ignore fields which impact control flow in engine
+    if (k === "type" || k === "on" || k === "next") continue;
     traverse(
       step[k],
       (value, path) => parseRef(value, path, stepId, refs, problems),

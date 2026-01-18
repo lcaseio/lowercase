@@ -7,8 +7,14 @@ import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
-import { EventBusPort, JobParserPort, StreamRegistryPort } from "@lcase/ports";
 import {
+  ArtifactsPort,
+  EventBusPort,
+  JobParserPort,
+  StreamRegistryPort,
+} from "@lcase/ports";
+import {
+  makeArtifactsFactory,
   makeBusFactory,
   makeQueueFactory,
 } from "./factories/registry.factory.js";
@@ -32,6 +38,8 @@ import path from "path";
 import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
+import { Artifacts } from "@lcase/artifacts";
+import { createArtifacts } from "./wire-functions/create-artifacts.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -69,6 +77,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const engine = createInProcessEngine(bus, ef, jobParser);
 
+  const artifacts = createArtifacts(config.artifacts);
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -76,6 +85,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     streamRegistry,
     ef,
     jobParser,
+    artifacts,
     config.worker
   );
 
@@ -172,6 +182,7 @@ export function createInProcessWorker(
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort,
+  artifacts: ArtifactsPort,
   config: WorkerConfig
 ): Worker {
   const toolRegistry = new ToolRegistry(allToolBindingsMap);
@@ -182,6 +193,7 @@ export function createInProcessWorker(
     streamRegistry,
     toolRegistry,
     jobParser,
+    artifacts,
   });
 
   // NOTE: add custom config for tools

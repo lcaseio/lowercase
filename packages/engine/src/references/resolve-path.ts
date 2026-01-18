@@ -1,5 +1,12 @@
 import type { Path } from "@lcase/types";
 
+/**
+ * Uses a path from a reference and resolves the path to a value
+ * from a supplied data object.
+ * @param path path to the value in state
+ * @param object object with holds the value in the path
+ * @returns unknown (whatever value it finds)
+ */
 export function resolvePath(
   path: Path,
   object: Record<string, unknown>

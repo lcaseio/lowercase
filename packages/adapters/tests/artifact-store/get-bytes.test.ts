@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const filePath = path.dirname(fileURLToPath(import.meta.url));
-const testPath = path.resolve(filePath, "../fixtures");
+const testPath = path.resolve(filePath, "../fixtures/test-artifacts");
 const testHash =
   "b9cd2605ea75293b16b892a97c5e4b0bc18f3dafd0cbdf897c80258d57415c80";
 describe("FsArtifactStore getBytes()", () => {

@@ -5,6 +5,8 @@ import {
   JobCompletedDataSchema,
   JobFailedDataSchema,
   JobHttpJsonDataSchema,
+  JobHttpJsonQueuedDataSchema,
+  JobHttpJsonSubmittedDataSchema,
 } from "../job.data.schema.js";
 import { JobScopeSchema } from "../job.event.schema.js";
 const EntityCapIdSchema = z.object({
@@ -21,7 +23,7 @@ export const JobHttpJsonSubmittedSchema: z.ZodType<
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.submitted"),
     action: z.literal("submitted"),
-    data: JobHttpJsonDataSchema,
+    data: JobHttpJsonSubmittedDataSchema,
   })
   .strict();
 
@@ -55,7 +57,7 @@ export const JobHttpJsonQueuedSchema = z
     ...EntityCapIdSchema.shape,
     type: z.literal("job.httpjson.queued"),
     action: z.literal("queued"),
-    data: JobHttpJsonDataSchema,
+    data: JobHttpJsonQueuedDataSchema,
   })
   .strict() satisfies z.ZodType<AnyEvent<"job.httpjson.queued">>;
 

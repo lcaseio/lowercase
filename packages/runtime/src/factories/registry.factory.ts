@@ -2,6 +2,7 @@ import type { Registry } from "../types/registry.js";
 import { busRegistry } from "../registries/bus.registry.js";
 import { queueRegistry } from "../registries/queue.registry.js";
 import { limiterRegistry } from "../registries/limiter.registry.js";
+import { artifactRegistry } from "../registries/artifacts.registry.js";
 
 export function makeRegistryFactory<R extends Registry>(registry: R) {
   return function createFactory<
@@ -39,3 +40,4 @@ export function makeRegistryFactory<R extends Registry>(registry: R) {
 export const makeQueueFactory = makeRegistryFactory(queueRegistry);
 export const makeBusFactory = makeRegistryFactory(busRegistry);
 export const makeLimiterFactory = makeRegistryFactory(limiterRegistry);
+export const makeArtifactsFactory = makeRegistryFactory(artifactRegistry);
