@@ -1,5 +1,5 @@
 {
-  "name": "@lcase/worker",
+  "name": "@lcase/json-ref-binder",
   "version": "0.1.0-alpha.8",
   "private": true,
   "type": "module",
@@ -13,14 +13,12 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "lint": "echo lint"
+    "lint": "echo lint",
+    "clean-dist": "rm -rf ./dist",
+    "clean-node-modules": "rm -rf ./node_modules"
   },
   "packageManager": "pnpm@10.17.1",
-  "dependencies": {
-    "@lcase/events": "workspace:*",
-    "@lcase/tools": "workspace:*",
-    "@lcase/json-ref-binder": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",

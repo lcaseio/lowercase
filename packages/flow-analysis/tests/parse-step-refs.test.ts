@@ -30,12 +30,13 @@ describe("parseStepRefs()", () => {
 
     const expectedRefs: Ref[] = [
       {
-        path: ["steps", "foo"],
+        valuePath: ["steps", "foo"],
         scope: "steps",
-        stepPath: ["url"],
+        bindPath: ["url"],
         stepId: "stepId",
         string: "steps.foo",
         interpolated: false,
+        hash: null,
       },
     ];
 

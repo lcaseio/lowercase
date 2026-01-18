@@ -15,6 +15,11 @@ import {
   LimiterStore,
   LimiterTransport,
 } from "../registries/limiter.registry.js";
+import {
+  ArtifactsPlacement,
+  ArtifactsStore,
+  ArtifactsTransport,
+} from "../registries/artifacts.registry.js";
 
 export type BusConfig = {
   id: string;
@@ -61,6 +66,7 @@ export type RuntimeConfig = {
   stream: StreamConfig;
   observability: ObservabilityConfig;
   limiter: LimiterConfig;
+  artifacts: ArtifactsConfig;
 };
 
 export type LimiterConfig = {
@@ -69,4 +75,11 @@ export type LimiterConfig = {
   placement: LimiterPlacement;
   transport: LimiterTransport;
   store: LimiterStore;
+};
+
+export type ArtifactsConfig = {
+  path: string;
+  placement: ArtifactsPlacement;
+  transport: ArtifactsTransport;
+  store: ArtifactsStore;
 };

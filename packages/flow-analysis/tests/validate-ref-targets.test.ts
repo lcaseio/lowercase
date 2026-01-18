@@ -11,11 +11,13 @@ import {
 describe("validateRefTargetStep()", () => {
   it("validates a correct step reference", () => {
     const ref: Ref = {
-      path: ["steps", "foo"],
+      valuePath: ["steps", "foo"],
       scope: "steps",
-      stepPath: ["url"],
+      bindPath: ["url"],
       stepId: "bar",
       string: "steps.foo",
+      hash: null,
+      interpolated: false,
     };
     const httpStep: StepHttpJson = {
       type: "httpjson",
@@ -53,11 +55,13 @@ describe("validateRefTargetStep()", () => {
   });
   it("invalidates an incorrect step reference", () => {
     const ref: Ref = {
-      path: ["steps", "foo"],
+      valuePath: ["steps", "foo"],
       scope: "steps",
-      stepPath: ["url"],
+      bindPath: ["url"],
       stepId: "bar",
       string: "steps.foo",
+      hash: null,
+      interpolated: false,
     };
     const httpStep: StepHttpJson = {
       type: "httpjson",
@@ -93,11 +97,13 @@ describe("validateRefTargetStep()", () => {
     const expectedProblem: InvalidRefStepIdProblem = {
       type: "InvalidRefStepId",
       ref: {
-        path: ["steps", "foo"],
+        valuePath: ["steps", "foo"],
         scope: "steps",
         stepId: "bar",
-        stepPath: ["url"],
+        bindPath: ["url"],
         string: "steps.foo",
+        hash: null,
+        interpolated: false,
       },
       targetStepId: "foo",
     };

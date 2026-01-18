@@ -11,7 +11,9 @@ import type {
   JobCompletedEvent,
   JobFailedEvent,
   JobHttpJsonData,
+  JobHttpJsonSubmittedData,
   JobMcpData,
+  JobMcpSubmittedData,
   JobScope,
   RunCompletedData,
   RunFailedData,
@@ -179,14 +181,14 @@ export type EmitStepFailedFx = {
 export type EmitJobHttpJsonSubmittedFx = {
   type: "EmitJobHttpJsonSubmitted";
   scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
-  data: JobHttpJsonData;
+  data: JobHttpJsonSubmittedData;
   traceId: string;
 };
 
 export type EmitJobMcpSubmittedFx = {
   type: "EmitJobMcpSubmitted";
   scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
-  data: JobMcpData;
+  data: JobMcpSubmittedData;
   traceId: string;
 };
 

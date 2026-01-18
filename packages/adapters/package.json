@@ -31,6 +31,10 @@
     "./event-store": {
       "types": "./dist/event-store/index.d.ts",
       "import": "./dist/event-store/index.js"
+    },
+    "./artifact-store": {
+      "types": "./dist/artifact-store/index.d.ts",
+      "import": "./dist/artifact-store/index.js"
     }
   },
   "scripts": {

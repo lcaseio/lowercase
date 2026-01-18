@@ -8,7 +8,7 @@ import util from "util";
 export function bindStepRefs<T extends StepDefinition>(
   refs: Ref[],
   resolved: Record<string, unknown>,
-  step: T
+  step: T,
 ): T {
   if (!refs.length) return step;
 
@@ -27,20 +27,20 @@ export function bindStepRefs<T extends StepDefinition>(
  */
 export function bindReference(
   ref: Ref,
-  step: Record<string, unknown>,
-  value: unknown
+  bindData: Record<string, unknown> | unknown[],
+  value: unknown,
 ) {
-  if (!ref.stepPath.length) return;
+  if (!ref.bindPath.length) return;
 
-  let current: unknown = step;
-  let parent: unknown = step;
+  let current: unknown = bindData;
+  let parent: unknown = bindData;
 
   // loop through all but last entries in path, because its not necessary to
   // resolve to a value at this point, only when assigning below.
   // when length is one, break because the parent is only used at the root level
-  for (const [index, token] of ref.stepPath.entries()) {
+  for (const [index, token] of ref.bindPath.entries()) {
     parent = current;
-    if (index === ref.stepPath.length - 1) break;
+    if (index === ref.bindPath.length - 1) break;
 
     if (typeof token === "number" && Array.isArray(current)) {
       current = (current as unknown[])[token as number];
@@ -53,7 +53,7 @@ export function bindReference(
     } else return;
   }
 
-  const lastToken = ref.stepPath[ref.stepPath.length - 1];
+  const lastToken = ref.bindPath[ref.bindPath.length - 1];
 
   if (
     typeof lastToken === "string" &&

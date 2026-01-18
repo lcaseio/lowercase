@@ -1,20 +1,20 @@
 import { DomainEntityActionDescriptor } from "../../shared/otel-attributes.js";
 import { JobCompletedData, JobFailedData } from "../data.js";
 import { DomainCapActionDescriptor } from "../map.js";
-import { JobMcpData } from "./data.js";
+import { JobMcpData, JobMcpQueuedData, JobMcpSubmittedData } from "./data.js";
 
 export type JobMcpEventMap = {
   "job.mcp.submitted": DomainCapActionDescriptor<
     "job",
     "mcp",
     "submitted",
-    JobMcpData
+    JobMcpSubmittedData
   >;
   "job.mcp.queued": DomainEntityActionDescriptor<
     "job",
     "mcp",
     "queued",
-    JobMcpData
+    JobMcpQueuedData
   >;
   "job.mcp.delayed": DomainEntityActionDescriptor<
     "job",

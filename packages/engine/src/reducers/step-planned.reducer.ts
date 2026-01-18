@@ -1,11 +1,11 @@
 import { produce } from "immer";
 import { StepPlannedMsg } from "../types/message.types.js";
 import { EngineState, Reducer } from "../engine.types.js";
-import { resolvePath } from "../references/resolve-path.js";
+import { resolvePath } from "@lcase/json-ref-binder";
 
 export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
   state: EngineState,
-  message: StepPlannedMsg
+  message: StepPlannedMsg,
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;
@@ -34,7 +34,7 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
     if (!refs.length) return;
 
     for (const ref of refs) {
-      const value = resolvePath(ref.path, {
+      const value = resolvePath(ref.valuePath, {
         steps: run.steps,
         input: run.input,
       });

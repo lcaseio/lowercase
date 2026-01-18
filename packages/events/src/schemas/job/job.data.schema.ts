@@ -9,6 +9,9 @@ import type {
   PipeData,
   CapId,
   JobMcpData,
+  JobHttpJsonSubmittedData,
+  JobMcpSubmittedData,
+  Ref,
 } from "@lcase/types";
 
 export const CapIdSchema = z.enum([
@@ -24,6 +27,18 @@ const JobDescriptorDataSchema = z
     }),
   })
   .strict() satisfies z.ZodType<JobDescriptor>;
+
+export const RefSchema = z
+  .object({
+    valuePath: z.array(z.union([z.string(), z.number()])),
+    bindPath: z.array(z.union([z.string(), z.number()])),
+    interpolated: z.boolean(),
+    string: z.string(),
+    stepId: z.string(),
+    hash: z.union([z.string(), z.null()]),
+    scope: z.enum(["steps", "input", "env"]),
+  })
+  .strict() satisfies z.ZodType<Ref>;
 
 const PipeDataSchema = z
   .object({
@@ -63,6 +78,15 @@ export const JobMcpDataSchema = z
   })
   .strict() satisfies z.ZodType<JobMcpData>;
 
+export const JobMcpSubmittedDataSchema = z
+  .object({
+    ...JobMcpDataSchema.shape,
+    refs: z.array(RefSchema),
+  })
+  .strict() satisfies z.ZodType<JobMcpSubmittedData>;
+
+export const JobMcpQueuedDataSchema = JobMcpSubmittedDataSchema;
+
 /* HttpJson */
 
 export const JobHttpJsonDataSchema = z
@@ -77,6 +101,14 @@ export const JobHttpJsonDataSchema = z
   })
   .strict() satisfies z.ZodType<Omit<JobHttpJsonData, "type">>;
 
+export const JobHttpJsonSubmittedDataSchema = z
+  .object({
+    ...JobHttpJsonDataSchema.shape,
+    refs: z.array(RefSchema),
+  })
+  .strict() satisfies z.ZodType<JobHttpJsonSubmittedData>;
+
+export const JobHttpJsonQueuedDataSchema = JobHttpJsonSubmittedDataSchema;
 export const JobDelayedDataSchema = z.object({
   reason: z.string(),
 }) satisfies z.ZodType<JobDelayedData>;
@@ -90,7 +122,7 @@ export const JobStartedDataSchema = z
 export const JobCompletedDataSchema = z
   .object({
     status: z.literal("success"),
-    output: z.record(z.string(), z.unknown()).nullable(),
+    output: z.string().nullable(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobCompletedData>;
@@ -98,7 +130,7 @@ export const JobCompletedDataSchema = z
 export const JobFailedDataSchema = z
   .object({
     status: z.literal("failure"),
-    output: z.record(z.string(), z.unknown()).nullable(),
+    output: z.string().nullable(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobFailedData>;

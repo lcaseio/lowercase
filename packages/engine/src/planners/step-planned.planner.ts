@@ -1,4 +1,3 @@
-import type { StepHttpJson, StepMcp } from "@lcase/types";
 import type {
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
@@ -9,13 +8,12 @@ import type {
   WriteContextToDiskFx,
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
-
-import { bindStepRefs } from "../references/bind.js";
+import { makeStepRefs } from "../references/value-refs.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: StepPlannedMsg
+  message: StepPlannedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
 
@@ -54,11 +52,20 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   };
   effects.push(emitStepStarted);
 
-  if (stepType === "httpjson") {
-    const materializedStep = bindStepRefs(
-      refs,
-      newRun.steps[stepId].resolved,
-      step as StepHttpJson
+  /**
+   * no longer materialize steps here, worker resolves json to values using CAS.
+   */
+  if (stepType === "httpjson" && step.type === "httpjson") {
+    // const materializedStep = bindStepRefs(
+    //   refs,
+    //   newRun.steps[stepId].resolved,
+    //   step as StepHttpJson
+    // );
+
+    const jobRefs = makeStepRefs(
+      stepId,
+      newRun.flowAnalysis.refs,
+      newRun.steps,
     );
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
@@ -70,22 +77,26 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         toolid: "httpjson",
       },
       data: {
-        url: materializedStep.url,
-        ...(materializedStep.body ? { body: materializedStep.body } : {}),
-        ...(materializedStep.headers
-          ? { headers: materializedStep.headers }
-          : {}),
-        ...(materializedStep.method ? { method: materializedStep.method } : {}),
-        ...(materializedStep.args ? { args: materializedStep.args } : {}),
+        url: step.url,
+        ...(step.body ? { body: step.body } : {}),
+        ...(step.headers ? { headers: step.headers } : {}),
+        ...(step.method ? { method: step.method } : {}),
+        ...(step.args ? { args: step.args } : {}),
+        refs: jobRefs,
       },
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
-  } else if (stepType === "mcp") {
-    const materializedStep = bindStepRefs(
-      refs,
-      newRun.steps[stepId].resolved,
-      step as StepMcp
+  } else if (stepType === "mcp" && step.type === "mcp") {
+    // const materializedStep = bindStepRefs(
+    //   refs,
+    //   newRun.steps[stepId].resolved,
+    //   step as StepMcp
+    // );
+    const jobRefs = makeStepRefs(
+      stepId,
+      newRun.flowAnalysis.refs,
+      newRun.steps,
     );
     const emitJob: EmitJobMcpSubmittedFx = {
       type: "EmitJobMcpSubmitted",
@@ -97,10 +108,11 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         toolid: "mcp",
       },
       data: {
-        url: materializedStep.url,
-        feature: materializedStep.feature,
-        transport: materializedStep.transport,
-        ...(materializedStep.args ? { args: materializedStep.args } : {}),
+        url: step.url,
+        feature: step.feature,
+        transport: step.transport,
+        ...(step.args ? { args: step.args } : {}),
+        refs: jobRefs,
       },
       traceId: newRun.traceId,
     };

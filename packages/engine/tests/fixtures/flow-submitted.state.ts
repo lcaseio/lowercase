@@ -45,6 +45,7 @@ const runCtx = {
       output: {},
       resolved: {},
       status: "initialized",
+      outputHash: null,
     },
 
     [stepId]: {
@@ -52,6 +53,7 @@ const runCtx = {
       attempt: 0,
       output: {},
       resolved: {},
+      outputHash: null,
     },
   },
   flowAnalysis: flowAnalysis,

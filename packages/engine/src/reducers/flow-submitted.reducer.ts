@@ -31,6 +31,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
         status: "initialized",
         attempt: 0,
         output: {},
+        outputHash: null,
         resolved: {},
       };
 

@@ -1,4 +1,5 @@
 import type { RuntimeConfig } from "@lcase/runtime";
+import path from "node:path";
 
 export const config = {
   bus: {
@@ -35,5 +36,11 @@ export const config = {
     scope: "cli-global",
     store: "none",
     transport: "event-emitter",
+  },
+  artifacts: {
+    path: path.resolve(process.cwd(), "run-artifacts"),
+    placement: "embedded",
+    transport: "local",
+    store: "fs",
   },
 } satisfies RuntimeConfig;

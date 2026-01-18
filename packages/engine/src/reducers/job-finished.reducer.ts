@@ -25,6 +25,7 @@ export const jobFinishedReducer: Reducer<JobFinishedMsg> = (
       delete run.startedSteps[stepId];
     }
 
-    step.output = message.event.data.output;
+    step.outputHash = message.event.data.output;
+    step.output = null;
   });
 };

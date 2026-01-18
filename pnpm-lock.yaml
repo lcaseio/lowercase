@@ -246,15 +246,9 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
       '@modelcontextprotocol/sdk':
         specifier: ^1.19.1
         version: 1.19.1
@@ -262,6 +256,12 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
@@ -299,6 +299,9 @@ importers:
       '@lcase/flow-analysis':
         specifier: workspace:*
         version: link:../flow-analysis
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../json-ref-binder
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
@@ -336,6 +339,18 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
   packages/flow-analysis:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  packages/json-ref-binder:
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -401,6 +416,9 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@lcase/artifacts':
+        specifier: workspace:*
+        version: link:../artifacts
       '@lcase/engine':
         specifier: workspace:*
         version: link:../engine
@@ -504,6 +522,9 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../json-ref-binder
       '@lcase/tools':
         specifier: workspace:*
         version: link:../tools

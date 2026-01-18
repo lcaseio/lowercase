@@ -60,6 +60,7 @@ describe("stepPlannedPlanner()", () => {
       },
       data: {
         url: "test-url",
+        valueRefs: [],
       },
       traceId: message.event.traceid,
     };
