@@ -519,6 +519,9 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../json-ref-binder
       '@lcase/tools':
         specifier: workspace:*
         version: link:../tools

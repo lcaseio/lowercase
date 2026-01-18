@@ -32,7 +32,7 @@ export type JobDelayedData = {
 export type ValueRef = {
   interpolated: boolean;
   valuePath: Path;
-  dataPath: Path;
+  bindPath: Path;
   string: string;
   hash: string | null;
 };

@@ -31,7 +31,7 @@ const JobDescriptorDataSchema = z
 export const ValueRefSchema = z
   .object({
     valuePath: z.array(z.union([z.string(), z.number()])),
-    dataPath: z.array(z.union([z.string(), z.number()])),
+    bindPath: z.array(z.union([z.string(), z.number()])),
     interpolated: z.boolean(),
     string: z.string(),
     hash: z.string(),

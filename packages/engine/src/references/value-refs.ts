@@ -16,17 +16,17 @@ import type { RunContext } from "@lcase/types/engine";
 export function makeStepValueRefs(
   stepId: string,
   allRefs: Ref[],
-  stepContext: RunContext["steps"]
+  stepContext: RunContext["steps"],
 ): ValueRef[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
   const valueRefs: ValueRef[] = [];
   for (const ref of stepRefs) {
-    // if reference is not a {{steps.x.}} format, skip.
+    // if reference is not a {{steps.x.output}} format, skip.
     if (ref.scope !== "steps") continue;
     const vr: ValueRef = {
-      valuePath: ref.path,
-      dataPath: ref.stepPath,
+      valuePath: ref.path.slice(3),
+      bindPath: ref.stepPath,
       string: ref.string,
       interpolated: ref.interpolated,
       hash: getStepRefHash(ref, stepContext),
@@ -49,7 +49,7 @@ export function makeStepValueRefs(
  */
 export function getStepRefHash(
   ref: Ref,
-  stepContext: RunContext["steps"]
+  stepContext: RunContext["steps"],
 ): string | null {
   if (ref.scope === "steps" && stepContext[ref.path[1]] !== undefined) {
     return stepContext[ref.path[1]].outputHash;

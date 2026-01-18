@@ -18,9 +18,21 @@ import type {
   JobEvent,
   JobQueuedEvent,
   ToolContext,
+  ValueRef,
+  JobStartedData,
+  JobHttpJsonData,
+  JobMcpData,
+  JobStartedEvent,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
+import {
+  bindReference,
+  bindStepRefs,
+  bindValueReference,
+  resolveJsonPath,
+  resolvePath,
+} from "@lcase/json-ref-binder";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -106,7 +118,7 @@ export class Worker {
             {
               source: "lowercase://worker/subscribe-to-bus/worker-registered",
             },
-            e.traceid
+            e.traceid,
           );
           await logEmitter.emit("system.logged", {
             log: "[worker] received resource manager response",
@@ -123,7 +135,7 @@ export class Worker {
 
     this.#bus.subscribe(
       "limiter.slot.granted",
-      async (event: AnyEvent) => await this.handleGranted(event)
+      async (event: AnyEvent) => await this.handleGranted(event),
     );
   }
 
@@ -189,7 +201,9 @@ export class Worker {
     };
     this.#ctx.jobs.set(jobContext.jobId, jobContext);
   }
-  async emitJobStarted(event: JobQueuedEvent) {
+  async emitJobStarted(
+    event: JobQueuedEvent,
+  ): Promise<JobStartedEvent | undefined> {
     if (!this.enableSideEffects) return;
     const manualType = `job.${event.capid}.started`;
     const type = this.#jobParser.parseJobStartedType(manualType);
@@ -200,12 +214,14 @@ export class Worker {
 
     const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
       event,
-      "lowercase://worker/handle-new-job"
+      "lowercase://worker/handle-new-job",
     );
 
     if (!this.enableSideEffects) return;
-    await jobEmitter.emit(type, event.data);
-    return true;
+    const { valueRefs, ...data } = event.data;
+
+    await this.bindValueRefs(event.data.valueRefs, data);
+    return await jobEmitter.emit(type, data);
   }
 
   async handleNewJob(event: JobQueuedEvent): Promise<void> {
@@ -218,17 +234,17 @@ export class Worker {
     const deps = this.#makToolDeps(
       {},
       this.#emitterFactory,
-      this.#streamRegistry
+      this.#streamRegistry,
     );
     const tool = this.#toolRegistry.createInstance(e.toolid, deps);
     let toolEvent: ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">;
 
-    const hasStarted = await this.emitJobStarted(e);
-    if (!hasStarted) return;
+    const startedEvent = await this.emitJobStarted(e);
+    if (!startedEvent) return;
 
-    toolEvent = await tool.invoke(event);
+    toolEvent = await tool.invoke(startedEvent);
     const storeHash = await this.storeJsonArtifact(
-      toolEvent.data.payload as JsonValue
+      toolEvent.data.payload as JsonValue,
     );
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
@@ -236,7 +252,7 @@ export class Worker {
         source: `lowercase://worker/${this.#ctx.workerId}`,
         workerid: this.#ctx.workerId,
       },
-      e.traceid
+      e.traceid,
     );
     await workerEmitter.emit("worker.slot.finished", {
       jobId: e.jobid,
@@ -246,7 +262,7 @@ export class Worker {
 
     const jobEmitter = this.#emitterFactory.newJobEmitterFromEvent(
       e,
-      `lowercase://worker/${this.#ctx.workerId}`
+      `lowercase://worker/${this.#ctx.workerId}`,
     );
 
     if (toolEvent.type === "tool.completed") {
@@ -277,7 +293,7 @@ export class Worker {
   #makToolDeps(
     pipe: PipeData,
     ef: EmitterFactoryPort,
-    sr: StreamRegistryPort
+    sr: StreamRegistryPort,
   ): ToolDeps {
     const deps: ToolDeps = { ef };
     if (pipe.to?.id) {
@@ -345,7 +361,7 @@ export class Worker {
   stop(): void {}
 
   async storeJsonArtifact(
-    output: JsonValue | undefined
+    output: JsonValue | undefined,
   ): Promise<string | undefined> {
     if (output === undefined) return;
     const result = await this.artifacts.putJson(output);
@@ -354,8 +370,24 @@ export class Worker {
     console.log(
       "Error storing json artifact",
       result.error.code,
-      result.error.message
+      result.error.message,
     );
+  }
+
+  async getJsonArtifact(hash: string): Promise<JsonValue | undefined> {
+    const result = await this.artifacts.getJson(hash);
+    if (result.ok) return result.value;
+    return;
+  }
+
+  async bindValueRefs(refs: ValueRef[], data: Record<string, unknown>) {
+    for (const ref of refs) {
+      if (ref.hash === null) continue;
+      const json = await this.getJsonArtifact(ref.hash);
+      if (json === undefined) continue;
+      const value = resolveJsonPath(ref.valuePath, json);
+      bindValueReference(ref, data, value);
+    }
   }
 
   /**
@@ -393,7 +425,7 @@ export class Worker {
               source: "lowercase://worker",
               workerid: this.#ctx.workerId,
             },
-            event.traceid
+            event.traceid,
           );
 
           const e = event as JobQueuedEvent;
@@ -463,7 +495,7 @@ export class Worker {
         source: `lowercase://worker/${this.#ctx.workerId}`,
         workerid: this.#ctx.workerId,
       },
-      event.traceid
+      event.traceid,
     );
     await emitter.emit("worker.slot.requested", {
       jobId: event.jobid,
