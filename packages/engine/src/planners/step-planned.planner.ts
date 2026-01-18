@@ -1,4 +1,3 @@
-import type { StepHttpJson, StepMcp } from "@lcase/types";
 import type {
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
@@ -9,14 +8,12 @@ import type {
   WriteContextToDiskFx,
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
-
-import { bindStepRefs } from "../references/bind.js";
-import { makeStepValueRefs } from "../references/value-refs.js";
+import { makeStepRefs } from "../references/value-refs.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: StepPlannedMsg
+  message: StepPlannedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
 
@@ -65,10 +62,10 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     //   step as StepHttpJson
     // );
 
-    const valueRefs = makeStepValueRefs(
+    const jobRefs = makeStepRefs(
       stepId,
       newRun.flowAnalysis.refs,
-      newRun.steps
+      newRun.steps,
     );
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
@@ -85,7 +82,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         ...(step.headers ? { headers: step.headers } : {}),
         ...(step.method ? { method: step.method } : {}),
         ...(step.args ? { args: step.args } : {}),
-        valueRefs,
+        refs: jobRefs,
       },
       traceId: newRun.traceId,
     };
@@ -96,10 +93,10 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     //   newRun.steps[stepId].resolved,
     //   step as StepMcp
     // );
-    const valueRefs = makeStepValueRefs(
+    const jobRefs = makeStepRefs(
       stepId,
       newRun.flowAnalysis.refs,
-      newRun.steps
+      newRun.steps,
     );
     const emitJob: EmitJobMcpSubmittedFx = {
       type: "EmitJobMcpSubmitted",
@@ -115,7 +112,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         feature: step.feature,
         transport: step.transport,
         ...(step.args ? { args: step.args } : {}),
-        valueRefs,
+        refs: jobRefs,
       },
       traceId: newRun.traceId,
     };

@@ -8,12 +8,13 @@ describe("getRegStrings()", () => {
     parseRef("{{steps.bar}}", ["foo"], "stepId", refs, []);
     const expectedRefs: Ref[] = [
       {
-        path: ["steps", "bar"],
+        valuePath: ["steps", "bar"],
         scope: "steps",
-        stepPath: ["foo"],
+        bindPath: ["foo"],
         stepId: "stepId",
         string: "steps.bar",
         interpolated: false,
+        hash: null,
       },
     ];
     expect(refs).toEqual(expectedRefs);

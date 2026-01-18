@@ -18,7 +18,7 @@ import type {
   JobEvent,
   JobQueuedEvent,
   ToolContext,
-  ValueRef,
+  Ref,
   JobStartedData,
   JobHttpJsonData,
   JobMcpData,
@@ -28,8 +28,6 @@ import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
 import {
   bindReference,
-  bindStepRefs,
-  bindValueReference,
   resolveJsonPath,
   resolvePath,
 } from "@lcase/json-ref-binder";
@@ -218,9 +216,9 @@ export class Worker {
     );
 
     if (!this.enableSideEffects) return;
-    const { valueRefs, ...data } = event.data;
+    const { refs, ...data } = event.data;
 
-    await this.bindValueRefs(event.data.valueRefs, data);
+    await this.bindValueRefs(event.data.refs, data);
     return await jobEmitter.emit(type, data);
   }
 
@@ -380,13 +378,13 @@ export class Worker {
     return;
   }
 
-  async bindValueRefs(refs: ValueRef[], data: Record<string, unknown>) {
+  async bindValueRefs(refs: Ref[], data: Record<string, unknown>) {
     for (const ref of refs) {
       if (ref.hash === null) continue;
       const json = await this.getJsonArtifact(ref.hash);
       if (json === undefined) continue;
       const value = resolveJsonPath(ref.valuePath, json);
-      bindValueReference(ref, data, value);
+      bindReference(ref, data, value);
     }
   }
 

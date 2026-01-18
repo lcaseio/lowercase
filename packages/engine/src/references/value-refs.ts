@@ -1,4 +1,4 @@
-import type { Ref, ValueRef } from "@lcase/types";
+import type { Ref } from "@lcase/types";
 import type { RunContext } from "@lcase/types/engine";
 
 /**
@@ -13,27 +13,25 @@ import type { RunContext } from "@lcase/types/engine";
  * @param runContext The run context within the engine.
  * @returns ValueRef[] array of value ref objects
  */
-export function makeStepValueRefs(
+export function makeStepRefs(
   stepId: string,
   allRefs: Ref[],
   stepContext: RunContext["steps"],
-): ValueRef[] {
+): Ref[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
-  const valueRefs: ValueRef[] = [];
+  const jobRefs: Ref[] = [];
   for (const ref of stepRefs) {
     // if reference is not a {{steps.x.output}} format, skip.
     if (ref.scope !== "steps") continue;
-    const vr: ValueRef = {
-      valuePath: ref.path.slice(3),
-      bindPath: ref.stepPath,
-      string: ref.string,
-      interpolated: ref.interpolated,
+    const jobRef: Ref = {
+      ...ref,
+      valuePath: ref.valuePath.slice(3), // remove "steps.stepId.output" from path
       hash: getStepRefHash(ref, stepContext),
     };
-    valueRefs.push(vr);
+    jobRefs.push(jobRef);
   }
-  return valueRefs;
+  return jobRefs;
 }
 
 /**
@@ -51,8 +49,8 @@ export function getStepRefHash(
   ref: Ref,
   stepContext: RunContext["steps"],
 ): string | null {
-  if (ref.scope === "steps" && stepContext[ref.path[1]] !== undefined) {
-    return stepContext[ref.path[1]].outputHash;
+  if (ref.scope === "steps" && stepContext[ref.valuePath[1]] !== undefined) {
+    return stepContext[ref.valuePath[1]].outputHash;
   } else return null;
 }
 

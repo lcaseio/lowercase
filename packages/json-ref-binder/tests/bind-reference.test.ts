@@ -5,12 +5,13 @@ import type { Ref, StepHttpJson } from "@lcase/types";
 describe("interplaceRef()", () => {
   it("does not interpolate when ref is not flagged as interpolated", () => {
     const ref: Ref = {
-      path: ["url"],
+      valuePath: ["url"],
       scope: "steps",
       stepId: "test-stepId",
-      stepPath: ["url"],
+      bindPath: ["url"],
       string: "reference.string",
       interpolated: false,
+      hash: null,
     };
     const step: StepHttpJson = {
       type: "httpjson",
@@ -21,12 +22,13 @@ describe("interplaceRef()", () => {
   });
   it("interpolate when ref is not flagged as interpolated", () => {
     const ref: Ref = {
-      path: ["url"],
+      valuePath: ["url"],
       scope: "steps",
       stepId: "test-stepId",
-      stepPath: ["url"],
+      bindPath: ["url"],
       string: "reference.string",
       interpolated: true,
+      hash: null,
     };
     const step: StepHttpJson = {
       type: "httpjson",
@@ -37,12 +39,13 @@ describe("interplaceRef()", () => {
   });
   it("follows nested structures without interpolating", () => {
     const ref: Ref = {
-      path: ["foo", "bar"],
+      valuePath: ["foo", "bar"],
       scope: "steps",
       stepId: "test-stepId",
-      stepPath: ["args", "foo", 1, 0, "other", "bar"],
+      bindPath: ["args", "foo", 1, 0, "other", "bar"],
       string: "foo.bar",
       interpolated: false,
+      hash: null,
     };
     const step: StepHttpJson = {
       type: "httpjson",
@@ -58,12 +61,13 @@ describe("interplaceRef()", () => {
   });
   it("follows nested structures with interpolating", () => {
     const ref: Ref = {
-      path: ["foo", "bar"],
+      valuePath: ["foo", "bar"],
       scope: "steps",
       stepId: "test-stepId",
-      stepPath: ["args", "foo", 1, 0, "other", "bar"],
+      bindPath: ["args", "foo", 1, 0, "other", "bar"],
       string: "foo.bar",
       interpolated: true,
+      hash: null,
     };
     const step: StepHttpJson = {
       type: "httpjson",

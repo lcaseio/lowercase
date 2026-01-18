@@ -9,9 +9,9 @@ import type {
   PipeData,
   CapId,
   JobMcpData,
-  ValueRef,
   JobHttpJsonSubmittedData,
   JobMcpSubmittedData,
+  Ref,
 } from "@lcase/types";
 
 export const CapIdSchema = z.enum([
@@ -28,15 +28,17 @@ const JobDescriptorDataSchema = z
   })
   .strict() satisfies z.ZodType<JobDescriptor>;
 
-export const ValueRefSchema = z
+export const RefSchema = z
   .object({
     valuePath: z.array(z.union([z.string(), z.number()])),
     bindPath: z.array(z.union([z.string(), z.number()])),
     interpolated: z.boolean(),
     string: z.string(),
-    hash: z.string(),
+    stepId: z.string(),
+    hash: z.union([z.string(), z.null()]),
+    scope: z.enum(["steps", "input", "env"]),
   })
-  .strict() satisfies z.ZodType<ValueRef>;
+  .strict() satisfies z.ZodType<Ref>;
 
 const PipeDataSchema = z
   .object({
@@ -79,7 +81,7 @@ export const JobMcpDataSchema = z
 export const JobMcpSubmittedDataSchema = z
   .object({
     ...JobMcpDataSchema.shape,
-    valueRefs: z.array(ValueRefSchema),
+    refs: z.array(RefSchema),
   })
   .strict() satisfies z.ZodType<JobMcpSubmittedData>;
 
@@ -102,7 +104,7 @@ export const JobHttpJsonDataSchema = z
 export const JobHttpJsonSubmittedDataSchema = z
   .object({
     ...JobHttpJsonDataSchema.shape,
-    valueRefs: z.array(ValueRefSchema),
+    refs: z.array(RefSchema),
   })
   .strict() satisfies z.ZodType<JobHttpJsonSubmittedData>;
 

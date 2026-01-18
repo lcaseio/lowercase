@@ -1,4 +1,4 @@
-import type { Path } from "../../flow-analysis/types.js";
+import type { Path, Ref } from "../../flow-analysis/types.js";
 import type { CapId } from "../../flow/map.js";
 
 export type JobDescriptor = {
@@ -29,15 +29,7 @@ export type JobDelayedData = {
   reason: string;
 };
 
-export type ValueRef = {
-  interpolated: boolean;
-  valuePath: Path;
-  bindPath: Path;
-  string: string;
-  hash: string | null;
-};
-
 export type JobSubmittedData = {
-  valueRefs: ValueRef[];
+  refs: Ref[];
 };
 export type JobQueuedData = JobSubmittedData;

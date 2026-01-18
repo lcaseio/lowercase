@@ -3,11 +3,11 @@ import { traverse } from "./traverse.js";
 
 export function parseStepRefs<D extends StepDefinition>(
   step: D,
-  stepId: string
+  stepId: string,
 ): { refs: Ref[]; problems: FlowProblem[] } {
   const refs: Ref[] = [];
   const problems: FlowProblem[] = [];
-  
+
   for (const key in step) {
     const k = key as keyof D;
     // ignore fields which impact control flow in engine
@@ -15,7 +15,7 @@ export function parseStepRefs<D extends StepDefinition>(
     traverse(
       step[k],
       (value, path) => parseRef(value, path, stepId, refs, problems),
-      [String(k)]
+      [String(k)],
     );
   }
   return { refs, problems };
@@ -23,10 +23,10 @@ export function parseStepRefs<D extends StepDefinition>(
 
 export function parseRef(
   value: unknown,
-  stepPath: Path,
+  bindPath: Path,
   stepId: string,
   refs: Ref[],
-  problems: FlowProblem[]
+  problems: FlowProblem[],
 ): void {
   if (typeof value !== "string") return;
   const matches = getRefStrings(value);
@@ -38,12 +38,13 @@ export function parseRef(
     const path = makePath(matchedString);
 
     const ref: Ref = {
-      path,
+      valuePath: path,
       scope: "steps",
       stepId,
-      stepPath,
+      bindPath,
       string: matchedString,
       interpolated: false,
+      hash: null,
     };
     if (matchedScope === "steps") {
       refs.push(ref);
@@ -58,7 +59,7 @@ export function parseRef(
         type: "InvalidRefScope",
         refString: matchedString,
         stepId,
-        stepPath,
+        bindPath,
       });
     }
   }

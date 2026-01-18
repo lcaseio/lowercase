@@ -6,20 +6,22 @@ describe("bindStepRefs()", () => {
   it("replaces refs with a correct materialized view", () => {
     const ref: Ref[] = [
       {
-        path: ["reference", "string"],
+        valuePath: ["reference", "string"],
         scope: "steps",
         stepId: "test-stepId",
-        stepPath: ["url"],
+        bindPath: ["url"],
         string: "reference.string",
         interpolated: false,
+        hash: null,
       },
       {
-        path: ["foo", "bar"],
+        valuePath: ["foo", "bar"],
         scope: "steps",
         stepId: "test-stepId",
-        stepPath: ["args", "other"],
+        bindPath: ["args", "other"],
         string: "foo.bar",
         interpolated: true,
+        hash: null,
       },
     ];
     const resolved: Record<string, unknown> = {

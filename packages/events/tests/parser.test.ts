@@ -14,6 +14,7 @@ describe("parser", () => {
       type: "job.httpjson.submitted",
       data: {
         url: "",
+        refs: [],
       },
       domain: "job",
       action: "submitted",
@@ -27,7 +28,7 @@ describe("parser", () => {
       jobid: "",
       capid: "httpjson",
       toolid: "httpjson",
-    } as AnyEvent;
+    } satisfies AnyEvent<"job.httpjson.submitted">;
 
     expect(() => {
       ep.parse(testEvent1, "job.httpjson.submitted");
@@ -43,6 +44,7 @@ describe("parser", () => {
       type: "job.httpjson.queued",
       data: {
         url: "",
+        refs: [],
       },
       domain: "job",
       action: "submitted",

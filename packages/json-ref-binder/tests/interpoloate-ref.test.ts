@@ -5,24 +5,26 @@ import type { Ref } from "@lcase/types";
 describe("interplaceRef()", () => {
   it("does not interpolate when ref is not flagged as interpolated", () => {
     const ref: Ref = {
-      path: [],
+      valuePath: [],
       scope: "steps",
       stepId: "",
-      stepPath: [],
+      bindPath: [],
       string: "",
       interpolated: false,
+      hash: null,
     };
     const result = interpolateRef("", "bar", ref);
     expect(result).toBe("bar");
   });
   it("interpolates when ref flagged as interpolated and field is a string", () => {
     const ref: Ref = {
-      path: [],
+      valuePath: [],
       scope: "steps",
       stepId: "",
-      stepPath: [],
+      bindPath: [],
       string: "place",
       interpolated: true,
+      hash: null,
     };
     const result = interpolateRef("Hello {{place}}", "bar", ref);
     expect(result).toBe("Hello bar");
@@ -30,12 +32,13 @@ describe("interplaceRef()", () => {
 
   it("interpolates numbers when ref flagged as interpolated and field is a string", () => {
     const ref: Ref = {
-      path: [],
+      valuePath: [],
       scope: "steps",
       stepId: "",
-      stepPath: [],
+      bindPath: [],
       string: "place",
       interpolated: true,
+      hash: null,
     };
     const result = interpolateRef("Hello {{place}}", 5, ref);
     expect(result).toBe("Hello 5");
@@ -43,12 +46,13 @@ describe("interplaceRef()", () => {
 
   it("returns value when interpolated is set but field is not a string", () => {
     const ref: Ref = {
-      path: [],
+      valuePath: [],
       scope: "steps",
       stepId: "",
-      stepPath: [],
+      bindPath: [],
       string: "place",
       interpolated: true,
+      hash: null,
     };
     const result = interpolateRef(5, "bar", ref);
     expect(result).toBe("bar");

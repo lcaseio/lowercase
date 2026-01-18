@@ -52,12 +52,13 @@ describe("findAndParseRefs()", () => {
       joinDeps: {},
       refs: [
         {
-          path: ["steps", "foo"],
+          valuePath: ["steps", "foo"],
           scope: "steps",
-          stepPath: ["url"],
+          bindPath: ["url"],
           stepId: "bar",
           string: "steps.foo",
           interpolated: false,
+          hash: null,
         },
       ],
       problems: [],

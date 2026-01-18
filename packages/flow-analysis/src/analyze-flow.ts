@@ -78,14 +78,14 @@ export function addParallelEdges(
   stepId: string,
   step: StepParallel,
   fa: FlowAnalysis,
-  flow: FlowDefinition
+  flow: FlowDefinition,
 ) {
   for (const endStepId of step.steps) {
     const hasProblems = checkAndAddProblems(
       flow.steps[endStepId],
       fa.problems,
       stepId,
-      endStepId
+      endStepId,
     );
     if (hasProblems) continue;
 
@@ -102,14 +102,14 @@ export function addJoinEdges(
   stepId: string,
   step: StepJoin,
   fa: FlowAnalysis,
-  flow: FlowDefinition
+  flow: FlowDefinition,
 ) {
   for (const startStepId of step.steps) {
     const hasProblems = checkAndAddProblems(
       flow.steps[startStepId],
       (fa.problems ??= []),
       startStepId,
-      stepId
+      stepId,
     );
     if (hasProblems) continue;
 
@@ -126,7 +126,7 @@ export function addJoinEdges(
     flow.steps[step.next],
     (fa.problems ??= []),
     stepId,
-    step.next
+    step.next,
   );
   if (hasProblems) return;
   addEdge(fa.inEdges, fa.outEdges, {
@@ -141,14 +141,14 @@ export function addCapEdges(
   stepId: string,
   step: StepMcp | StepHttpJson,
   fa: FlowAnalysis,
-  flow: FlowDefinition
+  flow: FlowDefinition,
 ) {
   if (step.on?.success) {
     const hasProblems = checkAndAddProblems(
       flow.steps[step.on.success],
       fa.problems,
       stepId,
-      step.on.success
+      step.on.success,
     );
     if (!hasProblems) {
       addEdge(fa.inEdges, fa.outEdges, {
@@ -164,7 +164,7 @@ export function addCapEdges(
       flow.steps[step.on.failure],
       fa.problems,
       stepId,
-      step.on.failure
+      step.on.failure,
     );
     if (!hasProblems) {
       addEdge(fa.inEdges, fa.outEdges, {
@@ -181,7 +181,7 @@ export function checkAndAddProblems(
   step: StepDefinition | undefined,
   problems: FlowProblem[],
   startStepId: string,
-  endStepId?: string
+  endStepId?: string,
 ): boolean {
   if (!step) {
     addProblem(
@@ -190,7 +190,7 @@ export function checkAndAddProblems(
         startStepId: startStepId,
         endStepId: endStepId ?? "unknown",
       },
-      problems
+      problems,
     );
     return true;
   }
@@ -200,7 +200,7 @@ export function checkAndAddProblems(
         type: "SelfReferenced",
         stepId: startStepId,
       },
-      problems
+      problems,
     );
     return true;
   }
@@ -209,7 +209,7 @@ export function checkAndAddProblems(
 
 export function addProblem<T extends FlowProblem>(
   fields: T,
-  problems: FlowProblem[]
+  problems: FlowProblem[],
 ): FlowProblem[] {
   problems.push({ ...fields });
   return problems;

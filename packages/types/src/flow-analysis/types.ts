@@ -45,7 +45,7 @@ export type SelfReferencedProblem = {
 export type InvalidRefScopeProblem = {
   type: "InvalidRefScope";
   stepId: StepId;
-  stepPath: Path;
+  bindPath: Path;
   refString: string;
 };
 export type InvalidRefStepIdProblem = {
@@ -71,10 +71,11 @@ export type ProblemType = FlowProblem["type"];
 
 export type Path = Array<string | number>;
 export type Ref = {
-  path: Path;
-  scope: "steps" | "input" | "env";
-  stepId: StepId;
-  stepPath: Path; // path inside the step for where the reference is found
-  string: string;
-  interpolated: boolean;
+  valuePath: Path; // path to the value inside the json object
+  scope: "steps" | "input" | "env"; // type of reference
+  stepId: StepId; // step id this reference is found in
+  bindPath: Path; // path inside the step for where the reference is found
+  string: string; // the actual string reference without {{}} characters
+  interpolated: boolean; // whether it should be interpolated as a string or not
+  hash: string | null;
 };
