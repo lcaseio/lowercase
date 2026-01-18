@@ -347,6 +347,18 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
+  packages/json-ref-binder:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
   packages/limiter:
     devDependencies:
       '@lcase/ports':

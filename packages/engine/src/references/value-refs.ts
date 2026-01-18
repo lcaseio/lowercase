@@ -39,7 +39,7 @@ export function makeStepValueRefs(
 /**
  * Get the hash value from previous step outputs, from run context.
  * Only works with step output references.  Used in conjunction with
- * makeValueRefs create value ref arrays, specific data structures meant to
+ * makeStepValueRefs create value ref arrays, specific data structures meant to
  * be processed by the worker to resolve json tree values from a content
  * addressable storage through an "artifacts" system.
  *
