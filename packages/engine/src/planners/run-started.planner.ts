@@ -18,7 +18,7 @@ import type {
 export const runStartedPlanner: Planner<RunStartedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: RunStartedMsg
+  message: RunStartedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
 
@@ -66,13 +66,6 @@ export const runStartedPlanner: Planner<RunStartedMsg> = (
     },
     traceId: message.event.traceid,
   } satisfies EmitStepPlannedFx);
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRun,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };

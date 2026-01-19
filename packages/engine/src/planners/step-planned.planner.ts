@@ -119,12 +119,5 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     effects.push(emitJob);
   }
 
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRun,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
-
   return effects;
 };

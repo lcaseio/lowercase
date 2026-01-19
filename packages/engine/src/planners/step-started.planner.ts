@@ -11,7 +11,7 @@ import type { StepStartedMsg } from "../types/message.types.js";
 export const stepStartedPlanner: Planner<StepStartedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: StepStartedMsg
+  message: StepStartedMsg,
 ) => {
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
@@ -60,7 +60,7 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
 
   // used for parallel steps that complete when all steps have started
   const completedSteps = Object.keys(newRunState.completedSteps).filter(
-    (stepId) => oldRunState.completedSteps[stepId] === undefined
+    (stepId) => oldRunState.completedSteps[stepId] === undefined,
   );
 
   for (const completedStepId of completedSteps) {
@@ -85,13 +85,6 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
     };
     effects.push(emitStepCompletedFx);
   }
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRunState,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };
