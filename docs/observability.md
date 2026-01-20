@@ -1,6 +1,6 @@
 # Oservability Event Docs
 
-Updated for `v0.1.0-alpha.7`
+Updated for `v0.1.0-alpha.8`
 
 ## Status
 
@@ -23,8 +23,8 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 - `specversion`
 - `id`
 - `source`
-- `type` (human readable stable taxonomy, important for current type system)
-- `data` (domain payload)
+- `type` (dot separated events, human redable: domain.entity.action or domain.action
+- `data` (type specfic payload)
 
 #### lowercase / Otel Extension Attributes
 
@@ -33,6 +33,7 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 - `traceid`
 - `domain` (lowercase bounded set)
 - `entity` (lowercase bounded set)
+- `action` (lowercase bounded set)
 - ids (optional per scope, references to lowercase values) - `flowid`, `runid`, `stepid`, `jobid`, `toolid`, `steptype`, `capid`
 
 ### 03. Vocabulary
@@ -44,11 +45,10 @@ A single practical spec for emitting lifecycle and domain events that correlate 
 - `flow`
 - `step`
 - `tool`
-- `router`
-- `stream`
 - `cli`
 - `job`
 - `system`
+- `limiter`
 
 #### `action` (lifecycle verbs)
 
@@ -64,14 +64,13 @@ Prefer one word verbs, past tense.
 - `timeout`
 - `emitted`
 - `received`
-- `entered`
-- `exited`
 - `registered`
 - `requested`
 - `saved`
 - `logged`
 - `submitted`
-- `delayed`
+- `granted`
+- `denied`
 
 #### `entity` (classification of work)
 
@@ -79,7 +78,7 @@ Optional map to **lowercase** capabilities or domain entities
 
 - `mcp`
 - `httpjson`
-- `registration`
+- `slot`
 
 ### 04. Event `type` should be human readable even if redundant
 
@@ -98,8 +97,10 @@ Trace is a full flow run `flow.submitted` to `flow.completed` or `flow.failed`)
 
 #### Nested Spans
 
+Not yet implemented, but heres a picture of what the nested.
+
 - `flow` (root)
+- `root` (child of flow)
 - `step` (child of flow)
 - `job` (child of step)
 - `tool` (child of job)
-- queue / router (could be modeled as PRODUCER/CONSUMER spans, but local work as INTERNAL)

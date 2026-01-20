@@ -12,7 +12,7 @@ import { StepFinishedMsg } from "../types/message.types.js";
 export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: StepFinishedMsg
+  message: StepFinishedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
 
@@ -28,7 +28,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   if (!flow) return effects;
 
   const newPlannedStepIds = Object.keys(newRun.plannedSteps).filter(
-    (id) => oldRun.plannedSteps[id] === undefined
+    (id) => oldRun.plannedSteps[id] === undefined,
   );
 
   for (const plannedStepId of newPlannedStepIds) {
@@ -83,13 +83,6 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
     };
     effects.push(emitRunFailedFx);
   }
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRun,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };

@@ -13,7 +13,7 @@ import type {
 export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: JobFinishedMsg
+  message: JobFinishedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
@@ -77,13 +77,6 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
     };
     effects.push(emitStepFailedFx);
   }
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRunState,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };

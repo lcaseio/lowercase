@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import {
+  ArtifactsPort,
   EventBusPort,
   JobParserPort,
   QueuePort,
@@ -66,6 +67,7 @@ describe("worker register event payload", () => {
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
       jobParser,
+      artifacts: {} as ArtifactsPort,
     });
     await expect(worker.requestRegistration()).resolves.not.toThrow();
   });
@@ -108,6 +110,7 @@ describe("worker register event payload", () => {
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
       jobParser,
+      artifacts: {} as ArtifactsPort,
     });
     await expect(worker.requestRegistration()).rejects.toThrow();
   });

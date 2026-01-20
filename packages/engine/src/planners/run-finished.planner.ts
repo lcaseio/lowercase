@@ -11,7 +11,7 @@ import type {
 export const runFinishedPlanner: Planner<RunFinishedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: RunFinishedMsg
+  message: RunFinishedMsg,
 ): EngineEffect[] => {
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
@@ -63,13 +63,6 @@ export const runFinishedPlanner: Planner<RunFinishedMsg> = (
     };
     effects.push(effect);
   }
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRunState,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };

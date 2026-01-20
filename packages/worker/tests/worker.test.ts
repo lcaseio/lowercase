@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import {
+  ArtifactsPort,
   EventBusPort,
   JobParserPort,
   QueuePort,
@@ -78,6 +79,7 @@ describe("worker", () => {
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
       jobParser,
+      artifacts: {} as ArtifactsPort,
     });
 
     worker.requestSlot = vi.fn().mockImplementation(async () => {});
@@ -85,7 +87,7 @@ describe("worker", () => {
 
     worker.handleNewJob = vi.fn().mockImplementation(async () => {
       expect(worker.getToolActiveJobCount(toolId)).toBeLessThanOrEqual(
-        maxConcurrency
+        maxConcurrency,
       );
       return new Promise(() => {});
     });

@@ -20,7 +20,7 @@ import {
 export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
   oldState: EngineState,
   newState: EngineState,
-  message: FlowSubmittedMsg
+  message: FlowSubmittedMsg,
 ): EngineEffect[] => {
   const runId = message.event.runid;
   const newRunState = newState.runs[runId];
@@ -89,13 +89,6 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
       traceId: newRunState.traceId,
     } satisfies EmitFlowFailedFx);
   }
-
-  const writeEffect = {
-    type: "WriteContextToDisk",
-    context: newRunState,
-    runId,
-  } satisfies WriteContextToDiskFx;
-  effects.push(writeEffect);
 
   return effects;
 };
