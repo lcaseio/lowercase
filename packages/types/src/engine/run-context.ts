@@ -1,42 +1,37 @@
-import { PipeData } from "../events/shared/pipe.js";
-import { FlowDefinition } from "../flow/flow-definition.js";
+import type { FlowAnalysis } from "../flow-analysis/types.js";
 
-// marking fields with "move" if they need to move out of Engine context
+type StepId = string;
+
 export type RunContext = FlowContext & {
   runId: string;
-  traceId: string; // move
+  traceId: string;
 
-  runningSteps: Set<string>;
-  queuedSteps: Set<string>;
-  activeJoinSteps: Set<string>;
-  doneSteps: Set<string>;
+  input: Record<string, unknown>;
+  // global: Record<string, unknown>;  add later
+
+  startedSteps: Record<StepId, boolean>;
+  plannedSteps: Record<StepId, boolean>;
+  completedSteps: Record<StepId, boolean>;
+  failedSteps: Record<StepId, boolean>;
   outstandingSteps: number;
 
-  inputs: Record<string, unknown>;
-
-  exports: Record<string, unknown>;
-  globals: Record<string, unknown>;
-
-  status: "started" | "completed" | "failed" | "pending";
-
+  status: "started" | "completed" | "failed";
   steps: Record<string, StepContext>;
+
+  flowAnalysis: FlowAnalysis;
 };
 
 export type StepContext = {
-  status: "initialized" | "pending" | "started" | "completed" | "failed";
+  status: "initialized" | "planned" | "started" | "completed" | "failed";
   reason?: string;
   attempt: number;
-  exports: Record<string, unknown>;
-  result: Record<string, unknown>;
-  resolved: Record<string, unknown>;
-  args?: Record<string, unknown>;
-  pipe?: PipeData;
-  stepId: string;
-  joins: Set<string>;
+  output: Record<StepId, unknown> | null;
+  outputHash: string | null;
+  resolved: Record<StepId, unknown>;
 };
 
 export type FlowContext = {
   flowId: string;
   flowName: string;
-  definition: FlowDefinition;
+  flowVersion: string;
 };

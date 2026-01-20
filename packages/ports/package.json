@@ -1,6 +1,6 @@
 {
   "name": "@lcase/ports",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": "true",
   "type": "module",
   "exports": {
@@ -20,12 +20,18 @@
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.js"
     },
-    "./rm": {
-      "types": "./dist/rm/index.d.ts",
-      "import": "./dist/rm/index.js"
+    "./scheduler": {
+      "types": "./dist/scheduler/index.d.ts",
+      "import": "./dist/scheduler/index.js"
     },
     "./engine": {
       "types": "./dist/engine/index.d.ts"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/event-store.port.d.ts"
+    },
+    "./replay": {
+      "types": "./dist/replay/index.d.ts"
     }
   },
   "scripts": {

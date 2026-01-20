@@ -4,6 +4,7 @@ import { EmitterFactory } from "@lcase/events";
 import { FlowSchema } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 
 export class FlowService {
   constructor(
@@ -34,9 +35,11 @@ export class FlowService {
       validatedFlow.version,
       args.absoluteFilePath
     );
+    const runId = `run-${String(randomUUID())}`;
     const flowEmitter = this.ef.newFlowEmitter({
       source: "lowercase://flow-service/start-flow",
       flowid: flowId,
+      runid: runId,
       traceId,
       spanId,
       traceParent,
@@ -47,6 +50,7 @@ export class FlowService {
         name: validatedFlow.name,
         version: validatedFlow.version,
       },
+      run: { id: runId },
       inputs: {},
       definition: validatedFlow,
     });

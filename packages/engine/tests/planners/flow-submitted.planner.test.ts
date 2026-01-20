@@ -1,96 +1,109 @@
+import { describe, it, expect } from "vitest";
 import type { RunContext } from "@lcase/types/engine";
-import { flowSubmittedPlanner } from "../../src/planners/flow-submitted.planner.js";
 import type {
   FlowSubmittedMsg,
   EngineState,
   EngineEffect,
+  FlowContext,
+  EmitRunStartedFx,
 } from "../../src/engine.types.js";
-import { describe, it, expect } from "vitest";
+import { flowSubmittedEvent } from "../fixtures/flow-submitted.event.js";
+import { flowSubmittedPlanner } from "../../src/planners/flow-submitted.planner.js";
 
 describe("flowSubmittedPlanner", () => {
-  it("generates an expected plan", () => {
-    const flowSubmittedMessage: FlowSubmittedMsg = {
-      type: "FlowSubmitted",
-      flowId: "test-id",
-      runId: "test-id",
-      definition: {
-        name: "test",
-        version: "test",
-        description: "test",
-        inputs: {},
-        outputs: {},
-        start: "",
-        steps: {
-          start: {
-            type: "httpjson",
-            url: "",
-          },
-        },
-      },
-      meta: {
-        traceId: "test",
-      },
+  it("generates an EmitRunStartedFx when run context status is 'started'", () => {
+    const oldState: EngineState = {
+      runs: {},
+      flows: {},
     };
 
-    const runCtx = {
-      flowId: flowSubmittedMessage.flowId,
-      flowName: flowSubmittedMessage.definition.name,
-      definition: flowSubmittedMessage.definition,
-      runId: flowSubmittedMessage.runId,
-      traceId: flowSubmittedMessage.meta.traceId,
-      runningSteps: new Set<string>(),
-      activeJoinSteps: new Set<string>(),
-      queuedSteps: new Set<string>(),
-      doneSteps: new Set<string>(),
+    const newState: EngineState = {
+      runs: {},
+      flows: {},
+    };
+    const message: FlowSubmittedMsg = {
+      type: "FlowSubmitted",
+      event: flowSubmittedEvent,
+    };
+
+    newState.runs[message.event.runid] = {
+      flowId: message.event.flowid,
+      flowName: message.event.data.flow.name,
+      flowVersion: message.event.data.flow.version,
+      runId: message.event.runid,
+      traceId: message.event.traceid,
+      plannedSteps: {},
+      startedSteps: {},
+      completedSteps: {},
+      failedSteps: {},
       outstandingSteps: 0,
-      inputs: flowSubmittedMessage.definition.inputs ?? {},
-      exports: {},
-      globals: {},
-      status: "pending",
+
+      input: message.event.data.definition.inputs ?? {},
+      status: "started",
       steps: {
         start: {
-          status: "pending",
+          status: "initialized",
           attempt: 0,
-          exports: {},
-          result: {},
-          stepId: "start",
-          joins: new Set(),
+          outputHash: null,
+          output: {},
           resolved: {},
         },
       },
+      flowAnalysis: {
+        nodes: ["start"],
+        inEdges: {},
+        outEdges: {},
+        joinDeps: {},
+        refs: [],
+        problems: [],
+      },
     } satisfies RunContext;
-    const testNewState = { runs: { ["test-id"]: runCtx } };
-    const effectPlans = flowSubmittedPlanner({
-      oldState: { runs: {} },
-      newState: testNewState,
-      message: flowSubmittedMessage,
-    });
+
+    newState.flows[message.event.flowid] = {
+      definition: message.event.data.definition,
+      runIds: { [message.event.runid]: true },
+    } satisfies FlowContext;
+
+    const effectPlans = flowSubmittedPlanner(oldState, newState, message);
 
     const expectedEffectPlans: EngineEffect[] = [
       {
-        kind: "EmitFlowStartedEvent",
-        eventType: "flow.started",
+        type: "EmitFlowAnalyzed",
         data: {
+          analysis: {
+            nodes: ["start"],
+            inEdges: {},
+            outEdges: {},
+            joinDeps: {},
+            refs: [],
+            problems: [],
+          },
           flow: {
-            id: flowSubmittedMessage.flowId,
-            name: flowSubmittedMessage.definition.name,
-            version: flowSubmittedMessage.definition.version,
+            id: message.event.flowid,
+            name: message.event.data.flow.name,
+            version: message.event.data.flow.version,
+          },
+          run: {
+            id: message.event.runid,
           },
         },
         scope: {
-          flowid: flowSubmittedMessage.flowId,
+          flowid: message.event.flowid,
+          runid: message.event.runid,
           source: "lowercase://engine",
         },
-        traceId: "test",
+        traceId: message.event.traceid,
       },
       {
-        kind: "DispatchInternal",
-        message: {
-          type: "StepReadyToStart",
-          runId: runCtx.runId,
-          stepId: runCtx.definition.start,
+        type: "EmitRunStarted",
+        data: null,
+        scope: {
+          flowid: message.event.flowid,
+          runid: message.event.runid,
+          source: "lowercase://engine",
         },
-      },
+        traceId: message.event.traceid,
+      } satisfies EmitRunStartedFx,
     ];
     expect(effectPlans).toEqual(expectedEffectPlans);
   });

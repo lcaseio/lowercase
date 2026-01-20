@@ -3,6 +3,7 @@ import { FlowEventType } from "./map.js";
 
 export type FlowScope = {
   flowid: string;
+  runid: string;
 };
 
 export type FlowEvent<T extends FlowEventType> = CloudEvent<T> & FlowScope;

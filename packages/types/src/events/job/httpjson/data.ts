@@ -1,13 +1,6 @@
-import { StepHttpJson } from "../../../flow/http-json.step.js";
-import { PipeDataObject } from "../../shared/pipe.js";
-import { JobDescriptor, JobDescriptorResolved } from "../data.js";
+import type { StepHttpJson } from "../../../flow/http-json.step.js";
+import type { JobSubmittedData } from "../data.js";
 
-export type JobHttpJsonData = JobDescriptor &
-  Omit<StepHttpJson, "pipe" | "type"> &
-  PipeDataObject;
-
-export type JobHttpJsonResolvedData = JobDescriptorResolved &
-  Omit<StepHttpJson, "pipe" | "type"> &
-  PipeDataObject;
-
-export type JobHttpJsonDelayedData = JobHttpJsonData; // later add delayed object
+export type JobHttpJsonData = Omit<StepHttpJson, "type" | "on" | "tool">;
+export type JobHttpJsonSubmittedData = JobHttpJsonData & JobSubmittedData;
+export type JobHttpJsonQueuedData = JobHttpJsonData & JobSubmittedData;

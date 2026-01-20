@@ -1,6 +1,6 @@
 {
   "name": "@lcase/engine",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,7 +18,10 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/adapters": "workspace:*",
-    "@lcase/specs": "workspace:*"
+    "@lcase/specs": "workspace:*",
+    "@lcase/flow-analysis": "workspace:*",
+    "@lcase/json-ref-binder": "workspace:*",
+    "immer": "^11.0.1"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

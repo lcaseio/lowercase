@@ -1,11 +1,13 @@
-import { FlowService, type Services } from "@lcase/services";
+import { FlowService, ReplayService, type Services } from "@lcase/services";
 import { RuntimeContext } from "./types/runtime.context.js";
 import { EventSink, RuntimeStatus } from "@lcase/ports";
 
 export class WorkflowRuntime {
   flow: FlowService;
+  replay: ReplayService;
   constructor(private readonly ctx: RuntimeContext, services: Services) {
     this.flow = services.flowService;
+    this.replay = services.replayService;
   }
 
   async startRuntime(): Promise<RuntimeStatus> {
@@ -19,8 +21,7 @@ export class WorkflowRuntime {
 
       await this.ctx.engine.start();
       await this.ctx.worker.start();
-
-      this.ctx.rm.start();
+      await this.ctx.limiter.start();
 
       await this.ctx.worker.requestRegistration();
 
@@ -52,7 +53,6 @@ export class WorkflowRuntime {
       }
 
       this.ctx.tap.stop();
-      this.ctx.rm.stop();
       await this.ctx.router.stop();
       await this.ctx.bus.close();
       return "stopped";

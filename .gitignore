@@ -16,6 +16,7 @@ dist-electron/
 
 # run artifacts
 runs/
+run-artifacts/
 
 # temp files
 *.temp.*
@@ -32,3 +33,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# jsonl replay test folder
+replay-test/

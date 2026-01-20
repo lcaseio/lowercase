@@ -1,6 +1,6 @@
 import { EmitterFactory } from "@lcase/events";
 import type { RouterPort, QueuePort, EventBusPort } from "@lcase/ports";
-import type { AnyEvent, AnyJobEvent } from "@lcase/types";
+import type { AnyEvent, JobQueuedEvent, JobSubmittedEvent } from "@lcase/types";
 
 export type RouterContext = {
   [capability: string]: {
@@ -17,16 +17,27 @@ export class NodeRouter implements RouterPort {
     private readonly ef: EmitterFactory
   ) {}
   async route(event: AnyEvent): Promise<void> {
-    if (event === undefined || event.type === undefined) {
-      console.error("[router] event or event type is undefined; event:", event);
+    if (!event.type.endsWith(".submitted") && !event.type.startsWith("job.")) {
       return;
     }
+    await this.queueJob(event as JobSubmittedEvent);
   }
 
   async start() {
-    this.bus.subscribe("nothing", async (e) => await this.route(e));
+    this.bus.subscribe("job.*.submitted", async (e) => await this.route(e));
   }
   async stop() {
     this.bus.close();
+  }
+
+  async queueJob(event: JobSubmittedEvent) {
+    const newEvent = structuredClone(event) as unknown as JobQueuedEvent;
+    newEvent.type = `job.${event.capid}.queued`;
+    newEvent.action = "queued";
+
+    const emitter = this.ef.newJobEmitterFromEvent(newEvent, "lowercase://rm");
+    const queuedEvent = emitter.formEvent(newEvent.type, newEvent.data);
+    await this.queue.enqueue(queuedEvent.toolid, queuedEvent);
+    await emitter.emitFormedEvent(queuedEvent);
   }
 }

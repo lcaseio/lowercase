@@ -3,42 +3,91 @@ import {
   EngineEffect,
   EngineState,
   FlowSubmittedMsg,
+  EmitRunStartedFx,
+  EmitFlowAnalyzedFx,
+  EmitFlowFailedFx,
+  WriteContextToDiskFx,
 } from "../engine.types.js";
 
-export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (args: {
-  oldState: EngineState;
-  newState: EngineState;
-  message: FlowSubmittedMsg;
-}): EngineEffect[] | void => {
-  const { newState, message } = args;
+/**
+ * Plans to run EmitRunStartedFx if run status is started, and
+ * previous state the run context was undefined.
+ * @param oldState EngineState pre reducer
+ * @param newState EngineState post reducer
+ * @param message FlowSubmittedMsg
+ * @returns EngineEffect[]
+ */
+export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
+  oldState: EngineState,
+  newState: EngineState,
+  message: FlowSubmittedMsg,
+): EngineEffect[] => {
+  const runId = message.event.runid;
+  const newRunState = newState.runs[runId];
+  const oldRunState = oldState.runs[runId];
 
   const effects: EngineEffect[] = [];
 
-  const newRunState = newState.runs[message.runId];
-  if (!newRunState) return;
+  if (!newRunState) return effects;
+  if (newRunState.status !== "started" && newRunState.status !== "failed")
+    return effects;
+  if (oldRunState !== undefined) return effects;
 
-  if (newRunState.status === "pending") {
+  const emitFlowAnalyzedFx: EmitFlowAnalyzedFx = {
+    type: "EmitFlowAnalyzed",
+    scope: {
+      flowid: newRunState.flowId,
+      runid: newRunState.runId,
+      source: "lowercase://engine",
+    },
+    data: {
+      flow: {
+        id: newRunState.flowId,
+        name: newRunState.flowName,
+        version: newRunState.flowVersion,
+      },
+      run: {
+        id: newRunState.runId,
+      },
+      analysis: newRunState.flowAnalysis,
+    },
+    traceId: newRunState.traceId,
+  };
+
+  effects.push(emitFlowAnalyzedFx);
+
+  if (newRunState.status === "started") {
     effects.push({
-      kind: "EmitFlowStartedEvent",
-      eventType: "flow.started",
+      type: "EmitRunStarted",
+      data: null,
+      scope: {
+        flowid: newRunState.flowId,
+        runid: newRunState.runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    } satisfies EmitRunStartedFx);
+  } else if (newRunState.status === "failed") {
+    effects.push({
+      type: "EmitFlowFailed",
       data: {
         flow: {
-          id: message.flowId,
-          name: message.definition.name,
-          version: message.definition.version,
+          id: newRunState.flowId,
+          name: newRunState.flowName,
+          version: newRunState.flowVersion,
         },
+        run: {
+          id: newRunState.runId,
+        },
+        status: "failure",
       },
-      scope: { flowid: message.flowId, source: "lowercase://engine" },
-      traceId: message.meta.traceId,
-    });
-    effects.push({
-      kind: "DispatchInternal",
-      message: {
-        type: "StepReadyToStart",
-        runId: message.runId,
-        stepId: message.definition.start,
+      scope: {
+        flowid: newRunState.flowId,
+        runid: newRunState.runId,
+        source: "lowercase://engine",
       },
-    });
+      traceId: newRunState.traceId,
+    } satisfies EmitFlowFailedFx);
   }
 
   return effects;

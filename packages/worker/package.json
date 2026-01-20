@@ -1,6 +1,6 @@
 {
   "name": "@lcase/worker",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,7 +18,8 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/events": "workspace:*",
-    "@lcase/tools": "workspace:*"
+    "@lcase/tools": "workspace:*",
+    "@lcase/json-ref-binder": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

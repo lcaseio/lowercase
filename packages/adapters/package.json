@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "private": "true",
   "type": "module",
   "exports": {
@@ -27,6 +27,14 @@
     "./stream": {
       "types": "./dist/stream/index.d.ts",
       "import": "./dist/stream/index.js"
+    },
+    "./event-store": {
+      "types": "./dist/event-store/index.d.ts",
+      "import": "./dist/event-store/index.js"
+    },
+    "./artifact-store": {
+      "types": "./dist/artifact-store/index.d.ts",
+      "import": "./dist/artifact-store/index.js"
     }
   },
   "scripts": {
@@ -38,13 +46,13 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.19.1",
-    "@lcase/ports": "workspace:*",
     "@lcase/specs": "workspace:*",
-    "@lcase/types": "workspace:*",
     "@lcase/events": "workspace:*",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@lcase/types": "workspace:*",
+    "@lcase/ports": "workspace:*"
   }
 }

@@ -3,6 +3,7 @@ import { JobMcpEventType } from "@lcase/types";
 export const mcpEventTypes = [
   "job.mcp.completed",
   "job.mcp.delayed",
+  "job.mcp.resumed",
   "job.mcp.failed",
   "job.mcp.queued",
   "job.mcp.started",

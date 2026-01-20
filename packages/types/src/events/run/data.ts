@@ -8,15 +8,6 @@ type RunDescriptor = {
   };
 };
 
-export type RunStartedData = RunDescriptor & {
-  status: "started";
-};
-export type RunCompletedData = RunDescriptor & {
-  status: "success";
-  message: string;
-};
-
-export type RunFailedData = RunDescriptor & {
-  status: "failure";
-  message: string;
-};
+export type RunStartedData = null;
+export type RunCompletedData = null;
+export type RunFailedData = null;

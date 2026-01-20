@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { AnyEvent, FlowScope } from "@lcase/types";
 import {
+  FlowAnalyzedDataSchema,
   FlowCompletedDataSchema,
   FlowFailedDataSchema,
   FlowQueuedDataSchema,
@@ -12,6 +13,7 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 export const FlowContextSchema = z
   .object({
     flowid: z.string(),
+    runid: z.string(),
     domain: z.literal("flow"),
   })
   .strict() satisfies z.ZodType<FlowScope>;
@@ -78,3 +80,14 @@ export const FlowFailedSchema = CloudEventContextSchema.merge(FlowContextSchema)
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.failed">>;
+
+export const FlowAnalyzedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...FlowContextSchema.shape,
+    type: z.literal("flow.analyzed"),
+    entity: z.undefined().optional(),
+    action: z.literal("analyzed"),
+    data: FlowAnalyzedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"flow.analyzed">>;

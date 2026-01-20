@@ -5,6 +5,7 @@ import type {
   FlowStartedData,
   FlowFailedData,
   FlowSubmittedData,
+  FlowAnalyzedData,
 } from "./data.js";
 
 export type FlowEventMap = {
@@ -14,6 +15,7 @@ export type FlowEventMap = {
     "submitted",
     FlowSubmittedData
   >;
+  "flow.analyzed": DomainActionDescriptor<"flow", "analyzed", FlowAnalyzedData>;
   "flow.started": DomainActionDescriptor<"flow", "started", FlowStartedData>;
   "flow.completed": DomainActionDescriptor<
     "flow",

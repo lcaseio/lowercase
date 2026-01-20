@@ -4,6 +4,7 @@ import type { StepScope, AnyEvent } from "@lcase/types";
 import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
+  StepPlannedDataSchema,
   StepStartedDataSchema,
 } from "./step.data.schema.js";
 
@@ -56,3 +57,14 @@ export const StepFailedSchema = CloudEventContextSchema.merge(StepContextSchema)
     })
   )
   .strict() satisfies z.ZodType<AnyEvent<"step.failed">>;
+
+export const StepPlannedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...StepContextSchema.shape,
+    data: StepPlannedDataSchema,
+    type: z.literal("step.planned"),
+    entity: z.undefined().optional(),
+    action: z.literal("planned"),
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"step.planned">>;

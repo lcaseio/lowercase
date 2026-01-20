@@ -10,7 +10,7 @@ import type { OtelContext } from "../types.js";
 import { BaseEmitter } from "./base.emitter.js";
 import { EventBusPort, FlowEmitterPort } from "@lcase/ports";
 import { flowOtelAttributes } from "../otel-attributes.js";
-import { eventRegistry } from "../registries/event-registry.js";
+import { eventSchemaRegistry } from "../registries/event-schema.registry.js";
 
 /**
  * strongly types scoped emitter for step events.
@@ -28,12 +28,12 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
     scope: OtelContext & FlowScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid } = scope;
+    const { flowid, runid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#flowScope = { flowid };
+    this.#flowScope = { flowid, runid };
     this.flowOtelAttributes = flowOtelAttributes;
     this.bus = bus;
   }
@@ -54,7 +54,7 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
         : {}),
     } satisfies FlowEvent<T>;
 
-    const entry = eventRegistry[type];
+    const entry = eventSchemaRegistry[type];
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(

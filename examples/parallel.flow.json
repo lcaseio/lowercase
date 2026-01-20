@@ -1,6 +1,6 @@
 {
   "name": "Parallel Flow Test",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "start": "p",
   "steps": {
     "p": {
@@ -9,7 +9,7 @@
     },
     "one": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/people/1",
+      "url": "https://swapi.tech/api/people/1",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
@@ -17,7 +17,7 @@
     },
     "two": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/people/2",
+      "url": "https://swapi.tech/api/people/2",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
@@ -25,7 +25,7 @@
     },
     "three": {
       "type": "httpjson",
-      "url": "https://swapi.dev/api/people/3",
+      "url": "https://swapi.tech/api/people/3",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
@@ -39,7 +39,7 @@
 
     "five": {
       "type": "httpjson",
-      "url": "${two.result.body.homeworld}",
+      "url": "{{steps.two.output.body.result.properties.homeworld}}",
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"

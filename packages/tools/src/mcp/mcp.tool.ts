@@ -52,10 +52,10 @@ export class McpTool implements ToolInstancePort<"mcp"> {
     await this.connect(data.url);
 
     // NOTE: currently does not support duplex streaming
-    if (this.#deps.producer && data.pipe?.to?.payload && !this.#deps.consumer) {
+    if (this.#deps.producer && !this.#deps.consumer) {
       console.log("[tool-mcp] producer streaming");
       const [producerResult, toolResult] = await Promise.all([
-        this.#produceStream(this.#deps.producer, data.pipe.to.payload),
+        this.#produceStream(this.#deps.producer, ""),
         this.#client.callTool({
           name: data.feature.name,
           ...(data.args ? { arguments: data.args } : {}),
@@ -78,15 +78,15 @@ export class McpTool implements ToolInstancePort<"mcp"> {
       return event;
     } else if (
       this.#deps.consumer &&
-      !this.#deps.producer &&
-      data.pipe?.from?.buffer
+      !this.#deps.producer
+      // data.pipe?.from?.buffer
     ) {
       console.log("[tool-mcp] consumer streaming");
       const consumerResult = await this.#consumeStream(
         this.#deps.consumer,
         data.feature.name,
-        data.args,
-        data.pipe.from.buffer
+        data.args
+        // data.pipe.from.buffer
       );
       await this.disconnect();
 

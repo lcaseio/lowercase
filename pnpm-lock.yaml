@@ -246,15 +246,9 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
       '@modelcontextprotocol/sdk':
         specifier: ^1.19.1
         version: 1.19.1
@@ -262,6 +256,24 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  packages/artifacts:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
@@ -284,9 +296,18 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@lcase/flow-analysis':
+        specifier: workspace:*
+        version: link:../flow-analysis
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../json-ref-binder
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
+      immer:
+        specifier: ^11.0.1
+        version: 11.0.1
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -306,6 +327,42 @@ importers:
       zod:
         specifier: 3.25.76
         version: 3.25.76
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  packages/flow-analysis:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  packages/json-ref-binder:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  packages/limiter:
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -342,7 +399,7 @@ importers:
         specifier: workspace:*
         version: link:../types
 
-  packages/resource-manager:
+  packages/replay:
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -359,18 +416,24 @@ importers:
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@lcase/artifacts':
+        specifier: workspace:*
+        version: link:../artifacts
       '@lcase/engine':
         specifier: workspace:*
         version: link:../engine
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
+      '@lcase/limiter':
+        specifier: workspace:*
+        version: link:../limiter
       '@lcase/observability':
         specifier: workspace:*
         version: link:../observability
-      '@lcase/resource-manager':
+      '@lcase/replay':
         specifier: workspace:*
-        version: link:../resource-manager
+        version: link:../replay
       '@lcase/services':
         specifier: workspace:*
         version: link:../services
@@ -459,6 +522,9 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../json-ref-binder
       '@lcase/tools':
         specifier: workspace:*
         version: link:../tools
@@ -2215,6 +2281,9 @@ packages:
   ignore@7.0.5:
     resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
     engines: {node: '>= 4'}
+
+  immer@11.0.1:
+    resolution: {integrity: sha512-naDCyggtcBWANtIrjQEajhhBEuL9b0Zg4zmlWK2CzS6xCWSE39/vvf4LqnMjUAWHBhot4m9MHCM/Z+mfWhUkiA==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -5384,6 +5453,8 @@ snapshots:
   ignore@5.3.2: {}
 
   ignore@7.0.5: {}
+
+  immer@11.0.1: {}
 
   import-fresh@3.3.1:
     dependencies:

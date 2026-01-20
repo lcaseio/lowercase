@@ -4,16 +4,17 @@ import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
-import { Engine, PipeResolver } from "@lcase/engine";
+import { Engine } from "@lcase/engine";
 
-import { EmitterFactory, eventRegistry } from "@lcase/events";
+import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import {
+  ArtifactsPort,
   EventBusPort,
-  FlowParserPort,
   JobParserPort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
+  makeArtifactsFactory,
   makeBusFactory,
   makeQueueFactory,
 } from "./factories/registry.factory.js";
@@ -26,12 +27,19 @@ import type { RuntimeContext, SinkMap } from "./types/runtime.context.js";
 import {
   ConsoleSink,
   ObservabilityTap,
+  ReplaySink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
-import { FlowService } from "@lcase/services";
-import { ResourceManager } from "@lcase/resource-manager";
+import { FlowService, ReplayService } from "@lcase/services";
 import { JobParser } from "@lcase/events/parsers";
+import { JsonlEventLog } from "@lcase/adapters/event-store";
+import path from "path";
+import { ReplayEngine } from "@lcase/replay";
+import { createLimiter } from "./wire-functions/create-limiter.js";
+import { ConcurrencyLimiter } from "@lcase/limiter";
+import { Artifacts } from "@lcase/artifacts";
+import { createArtifacts } from "./wire-functions/create-artifacts.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -39,7 +47,8 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ef = new EmitterFactory(ctx.bus);
 
   const flowService = new FlowService(ctx.bus, ef, new FlowStoreFs());
-  const runtime = new WorkflowRuntime(ctx, { flowService });
+  const replayService = new ReplayService(ctx.replay);
+  const runtime = new WorkflowRuntime(ctx, { flowService, replayService });
   return runtime;
 }
 
@@ -64,16 +73,11 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const streamRegistry = new InMemoryStreamRegistry();
   const flowStore = new FlowStore();
 
-  const jobParser = new JobParser(eventRegistry);
-  const rm = new ResourceManager({
-    bus,
-    ef,
-    queue,
-    jobParser,
-  });
+  const jobParser = new JobParser(eventSchemaRegistry);
 
-  const engine = createInProcessEngine(bus, streamRegistry, ef, jobParser);
+  const engine = createInProcessEngine(bus, ef, jobParser);
 
+  const artifacts = createArtifacts(config.artifacts);
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -81,10 +85,20 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     streamRegistry,
     ef,
     jobParser,
+    artifacts,
     config.worker
   );
 
   const { tap, sinks } = createObservability(config.observability, bus);
+
+  const cl = new ConcurrencyLimiter(bus, ef);
+  const limiter = createLimiter(config.limiter, { bus, ef, cl });
+
+  const replay = new ReplayEngine(
+    new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
+    bus,
+    ef
+  );
 
   return {
     queue,
@@ -96,7 +110,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     tap,
     sinks,
     ef,
-    rm,
+    replay,
+    limiter,
   };
 }
 
@@ -108,6 +123,7 @@ export function createObservability(
   const sinks: SinkMap = {};
   if (config.sinks) {
     for (const sink of config.sinks) {
+      // TODO: move sink settings to config, not hardcoded
       switch (sink) {
         case "console-log-sink":
           const consoleSink = new ConsoleSink({
@@ -130,6 +146,13 @@ export function createObservability(
             tap.attachSink(webSocketServerSink);
           }
           break;
+        case "replay-jsonl-sink":
+          const absoluteDirPath = path.join(process.cwd(), "./replay-test");
+          const replaySink = new ReplaySink(new JsonlEventLog(absoluteDirPath));
+          sinks["replay-jsonl-sink"] = replaySink;
+          tap.attachSink(replaySink);
+
+          break;
         default:
           break;
       }
@@ -140,12 +163,9 @@ export function createObservability(
 
 export function createInProcessEngine(
   bus: EventBusPort,
-  streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort
 ): Engine {
-  const pipeResolver = new PipeResolver(streamRegistry);
-
   const engine = new Engine({
     bus,
     ef: emitterFactory,
@@ -162,6 +182,7 @@ export function createInProcessWorker(
   streamRegistry: StreamRegistryPort,
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort,
+  artifacts: ArtifactsPort,
   config: WorkerConfig
 ): Worker {
   const toolRegistry = new ToolRegistry(allToolBindingsMap);
@@ -172,6 +193,7 @@ export function createInProcessWorker(
     streamRegistry,
     toolRegistry,
     jobParser,
+    artifacts,
   });
 
   // NOTE: add custom config for tools

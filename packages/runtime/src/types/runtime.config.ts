@@ -10,6 +10,16 @@ import {
   QueueTransport,
 } from "../registries/queue.registry.js";
 import { SinkId } from "./runtime.context.js";
+import {
+  LimiterPlacement,
+  LimiterStore,
+  LimiterTransport,
+} from "../registries/limiter.registry.js";
+import {
+  ArtifactsPlacement,
+  ArtifactsStore,
+  ArtifactsTransport,
+} from "../registries/artifacts.registry.js";
 
 export type BusConfig = {
   id: string;
@@ -55,4 +65,21 @@ export type RuntimeConfig = {
   worker: WorkerConfig;
   stream: StreamConfig;
   observability: ObservabilityConfig;
+  limiter: LimiterConfig;
+  artifacts: ArtifactsConfig;
+};
+
+export type LimiterConfig = {
+  id: string;
+  scope: string;
+  placement: LimiterPlacement;
+  transport: LimiterTransport;
+  store: LimiterStore;
+};
+
+export type ArtifactsConfig = {
+  path: string;
+  placement: ArtifactsPlacement;
+  transport: ArtifactsTransport;
+  store: ArtifactsStore;
 };

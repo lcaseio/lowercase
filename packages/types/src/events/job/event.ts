@@ -8,7 +8,8 @@ export type JobScope = {
   stepid: string;
   jobid: string;
   capid: CapId;
-  toolid: string | null;
+  toolid: string;
 };
 
-export type JobEvent<T extends JobEventType> = CloudEvent<T> & JobScope;
+export type JobEvent<T extends JobEventType = JobEventType> = CloudEvent<T> &
+  JobScope;

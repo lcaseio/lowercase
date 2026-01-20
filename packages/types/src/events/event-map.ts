@@ -6,6 +6,9 @@ import type { ToolEventMap } from "./tool/map.js";
 import type { WorkerEventMap } from "./worker/map.js";
 import type { FlowEventMap } from "./flow/map.js";
 import type { SystemEventMap } from "./system/map.js";
+import type { ReplayEventMap } from "./replay/map.js";
+import type { SchedulerEventMap } from "./scheduler/map.js";
+import type { LimiterEventMap } from "./limiter/map.js";
 
 export type EventMap = EngineEventMap &
   FlowEventMap &
@@ -14,6 +17,9 @@ export type EventMap = EngineEventMap &
   JobEventMap &
   ToolEventMap &
   WorkerEventMap &
+  SchedulerEventMap &
+  LimiterEventMap &
+  ReplayEventMap &
   SystemEventMap;
 
 export type EventType = keyof EventMap;

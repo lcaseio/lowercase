@@ -21,6 +21,9 @@ export class ConsoleSink implements EventSink {
     flow: "\x1b[38;2;255;106;146m",
     run: "\x1b[38;2;235;172;106m",
     system: "\x1b[38;2;170;170;190m",
+    replay: "\x1b[38;2;170;170;190m",
+    scheduler: "\x1b[38;2;170;170;190m",
+    limiter: "\x1b[38;2;170;170;190m",
   };
 
   constructor(private readonly ctx: ConsoleSinkContext) {}
@@ -52,7 +55,7 @@ export class ConsoleSink implements EventSink {
     );
 
     if (this.ctx.allVerbose || this.ctx.verboseEvents.has(event.type)) {
-      console.log("data:", event.data);
+      // console.log("data:", event.data);
     }
   }
 }

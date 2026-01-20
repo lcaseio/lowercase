@@ -6,6 +6,7 @@ import type {
   ToolFailedData,
   ToolStatusString,
 } from "@lcase/types";
+import { jsonValueSchema } from "./json-value.schema.js";
 
 const ToolStatusSchema = z.enum([
   "success",
@@ -29,7 +30,7 @@ export const ToolStartedDataSchema = ToolDescriptorDataSchema.merge(
 export const ToolCompletedDataSchema = ToolDescriptorDataSchema.merge(
   z.object({
     status: ToolStatusSchema,
-    payload: z.record(z.string(), z.unknown()),
+    payload: jsonValueSchema.optional(),
   })
 ).strict() satisfies z.ZodType<ToolCompletedData>;
 
@@ -37,6 +38,6 @@ export const ToolFailedDataSchema = ToolDescriptorDataSchema.merge(
   z.object({
     status: ToolStatusSchema,
     reason: z.string(),
-    payload: z.record(z.string(), z.unknown()).optional(),
+    payload: jsonValueSchema.optional(),
   })
 ).strict() satisfies z.ZodType<ToolFailedData>;

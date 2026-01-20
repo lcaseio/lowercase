@@ -1,3 +1,5 @@
+import { JsonSimpleValue } from "../../json-simple-value.js";
+
 export type ToolDescriptorData = {
   tool: {
     id: string;
@@ -12,13 +14,13 @@ export type ToolStartedData = ToolDescriptorData & {
 
 export type ToolCompletedData = ToolDescriptorData & {
   status: ToolStatusString;
-  payload: Record<string, unknown>;
+  payload?: JsonSimpleValue;
 };
 
 export type ToolFailedData = ToolDescriptorData & {
   reason: string;
   status: ToolStatusString;
-  payload?: Record<string, unknown>;
+  payload?: JsonSimpleValue;
 };
 
 export type ToolStatusString = "success" | "failure";

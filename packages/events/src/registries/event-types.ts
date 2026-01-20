@@ -7,20 +7,28 @@ import type {
 } from "@lcase/types";
 import { httpjsonEventTypes } from "./job/httpjson.types.js";
 import { mcpEventTypes } from "./job/mcp.types.js";
+import { replayEventTypes } from "./replay/replay.types.js";
+import { schedulerEventTypes } from "./scheduler/event-types.js";
+import { limiterEventTypes } from "./limiter/event-types.js";
 
 export const eventTypes = [
   ...httpjsonEventTypes,
   ...mcpEventTypes,
+  ...replayEventTypes,
+  ...schedulerEventTypes,
+  ...limiterEventTypes,
   "flow.queued",
   "flow.submitted",
   "flow.started",
   "flow.completed",
   "flow.failed",
+  "flow.analyzed",
   "engine.started",
   "engine.stopped",
   "run.completed",
   "run.started",
   "run.failed",
+  "step.planned",
   "step.started",
   "step.completed",
   "step.failed",
@@ -31,8 +39,11 @@ export const eventTypes = [
   "tool.failed",
   "worker.started",
   "worker.stopped",
-  "worker.registered",
-  "worker.registration.requested",
+  "worker.profile.added",
+  "worker.profile.submitted",
+  "worker.job.dequeued",
+  "worker.slot.requested",
+  "worker.slot.finished",
   "system.logged",
 ] as const satisfies readonly EventType[];
 
@@ -62,14 +73,21 @@ export type CloudEventContext<T extends EventType> = Omit<
 export const actionTypes = [
   "completed",
   "queued",
-  "registered",
-  "requested",
+  "added",
+  "planned",
+  "analyzed",
   "started",
   "completed",
   "stopped",
   "failed",
   "logged",
   "submitted",
+  "dequeued",
+  "resumed",
+  "delayed",
+  "granted",
+  "denied",
+  "requested",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [
@@ -81,10 +99,13 @@ export const domainTypes = [
   "engine",
   "worker",
   "system",
+  "scheduler",
+  "limiter",
 ] as const satisfies readonly EventDomains[];
 
 export const entityTypes = [
   "mcp",
-  "registration",
   "httpjson",
+  "job",
+  "slot",
 ] as const satisfies readonly EventEntities[];

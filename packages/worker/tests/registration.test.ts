@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import {
+  ArtifactsPort,
   EventBusPort,
+  JobParserPort,
   QueuePort,
   StreamRegistryPort,
   ToolBinding,
@@ -49,6 +51,10 @@ describe("worker register event payload", () => {
 
     const listToolIds = vi.fn().mockReturnValue([toolId]);
     const getBinding = vi.fn().mockReturnValue(binding);
+    const jobParser = vi
+      .fn()
+      .mockReturnValue(undefined) as unknown as JobParserPort;
+
     const toolRegistry = {
       listToolIds,
       getBinding,
@@ -60,6 +66,8 @@ describe("worker register event payload", () => {
       emitterFactory: new EmitterFactory(bus),
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
+      jobParser,
+      artifacts: {} as ArtifactsPort,
     });
     await expect(worker.requestRegistration()).resolves.not.toThrow();
   });
@@ -91,12 +99,18 @@ describe("worker register event payload", () => {
       getBinding,
     } as unknown as ToolRegistry<ToolId>;
 
+    const jobParser = vi
+      .fn()
+      .mockReturnValue(undefined) as unknown as JobParserPort;
+
     const worker = new Worker("workerId", {
       bus,
       queue,
       emitterFactory: new EmitterFactory(bus),
       streamRegistry: {} as StreamRegistryPort,
       toolRegistry,
+      jobParser,
+      artifacts: {} as ArtifactsPort,
     });
     await expect(worker.requestRegistration()).rejects.toThrow();
   });
