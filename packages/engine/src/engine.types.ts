@@ -25,7 +25,7 @@ import type {
   StepScope,
   StepStartedData,
 } from "@lcase/types";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 import type {
   StepFinishedMsg,
   StepPlannedMsg,
@@ -245,7 +245,7 @@ export type EngineEffect =
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
   state: EngineState,
-  message: M
+  message: M,
 ) => EngineState;
 
 export type ReducerRegistry = {
@@ -256,7 +256,7 @@ export type ReducerRegistry = {
 export type Planner<M extends EngineMessage = EngineMessage> = (
   oldState: EngineState,
   newState: EngineState,
-  message: M
+  message: M,
 ) => EngineEffect[];
 
 export type PlannerRegistry = {
@@ -266,11 +266,11 @@ export type PlannerRegistry = {
 // handlers
 export type EffectHandler<T extends EngineEffect["type"]> = (
   effect: Extract<EngineEffect, { type: T }>,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => void | Promise<void>;
 
 export type EffectHandlerWrapped<T extends EngineEffect["type"]> = (
-  effect: Extract<EngineEffect, { type: T }>
+  effect: Extract<EngineEffect, { type: T }>,
 ) => void | Promise<void>;
 
 export type EffectHandlerRegistry = {

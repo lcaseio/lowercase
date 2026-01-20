@@ -1,4 +1,4 @@
-import { RunContext } from "@lcase/types/engine";
+import { RunContext } from "@lcase/types";
 
 export type RouterActions = {};
 

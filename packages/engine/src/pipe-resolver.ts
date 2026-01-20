@@ -1,5 +1,5 @@
 // import type { StreamRegistryPort } from "@lcase/ports";
-// import { RunContext } from "@lcase/types/engine";
+// import { RunContext } from "@lcase/types";
 // import { randomUUID } from "crypto";
 
 // export type ResolvedPipes = {

@@ -1,4 +1,4 @@
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 import type {
   EngineState,
   FlowContext,

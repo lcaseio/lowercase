@@ -1,5 +1,5 @@
 import { FlowDefinition } from "@lcase/types";
-import { RunContext, StepContext } from "@lcase/types/engine";
+import { RunContext, StepContext } from "@lcase/types";
 import { JobEmitterPort } from "../events/emitters.port.js";
 import { StepOutcome } from "../engine.port.js";
 
@@ -9,7 +9,7 @@ export interface StepHandlerPort {
     flow: FlowDefinition,
     context: RunContext,
     stepName: string,
-    emitter: JobEmitterPort
+    emitter: JobEmitterPort,
   ): Promise<void>;
   // handleNew(
   //   runCtx: RunContext,

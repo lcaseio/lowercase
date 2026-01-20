@@ -6,9 +6,6 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
-    },
-    "./engine": {
-      "types": "./dist/engine/index.d.ts"
     }
   },
   "scripts": {

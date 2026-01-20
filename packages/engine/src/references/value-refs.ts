@@ -1,5 +1,5 @@
 import type { Ref } from "@lcase/types";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 
 /**
  * Makes an array of value ref objects for a list of references.

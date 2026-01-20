@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 import type {
   FlowSubmittedMsg,
   EngineState,
