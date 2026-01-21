@@ -79,6 +79,11 @@ export const engineOtelAttributesMap = {
 } satisfies EngineOtelAttributesMap;
 
 export const runOtelAttributesMap = {
+  "run.requested": {
+    action: "requested",
+    domain: "run",
+    entity: undefined,
+  },
   "run.completed": {
     action: "completed",
     domain: "run",

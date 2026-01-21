@@ -25,6 +25,7 @@ export const eventTypes = [
   "flow.analyzed",
   "engine.started",
   "engine.stopped",
+  "run.requested",
   "run.completed",
   "run.started",
   "run.failed",
