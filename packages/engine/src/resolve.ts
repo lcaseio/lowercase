@@ -1,5 +1,5 @@
 import type { StepArgs } from "@lcase/specs";
-import type { RunContext, StepContext } from "@lcase/types/engine";
+import type { RunContext, StepContext } from "@lcase/types";
 
 /**
  * internally here language is currently evolving.
@@ -22,7 +22,7 @@ export function split(path: string): string[] {
 
 export function resolveFlatFields(
   fields: Record<string, string>,
-  object: Record<string, unknown>
+  object: Record<string, unknown>,
 ): Record<string, unknown> {
   const fieldValues: Record<string, unknown> = {};
   for (const [field, selector] of Object.entries(fields)) {
@@ -35,7 +35,7 @@ export function resolveFlatFields(
 }
 export function resolveSelector(
   selector: string,
-  object: Record<string, unknown>
+  object: Record<string, unknown>,
 ) {
   const parsedSelector = getSelector(selector);
   if (!parsedSelector) return;
@@ -52,7 +52,7 @@ export function resolvePath(path: string, object: Record<string, unknown>) {
 // dig through object to see if we can get a data type from context
 export function extractPathValue<T = unknown>(
   parts: Part[],
-  obj: Record<string, unknown>
+  obj: Record<string, unknown>,
 ): T | unknown {
   let current: unknown = obj;
 
@@ -86,7 +86,7 @@ export function parseArray(part: string): { key?: string; index?: string[] } {
 
 export function resolveStepArgs(
   stepContext: Record<string, StepContext>,
-  stepArgs: StepArgs
+  stepArgs: StepArgs,
 ): Record<string, unknown> {
   if (!stepArgs) return {};
   // one level deep not recursive

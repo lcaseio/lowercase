@@ -1,11 +1,11 @@
 import { Edge } from "@lcase/types";
-import { RunContext } from "@lcase/types/engine";
+import { RunContext } from "@lcase/types";
 import { WritableDraft } from "immer";
 import { planControlEdge } from "./plan-control-edge.reducer.js";
 
 export function planJoinEdge(
   edge: WritableDraft<Edge>,
-  run: WritableDraft<RunContext>
+  run: WritableDraft<RunContext>,
 ) {
   if (edge.type !== "join") return;
   // if they all succeeded, succeed/complete join

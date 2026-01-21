@@ -1,5 +1,5 @@
 import { produce } from "immer";
-import { RunContext, StepContext } from "@lcase/types/engine";
+import { RunContext, StepContext } from "@lcase/types";
 import { EngineState, FlowSubmittedMsg, Reducer } from "../engine.types.js";
 import { StepDefinition } from "@lcase/types";
 import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
@@ -14,7 +14,7 @@ import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
  */
 export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
   state: EngineState,
-  message: FlowSubmittedMsg
+  message: FlowSubmittedMsg,
 ): EngineState => {
   return produce(state, (draft) => {
     // make step context for all steps
@@ -76,7 +76,7 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
  * @param steps Record<string, StepDefinition>
  */
 export function makeJoinSetsForSteps(
-  steps: Record<string, StepDefinition>
+  steps: Record<string, StepDefinition>,
 ): Record<string, Record<string, boolean>> {
   const joinMap: Record<string, Record<string, boolean>> = {};
   for (const definition of Object.values(steps)) {

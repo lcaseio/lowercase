@@ -1,5 +1,5 @@
 import type { FlowEvent, FlowEventType } from "@lcase/types";
-import type { FlowContext, RunContext } from "@lcase/types/engine";
+import type { FlowContext, RunContext } from "@lcase/types";
 import { FlowQueuedParsed } from "../events/flow-parser.port.js";
 
 type thing = {
