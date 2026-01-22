@@ -13,7 +13,7 @@ export type RunIndex = {
     string,
     {
       outputHash?: string;
-      status: string;
+      status?: string;
       startTime?: string;
       endTime?: string;
       duration?: number;

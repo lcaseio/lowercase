@@ -28,6 +28,7 @@ import {
   ConsoleSink,
   ObservabilityTap,
   ReplaySink,
+  RunIndexSink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
@@ -40,6 +41,7 @@ import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { Artifacts } from "@lcase/artifacts";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
+import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -56,7 +58,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const busFactory = makeBusFactory(
     config.bus.placement,
     config.bus.transport,
-    config.bus.store
+    config.bus.store,
   );
 
   const bus = busFactory();
@@ -64,7 +66,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const queueFactory = makeQueueFactory(
     config.queue.placement,
     config.queue.transport,
-    config.queue.store
+    config.queue.store,
   );
   const queue = queueFactory();
 
@@ -86,7 +88,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     jobParser,
     artifacts,
-    config.worker
+    config.worker,
   );
 
   const { tap, sinks } = createObservability(config.observability, bus);
@@ -97,7 +99,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const replay = new ReplayEngine(
     new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
     bus,
-    ef
+    ef,
   );
 
   return {
@@ -117,10 +119,15 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
 export function createObservability(
   config: ObservabilityConfig,
-  bus: EventBusPort
+  bus: EventBusPort,
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
+  tap.attachSink(
+    new RunIndexSink(
+      new FsRunIndexStore(path.join(process.cwd(), "runs", "index")),
+    ),
+  );
   if (config.sinks) {
     for (const sink of config.sinks) {
       // TODO: move sink settings to config, not hardcoded
@@ -140,7 +147,7 @@ export function createObservability(
         case "websocket-sink":
           if (config.webSocketPort !== undefined) {
             const webSocketServerSink = new WebSocketServerSink(
-              config.webSocketPort
+              config.webSocketPort,
             );
             sinks["websocket-sink"] = webSocketServerSink;
             tap.attachSink(webSocketServerSink);
@@ -164,7 +171,7 @@ export function createObservability(
 export function createInProcessEngine(
   bus: EventBusPort,
   emitterFactory: EmitterFactory,
-  jobParser: JobParserPort
+  jobParser: JobParserPort,
 ): Engine {
   const engine = new Engine({
     bus,
@@ -183,7 +190,7 @@ export function createInProcessWorker(
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort,
   artifacts: ArtifactsPort,
-  config: WorkerConfig
+  config: WorkerConfig,
 ): Worker {
   const toolRegistry = new ToolRegistry(allToolBindingsMap);
   const worker = new Worker(id, {
