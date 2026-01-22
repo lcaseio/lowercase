@@ -15,9 +15,11 @@ export type StepStartedData = StepDescriptor & {
 
 export type StepCompletedData = StepDescriptor & {
   status: "success";
+  outputHash?: string;
 };
 
 export type StepFailedData = StepDescriptor & {
   status: "failure";
+  outputHash?: string;
   reason: string;
 };
