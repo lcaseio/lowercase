@@ -1,6 +1,6 @@
 {
-  "name": "@lcase/observability",
-  "version": "0.1.0-alpha.8",
+  "name": "@lcase/run-history",
+  "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,20 +12,14 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "echo test",
-    "lint": "echo lint",
-    "clean-dist": "rm -rf ./dist",
-    "clean-node-modules": "rm -rf ./node_modules"
+    "test": "vitest",
+    "lint": "echo lint"
   },
   "packageManager": "pnpm@10.17.1",
-  "dependencies": {
-    "ws": "^8.18.3",
-    "@lcase/run-history": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
-    "@types/ws": "^8.18.1",
     "vitest": "^3.2.4"
   }
 }

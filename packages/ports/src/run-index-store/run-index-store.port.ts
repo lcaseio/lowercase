@@ -21,7 +21,16 @@ export type RunIndex = {
     }
   >;
 };
+export type RunIndexEvent =
+  | AnyEvent<"run.requested">
+  | AnyEvent<"run.started">
+  | AnyEvent<"run.completed">
+  | AnyEvent<"run.failed">
+  | AnyEvent<"step.started">
+  | AnyEvent<"step.completed">
+  | AnyEvent<"step.failed">;
 
 export interface RunIndexStorePort {
-  processEvent(event: AnyEvent): Promise<void>;
+  putRunIndex(index: RunIndex, runId: string): Promise<void>;
+  getRunIndex(runId: string): Promise<RunIndex | undefined>;
 }
