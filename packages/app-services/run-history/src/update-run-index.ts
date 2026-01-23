@@ -10,11 +10,33 @@ import {
 } from "./utils/process.js";
 import { initRunIndex } from "./init-run-index.js";
 
+/**
+ * Updates a RunIndex object given a certain event.
+ *
+ * If the RunIndex object is undefined, it will attempt to create it
+ * from the event provided.  Otherwise it will mutate + return the index.
+ * If the event supplies is not relevant, returns the original index supplied
+ * without changes.
+ *
+ * This behavior is a bit odd for the function name but it works in the
+ * observability sink, and streamlines some behavior.  Probably think about
+ * refactoring this to be clearer about what actually gets mutated/returned.
+ *
+ * But its designed to be flexible for undefined index values and add
+ * information to an index by events, even if the events are out of order.
+ *
+ * Invokes a few utility functions that apply very simple granular edits
+ * to the RunIndex.  Easier just to mutate in place, but unsure if it should
+ * work this way.
+ * @param event AnyEvent in the event system
+ * @param index A RunIndex object, optional
+ * @returns RunIndex or undefined
+ */
 export function updateRunIndex(
   event: AnyEvent,
   index?: RunIndex,
 ): RunIndex | undefined {
-  if (!hasRunId(event)) return;
+  if (!hasRunId(event)) return index;
   index ??= initRunIndex(event);
   if (!index) return;
   switch (event.type) {

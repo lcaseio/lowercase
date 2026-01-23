@@ -2,6 +2,10 @@ import { RunIndex } from "@lcase/ports";
 import { AnyEvent } from "@lcase/types";
 import { getDuration } from "./get-duration.js";
 
+/**
+ * A few function that mutate a supplied based on the event it receives.
+ */
+
 export function processRunRequested(
   event: AnyEvent<"run.requested">,
   index: RunIndex,
