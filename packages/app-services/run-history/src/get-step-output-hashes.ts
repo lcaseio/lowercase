@@ -3,6 +3,13 @@ import type { RunIndexStorePort } from "@lcase/ports";
 type RunId = string;
 type OutputHash = string;
 
+/**
+ * Gets the output hashes for a list of steps.
+ * @param stepIds array of step ids to get output hashes from
+ * @param runId run id string of the run
+ * @param store store implementation for retrieving the run index
+ * @returns Record<string, string> ( runId -> outputHash map )
+ */
 export async function getStepOutputHashes(
   stepIds: string[],
   runId: string,

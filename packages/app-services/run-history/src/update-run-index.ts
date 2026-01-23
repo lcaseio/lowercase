@@ -10,21 +10,9 @@ import {
 } from "./utils/process.js";
 import { initRunIndex } from "./init-run-index.js";
 
-type RunId = string;
-type RunScopedEvent = AnyEvent & { runid: string };
-
-type RunIndexEvent =
-  | AnyEvent<"run.requested">
-  | AnyEvent<"run.started">
-  | AnyEvent<"run.completed">
-  | AnyEvent<"run.failed">
-  | AnyEvent<"step.started">
-  | AnyEvent<"step.completed">
-  | AnyEvent<"step.failed">;
-
 export function updateRunIndex(
   event: AnyEvent,
-  index: RunIndex | undefined,
+  index?: RunIndex,
 ): RunIndex | undefined {
   if (!hasRunId(event)) return;
   index ??= initRunIndex(event);
