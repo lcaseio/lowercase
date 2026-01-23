@@ -57,7 +57,11 @@ export class Engine {
     this.ef = this.deps.ef;
     this.jobParser = this.deps.jobParser;
 
-    this.handlers = wireEffectHandlers({ ef: this.ef });
+    this.handlers = wireEffectHandlers({
+      ef: this.ef,
+      runIndexStore: deps.runIndexStore,
+      enqueue: this.enqueue,
+    });
   }
 
   subscribeToTopics(): void {
@@ -74,28 +78,28 @@ export class Engine {
       this.handleJobFinished(e);
     });
     this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>
-      this.handleReplayModeSubmitted(e)
+      this.handleReplayModeSubmitted(e),
     );
     this.bus.subscribe("step.planned", async (e: AnyEvent) =>
-      this.handleStepPlanned(e)
+      this.handleStepPlanned(e),
     );
     this.bus.subscribe("step.started", async (e: AnyEvent) =>
-      this.handleStepStarted(e)
+      this.handleStepStarted(e),
     );
     this.bus.subscribe("step.completed", async (e: AnyEvent) =>
-      this.handleStepFinished(e)
+      this.handleStepFinished(e),
     );
     this.bus.subscribe("step.failed", async (e: AnyEvent) =>
-      this.handleStepFinished(e)
+      this.handleStepFinished(e),
     );
     this.bus.subscribe("run.started", async (e: AnyEvent) =>
-      this.handleRunStarted(e)
+      this.handleRunStarted(e),
     );
     this.bus.subscribe("run.completed", async (e: AnyEvent) =>
-      this.handleRunFinished(e)
+      this.handleRunFinished(e),
     );
     this.bus.subscribe("run.failed", async (e: AnyEvent) =>
-      this.handleRunFinished(e)
+      this.handleRunFinished(e),
     );
   }
 
@@ -154,7 +158,7 @@ export class Engine {
   }
 
   executeEffect<T extends EngineEffect["type"]>(
-    effect: Extract<EngineEffect, { type: T }>
+    effect: Extract<EngineEffect, { type: T }>,
   ): void {
     if (!this.enableSideEffects && effect.type !== "WriteContextToDisk") return;
 

@@ -266,6 +266,18 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
+  packages/app-services/run-history:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
   packages/artifacts:
     devDependencies:
       '@lcase/ports':
@@ -302,6 +314,9 @@ importers:
       '@lcase/json-ref-binder':
         specifier: workspace:*
         version: link:../json-ref-binder
+      '@lcase/run-history':
+        specifier: workspace:*
+        version: link:../app-services/run-history
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
@@ -376,6 +391,9 @@ importers:
 
   packages/observability:
     dependencies:
+      '@lcase/run-history':
+        specifier: workspace:*
+        version: link:../app-services/run-history
       ws:
         specifier: ^8.18.3
         version: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)

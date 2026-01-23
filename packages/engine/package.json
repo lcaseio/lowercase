@@ -21,6 +21,7 @@
     "@lcase/specs": "workspace:*",
     "@lcase/flow-analysis": "workspace:*",
     "@lcase/json-ref-binder": "workspace:*",
+    "@lcase/run-history": "workspace:*",
     "immer": "^11.0.1"
   },
   "devDependencies": {

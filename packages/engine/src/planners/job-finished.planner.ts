@@ -42,6 +42,7 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
       },
       data: {
         status: "success",
+        outputHash: newRunState.steps[stepId].outputHash ?? undefined,
         step: {
           id: stepId,
           name: stepId,
@@ -67,6 +68,7 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
       data: {
         reason: e.data.message ?? "",
         status: e.data.status,
+        outputHash: newRunState.steps[stepId].outputHash ?? undefined,
         step: {
           id: stepId,
           name: stepId,
