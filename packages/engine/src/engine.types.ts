@@ -1,4 +1,8 @@
-import type { EmitterFactoryPort, QueuePort } from "@lcase/ports";
+import type {
+  EmitterFactoryPort,
+  QueuePort,
+  RunIndexStorePort,
+} from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
@@ -278,4 +282,6 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
+  runIndexStore: RunIndexStorePort;
+  enqueue: (message: EngineMessage) => void;
 };

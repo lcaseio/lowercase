@@ -11,10 +11,10 @@ import {
   ArtifactsPort,
   EventBusPort,
   JobParserPort,
+  RunIndexStorePort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
-  makeArtifactsFactory,
   makeBusFactory,
   makeQueueFactory,
 } from "./factories/registry.factory.js";
@@ -39,7 +39,6 @@ import path from "path";
 import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
-import { Artifacts } from "@lcase/artifacts";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
 
@@ -77,7 +76,10 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const engine = createInProcessEngine(bus, ef, jobParser);
+  const runIndexStore = new FsRunIndexStore(
+    path.join(process.cwd(), "runs/index"),
+  );
+  const engine = createInProcessEngine(bus, ef, jobParser, runIndexStore);
 
   const artifacts = createArtifacts(config.artifacts);
   const worker = createInProcessWorker(
@@ -170,13 +172,15 @@ export function createObservability(
 
 export function createInProcessEngine(
   bus: EventBusPort,
-  emitterFactory: EmitterFactory,
+  ef: EmitterFactory,
   jobParser: JobParserPort,
+  runIndexStore: RunIndexStorePort,
 ): Engine {
   const engine = new Engine({
     bus,
-    ef: emitterFactory,
+    ef,
     jobParser,
+    runIndexStore,
   });
 
   return engine;

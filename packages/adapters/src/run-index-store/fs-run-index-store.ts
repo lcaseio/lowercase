@@ -22,7 +22,14 @@ export class FsRunIndexStore implements RunIndexStorePort {
     }
     return;
   }
-  getRunIndex(runId: string): Promise<RunIndex | undefined> {
-    throw new Error("Method not implemented.");
+  async getRunIndex(runId: string): Promise<RunIndex | undefined> {
+    try {
+      const fileName = `${runId}.index.json`;
+      const absoluteFilePath = path.join(this.dir, fileName);
+      const data = fs.readFileSync(absoluteFilePath, { encoding: "utf8" });
+      return await JSON.parse(data);
+    } catch (e) {
+      console.log(`Error reading index for run:${runId}. ${e}`);
+    }
   }
 }
