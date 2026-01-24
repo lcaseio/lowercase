@@ -1,6 +1,7 @@
 import type { FlowAnalysis } from "../flow-analysis/types.js";
 import type { ForkSpec } from "./fork-spec.type.js";
 import type { RunIndex } from "./run-index.js";
+import { RunPlan } from "./run-plan.type.js";
 
 type StepId = string;
 
@@ -12,6 +13,7 @@ export type RunContext = {
   forkSpec?: ForkSpec;
   parentRunId?: string;
   runIndex?: RunIndex;
+  runPlan: RunPlan;
 
   runId: string;
   traceId: string;
@@ -32,7 +34,13 @@ export type RunContext = {
 };
 
 export type StepContext = {
-  status: "initialized" | "planned" | "started" | "completed" | "failed";
+  status:
+    | "initialized"
+    | "planned"
+    | "reused"
+    | "started"
+    | "completed"
+    | "failed";
   reason?: string;
   attempt: number;
   output: Record<StepId, unknown> | null;

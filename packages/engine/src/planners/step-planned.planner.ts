@@ -9,6 +9,7 @@ import type {
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
+import { EmitStepReusedFx } from "../types/effect.types.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
@@ -30,6 +31,28 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   if (!newRun) return effects;
   if (!flow) return effects;
   if (!step) return effects;
+
+  // emit step.reused instead of step.started if reused by run plan
+  if (newRun.steps[stepId]?.status === "reused") {
+    const emitStepReused: EmitStepReusedFx = {
+      type: "EmitStepReused",
+      scope: {
+        flowid: newRun.flowId,
+        runid: runId,
+        stepid: stepId,
+        steptype: stepType,
+        source: "lowercase://engine",
+      },
+      data: {
+        status: "failure",
+        outputHash: newRun.steps[stepId].outputHash ?? undefined,
+        sourceRunId: "",
+      },
+      traceId: "",
+    };
+    effects.push(emitStepReused);
+    return effects;
+  }
 
   const emitStepStarted: EmitStepStartedFx = {
     type: "EmitStepStarted",

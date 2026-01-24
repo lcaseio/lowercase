@@ -16,7 +16,10 @@ export type StepStartedMsg = {
 
 export type StepFinishedMsg = {
   type: "StepFinished";
-  event: AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+  event:
+    | AnyEvent<"step.completed">
+    | AnyEvent<"step.failed">
+    | AnyEvent<"step.reused">;
 };
 export type RunRequestedMsg = {
   type: "RunRequested";

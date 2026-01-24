@@ -22,11 +22,16 @@ const runCtx = {
   flowDefHash: "test-flow-hash",
   runId: message.event.runid,
   traceId: message.event.traceid,
+
   plannedSteps: {}, // remove step to object for set like lookup
   startedSteps: { parallel: true },
   completedSteps: {},
   failedSteps: {},
   outstandingSteps: 1,
+
+  runPlan: {
+    reuse: {},
+  },
 
   input: message.event.data.definition.inputs ?? {},
 

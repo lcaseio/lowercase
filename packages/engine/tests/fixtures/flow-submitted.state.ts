@@ -29,6 +29,10 @@ const runCtx = {
   runId: message.event.runid,
   traceId: message.event.traceid,
 
+  runPlan: {
+    reuse: {},
+  },
+
   plannedSteps: {},
   startedSteps: {},
   completedSteps: {},

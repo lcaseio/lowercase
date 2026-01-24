@@ -30,5 +30,19 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
       run.status = "failed";
       return;
     }
+
+    // try to build run plan inline for now.
+    // assumes steps not reused are rerun
+
+    if (run.forkSpec && run.runIndex) {
+      for (const stepId of run.forkSpec.reuse) {
+        run.runPlan.reuse[stepId] = {
+          status: run.runIndex.steps[stepId].status!,
+          outputHash: run.runIndex.steps[stepId].outputHash,
+        };
+      }
+    }
+
+    run.status === "started";
   });
 };

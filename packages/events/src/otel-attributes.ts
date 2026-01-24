@@ -15,6 +15,12 @@ export const stepOtelAttributes = {
     domain: "step",
     entity: undefined,
   },
+  "step.reused": {
+    action: "reused",
+    domain: "step",
+    entity: undefined,
+  },
+
   "step.started": {
     action: "started",
     domain: "step",

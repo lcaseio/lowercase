@@ -22,6 +22,9 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
       ...(forkSpecHash ? { forkSpecHash } : {}),
       runId,
       traceId,
+      runPlan: {
+        reuse: {},
+      },
       startedSteps: {},
       plannedSteps: {},
       completedSteps: {},

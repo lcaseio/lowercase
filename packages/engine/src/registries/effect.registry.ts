@@ -9,6 +9,7 @@ import { emitRunStartedFx } from "../effects/emit-run-started.effect.js";
 import { emitStepCompletedFx } from "../effects/emit-step-completed.effect.js";
 import { emitStepFailedFx } from "../effects/emit-step-failed.effect.js";
 import { emitStepPlannedFx } from "../effects/emit-step-planned.effect.js";
+import { emitStepReusedFx } from "../effects/emit-step-reused.effect.js";
 import { emitStepStartedFx } from "../effects/emit-step-started.effect.js";
 import { getFlowDefFx } from "../effects/get-flow-def.effect.js";
 import { getForkSpec } from "../effects/get-fork-spec.effect.js";
@@ -33,6 +34,7 @@ import type {
   WriteContextToDiskFx,
 } from "../engine.types.js";
 import {
+  EmitStepReusedFx,
   GetFlowDefFx,
   GetForkSpecFx,
   GetRunIndexFx,
@@ -67,6 +69,9 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
     // step
     EmitStepPlanned: async (effect: EmitStepPlannedFx) =>
       emitStepPlannedFx(effect, deps),
+    EmitStepReused: async (effect: EmitStepReusedFx) => {
+      emitStepReusedFx(effect, deps);
+    },
     EmitStepStarted: async (effect: EmitStepStartedFx) =>
       emitStepStartedFx(effect, deps),
     EmitStepCompleted: async (effect: EmitStepCompletedFx) =>
@@ -81,6 +86,7 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
     // write to disk
     WriteContextToDisk: async (effect: WriteContextToDiskFx) =>
       writeContextToDiskFx(effect, deps),
+    // CAS + store lookups
     GetFlowDef: async (effect: GetFlowDefFx) => getFlowDefFx(effect, deps),
     GetForkSpec: async (effect: GetForkSpecFx) => getForkSpec(effect, deps),
     GetRunIndex: async (effect: GetRunIndexFx) => getRunIndexFx(effect, deps),

@@ -46,3 +46,11 @@ run.completed/failed
 | `job.*.completed/failed`        | Decide retry logic for step             |
 | `step.completed/failed/retried` | Re execute / plan next steps / end run  |
 | `run.completed/failed`          | Delete state from engine                |
+
+## how to do a simulation / forked run
+
+###
+
+- always run from start
+- if step is reused, apply it appropriately
+- if not, execute it

@@ -29,7 +29,11 @@ describe("flowSubmittedReducer", () => {
 
     const runCtx = {
       flowId: message.event.flowid,
-      flowHash: "test-flow-hash",
+      flowDefHash: "test-flow-hash",
+
+      runPlan: {
+        reuse: {},
+      },
       runId: message.event.runid,
       traceId: message.event.traceid,
       plannedSteps: {},

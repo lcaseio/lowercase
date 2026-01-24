@@ -1,3 +1,5 @@
+import { CloudScope, StepReusedData, StepScope } from "@lcase/types";
+
 export type GetFlowDefFx = {
   type: "GetFlowDef";
   hash: string;
@@ -17,4 +19,11 @@ export type GetRunIndexFx = {
 export type MakeRunPlanFx = {
   type: "MakeRunPlan";
   runId: string;
+};
+
+export type EmitStepReusedFx = {
+  type: "EmitStepReused";
+  scope: StepScope & CloudScope;
+  data: StepReusedData;
+  traceId: string;
 };

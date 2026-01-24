@@ -38,6 +38,7 @@ import type {
   StepStartedMsg,
 } from "./types/message.types.js";
 import type {
+  EmitStepReusedFx,
   GetFlowDefFx,
   GetForkSpecFx,
   GetRunIndexFx,
@@ -251,6 +252,7 @@ export type EngineEffect =
   | EmitRunCompletedFx
   | EmitRunFailedFx
   | EmitStepPlannedFx
+  | EmitStepReusedFx
   | EmitStepStartedFx
   | EmitStepCompletedFx
   | EmitStepFailedFx

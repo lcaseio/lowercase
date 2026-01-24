@@ -40,12 +40,14 @@ import {
   StepCompletedSchema,
   StepFailedSchema,
   StepPlannedSchema,
+  StepReusedSchema,
   StepStartedSchema,
 } from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
   StepPlannedDataSchema,
+  StepReusedDataSchema,
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
@@ -194,6 +196,12 @@ export const eventSchemaRegistry = {
     schema: {
       event: StepPlannedSchema,
       data: StepPlannedDataSchema,
+    },
+  },
+  "step.reused": {
+    schema: {
+      event: StepReusedSchema,
+      data: StepReusedDataSchema,
     },
   },
   "step.started": {

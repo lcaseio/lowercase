@@ -55,7 +55,6 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
       traceId: newRun.traceId,
     };
     effects.push(emitStepPlannedFx);
-    console.log("planning:", plannedStepId);
   }
 
   if (newRun.outstandingSteps === 0 && newRun.status === "completed") {
