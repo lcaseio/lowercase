@@ -1,5 +1,5 @@
-import type { EventSink, RunIndex, RunIndexStorePort } from "@lcase/ports";
-import type { AnyEvent } from "@lcase/types";
+import type { EventSink, RunIndexStorePort } from "@lcase/ports";
+import type { AnyEvent, RunIndex } from "@lcase/types";
 import { hasRunId, updateRunIndex } from "@lcase/run-history";
 
 export class RunIndexSink implements EventSink {

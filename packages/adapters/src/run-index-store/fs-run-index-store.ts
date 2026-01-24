@@ -1,4 +1,5 @@
-import type { RunIndex, RunIndexStorePort } from "@lcase/ports";
+import type { RunIndexStorePort } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 import fs from "node:fs";
 import path from "node:path";
 

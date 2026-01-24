@@ -1,9 +1,8 @@
-import { RunIndex } from "@lcase/ports";
-import { AnyEvent } from "@lcase/types";
+import { AnyEvent, RunIndex } from "@lcase/types";
 import { getDuration } from "./get-duration.js";
 
 /**
- * A few function that mutate a supplied based on the event it receives.
+ * A few functions that mutates a supplied index based on the event it receives.
  */
 
 export function processRunRequested(

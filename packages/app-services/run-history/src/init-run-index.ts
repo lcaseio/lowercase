@@ -1,5 +1,4 @@
-import { RunIndex } from "@lcase/ports";
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent, RunIndex } from "@lcase/types";
 import { isRunIndexEvent } from "./utils/is-run-index-event.js";
 
 /**

@@ -11,6 +11,7 @@ type StepId = string;
 export type ForkSpec = {
   parentRunId: string;
   flowDefMode: FlowDefMode;
+  reuseMode: "all";
   forceRerunSteps: string[];
   cascade: boolean;
   stepOutputOverrides?: Record<StepId, OutputHash>;

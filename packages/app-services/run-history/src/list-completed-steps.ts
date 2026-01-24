@@ -1,4 +1,4 @@
-import type { RunIndex } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 
 /**
  * Looks through a run index and returns a list of step ids who's stats

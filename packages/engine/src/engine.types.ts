@@ -1,6 +1,6 @@
 import type {
+  ArtifactsPort,
   EmitterFactoryPort,
-  QueuePort,
   RunIndexStorePort,
 } from "@lcase/ports";
 import type {
@@ -11,12 +11,9 @@ import type {
   FlowDefinition,
   FlowFailedData,
   FlowScope,
-  FlowStartedData,
   JobCompletedEvent,
   JobFailedEvent,
-  JobHttpJsonData,
   JobHttpJsonSubmittedData,
-  JobMcpData,
   JobMcpSubmittedData,
   JobScope,
   RunCompletedData,
@@ -31,10 +28,21 @@ import type {
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types";
 import type {
+  FlowDefResultMsg,
+  ForkSpecResultMsg,
+  MakeRunPlanMsg,
+  RunIndexResultMsg,
+  RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
 } from "./types/message.types.js";
+import type {
+  GetFlowDefFx,
+  GetForkSpecFx,
+  GetRunIndexFx,
+  MakeRunPlanFx,
+} from "./types/effect.types.js";
 
 type FlowId = string;
 export type EngineState = {
@@ -124,6 +132,11 @@ export type UpdateJoinMsg = {
 
 export type EngineMessage =
   | FlowSubmittedMsg
+  | FlowDefResultMsg
+  | ForkSpecResultMsg
+  | RunIndexResultMsg
+  | MakeRunPlanMsg
+  | RunRequestedMsg
   | RunStartedMsg
   | RunFinishedMsg
   | StepPlannedMsg
@@ -243,8 +256,12 @@ export type EngineEffect =
   | EmitStepFailedFx
   | EmitFlowAnalyzedFx
   | EmitFlowCompletedFx
+  | EmitFlowFailedFx
   | WriteContextToDiskFx
-  | EmitFlowFailedFx;
+  | GetFlowDefFx
+  | GetForkSpecFx
+  | GetRunIndexFx
+  | MakeRunPlanFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
@@ -284,4 +301,6 @@ export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
   runIndexStore: RunIndexStorePort;
   enqueue: (message: EngineMessage) => void;
+  processAll: () => void;
+  artifacts: ArtifactsPort;
 };

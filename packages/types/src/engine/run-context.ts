@@ -1,8 +1,18 @@
 import type { FlowAnalysis } from "../flow-analysis/types.js";
+import type { ForkSpec } from "./fork-spec.type.js";
+import type { RunIndex } from "./run-index.js";
 
 type StepId = string;
 
-export type RunContext = FlowContext & {
+export type RunContext = {
+  flowId: string;
+  flowDefHash: string;
+
+  forkSpecHash?: string;
+  forkSpec?: ForkSpec;
+  parentRunId?: string;
+  runIndex?: RunIndex;
+
   runId: string;
   traceId: string;
 
@@ -15,7 +25,7 @@ export type RunContext = FlowContext & {
   failedSteps: Record<StepId, boolean>;
   outstandingSteps: number;
 
-  status: "started" | "completed" | "failed";
+  status: "requested" | "started" | "completed" | "failed";
   steps: Record<string, StepContext>;
 
   flowAnalysis: FlowAnalysis;

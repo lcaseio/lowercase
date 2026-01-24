@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RunIndex } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 import { listCompletedSteps } from "../src/list-completed-steps.js";
 describe("run-history listCompletedSteps()", () => {
   it("returns the correct step hashes from a list of steps", async () => {

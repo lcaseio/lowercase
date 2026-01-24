@@ -1,5 +1,4 @@
-import type { AnyEvent } from "@lcase/types";
-import type { RunIndex } from "@lcase/ports";
+import type { AnyEvent, RunIndex } from "@lcase/types";
 import { hasRunId } from "./utils/has-run-id.js";
 import {
   processRunFinished,

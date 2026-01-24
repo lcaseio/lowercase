@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getStepOutputHashes } from "../src/get-step-output-hashes.js";
-import { RunIndex, RunIndexStorePort } from "@lcase/ports";
+import type { RunIndexStorePort } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 describe("run-history getStepOutputHashes()", () => {
   it("returns the correct step hashes from a list of steps", async () => {
     const index: RunIndex = {

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { initRunIndex } from "../src/init-run-index.js";
-import type { AnyEvent } from "@lcase/types";
-import { RunIndex } from "@lcase/ports";
+import type { AnyEvent, RunIndex } from "@lcase/types";
 
 describe("run-history initRunIndex()", () => {
   it("generates a valid run index when given a valid", () => {

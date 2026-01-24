@@ -39,7 +39,7 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.8";
+  version = "0.1.0-alpha.9";
   state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;
@@ -61,6 +61,8 @@ export class Engine {
       ef: this.ef,
       runIndexStore: deps.runIndexStore,
       enqueue: this.enqueue,
+      processAll: this.processAll,
+      artifacts: deps.artifacts,
     });
   }
 

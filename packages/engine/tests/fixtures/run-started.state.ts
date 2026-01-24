@@ -20,8 +20,7 @@ const message: FlowSubmittedMsg = {
 
 const runCtx = {
   flowId: message.event.flowid,
-  flowName: message.event.data.flow.name,
-  flowVersion: message.event.data.flow.version,
+  flowDefHash: "test-flow-hash",
   runId: message.event.runid,
   traceId: message.event.traceid,
   plannedSteps: { parallel: true }, // add step to object for set like lookup
