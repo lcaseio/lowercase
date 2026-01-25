@@ -1,6 +1,6 @@
 {
-  "name": "@lcase/controller",
-  "version": "0.1.0-alpha.8",
+  "name": "@lcase/run-flow",
+  "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,17 +12,14 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "echo test",
+    "test": "vitest",
     "lint": "echo lint"
   },
   "packageManager": "pnpm@10.17.1",
-  "dependencies": {
-    "@lcase/runtime": "workspace:*",
-    "@lcase/run-flow": "workspace:*",
-    "@lcase/run-history": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@lcase/ports": "workspace:*",
-    "@lcase/types": "workspace:*"
+    "@lcase/types": "workspace:*",
+    "vitest": "^3.2.4"
   }
 }

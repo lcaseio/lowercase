@@ -17,7 +17,7 @@ export const forkSpecResultReducer: Reducer<ForkSpecResultMsg> = (
       run.status === "failed";
       return;
     }
-
     run.forkSpec = message.forkSpec;
+    console.log("message.forkSpec", message.forkSpec);
   });
 };

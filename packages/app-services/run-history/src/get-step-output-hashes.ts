@@ -27,3 +27,13 @@ export async function getStepOutputHashes(
   }
   return hashMap;
 }
+
+export async function getRunFlowHash(
+  runId: string,
+  store: RunIndexStorePort,
+): Promise<string | undefined> {
+  const json = await store.getRunIndex(runId);
+  console.log("json", json);
+  if (!json) return;
+  return json.flowDefHash;
+}

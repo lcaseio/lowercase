@@ -12,9 +12,10 @@ import type { EngineState, Reducer, RunStartedMsg } from "../engine.types.js";
  */
 export const runStartedReducer: Reducer<RunStartedMsg> = (
   state: EngineState,
-  message: RunStartedMsg
+  message: RunStartedMsg,
 ): EngineState => {
   return produce(state, (draft) => {
+    console.log("run started reducer fired");
     const runId = message.event.runid;
     const flowId = message.event.flowid;
 

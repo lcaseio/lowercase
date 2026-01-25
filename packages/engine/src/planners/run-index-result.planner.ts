@@ -11,13 +11,17 @@ export const runIndexResultPlanner: Planner<RunIndexResultMsg> = (
   const runId = message.runId;
   const newRunState = newState.runs[runId];
 
+  console.log("we got here at least on the planner");
   if (!newRunState) return effects;
+  console.log("we have a runstate for run index result planner");
 
   if (newRunState.status === "failed") {
     // emit run error
+    console.log("run index result planner failed status");
     return effects;
   }
 
+  console.log("planner asking for make run plan fx");
   const fx: MakeRunPlanFx = {
     type: "MakeRunPlan",
     runId,

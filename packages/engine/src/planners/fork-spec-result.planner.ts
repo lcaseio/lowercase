@@ -20,11 +20,15 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
   // if some analysis in the reducer says we don't need an index,
   // then go ahead an create a flow analysis
 
-  const fx: GetRunIndexFx = {
-    type: "GetRunIndex",
-    runId,
-  };
-  effects.push(fx);
+  if (newRunState.forkSpec?.parentRunId) {
+    console.log("adding get run index fx");
+    const fx: GetRunIndexFx = {
+      type: "GetRunIndex",
+      parentRunId: newRunState.forkSpec.parentRunId,
+      runId,
+    };
+    effects.push(fx);
+  }
 
   return effects;
 };

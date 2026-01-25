@@ -25,6 +25,7 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
   const runId = message.event.runid;
   const newRunState = newState.runs[runId];
   const oldRunState = oldState.runs[runId];
+  const newFlowState = newState.flows[newRunState.flowDefHash];
 
   const effects: EngineEffect[] = [];
 
@@ -43,8 +44,8 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
     data: {
       flow: {
         id: newRunState.flowId,
-        name: newRunState.flowName,
-        version: newRunState.flowVersion,
+        name: newFlowState.definition.name,
+        version: newFlowState.definition.version,
       },
       run: {
         id: newRunState.runId,
@@ -73,8 +74,8 @@ export const flowSubmittedPlanner: Planner<FlowSubmittedMsg> = (
       data: {
         flow: {
           id: newRunState.flowId,
-          name: newRunState.flowName,
-          version: newRunState.flowVersion,
+          name: newFlowState.definition.name,
+          version: newFlowState.definition.version,
         },
         run: {
           id: newRunState.runId,

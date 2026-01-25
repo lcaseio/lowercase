@@ -36,12 +36,12 @@ export type FlowDefResultMsg =
 
 export type ForkSpecResultMsg =
   | {
-      type: "FlowSpecResult";
+      type: "ForkSpecResult";
       runId: string;
       ok: true;
       forkSpec: ForkSpec;
     }
-  | { type: "FlowSpecResult"; runId: string; ok: false; error: string };
+  | { type: "ForkSpecResult"; runId: string; ok: false; error: string };
 
 export type RunIndexResultMsg =
   | {

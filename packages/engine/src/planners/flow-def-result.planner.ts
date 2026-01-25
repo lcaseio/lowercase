@@ -15,6 +15,7 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
   if (!newRunState) return effects;
   if (newRunState.status === "failed") {
     // emit denied
+    console.log("flow def failed");
     return effects;
   }
 

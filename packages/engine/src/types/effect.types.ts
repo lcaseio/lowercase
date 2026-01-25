@@ -13,6 +13,7 @@ export type GetForkSpecFx = {
 
 export type GetRunIndexFx = {
   type: "GetRunIndex";
+  parentRunId: string;
   runId: string;
 };
 

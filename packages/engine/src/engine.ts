@@ -24,6 +24,7 @@ import type {
   WriteContextToDiskFx,
 } from "./engine.types.js";
 import {
+  RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
@@ -60,8 +61,8 @@ export class Engine {
     this.handlers = wireEffectHandlers({
       ef: this.ef,
       runIndexStore: deps.runIndexStore,
-      enqueue: this.enqueue,
-      processAll: this.processAll,
+      enqueue: this.enqueue.bind(this),
+      processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,
     });
   }
@@ -88,11 +89,17 @@ export class Engine {
     this.bus.subscribe("step.started", async (e: AnyEvent) =>
       this.handleStepStarted(e),
     );
+    this.bus.subscribe("step.reused", async (e: AnyEvent) =>
+      this.handleStepFinished(e),
+    );
     this.bus.subscribe("step.completed", async (e: AnyEvent) =>
       this.handleStepFinished(e),
     );
     this.bus.subscribe("step.failed", async (e: AnyEvent) =>
       this.handleStepFinished(e),
+    );
+    this.bus.subscribe("run.requested", async (e: AnyEvent) =>
+      this.handleRunRequested(e),
     );
     this.bus.subscribe("run.started", async (e: AnyEvent) =>
       this.handleRunStarted(e),
@@ -258,13 +265,32 @@ export class Engine {
     if (!this.isProcessing) this.processAll();
   }
   handleStepFinished(e: AnyEvent): void {
-    if (e.type !== "step.completed" && e.type !== "step.failed") return;
-    const event = e as AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+    if (
+      e.type !== "step.completed" &&
+      e.type !== "step.failed" &&
+      e.type !== "step.reused"
+    )
+      return;
+    const event = e as
+      | AnyEvent<"step.completed">
+      | AnyEvent<"step.failed">
+      | AnyEvent<"step.reused">;
     const stepFinishedMsg: StepFinishedMsg = {
       type: "StepFinished",
       event,
     };
     this.enqueue(stepFinishedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleRunRequested(e: AnyEvent): void {
+    if (e.type !== "run.requested") return;
+    console.log("run.requested received");
+    const event = e as AnyEvent<"run.requested">;
+    const runStartedMsg: RunRequestedMsg = {
+      type: "RunRequested",
+      event,
+    };
+    this.enqueue(runStartedMsg);
     if (!this.isProcessing) this.processAll();
   }
   handleRunStarted(e: AnyEvent): void {

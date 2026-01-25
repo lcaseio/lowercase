@@ -6,6 +6,7 @@ export const makeRunPlanFx: EffectHandler<"MakeRunPlan"> = (
   effect: MakeRunPlanFx,
   deps: EffectHandlerDeps,
 ) => {
+  console.log("making plan");
   const message: MakeRunPlanMsg = {
     type: "MakeRunPlan",
     runId: effect.runId,

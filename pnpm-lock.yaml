@@ -266,6 +266,18 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
+  packages/app-services/run-flow:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
   packages/app-services/run-history:
     devDependencies:
       '@lcase/ports':
@@ -292,6 +304,12 @@ importers:
 
   packages/controller:
     dependencies:
+      '@lcase/run-flow':
+        specifier: workspace:*
+        version: link:../app-services/run-flow
+      '@lcase/run-history':
+        specifier: workspace:*
+        version: link:../app-services/run-history
       '@lcase/runtime':
         specifier: workspace:*
         version: link:../runtime

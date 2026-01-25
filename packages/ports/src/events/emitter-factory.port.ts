@@ -41,92 +41,93 @@ export type OtelContext = {
 export interface EmitterFactoryPort {
   newLimiterEmitterFromEvent(
     event: AnyEvent,
-    scope: LimiterScope & { source: string }
+    scope: LimiterScope & { source: string },
   ): LimiterEmitterPort;
   newLimiterEmitterNewTrace(
-    scope: LimiterScope & CloudScope
+    scope: LimiterScope & CloudScope,
   ): LimiterEmitterPort;
 
   newLimiterEmitterNewSpan(
     scope: LimiterScope & CloudScope,
-    traceId: string
+    traceId: string,
   ): LimiterEmitterPort;
 
   newSchedulerEmitterNewSpan(
     scope: CloudScope & SchedulerScope,
-    traceId: string
+    traceId: string,
   ): SchedulerEmitterPort;
   newSchedulerEmitterFromEvent(
     event: AnyEvent,
-    scope: SchedulerScope & { source: string }
+    scope: SchedulerScope & { source: string },
   ): SchedulerEmitterPort;
 
   newSchedulerEmitterNewSpan(
     scope: CloudScope & SchedulerScope,
-    traceId: string
+    traceId: string,
   ): SchedulerEmitterPort;
 
   newReplayEmitterNewTrace(
     scope: CloudScope & ReplayScope,
-    internal?: boolean
+    internal?: boolean,
   ): ReplayEmitterPort;
   newSystemEmitter(
-    scope: CloudScope & SystemScope & OtelContext
+    scope: CloudScope & SystemScope & OtelContext,
   ): SystemEmitterPort;
   newSystemEmitterNewSpan(
     scope: CloudScope & SystemScope,
-    traceId: string
+    traceId: string,
   ): SystemEmitterPort;
 
   newJobEmitter(scope: CloudScope & JobScope & OtelContext): JobEmitterPort;
   newJobEmitterNewSpan(
     scope: CloudScope & JobScope,
-    traceId: string
+    traceId: string,
   ): JobEmitterPort;
   newJobEmitterFromEvent(event: AllJobEvents, source: string): JobEmitterPort;
 
   newWorkerEmitterNewSpan(
     scope: CloudScope & WorkerScope,
-    traceId: string
+    traceId: string,
   ): WorkerEmitterPort;
   newWorkerEmitterNewTrace(scope: CloudScope & WorkerScope): WorkerEmitterPort;
 
   /* Tool */
   newToolEmitterNewSpan(
     scope: CloudScope & ToolScope,
-    traceId: string
+    traceId: string,
   ): ToolEmitterPort;
   newToolEmitterFromEvent(
     event: AnyEvent<JobEventType>,
-    source: string
+    source: string,
   ): ToolEmitterPort;
 
   newStepEmitter(scope: CloudScope & StepScope & OtelContext): StepEmitterPort;
   newStepEmitterFromJobEvent(
     event: AnyEvent<JobEventType>,
-    source: string
+    source: string,
   ): StepEmitterPort;
   newStepEmitterNewSpan(
     scope: CloudScope & StepScope,
-    traceId: string
+    traceId: string,
   ): StepEmitterPort;
 
   newEngineEmitter(
-    scope: CloudScope & EngineScope & OtelContext
+    scope: CloudScope & EngineScope & OtelContext,
   ): EngineEmitterPort;
 
   newFlowEmitter(scope: CloudScope & FlowScope & OtelContext): FlowEmitterPort;
   newFlowEmitterNewSpan(
     scope: CloudScope & FlowScope,
-    traceId: string
+    traceId: string,
   ): FlowEmitterPort;
   newRunEmitter(scope: CloudScope & RunScope & OtelContext): RunEmitterPort;
+  newRunEmitterNewTrace(scope: CloudScope & RunScope): RunEmitterPort;
   newRunEmitterNewSpan(
-    scope: CloudScope & RunScope & { traceid: string }
+    scope: CloudScope & RunScope & { traceid: string },
   ): RunEmitterPort;
   newRunEmitterFromEvent(
     event: JobCompletedEvent | JobFailedEvent,
-    source: string
+    source: string,
   ): RunEmitterPort;
 
   generateTraceId(): string;

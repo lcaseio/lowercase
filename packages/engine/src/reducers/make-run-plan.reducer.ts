@@ -2,6 +2,7 @@ import { produce } from "immer";
 import { EngineState, Reducer } from "../engine.types.js";
 import { MakeRunPlanMsg } from "../types/message.types.js";
 import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
+import { StepContext } from "@lcase/types";
 
 export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
   state: EngineState,
@@ -16,10 +17,13 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
 
     if (!flow) return;
 
+    console.log("making flow analysis");
+
     const flowAnalysis = analyzeFlow(flow.definition);
     run.flowAnalysis = flowAnalysis;
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("flow analysis has problems");
       run.status = "failed";
       return;
     }
@@ -27,6 +31,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     analyzeRefs(flow.definition, flowAnalysis);
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("references had problems");
       run.status = "failed";
       return;
     }
@@ -43,6 +48,23 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
       }
     }
 
-    run.status === "started";
+    // quickly initialize each step by flow definition
+    const initAllStepContexts: Record<string, StepContext> = {};
+
+    for (const step of Object.keys(flow.definition.steps)) {
+      const stepContext: StepContext = {
+        status: "initialized",
+        attempt: 0,
+        output: {},
+        outputHash: null,
+        resolved: {},
+      };
+
+      initAllStepContexts[step] = stepContext;
+    }
+    run.steps = initAllStepContexts;
+
+    console.log("run plan", JSON.stringify(run.runPlan, null, 2));
+    run.status = "started";
   });
 };

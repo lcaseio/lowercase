@@ -9,8 +9,10 @@ export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
 ) => {
   const json = await deps.artifacts.getJson(effect.hash);
   if (json.ok) {
+    console.log("got fork spec:");
+    console.log(json.value);
     const message: ForkSpecResultMsg = {
-      type: "FlowSpecResult",
+      type: "ForkSpecResult",
       ok: true,
       forkSpec: json.value as ForkSpec, // parse later once fork-spec app-service exists
       runId: effect.runId,
@@ -18,8 +20,9 @@ export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
     deps.enqueue(message);
     deps.processAll();
   } else {
+    console.log("error getting fork spec");
     const message: ForkSpecResultMsg = {
-      type: "FlowSpecResult",
+      type: "ForkSpecResult",
       ok: false,
       error: json.error.message,
       runId: effect.runId,

@@ -79,9 +79,16 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const runIndexStore = new FsRunIndexStore(
     path.join(process.cwd(), "runs/index"),
   );
-  const engine = createInProcessEngine(bus, ef, jobParser, runIndexStore);
 
   const artifacts = createArtifacts(config.artifacts);
+  const engine = createInProcessEngine(
+    bus,
+    ef,
+    jobParser,
+    runIndexStore,
+    artifacts,
+  );
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -116,6 +123,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     replay,
     limiter,
+    artifacts,
+    runIndexStore,
   };
 }
 
@@ -175,12 +184,14 @@ export function createInProcessEngine(
   ef: EmitterFactory,
   jobParser: JobParserPort,
   runIndexStore: RunIndexStorePort,
+  artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({
     bus,
     ef,
     jobParser,
     runIndexStore,
+    artifacts,
   });
 
   return engine;

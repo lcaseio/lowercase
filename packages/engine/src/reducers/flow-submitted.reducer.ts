@@ -44,8 +44,10 @@ export const flowSubmittedReducer: Reducer<FlowSubmittedMsg> = (
     const status = flowAnalysis.problems.length ? "failed" : "started";
     const runCtx = {
       flowId,
-      flowName: definition.name,
-      flowVersion: definition.version,
+      flowDefHash: "",
+      runPlan: {
+        reuse: {},
+      },
       runId,
       traceId,
       startedSteps: {},

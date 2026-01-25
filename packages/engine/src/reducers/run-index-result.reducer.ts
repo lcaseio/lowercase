@@ -12,6 +12,7 @@ export const runIndexResultReducer: Reducer<RunIndexResultMsg> = (
 
     if (!run) return;
     if (!message.ok) {
+      console.log("run index failed");
       run.status = "failed";
       return;
     }

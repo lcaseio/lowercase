@@ -10,6 +10,7 @@ export const getFlowDefFx: EffectHandler<"GetFlowDef"> = async (
   const json = await deps.artifacts.getJson(effect.hash);
 
   if (!json.ok) {
+    console.log("[getFlowDefFx] error getting flow def");
     const message: FlowDefResultMsg = {
       type: "FlowDefResult",
       ok: false,
@@ -23,6 +24,7 @@ export const getFlowDefFx: EffectHandler<"GetFlowDef"> = async (
 
   const parseResult = parseFlow(json.value);
   if (!parseResult.ok) {
+    console.log("error parsing");
     const message: FlowDefResultMsg = {
       type: "FlowDefResult",
       ok: false,
@@ -33,7 +35,7 @@ export const getFlowDefFx: EffectHandler<"GetFlowDef"> = async (
     deps.processAll();
     return;
   }
-
+  console.log("got flow def");
   const message: FlowDefResultMsg = {
     type: "FlowDefResult",
     def: parseResult.value,

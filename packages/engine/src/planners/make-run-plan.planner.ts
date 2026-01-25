@@ -19,6 +19,7 @@ export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
 
   if (newRunState.status !== "started") {
     // emit run.denied / failed
+    console.log("run denied");
     return effects;
   }
 
@@ -32,6 +33,8 @@ export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
     data: null,
     traceId: newRunState.traceId,
   };
+
+  effects.push(fx);
 
   return effects;
 };

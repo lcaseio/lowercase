@@ -16,6 +16,7 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
   // no effect if run is already already exists in state
   if (newRunState.status !== "requested" || traceId !== newRunState.traceId) {
     // later emit error
+    console.log("status or trace id are wrong");
     return effects;
   }
 
@@ -24,5 +25,6 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
     hash: newRunState.flowDefHash,
     runId,
   };
+  effects.push(getFlowDefFx);
   return effects;
 };

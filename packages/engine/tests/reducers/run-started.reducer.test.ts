@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runStartedReducer } from "../../src/reducers/run-started.reducuer.js";
+import { runStartedReducer } from "../../src/reducers/run-started.reducer.js";
 import { EngineState, RunStartedMsg } from "../../src/engine.types.js";
 import { runStartedEvent } from "../fixtures/run-started.event.js";
 import { flowSubmittedNewState } from "../fixtures/flow-submitted.state.js";
