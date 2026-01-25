@@ -1,20 +1,22 @@
-import type {
+import {
   ArtifactsPort,
   EmitterFactoryPort,
   EventBusPort,
   RunIndexStorePort,
+  SimServicePort,
 } from "@lcase/ports";
-import { startForkedSim } from "@lcase/run-flow";
-import { getRunFlowHash } from "@lcase/run-history";
 
-export class ForkSpecController {
+import { getRunFlowHash } from "@lcase/run-history";
+import { startForkedSim } from "@lcase/run-flow";
+
+export class SimService implements SimServicePort {
   constructor(
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
     private readonly runIndexStore: RunIndexStorePort,
   ) {}
 
-  async runForkedSim(
+  async startForkedRunSim(
     parentRunId: string,
     reuseSteps: string[],
     source: string,

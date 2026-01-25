@@ -9,10 +9,7 @@ import { FlowQueuedData } from "@lcase/types";
 import { ForkSpecController } from "./fork-spec.controller.js";
 
 export class WorkflowController implements ServerControllerPort {
-  constructor(
-    private readonly runtime: WorkflowRuntime,
-    public readonly forkSpec: ForkSpecController,
-  ) {}
+  constructor(private readonly runtime: WorkflowRuntime) {}
 
   async startFlow(args: {
     absoluteFilePath?: string;

@@ -25,6 +25,6 @@ export type ExecuteStepCommand = {
 };
 
 export interface EnginePort {
-  startFlow(input: StartFlowInput): Promise<StartFlowResult | undefined>;
-  executeStep(cmd: ExecuteStepCommand): Promise<ExecuteStepCommand | undefined>;
+  start(): Promise<void>;
+  stop(): Promise<void>;
 }

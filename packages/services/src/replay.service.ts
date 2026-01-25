@@ -1,5 +1,6 @@
-import { ReplayEnginePort } from "@lcase/ports/replay";
-export class ReplayService {
+import type { ReplayServicePort } from "@lcase/ports";
+import type { ReplayEnginePort } from "@lcase/ports/replay";
+export class ReplayService implements ReplayServicePort {
   constructor(private replay: ReplayEnginePort) {}
 
   async replayRun(runId: string) {

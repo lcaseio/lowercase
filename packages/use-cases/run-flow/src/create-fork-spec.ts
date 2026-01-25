@@ -5,6 +5,7 @@ import type {
   EventBusPort,
 } from "@lcase/ports";
 import { randomUUID } from "node:crypto";
+
 export function createForkSpec(steps: string[], runId: string) {
   const forkSpec: ForkSpec = {
     parentRunId: runId,
@@ -15,10 +16,9 @@ export function createForkSpec(steps: string[], runId: string) {
 
 type RunForkedSimDeps = {
   ef: EmitterFactoryPort;
-  bus: EventBusPort;
   artifacts: ArtifactsPort;
 };
-export async function runForkedSim(
+export async function startForkedSim(
   flowDefHash: string,
   parentRunId: string,
   reuseSteps: string[],
@@ -27,6 +27,7 @@ export async function runForkedSim(
 ) {
   const forkSpec = createForkSpec(reuseSteps, parentRunId);
   const runId = createRunId();
+
   const emitter = deps.ef.newRunEmitterNewTrace({
     source,
     flowid: flowDefHash,
