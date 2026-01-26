@@ -21,11 +21,11 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
         error: "Run id already exists in engine.",
       },
       scope: {
-        flowid: newRunState.flowDefHash,
+        flowid: message.event.flowid,
         runid: runId,
         source: "lowercase://engine",
       },
-      traceId: newRunState.traceId,
+      traceId: message.event.traceid,
     };
     effects.push(fx);
     return effects;

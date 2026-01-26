@@ -27,7 +27,6 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
       },
       traceId: newRunState.traceId,
     };
-    console.log("flow def failed");
     return effects;
   }
 

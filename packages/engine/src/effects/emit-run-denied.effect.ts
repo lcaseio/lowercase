@@ -1,7 +1,7 @@
 import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
 import type { EmitRunDeniedFx } from "../types/effect.types.js";
 
-export const emitRunDenied: EffectHandler<"EmitRunDenied"> = async (
+export const emitRunDeniedFx: EffectHandler<"EmitRunDenied"> = async (
   effect: EmitRunDeniedFx,
   deps: EffectHandlerDeps,
 ) => {

@@ -4,7 +4,7 @@ import { emitFlowFailedFx } from "../effects/emit-flow-failed.effect.js";
 import { emitJobHttpJsonSubmittedFx } from "../effects/emit-job-httpjson-submitted.effect.js";
 import { emitJobMcpSubmittedFx } from "../effects/emit-job-mcp-submitted.effect.js";
 import { emitRunCompletedFx } from "../effects/emit-run-completed.effect.js";
-import { emitRunDenied } from "../effects/emit-run-denied.effect.js";
+import { emitRunDeniedFx } from "../effects/emit-run-denied.effect.js";
 import { emitRunFailedFx } from "../effects/emit-run-failed.effect.js";
 import { emitRunStartedFx } from "../effects/emit-run-started.effect.js";
 import { emitStepCompletedFx } from "../effects/emit-step-completed.effect.js";
@@ -63,7 +63,7 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
       emitFlowFailedFx(effect, deps),
     // run
     EmitRunDenied: async (effect: EmitRunDeniedFx) =>
-      emitRunDenied(effect, deps),
+      emitRunDeniedFx(effect, deps),
     EmitRunStarted: async (effect: EmitRunStartedFx) =>
       emitRunStartedFx(effect, deps),
     EmitRunCompleted: async (effect: EmitRunCompletedFx) =>
