@@ -47,3 +47,15 @@ export function processStepFinished(
   step.status = event.data.status;
   step.duration = getDuration(step.startTime, step.endTime);
 }
+
+export function processStepReused(
+  event: AnyEvent<"step.reused">,
+  index: RunIndex,
+) {
+  index.steps[event.stepid] ??= {};
+  const step = index.steps[event.stepid];
+  step.outputHash = event.data.outputHash;
+  step.status = event.data.status;
+  step.wasReused = true;
+  step.reusedTime = event.time;
+}

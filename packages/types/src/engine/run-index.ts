@@ -7,15 +7,18 @@ export type RunIndex = {
   startTime?: string;
   endTime?: string;
   duration?: number;
+
   steps: Record<
     string,
     {
       outputHash?: string;
       status?: string;
       startTime?: string;
+      reusedTime?: string;
       endTime?: string;
       duration?: number;
       argsHash?: string;
+      wasReused?: boolean;
     }
   >;
 };

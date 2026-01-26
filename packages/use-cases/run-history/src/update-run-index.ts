@@ -5,6 +5,7 @@ import {
   processRunRequested,
   processRunStarted,
   processStepFinished,
+  processStepReused,
   processStepStarted,
 } from "./utils/process.js";
 import { initRunIndex } from "./init-run-index.js";
@@ -50,6 +51,9 @@ export function updateRunIndex(
       break;
     case "run.failed":
       processRunFinished(event as AnyEvent<"run.failed">, index);
+      break;
+    case "step.reused":
+      processStepReused(event as AnyEvent<"step.reused">, index);
       break;
     case "step.started":
       processStepStarted(event as AnyEvent<"step.started">, index);

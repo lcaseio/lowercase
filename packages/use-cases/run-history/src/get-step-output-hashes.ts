@@ -33,7 +33,7 @@ export async function getRunFlowHash(
   store: RunIndexStorePort,
 ): Promise<string | undefined> {
   const json = await store.getRunIndex(runId);
-  console.log("json", json);
+
   if (!json) return;
   return json.flowDefHash;
 }
