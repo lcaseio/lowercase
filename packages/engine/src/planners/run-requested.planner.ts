@@ -37,5 +37,6 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
     runId,
   };
   effects.push(getFlowDefFx);
+  console.log("made get flow fx");
   return effects;
 };

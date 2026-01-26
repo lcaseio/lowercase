@@ -5,12 +5,13 @@ import { ServicesPort } from "@lcase/ports";
 
 export async function cliRunAction(
   services: ServicesPort,
-  flowPath: string,
+  flowDefHash: string,
 ): Promise<void> {
   console.log("[cli] running run command");
   await services.system.startSystem();
-  const resolvedFlowPath = resolveCliPath(flowPath);
-  await services.flow.startFlow({ absoluteFilePath: resolvedFlowPath });
+  // const resolvedFlowPath = resolveCliPath(flowPath);
+  // await services.flow.startFlow({ absoluteFilePath: resolvedFlowPath });
+  await services.run.requestRun(flowDefHash, "lowercase://cli");
 }
 
 export function registerRunCmd(
@@ -18,10 +19,10 @@ export function registerRunCmd(
   services: ServicesPort,
 ): Command {
   program
-    .command("run <flowPath>")
+    .command("run <flowDefHash>")
     .description("run a workflow definition from a flow.json file")
-    .action(async (flowPath) => {
-      await cliRunAction(services, flowPath);
+    .action(async (flowDefHash) => {
+      await cliRunAction(services, flowDefHash);
     });
 
   return program;

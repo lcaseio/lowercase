@@ -1,5 +1,9 @@
 import { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { EmitRunDeniedFx, GetForkSpecFx } from "../types/effect.types.js";
+import {
+  EmitRunDeniedFx,
+  GetForkSpecFx,
+  MakeRunPlanFx,
+} from "../types/effect.types.js";
 import { FlowDefResultMsg } from "../types/message.types.js";
 
 export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
@@ -27,6 +31,7 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
       },
       traceId: newRunState.traceId,
     };
+    effects.push(fx);
     return effects;
   }
 
@@ -40,6 +45,13 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
     effects.push(fx);
     return effects;
   }
+
+  const fx: MakeRunPlanFx = {
+    type: "MakeRunPlan",
+    runId,
+  };
+
+  effects.push(fx);
 
   return effects;
 };

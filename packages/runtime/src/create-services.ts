@@ -1,6 +1,7 @@
 import {
   FlowService,
   ReplayService,
+  RunService,
   SimService,
   SystemService,
 } from "@lcase/services";
@@ -15,6 +16,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const flow = new FlowService(ctx.bus, ctx.ef, new FlowStoreFs());
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+  const run = new RunService(ctx.ef);
 
   const system = new SystemService({
     bus: ctx.bus,
@@ -27,5 +29,5 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     worker: ctx.worker,
   });
 
-  return { flow, replay, sim, system };
+  return { flow, replay, sim, system, run };
 }

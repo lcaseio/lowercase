@@ -8,6 +8,7 @@ export interface ServicesPort {
   sim: SimServicePort;
   replay: ReplayServicePort;
   system: SystemServicePort;
+  run: RunServicePort;
 }
 
 export interface SimServicePort {
@@ -31,4 +32,8 @@ export interface SystemServicePort {
   startSystem(): Promise<RuntimeStatus>;
   stopSystem(): Promise<RuntimeStatus>;
   attachSink(sink: EventSink): void;
+}
+
+export interface RunServicePort {
+  requestRun(flowDefHash: string, source: string): Promise<void>;
 }

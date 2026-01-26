@@ -42,7 +42,7 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
         refs: [],
       },
     } satisfies RunContext;
-
+    console.log("made run context");
     draft.runs[runId] = runCtx;
   });
 };
