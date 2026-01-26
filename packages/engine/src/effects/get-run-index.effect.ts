@@ -9,7 +9,6 @@ export const getRunIndexFx: EffectHandler<"GetRunIndex"> = async (
   const index = await deps.runIndexStore.getRunIndex(effect.parentRunId);
 
   if (index) {
-    console.log("got index:", index);
     const message: RunIndexResultMsg = {
       type: "RunIndexResult",
       ok: true,
@@ -19,7 +18,6 @@ export const getRunIndexFx: EffectHandler<"GetRunIndex"> = async (
     deps.enqueue(message);
     deps.processAll();
   } else {
-    console.log("failed to get index");
     const message: RunIndexResultMsg = {
       type: "RunIndexResult",
       ok: false,

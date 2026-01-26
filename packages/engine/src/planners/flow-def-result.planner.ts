@@ -1,5 +1,5 @@
 import { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { GetForkSpecFx } from "../types/effect.types.js";
+import { EmitRunDeniedFx, GetForkSpecFx } from "../types/effect.types.js";
 import { FlowDefResultMsg } from "../types/message.types.js";
 
 export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
@@ -13,8 +13,20 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
   const newRunState = newState.runs[runId];
 
   if (!newRunState) return effects;
-  if (newRunState.status === "failed") {
+  if (newRunState.status === "failed" && message.ok === false) {
     // emit denied
+    const fx: EmitRunDeniedFx = {
+      type: "EmitRunDenied",
+      data: {
+        error: message.error,
+      },
+      scope: {
+        flowid: newRunState.flowDefHash,
+        runid: runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    };
     console.log("flow def failed");
     return effects;
   }
@@ -30,13 +42,5 @@ export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
     return effects;
   }
 
-  // else go ahead and request a flow analysis or just fa + run plan
   return effects;
 };
-
-// flow  -> emit flow.definition.failed
-// flow analysis -> flow.analysis.failed
-// fork spec -> denied flow.forkspec.failed
-// run index -> denied run.parent.index.failed
-//
-// run.planned / run.denied

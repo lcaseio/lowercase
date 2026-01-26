@@ -26,12 +26,14 @@ import {
 } from "../schemas/engine.data.schema.js";
 import {
   RunCompletedSchema,
+  RunDeniedSchema,
   RunFailedSchema,
   RunRequestedSchema,
   RunStartedSchema,
 } from "../schemas/run.event.schema.js";
 import {
   RunCompletedDataSchema,
+  RunDeniedDataSchema,
   RunFailedDataSchema,
   RunRequestedDataSchema,
   RunStartedDataSchema,
@@ -168,6 +170,12 @@ export const eventSchemaRegistry = {
     schema: {
       event: RunRequestedSchema,
       data: RunRequestedDataSchema,
+    },
+  },
+  "run.denied": {
+    schema: {
+      event: RunDeniedSchema,
+      data: RunDeniedDataSchema,
     },
   },
   "run.started": {

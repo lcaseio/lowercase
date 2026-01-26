@@ -14,7 +14,6 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
     const flowDefHash = message.event.data.flowDefHash;
     const forkSpecHash = message.event.data.forkSpecHash;
 
-    console.log("runRequestedReducer");
     if (draft.runs[runId] !== undefined) return; // run id already exists
 
     const runCtx = {
@@ -44,7 +43,6 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
       },
     } satisfies RunContext;
 
-    console.log("made run context");
     draft.runs[runId] = runCtx;
   });
 };

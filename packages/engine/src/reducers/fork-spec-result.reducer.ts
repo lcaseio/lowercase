@@ -18,6 +18,5 @@ export const forkSpecResultReducer: Reducer<ForkSpecResultMsg> = (
       return;
     }
     run.forkSpec = message.forkSpec;
-    console.log("message.forkSpec", message.forkSpec);
   });
 };

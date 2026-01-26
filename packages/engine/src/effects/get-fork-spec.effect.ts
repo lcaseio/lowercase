@@ -9,8 +9,6 @@ export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
 ) => {
   const json = await deps.artifacts.getJson(effect.hash);
   if (json.ok) {
-    console.log("got fork spec:");
-    console.log(json.value);
     const message: ForkSpecResultMsg = {
       type: "ForkSpecResult",
       ok: true,
@@ -20,7 +18,6 @@ export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
     deps.enqueue(message);
     deps.processAll();
   } else {
-    console.log("error getting fork spec");
     const message: ForkSpecResultMsg = {
       type: "ForkSpecResult",
       ok: false,

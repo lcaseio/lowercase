@@ -90,6 +90,11 @@ export const runOtelAttributesMap = {
     domain: "run",
     entity: undefined,
   },
+  "run.denied": {
+    action: "denied",
+    domain: "run",
+    entity: undefined,
+  },
   "run.completed": {
     action: "completed",
     domain: "run",

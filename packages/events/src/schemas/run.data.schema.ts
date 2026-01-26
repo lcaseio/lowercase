@@ -4,6 +4,7 @@ import type {
   RunCompletedData,
   RunFailedData,
   RunRequestedData,
+  RunDeniedData,
 } from "@lcase/types";
 
 // removed descriptor for now to reduce duplication of data
@@ -32,3 +33,9 @@ export const RunCompletedDataSchema =
 
 export const RunFailedDataSchema =
   RunStartedDataSchema satisfies z.ZodType<RunFailedData>;
+
+export const RunDeniedDataSchema = z
+  .object({
+    error: z.string(),
+  })
+  .strict() satisfies z.ZodType<RunDeniedData>;

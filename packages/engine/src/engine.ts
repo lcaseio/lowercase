@@ -47,7 +47,6 @@ export class Engine {
 
   private queue: EngineMessage[] = [];
 
-  // di
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   jobParser: JobParserPort;
@@ -284,7 +283,6 @@ export class Engine {
   }
   handleRunRequested(e: AnyEvent): void {
     if (e.type !== "run.requested") return;
-    console.log("run.requested received");
     const event = e as AnyEvent<"run.requested">;
     const runStartedMsg: RunRequestedMsg = {
       type: "RunRequested",

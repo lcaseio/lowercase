@@ -15,7 +15,6 @@ export const runStartedReducer: Reducer<RunStartedMsg> = (
   message: RunStartedMsg,
 ): EngineState => {
   return produce(state, (draft) => {
-    console.log("run started reducer fired");
     const runId = message.event.runid;
     const flowId = message.event.flowid;
 

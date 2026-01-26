@@ -1,4 +1,10 @@
-import { CloudScope, StepReusedData, StepScope } from "@lcase/types";
+import {
+  CloudScope,
+  RunDeniedData,
+  RunScope,
+  StepReusedData,
+  StepScope,
+} from "@lcase/types";
 
 export type GetFlowDefFx = {
   type: "GetFlowDef";
@@ -26,5 +32,12 @@ export type EmitStepReusedFx = {
   type: "EmitStepReused";
   scope: StepScope & CloudScope;
   data: StepReusedData;
+  traceId: string;
+};
+
+export type EmitRunDeniedFx = {
+  type: "EmitRunDenied";
+  scope: RunScope & CloudScope;
+  data: RunDeniedData;
   traceId: string;
 };

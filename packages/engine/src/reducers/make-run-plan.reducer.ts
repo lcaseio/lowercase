@@ -17,8 +17,6 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
 
     if (!flow) return;
 
-    console.log("making flow analysis");
-
     const flowAnalysis = analyzeFlow(flow.definition);
     run.flowAnalysis = flowAnalysis;
 
@@ -63,8 +61,6 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
       initAllStepContexts[step] = stepContext;
     }
     run.steps = initAllStepContexts;
-
-    console.log("run plan", JSON.stringify(run.runPlan, null, 2));
     run.status = "started";
   });
 };

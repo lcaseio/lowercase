@@ -26,6 +26,7 @@ export const eventTypes = [
   "engine.started",
   "engine.stopped",
   "run.requested",
+  "run.denied",
   "run.completed",
   "run.started",
   "run.failed",

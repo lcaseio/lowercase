@@ -4,6 +4,7 @@ import type {
   EngineState,
   Planner,
 } from "../engine.types.js";
+import { EmitRunDeniedFx } from "../types/effect.types.js";
 import type { MakeRunPlanMsg } from "../types/message.types.js";
 
 export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
@@ -18,8 +19,20 @@ export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
   if (!newRunState) return effects;
 
   if (newRunState.status !== "started") {
-    // emit run.denied / failed
-    console.log("run denied");
+    const fx: EmitRunDeniedFx = {
+      type: "EmitRunDenied",
+      data: {
+        error: "Error making run plan.",
+      },
+      scope: {
+        flowid: newRunState.flowDefHash,
+        runid: runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    };
+
+    effects.push(fx);
     return effects;
   }
 

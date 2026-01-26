@@ -41,12 +41,10 @@ export async function startForkedSim(
     return;
   }
 
-  console.log("fork spec", forkSpec);
   const event = await emitter.emit("run.requested", {
     flowDefHash,
     forkSpecHash: forkSpecResult.value,
   });
-  console.log(event.data);
 }
 
 export function createRunId(): string {

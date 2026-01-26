@@ -1,5 +1,5 @@
 import type { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { GetFlowDefFx } from "../types/effect.types.js";
+import { EmitRunDeniedFx, GetFlowDefFx } from "../types/effect.types.js";
 import type { RunRequestedMsg } from "../types/message.types.js";
 
 export const runRequestedPlanner: Planner<RunRequestedMsg> = (
@@ -15,8 +15,19 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
 
   // no effect if run is already already exists in state
   if (newRunState.status !== "requested" || traceId !== newRunState.traceId) {
-    // later emit error
-    console.log("status or trace id are wrong");
+    const fx: EmitRunDeniedFx = {
+      type: "EmitRunDenied",
+      data: {
+        error: "Run id already exists in engine.",
+      },
+      scope: {
+        flowid: newRunState.flowDefHash,
+        runid: runId,
+        source: "lowercase://engine",
+      },
+      traceId: newRunState.traceId,
+    };
+    effects.push(fx);
     return effects;
   }
 
