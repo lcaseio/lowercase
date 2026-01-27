@@ -18,3 +18,22 @@ export const flowDef: FlowDefinition = {
     },
   },
 };
+
+export const flowDefWithProblems: FlowDefinition = {
+  name: "test-flowname",
+  version: "test-flowversion",
+  description: "test-flowdescription",
+  inputs: {},
+  outputs: {},
+  start: "parallel",
+  steps: {
+    parallel: {
+      type: "parallel",
+      steps: ["c"],
+    },
+    b: {
+      type: "httpjson",
+      url: "test-url",
+    },
+  },
+};

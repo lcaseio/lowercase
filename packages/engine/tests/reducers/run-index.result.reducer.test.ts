@@ -17,7 +17,7 @@ describe("runIndexResultReducer()", () => {
         flowId: "test-flowdefhash",
         traceId: "test-traceid",
         steps: {
-          b: { outputHash: "test-outputhash" },
+          b: { outputHash: "test-outputhash", status: "success" },
         },
       },
       type: "RunIndexResult",

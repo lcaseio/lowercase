@@ -27,3 +27,45 @@ export const flowAnalysis: FlowAnalysis = {
   problems: [],
   refs: [],
 };
+
+export const flowAnalysisB: FlowAnalysis = {
+  nodes: ["parallel", "b"],
+  inEdges: {
+    b: [
+      {
+        startStepId: "parallel",
+        endStepId: "b",
+        type: "parallel",
+        gate: "always",
+      },
+    ],
+  },
+  outEdges: {
+    parallel: [
+      {
+        startStepId: "parallel",
+        endStepId: "b",
+        type: "parallel",
+        gate: "always",
+      },
+    ],
+  },
+  joinDeps: {},
+  problems: [],
+  refs: [],
+};
+
+export const flowAnalysisBWithProblem: FlowAnalysis = {
+  nodes: ["parallel", "b"],
+  inEdges: {},
+  outEdges: {},
+  joinDeps: {},
+  problems: [
+    {
+      type: "UnknownStepReference",
+      endStepId: "c",
+      startStepId: "parallel",
+    },
+  ],
+  refs: [],
+};
