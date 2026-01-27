@@ -1,6 +1,5 @@
 import type { ReducerRegistry } from "../engine.types.js";
 import { flowDefResultReducer } from "../reducers/flow-def-result.reducer.js";
-import { flowSubmittedReducer } from "../reducers/flow-submitted.reducer.js";
 import { forkSpecResultReducer } from "../reducers/fork-spec-result.reducer.js";
 import { jobFinishedReducer } from "../reducers/job-finished.reducer.js";
 import { makeRunPlanReducer } from "../reducers/make-run-plan.reducer.js";
@@ -18,7 +17,6 @@ import { stepStartedReducer } from "../reducers/step-started.reducer.js";
  * a switch or if statement.
  */
 export const reducers: ReducerRegistry = {
-  FlowSubmitted: flowSubmittedReducer,
   FlowDefResult: flowDefResultReducer,
   ForkSpecResult: forkSpecResultReducer,
   MakeRunPlan: makeRunPlanReducer,

@@ -133,7 +133,6 @@ export type UpdateJoinMsg = {
 };
 
 export type EngineMessage =
-  | FlowSubmittedMsg
   | FlowDefResultMsg
   | ForkSpecResultMsg
   | RunIndexResultMsg

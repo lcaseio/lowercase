@@ -67,12 +67,6 @@ export class Engine {
   }
 
   subscribeToTopics(): void {
-    this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
-      const event = e as AnyEvent<"flow.submitted">;
-      // TODO: parse enevelope or move this out of engine
-      this.handleFlowSubmitted(event);
-    });
-
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
@@ -208,15 +202,6 @@ export class Engine {
   submitExternal(message: EngineMessage) {
     this.queue.push(message);
     this.processAll();
-  }
-
-  handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
-    if (event.type !== "flow.submitted") return;
-    const message: FlowSubmittedMsg = { type: "FlowSubmitted", event };
-
-    this.enqueue(message);
-    if (!this.isProcessing) this.processAll();
-    return;
   }
 
   handleJobFinished(event: AnyEvent): void {
