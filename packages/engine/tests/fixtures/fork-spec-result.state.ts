@@ -2,50 +2,16 @@ import { RunContext } from "@lcase/types";
 import { EngineState } from "../../src/engine.types";
 import { flowDef } from "./flow-definition.js";
 
-export const flowDefResultOkState: EngineState = {
-  runs: {
-    ["test-runid"]: {
-      flowId: "test-flowdefhash",
-      flowDefHash: "test-flowdefhash",
-
-      runId: "test-runid",
-      traceId: "test-traceid",
-      runPlan: {
-        reuse: {},
-      },
-      startedSteps: {},
-      plannedSteps: {},
-      completedSteps: {},
-      failedSteps: {},
-      outstandingSteps: 0,
-      input: {},
-      status: "requested",
-      steps: {},
-      flowAnalysis: {
-        nodes: [],
-        inEdges: {},
-        outEdges: {},
-        joinDeps: {},
-        problems: [],
-        refs: [],
-      },
-    } satisfies RunContext,
-  },
-  flows: {
-    // add flow to flows if its not there,
-    "test-flowdefhash": {
-      definition: flowDef,
-      runIds: { "test-runid": true }, // and add run id to it
-    },
-  },
-};
-
-export const flowDefResultOkStateForkSpecHash: EngineState = {
+export const forkSpecOkState: EngineState = {
   runs: {
     ["test-runid"]: {
       flowId: "test-flowdefhash",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
+      forkSpec: {
+        parentRunId: "test-parentrunid",
+        reuse: ["b"],
+      },
 
       runId: "test-runid",
       traceId: "test-traceid",
@@ -71,19 +37,19 @@ export const flowDefResultOkStateForkSpecHash: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    // add flow to flows if its not there,
     "test-flowdefhash": {
       definition: flowDef,
-      runIds: { "test-runid": true }, // and add run id to it
+      runIds: { "test-runid": true },
     },
   },
 };
-
-export const flowDefResultNotOkState: EngineState = {
+export const forkSpecNotOkState: EngineState = {
   runs: {
     ["test-runid"]: {
       flowId: "test-flowdefhash",
       flowDefHash: "test-flowdefhash",
+      forkSpecHash: "test-forkspechash",
+      //forkSpec?: doesn't save fork spec to state
 
       runId: "test-runid",
       traceId: "test-traceid",
@@ -96,7 +62,7 @@ export const flowDefResultNotOkState: EngineState = {
       failedSteps: {},
       outstandingSteps: 0,
       input: {},
-      status: "failed", // status changed to failed on ok: false message
+      status: "failed", // run failed
       steps: {},
       flowAnalysis: {
         nodes: [],
@@ -108,5 +74,10 @@ export const flowDefResultNotOkState: EngineState = {
       },
     } satisfies RunContext,
   },
-  flows: {},
+  flows: {
+    "test-flowdefhash": {
+      definition: flowDef,
+      runIds: { "test-runid": true },
+    },
+  },
 };

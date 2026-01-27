@@ -4,8 +4,8 @@ import type { FlowDefResultMsg } from "../../src/types/message.types.js";
 import { runRequestedNewState } from "../fixtures/run-requested.state.js";
 import { flowDef } from "../fixtures/flow-definition.js";
 import {
-  flowDefResultNotOkTrueState,
-  flowDefResultOkTrueState,
+  flowDefResultNotOkState,
+  flowDefResultOkState,
 } from "../fixtures/flow-def-result.state.js";
 
 describe("flowDefResultReducer()", () => {
@@ -17,7 +17,7 @@ describe("flowDefResultReducer()", () => {
       def: flowDef,
     };
     const state = flowDefResultReducer(runRequestedNewState, message);
-    expect(state).toEqual(flowDefResultOkTrueState);
+    expect(state).toEqual(flowDefResultOkState);
   });
   it("marks run status as 'failed' when flow def returns ok: false", () => {
     const message: FlowDefResultMsg = {
@@ -27,6 +27,6 @@ describe("flowDefResultReducer()", () => {
       error: "error",
     };
     const state = flowDefResultReducer(runRequestedNewState, message);
-    expect(state).toEqual(flowDefResultNotOkTrueState);
+    expect(state).toEqual(flowDefResultNotOkState);
   });
 });

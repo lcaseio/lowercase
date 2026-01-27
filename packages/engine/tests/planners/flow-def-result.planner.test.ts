@@ -4,8 +4,8 @@ import type { FlowDefResultMsg } from "../../src/types/message.types.js";
 import { runRequestedNewState } from "../fixtures/run-requested.state.js";
 import { flowDef } from "../fixtures/flow-definition.js";
 import {
-  flowDefResultNotOkTrueState,
-  flowDefResultOkTrueState,
+  flowDefResultNotOkState,
+  flowDefResultOkState,
 } from "../fixtures/flow-def-result.state.js";
 import {
   EmitRunDeniedFx,
@@ -23,7 +23,7 @@ describe("flowDefResultPlanner()", () => {
     };
     const effects = flowDefResultPlanner(
       runRequestedNewState,
-      flowDefResultOkTrueState,
+      flowDefResultOkState,
       message,
     );
 
@@ -36,7 +36,7 @@ describe("flowDefResultPlanner()", () => {
     expect(effects).toEqual(expectedEffect);
   });
   it("creates a GetForkSpec effect when no fork spec hash is given", () => {
-    const stateWitHForkSpec = structuredClone(flowDefResultOkTrueState);
+    const stateWitHForkSpec = structuredClone(flowDefResultOkState);
     stateWitHForkSpec.runs["test-runid"].forkSpecHash = "test-forkspechash";
 
     const message: FlowDefResultMsg = {
@@ -62,7 +62,7 @@ describe("flowDefResultPlanner()", () => {
   });
 
   it("creates a EmitRunDenied effect when fork def result is not ok", () => {
-    const statWithFailedStatus = structuredClone(flowDefResultOkTrueState);
+    const statWithFailedStatus = structuredClone(flowDefResultOkState);
     statWithFailedStatus.runs["test-runid"].status = "failed";
 
     const message: FlowDefResultMsg = {

@@ -14,7 +14,6 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
   if (!newRunState) return effects;
 
   if (newRunState.status === "failed" && message.ok === false) {
-    // emit run.denied with error message
     const fx: EmitRunDeniedFx = {
       type: "EmitRunDenied",
       data: {
@@ -30,8 +29,6 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
     effects.push(fx);
     return effects;
   }
-  // if some analysis in the reducer says we don't need an index,
-  // then go ahead an create a flow analysis
 
   if (newRunState.forkSpec?.parentRunId) {
     const fx: GetRunIndexFx = {
@@ -41,6 +38,9 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
     };
     effects.push(fx);
   }
+
+  // in the future, if a run is forked without changes, maybe go straight to
+  // make run plan, but currently forked implies changes
 
   return effects;
 };
