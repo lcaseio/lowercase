@@ -5,7 +5,7 @@ import { completeParallelEdge } from "./utils/complete-parallel-edge.reducer.js"
 
 export const stepStartedReducer: Reducer<StepStartedMsg> = (
   state: EngineState,
-  message: StepStartedMsg
+  message: StepStartedMsg,
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;
@@ -33,7 +33,5 @@ export const stepStartedReducer: Reducer<StepStartedMsg> = (
         }
       }
     }
-
-    console.log("outstandingSteps", run.outstandingSteps);
   });
 };

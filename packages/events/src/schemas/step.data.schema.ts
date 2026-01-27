@@ -4,6 +4,7 @@ import type {
   StepCompletedData,
   StepFailedData,
   StepPlannedData,
+  StepReusedData,
 } from "@lcase/types";
 
 const RunDescriptorSchema = z.object({
@@ -39,3 +40,11 @@ export const StepFailedDataSchema = RunDescriptorSchema.merge(
 export const StepPlannedDataSchema = z
   .object({ ...RunDescriptorSchema.shape })
   .strict() satisfies z.ZodType<StepPlannedData>;
+
+export const StepReusedDataSchema = z
+  .object({
+    outputHash: z.string().optional(),
+    status: z.enum(["success", "failure"]),
+    sourceRunId: z.string(),
+  })
+  .strict() satisfies z.ZodType<StepReusedData>;

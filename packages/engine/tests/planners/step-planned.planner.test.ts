@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { runStartedPlanner } from "../../src/planners/run-started.planner.js";
 import { runStartedNewState } from "../fixtures/run-started.state.js";
-import { flowSubmittedNewState } from "../fixtures/flow-submitted.state.js";
 import { runStartedEvent } from "../fixtures/run-started.event.js";
 import type {
-  EmitJobHttpJsonSubmittedFx,
   EmitStepStartedFx,
   EngineEffect,
   RunStartedMsg,
@@ -23,9 +21,9 @@ describe("stepPlannedPlanner()", () => {
       event: stepPlannedEvent,
     };
 
-    const stepId = newState.flows["test-flowid"].definition.start;
+    const stepId = newState.flows["test-flowdefhash"].definition.start;
     const stepType =
-      newState.flows["test-flowid"].definition.steps[stepId].type;
+      newState.flows["test-flowdefhash"].definition.steps[stepId].type;
 
     const expectedEffects: EngineEffect[] = [];
     const expectedStepStartedFx = {
@@ -49,36 +47,19 @@ describe("stepPlannedPlanner()", () => {
     } satisfies EmitStepStartedFx;
     expectedEffects.push(expectedStepStartedFx);
 
-    const expectedJobHttpJsonSubmittedFx: EmitJobHttpJsonSubmittedFx = {
-      type: "EmitJobHttpJsonSubmitted",
-      scope: {
-        capid: "httpjson",
-        flowid: message.event.flowid,
-        runid: message.event.runid,
-        stepid: message.event.stepid,
-        toolid: "httpjson",
-      },
-      data: {
-        url: "test-url",
-        valueRefs: [],
-      },
-      traceId: message.event.traceid,
-    };
-    // expectedEffects.push(expectedJobHttpJsonSubmittedFx);
-
     const effects = stepPlannedPlanner(oldState, newState, message);
 
     expect(effects).toEqual(expectedEffects);
   });
 
   it("returns no plans when the status is not planned", () => {
-    const oldState = flowSubmittedNewState;
-    const newState = runStartedNewState;
+    const oldState = runStartedNewState;
+    const newState = stepPlannedNewState;
     const message: RunStartedMsg = {
       type: "RunStarted",
       event: runStartedEvent,
     };
-    const stepId = newState.flows["test-flowid"].definition.start;
+    const stepId = newState.flows["test-flowdefhash"].definition.start;
     newState.runs["test-runid"].steps[stepId].status = "initialized";
 
     const effects = runStartedPlanner(oldState, newState, message);

@@ -7,6 +7,7 @@ import type {
   QueuePort,
   StreamRegistryPort,
   ToolDeps,
+  WorkerPort,
 } from "@lcase/ports";
 import type {
   AnyEvent,
@@ -15,22 +16,13 @@ import type {
   PipeData,
   ToolEvent,
   RateLimitPolicy,
-  JobEvent,
   JobQueuedEvent,
-  ToolContext,
   Ref,
-  JobStartedData,
-  JobHttpJsonData,
-  JobMcpData,
   JobStartedEvent,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
-import {
-  bindReference,
-  resolveJsonPath,
-  resolvePath,
-} from "@lcase/json-ref-binder";
+import { bindReference, resolveJsonPath } from "@lcase/json-ref-binder";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -71,7 +63,7 @@ export type WorkerDeps = {
   artifacts: ArtifactsPort;
 };
 
-export class Worker {
+export class Worker implements WorkerPort {
   enableSideEffects = true;
   #ctx: WorkerContext = {
     workerId: "generic-worker",
@@ -356,7 +348,7 @@ export class Worker {
       status: "started",
     });
   }
-  stop(): void {}
+  async stop(): Promise<void> {}
 
   async storeJsonArtifact(
     output: JsonValue | undefined,

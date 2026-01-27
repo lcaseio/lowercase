@@ -32,7 +32,12 @@ import {
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
-import { FlowService, ReplayService } from "@lcase/services";
+import {
+  FlowService,
+  ReplayService,
+  SimService,
+  SystemService,
+} from "@lcase/services";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
@@ -49,7 +54,24 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
 
   const flowService = new FlowService(ctx.bus, ef, new FlowStoreFs());
   const replayService = new ReplayService(ctx.replay);
-  const runtime = new WorkflowRuntime(ctx, { flowService, replayService });
+  const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+
+  const systemService = new SystemService({
+    bus: ctx.bus,
+    ef: ctx.ef,
+    engine: ctx.engine,
+    limiter: ctx.limiter,
+    router: ctx.router,
+    sinks: ctx.sinks,
+    tap: ctx.tap,
+    worker: ctx.worker,
+  });
+  const runtime = new WorkflowRuntime(ctx, {
+    flowService,
+    replayService,
+    simService,
+    systemService,
+  });
   return runtime;
 }
 
@@ -79,9 +101,16 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const runIndexStore = new FsRunIndexStore(
     path.join(process.cwd(), "runs/index"),
   );
-  const engine = createInProcessEngine(bus, ef, jobParser, runIndexStore);
 
   const artifacts = createArtifacts(config.artifacts);
+  const engine = createInProcessEngine(
+    bus,
+    ef,
+    jobParser,
+    runIndexStore,
+    artifacts,
+  );
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -116,6 +145,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     replay,
     limiter,
+    artifacts,
+    runIndexStore,
   };
 }
 
@@ -175,12 +206,14 @@ export function createInProcessEngine(
   ef: EmitterFactory,
   jobParser: JobParserPort,
   runIndexStore: RunIndexStorePort,
+  artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({
     bus,
     ef,
     jobParser,
     runIndexStore,
+    artifacts,
   });
 
   return engine;

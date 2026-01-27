@@ -5,6 +5,7 @@ import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
   StepPlannedDataSchema,
+  StepReusedDataSchema,
   StepStartedDataSchema,
 } from "./step.data.schema.js";
 
@@ -19,7 +20,7 @@ export const StepContextSchema = z
   .strict() satisfies z.ZodType<StepScope>;
 
 export const StepStartedSchema = CloudEventContextSchema.merge(
-  StepContextSchema
+  StepContextSchema,
 )
   .merge(
     z.object({
@@ -28,12 +29,12 @@ export const StepStartedSchema = CloudEventContextSchema.merge(
       action: z.literal("started"),
       steptype: z.string(),
       data: StepStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"step.started">>;
 
 export const StepCompletedSchema = CloudEventContextSchema.merge(
-  StepContextSchema
+  StepContextSchema,
 )
   .merge(
     z.object({
@@ -42,7 +43,7 @@ export const StepCompletedSchema = CloudEventContextSchema.merge(
       action: z.literal("completed"),
       steptype: z.string(),
       data: StepCompletedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"step.completed">>;
 
@@ -54,7 +55,7 @@ export const StepFailedSchema = CloudEventContextSchema.merge(StepContextSchema)
       action: z.literal("failed"),
       steptype: z.string(),
       data: StepFailedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"step.failed">>;
 
@@ -68,3 +69,14 @@ export const StepPlannedSchema = z
     action: z.literal("planned"),
   })
   .strict() satisfies z.ZodType<AnyEvent<"step.planned">>;
+
+export const StepReusedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...StepContextSchema.shape,
+    data: StepReusedDataSchema,
+    type: z.literal("step.reused"),
+    entity: z.undefined().optional(),
+    action: z.literal("reused"),
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"step.reused">>;

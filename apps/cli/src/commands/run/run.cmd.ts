@@ -1,26 +1,28 @@
 import { Command } from "commander";
 import { resolveCliPath } from "../../resolve-path.js";
 import { WorkflowController } from "@lcase/controller";
+import { ServicesPort } from "@lcase/ports";
 
 export async function cliRunAction(
-  controller: WorkflowController,
-  flowPath: string
+  services: ServicesPort,
+  flowDefHash: string,
 ): Promise<void> {
   console.log("[cli] running run command");
-  await controller.startRuntime();
-  const resolvedFlowPath = resolveCliPath(flowPath);
-  await controller.startFlow({ absoluteFilePath: resolvedFlowPath });
+  await services.system.startSystem();
+  // const resolvedFlowPath = resolveCliPath(flowPath);
+  // await services.flow.startFlow({ absoluteFilePath: resolvedFlowPath });
+  await services.run.requestRun(flowDefHash, "lowercase://cli");
 }
 
 export function registerRunCmd(
   program: Command,
-  controller: WorkflowController
+  services: ServicesPort,
 ): Command {
   program
-    .command("run <flowPath>")
+    .command("run <flowDefHash>")
     .description("run a workflow definition from a flow.json file")
-    .action(async (flowPath) => {
-      await cliRunAction(controller, flowPath);
+    .action(async (flowDefHash) => {
+      await cliRunAction(services, flowDefHash);
     });
 
   return program;

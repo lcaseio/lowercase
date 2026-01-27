@@ -26,12 +26,14 @@ import {
 } from "../schemas/engine.data.schema.js";
 import {
   RunCompletedSchema,
+  RunDeniedSchema,
   RunFailedSchema,
   RunRequestedSchema,
   RunStartedSchema,
 } from "../schemas/run.event.schema.js";
 import {
   RunCompletedDataSchema,
+  RunDeniedDataSchema,
   RunFailedDataSchema,
   RunRequestedDataSchema,
   RunStartedDataSchema,
@@ -40,12 +42,14 @@ import {
   StepCompletedSchema,
   StepFailedSchema,
   StepPlannedSchema,
+  StepReusedSchema,
   StepStartedSchema,
 } from "../schemas/step.event.schema.js";
 import {
   StepCompletedDataSchema,
   StepFailedDataSchema,
   StepPlannedDataSchema,
+  StepReusedDataSchema,
   StepStartedDataSchema,
 } from "../schemas/step.data.schema.js";
 import {
@@ -168,6 +172,12 @@ export const eventSchemaRegistry = {
       data: RunRequestedDataSchema,
     },
   },
+  "run.denied": {
+    schema: {
+      event: RunDeniedSchema,
+      data: RunDeniedDataSchema,
+    },
+  },
   "run.started": {
     topic: "runs.lifecycle",
     schema: {
@@ -194,6 +204,12 @@ export const eventSchemaRegistry = {
     schema: {
       event: StepPlannedSchema,
       data: StepPlannedDataSchema,
+    },
+  },
+  "step.reused": {
+    schema: {
+      event: StepReusedSchema,
+      data: StepReusedDataSchema,
     },
   },
   "step.started": {

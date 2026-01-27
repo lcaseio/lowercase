@@ -3,6 +3,7 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 import { RunScope, AnyEvent } from "@lcase/types";
 import {
   RunCompletedDataSchema,
+  RunDeniedDataSchema,
   RunFailedDataSchema,
   RunRequestedDataSchema,
   RunStartedDataSchema,
@@ -61,3 +62,14 @@ export const RunFailedSchema = CloudEventContextSchema.merge(RunContextSchema)
     }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"run.failed">>;
+
+export const RunDeniedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...RunContextSchema.shape,
+    type: z.literal("run.denied"),
+    entity: z.undefined().optional(),
+    action: z.literal("denied"),
+    data: RunDeniedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"run.denied">>;

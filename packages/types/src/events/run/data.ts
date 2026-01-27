@@ -14,3 +14,7 @@ export type RunRequestedData = {
 export type RunStartedData = null;
 export type RunCompletedData = null;
 export type RunFailedData = null;
+
+export type RunDeniedData = {
+  error: string;
+};

@@ -23,3 +23,9 @@ export type StepFailedData = StepDescriptor & {
   outputHash?: string;
   reason: string;
 };
+
+export type StepReusedData = {
+  status: "success" | "failure";
+  outputHash?: string;
+  sourceRunId: string;
+};

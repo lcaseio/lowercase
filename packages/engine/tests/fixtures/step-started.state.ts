@@ -19,15 +19,19 @@ const message: FlowSubmittedMsg = {
 
 const runCtx = {
   flowId: message.event.flowid,
-  flowName: message.event.data.flow.name,
-  flowVersion: message.event.data.flow.version,
+  flowDefHash: "test-flow-hash",
   runId: message.event.runid,
   traceId: message.event.traceid,
+
   plannedSteps: {}, // remove step to object for set like lookup
   startedSteps: { parallel: true },
   completedSteps: {},
   failedSteps: {},
   outstandingSteps: 1,
+
+  runPlan: {
+    reuse: {},
+  },
 
   input: message.event.data.definition.inputs ?? {},
 

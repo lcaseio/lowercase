@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { runStartedPlanner } from "../../src/planners/run-started.planner.js";
 import { runStartedNewState } from "../fixtures/run-started.state.js";
-import { flowSubmittedNewState } from "../fixtures/flow-submitted.state.js";
 import { runStartedEvent } from "../fixtures/run-started.event.js";
 import type {
   EmitStepPlannedFx,
   RunStartedMsg,
 } from "../../src/engine.types.js";
+import { makeRunPlanNewState } from "../fixtures/make-run-plan.state.js";
 
 describe("runStartedPlanner", () => {
   it("returns a EmitStepPlannedFx when step status moves to planned", () => {
-    const oldState = flowSubmittedNewState;
+    const oldState = makeRunPlanNewState;
     const newState = runStartedNewState;
     const message: RunStartedMsg = {
       type: "RunStarted",
       event: runStartedEvent,
     };
 
-    const stepId = newState.flows["test-flowid"].definition.start;
+    const stepId = newState.flows["test-flowdefhash"].definition.start;
     const stepType =
-      newState.flows["test-flowid"].definition.steps[stepId].type;
+      newState.flows["test-flowdefhash"].definition.steps[stepId].type;
     const expectedEffects = {
       type: "EmitStepPlanned",
       scope: {
@@ -45,13 +45,13 @@ describe("runStartedPlanner", () => {
   });
 
   it("returns no plans when the status is not planned", () => {
-    const oldState = flowSubmittedNewState;
+    const oldState = makeRunPlanNewState;
     const newState = runStartedNewState;
     const message: RunStartedMsg = {
       type: "RunStarted",
       event: runStartedEvent,
     };
-    const stepId = newState.flows["test-flowid"].definition.start;
+    const stepId = newState.flows["test-flowdefhash"].definition.start;
     newState.runs["test-runid"].steps[stepId].status = "initialized";
 
     const effects = runStartedPlanner(oldState, newState, message);

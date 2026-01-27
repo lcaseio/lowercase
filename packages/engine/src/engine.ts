@@ -24,6 +24,7 @@ import type {
   WriteContextToDiskFx,
 } from "./engine.types.js";
 import {
+  RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
@@ -39,14 +40,13 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.8";
+  version = "0.1.0-alpha.9";
   state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;
 
   private queue: EngineMessage[] = [];
 
-  // di
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   jobParser: JobParserPort;
@@ -60,17 +60,13 @@ export class Engine {
     this.handlers = wireEffectHandlers({
       ef: this.ef,
       runIndexStore: deps.runIndexStore,
-      enqueue: this.enqueue,
+      enqueue: this.enqueue.bind(this),
+      processAll: this.processAll.bind(this),
+      artifacts: deps.artifacts,
     });
   }
 
   subscribeToTopics(): void {
-    this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
-      const event = e as AnyEvent<"flow.submitted">;
-      // TODO: parse enevelope or move this out of engine
-      this.handleFlowSubmitted(event);
-    });
-
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
@@ -86,11 +82,17 @@ export class Engine {
     this.bus.subscribe("step.started", async (e: AnyEvent) =>
       this.handleStepStarted(e),
     );
+    this.bus.subscribe("step.reused", async (e: AnyEvent) =>
+      this.handleStepFinished(e),
+    );
     this.bus.subscribe("step.completed", async (e: AnyEvent) =>
       this.handleStepFinished(e),
     );
     this.bus.subscribe("step.failed", async (e: AnyEvent) =>
       this.handleStepFinished(e),
+    );
+    this.bus.subscribe("run.requested", async (e: AnyEvent) =>
+      this.handleRunRequested(e),
     );
     this.bus.subscribe("run.started", async (e: AnyEvent) =>
       this.handleRunStarted(e),
@@ -202,15 +204,6 @@ export class Engine {
     this.processAll();
   }
 
-  handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
-    if (event.type !== "flow.submitted") return;
-    const message: FlowSubmittedMsg = { type: "FlowSubmitted", event };
-
-    this.enqueue(message);
-    if (!this.isProcessing) this.processAll();
-    return;
-  }
-
   handleJobFinished(event: AnyEvent): void {
     // parse event
     if (!event.type.endsWith(".completed") && !event.type.endsWith(".failed"))
@@ -256,13 +249,31 @@ export class Engine {
     if (!this.isProcessing) this.processAll();
   }
   handleStepFinished(e: AnyEvent): void {
-    if (e.type !== "step.completed" && e.type !== "step.failed") return;
-    const event = e as AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+    if (
+      e.type !== "step.completed" &&
+      e.type !== "step.failed" &&
+      e.type !== "step.reused"
+    )
+      return;
+    const event = e as
+      | AnyEvent<"step.completed">
+      | AnyEvent<"step.failed">
+      | AnyEvent<"step.reused">;
     const stepFinishedMsg: StepFinishedMsg = {
       type: "StepFinished",
       event,
     };
     this.enqueue(stepFinishedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleRunRequested(e: AnyEvent): void {
+    if (e.type !== "run.requested") return;
+    const event = e as AnyEvent<"run.requested">;
+    const runStartedMsg: RunRequestedMsg = {
+      type: "RunRequested",
+      event,
+    };
+    this.enqueue(runStartedMsg);
     if (!this.isProcessing) this.processAll();
   }
   handleRunStarted(e: AnyEvent): void {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { FsRunIndexStore } from "../../src/run-index-store/fs-run-index-store.js";
-import type { RunIndex } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";
 describe("FsRunIndexStore", () => {
