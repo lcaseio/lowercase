@@ -48,10 +48,9 @@ describe("stepPlannedReducer", () => {
       type: "StepPlanned",
       event: stepPlannedEvent,
     };
-    message.event.flowid = "invalid-flowid";
 
     const mutatedState = structuredClone(runStartedNewState);
-    mutatedState.runs["test-runid"].steps["test-stepid"].status = "initialized";
+    mutatedState.runs["test-runid"].steps["b"].status = "initialized";
     mutatedState.runs["test-runid"].steps["parallel"].status = "initialized";
 
     const state = stepPlannedReducer(mutatedState, message);
@@ -62,10 +61,9 @@ describe("stepPlannedReducer", () => {
       type: "StepPlanned",
       event: stepPlannedEvent,
     };
-    message.event.flowid = "invalid-flowid";
 
     const mutatedState = structuredClone(runStartedNewState);
-    delete mutatedState.runs["test-runid"].plannedSteps["test-stepid"];
+    delete mutatedState.runs["test-runid"].plannedSteps["parallel"];
 
     const state = stepPlannedReducer(mutatedState, message);
     expect(state).toEqual(mutatedState);

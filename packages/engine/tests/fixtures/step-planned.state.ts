@@ -1,64 +1,71 @@
 import type { RunContext } from "@lcase/types";
-import type {
-  EngineState,
-  FlowContext,
-  FlowSubmittedMsg,
-} from "../../src/engine.types";
-import { flowSubmittedEvent } from "./flow-submitted.event";
-import { flowAnalysis } from "./flow-analysis.state";
-const stepId = "test-stepid";
+import type { EngineState } from "../../src/engine.types";
+
+import { flowAnalysisB } from "./flow-analysis.state";
+import { flowDef } from "./flow-definition";
+
 export const stepPlannedNewState: EngineState = {
-  runs: {},
-  flows: {},
-};
+  runs: {
+    ["test-runid"]: {
+      flowId: "test-flowdefhash",
+      flowDefHash: "test-flowdefhash",
+      forkSpecHash: "test-forkspechash",
+      forkSpec: {
+        parentRunId: "test-parentrunid",
+        reuse: ["b"],
+      },
+      runIndex: {
+        flowId: "test-flowdefhash",
+        traceId: "test-traceid",
+        steps: {
+          b: { outputHash: "test-outputhash", status: "success" },
+        },
+      },
 
-const message: FlowSubmittedMsg = {
-  type: "FlowSubmitted",
-  event: flowSubmittedEvent,
-};
+      runId: "test-runid",
+      traceId: "test-traceid",
 
-const runCtx = {
-  flowId: message.event.flowid,
-  flowDefHash: "test-flow-hash",
-  runId: message.event.runid,
-  traceId: message.event.traceid,
+      // create run plan
+      runPlan: {
+        reuse: {
+          b: {
+            status: "success",
+            outputHash: "test-outputhash",
+          },
+        },
+      },
+      startedSteps: { parallel: true }, // added to started
+      plannedSteps: {}, // remove from planned
+      completedSteps: {},
+      failedSteps: {},
+      outstandingSteps: 1,
+      input: {},
+      status: "started",
 
-  runPlan: {
-    reuse: {},
+      steps: {
+        b: {
+          status: "initialized",
+          attempt: 0,
+          output: {},
+          outputHash: null,
+          resolved: {},
+        },
+        parallel: {
+          status: "started", // change to started
+          attempt: 0,
+          output: {},
+          outputHash: null,
+          resolved: {},
+        },
+      },
+
+      flowAnalysis: flowAnalysisB,
+    } satisfies RunContext,
   },
-
-  plannedSteps: {}, // remove step to object for set like lookup
-  startedSteps: { parallel: true },
-  completedSteps: {},
-  failedSteps: {},
-  outstandingSteps: 1,
-
-  input: message.event.data.definition.inputs ?? {},
-
-  status: "started",
-  steps: {
-    parallel: {
-      status: "started", // changed from planned to started
-      attempt: 0,
-      output: {},
-      resolved: {},
-      outputHash: null,
-    },
-    [stepId]: {
-      status: "initialized",
-      attempt: 0,
-      output: {},
-      resolved: {},
-      outputHash: null,
+  flows: {
+    "test-flowdefhash": {
+      definition: flowDef,
+      runIds: { "test-runid": true },
     },
   },
-  flowAnalysis: flowAnalysis,
-} satisfies RunContext;
-
-const flowCtx: FlowContext = {
-  definition: message.event.data.definition,
-  runIds: { [message.event.runid]: true },
 };
-
-stepPlannedNewState.runs[message.event.runid] = runCtx;
-stepPlannedNewState.flows[message.event.flowid] = flowCtx;
