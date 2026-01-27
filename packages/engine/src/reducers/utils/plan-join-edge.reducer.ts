@@ -26,16 +26,14 @@ export function planJoinEdge(
     }
   }
   if (allCompleted) {
-    console.log("all completed join");
     run.steps[edge.endStepId].status === "completed";
     run.completedSteps[edge.endStepId] = true;
 
     if (!fa.outEdges[edge.endStepId]) return;
     const joinOutEdge = fa.outEdges[edge.endStepId][0];
-    console.log("planning join completed next");
+
     planControlEdge(joinOutEdge, run, "onSuccess");
   } else if (allFinished === true) {
-    console.log("all failed join");
     run.steps[edge.endStepId].status === "failed";
     run.failedSteps[edge.endStepId] = true;
   }
