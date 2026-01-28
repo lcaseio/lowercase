@@ -1,6 +1,6 @@
 # lowercase
 
-### ❗ Alpha Software (v0.1.0-alpha.8)
+### ❗ Alpha Software (v0.1.0-alpha.9)
 
 **lowercase** is in an early alpha stage and still taking shape. Some things work - mostly - but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 
@@ -105,7 +105,7 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 | **@lcase/observe-web**     | Vite web observability event viewer.                         |
 | **@lcase/examples**        | Example / demo flows and servers.                            |
 
-## Alpha 8 Highlights: `v0.1.0-alpha.8`
+## Alpha 8 Highlights: `v0.1.0-alpha.9`
 
 ### Simulation Foundations
 

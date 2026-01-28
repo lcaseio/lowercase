@@ -11,7 +11,7 @@ const sessions = new Map<string, SSEServerTransport>();
 const port = 3005;
 const mcp = new McpServer({
   name: "transform-server",
-  version: "0.1.0-alpha.7",
+  version: "0.1.0-alpha.9",
   capabilities: { logging: {} },
 });
 
@@ -122,7 +122,7 @@ mcp.registerTool(
       content: [{ type: "text", text: art }],
       structuredContent: { ok: true },
     };
-  }
+  },
 );
 app.get("/health", async (req, res) => {
   return res.status(200).send("ok");
@@ -160,7 +160,7 @@ app.post(["/messages", "/messages/:sessionId"], async (req, res) => {
       "[transform-server] Error; No transport for sessionId:",
       sessionId,
       "path:",
-      req.path
+      req.path,
     );
     return res.status(400).send("No transport for sessionId");
   }

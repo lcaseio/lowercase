@@ -29,7 +29,7 @@ type McpToolContext = {
 export class McpTool implements ToolInstancePort<"mcp"> {
   id = "mcp" as const;
   name = "Internal MCP SSE Tool";
-  version = "0.1.0-alpha.7";
+  version = "0.1.0-alpha.9";
   #deps: ToolDeps;
   #context: McpToolContext = {
     isProducing: false,
@@ -39,12 +39,12 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   };
   #client: Client;
   constructor(deps: ToolDeps) {
-    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.7" });
+    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.9" });
     this.#addShutdownHooks();
     this.#deps = deps;
   }
   async invoke(
-    input: AnyEvent<"job.mcp.started">
+    input: AnyEvent<"job.mcp.started">,
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     await this.emitToolStarted(input);
 
@@ -67,7 +67,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         const reason = `[tool-mcp] result has error:${JSON.stringify(
           toolResult,
           null,
-          2
+          2,
         )}`;
         const event = await this.emitToolFailed(input, reason, toolResult);
         return event;
@@ -85,7 +85,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
       const consumerResult = await this.#consumeStream(
         this.#deps.consumer,
         data.feature.name,
-        data.args
+        data.args,
         // data.pipe.from.buffer
       );
       await this.disconnect();
@@ -100,13 +100,13 @@ export class McpTool implements ToolInstancePort<"mcp"> {
       });
       if (result.isError) {
         console.log(
-          `[tool-mcp] result has error:${JSON.stringify(result, null, 2)}`
+          `[tool-mcp] result has error:${JSON.stringify(result, null, 2)}`,
         );
         await this.disconnect();
         const reason = `[tool-mcp] result has error:${JSON.stringify(
           result,
           null,
-          2
+          2,
         )}`;
         const event = this.emitToolFailed(input, reason, result);
         return {} as ToolEvent<"tool.failed">;
@@ -138,7 +138,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   async emitToolStarted(inputEvent: AnyEvent<"job.mcp.started">) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       inputEvent,
-      "lowercase://mcp-tool"
+      "lowercase://mcp-tool",
     );
     await emitter.emit("tool.started", {
       tool: {
@@ -152,11 +152,11 @@ export class McpTool implements ToolInstancePort<"mcp"> {
 
   async emitToolCompleted(
     inputEvent: AnyEvent<"job.mcp.started">,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       inputEvent,
-      "lowercase://mcp-tool"
+      "lowercase://mcp-tool",
     );
     const event = await emitter.emit("tool.completed", {
       tool: {
@@ -173,11 +173,11 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   async emitToolFailed(
     inputEvent: AnyEvent<"job.mcp.started">,
     reason: string,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       inputEvent,
-      "lowercase://mcp-tool"
+      "lowercase://mcp-tool",
     );
     const event = await emitter.emit("tool.failed", {
       tool: {
@@ -200,7 +200,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
 
   async #produceStream(
     producer: ProducerStreamPort,
-    payloadPath?: string
+    payloadPath?: string,
   ): Promise<string> {
     const deferred = this.#deferred<string>();
     const pluck = payloadPath ? this.#pluck(payloadPath) : undefined;
@@ -227,7 +227,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
         console.log(dataBuffer);
 
         await producer.send(chunk);
-      }
+      },
     );
     this.#context.notificationHandlers.add("notifications/message");
 
@@ -238,7 +238,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
     consumer: ConsumerStreamPort,
     tool: string,
     args?: Record<string, unknown>,
-    buffer?: number
+    buffer?: number,
   ): Promise<Array<Record<string, unknown>>> {
     let chunksBuffered = 0;
     let chunkBuffer = "";
@@ -272,14 +272,14 @@ export class McpTool implements ToolInstancePort<"mcp"> {
       outBuffer.push(response.content as Record<string, unknown>);
     }
     console.log(
-      `[tool-mcp] final outBuffer: ${JSON.stringify(outBuffer, null, 2)}`
+      `[tool-mcp] final outBuffer: ${JSON.stringify(outBuffer, null, 2)}`,
     );
     return outBuffer;
   }
 
   #resolvePipeConsumerArgs<T>(
     args: Record<string, unknown>,
-    chunk: T
+    chunk: T,
   ): Record<string, unknown> {
     const newArgs: Record<string, unknown> = {}; // not mutating original args
     for (const [k, v] of Object.entries(args)) {
