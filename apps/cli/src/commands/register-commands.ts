@@ -6,6 +6,7 @@ import { WorkflowController } from "@lcase/controller";
 import { registerReplayCmd } from "./replay/replay.cmd.js";
 import { registerSimCmd } from "./sim/sim.cmd.js";
 import { ServicesPort } from "@lcase/ports";
+import { registerAddCmd } from "./add/add.cmd.js";
 
 export function registerCommands(program: Command, services: ServicesPort) {
   registerRunCmd(program, services);
@@ -13,4 +14,5 @@ export function registerCommands(program: Command, services: ServicesPort) {
   registerValidateCmd(program, services);
   registerReplayCmd(program, services);
   registerSimCmd(program, services);
+  registerAddCmd(program, services);
 }

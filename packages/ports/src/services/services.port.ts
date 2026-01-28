@@ -23,6 +23,7 @@ export interface FlowServicePort {
   startFlow(args: { absoluteFilePath?: string }): Promise<void>;
   listFlows(args: { absoluteDirPath?: string }): Promise<FlowList>;
   validateJsonFlow(blob: unknown): FlowDefinition | string;
+  storeFlowInCas(path: string): Promise<void>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;

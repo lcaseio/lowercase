@@ -3,19 +3,22 @@ import type {
   FlowStorePort,
   FlowList,
   FlowServicePort,
+  ArtifactsPort,
 } from "@lcase/ports";
 import type { FlowDefinition } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
-import { FlowSchema } from "@lcase/specs";
+import { FlowSchema, parseFlow } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { addFlowToCas, readFlowFile } from "@lcase/run-flow";
 
 export class FlowService implements FlowServicePort {
   constructor(
     private readonly bus: EventBusPort,
     private readonly ef: EmitterFactory,
     private readonly flowStore: FlowStorePort,
+    private readonly artifacts: ArtifactsPort,
   ) {}
 
   async startFlow(args: { absoluteFilePath?: string }): Promise<void> {
@@ -99,6 +102,17 @@ export class FlowService implements FlowServicePort {
       return result.data;
     } catch (err) {
       return `Invalid flow: Error parsing Json: ${err}"`;
+    }
+  }
+
+  async storeFlowInCas(path: string) {
+    const json = readFlowFile(path);
+    const result = parseFlow(json);
+    if (result.ok) {
+      const hash = await addFlowToCas(result.value, this.artifacts);
+      if (hash) console.log(`Flow CAS Hash: ${hash}`);
+    } else {
+      throw new Error(`Error adding flow to cas: ${result.error}`);
     }
   }
 

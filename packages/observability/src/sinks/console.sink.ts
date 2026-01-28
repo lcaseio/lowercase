@@ -1,6 +1,7 @@
 // stub for console.log output for observability
 
 import type { EventSink } from "@lcase/ports";
+import { hasRunId } from "@lcase/run-history";
 import { AnyEvent, EventType } from "@lcase/types";
 
 export type ConsoleSinkContext = {
@@ -41,6 +42,9 @@ export class ConsoleSink implements EventSink {
 
     let ok = "\x1b[38;2;108;235;106m[✔]\x1b[0m";
     if (event.action !== "completed") ok = "";
+    if (event.type === "run.completed" || event.type === "run.failed") {
+      if (hasRunId(event)) console.log(`runId: ${event.runid}`);
+    }
 
     let log = "";
     if (event.type === "system.logged") {
@@ -51,7 +55,7 @@ export class ConsoleSink implements EventSink {
       log = l.data.step.id + " | " + l.data.step.type;
     }
     console.log(
-      `${this.#c[event.domain]}[${event.type}]${this.#s}${ok} ${log}`
+      `${this.#c[event.domain]}[${event.type}]${this.#s}${ok} ${log}`,
     );
 
     if (this.ctx.allVerbose || this.ctx.verboseEvents.has(event.type)) {

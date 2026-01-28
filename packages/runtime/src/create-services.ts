@@ -13,7 +13,12 @@ import { ServicesPort } from "@lcase/ports";
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
 
-  const flow = new FlowService(ctx.bus, ctx.ef, new FlowStoreFs());
+  const flow = new FlowService(
+    ctx.bus,
+    ctx.ef,
+    new FlowStoreFs(),
+    ctx.artifacts,
+  );
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
   const run = new RunService(ctx.ef);

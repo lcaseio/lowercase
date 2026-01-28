@@ -52,7 +52,12 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
 
   const ef = new EmitterFactory(ctx.bus);
 
-  const flowService = new FlowService(ctx.bus, ef, new FlowStoreFs());
+  const flowService = new FlowService(
+    ctx.bus,
+    ef,
+    new FlowStoreFs(),
+    ctx.artifacts,
+  );
   const replayService = new ReplayService(ctx.replay);
   const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
 
