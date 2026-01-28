@@ -129,11 +129,4 @@ Something like this or smaller:
 
 ## License
 
-License updated to MIT.
-
-This project is licensed under [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/)
-
-You are free to use, modify, and share the source code for noncommercial purposes, including personal, educational, and research use.
-
-Commercial use is not permitted without permission from the author.
-If you're interested in commercial use or have questions, feel free to reach out.
+MIT Open Source License: [LICENSE](LICENSE)
