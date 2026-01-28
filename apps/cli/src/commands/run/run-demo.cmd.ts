@@ -24,13 +24,13 @@ export async function cliRunDemoAction(
     "http://localhost:3004/sse",
     "unicode",
     "unicode-client",
-    "0.1.0-alpha.7",
+    "0.1.0-alpha.9",
   );
   await mcpStore.addSseClient(
     "http://localhost:3005/sse",
     "transform",
     "transform-client",
-    "0.1.0-alpha.7",
+    "0.1.0-alpha.9",
   );
 
   process.once("SIGINT", async () => {
