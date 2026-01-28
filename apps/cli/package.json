@@ -19,6 +19,7 @@
     "@modelcontextprotocol/sdk": "^1.19.1",
     "@lcase/observability": "workspace:*",
     "@lcase/runtime": "workspace:*",
+    "@lcase/specs": "workspace:*",
     "commander": "^14.0.1",
     "ws": "^8.18.3",
     "zod": "3.25.76"

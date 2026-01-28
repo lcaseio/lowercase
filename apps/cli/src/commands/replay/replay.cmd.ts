@@ -1,4 +1,3 @@
-import { WorkflowController } from "@lcase/controller";
 import { ServicesPort } from "@lcase/ports";
 import { Command } from "commander";
 

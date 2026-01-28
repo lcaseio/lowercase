@@ -3,8 +3,6 @@ import fs from "fs";
 import { resolveCliPath } from "../../resolve-path.js";
 
 import { FlowSchema } from "@lcase/specs";
-import { WorkflowController } from "@lcase/controller";
-import { Services } from "../../../../../packages/services/dist/types.js";
 import { ServicesPort } from "@lcase/ports";
 
 export function cliValidateAction(flowPath: string) {

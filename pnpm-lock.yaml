@@ -29,6 +29,9 @@ importers:
       '@lcase/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
+      '@lcase/specs':
+        specifier: workspace:*
+        version: link:../../packages/specs
       '@modelcontextprotocol/sdk':
         specifier: ^1.19.1
         version: 1.19.1
