@@ -1,6 +1,6 @@
 # Oservability Event Docs
 
-Updated for `v0.1.0-alpha.8`
+Updated for `v0.1.0-alpha.9`
 
 ## Status
 

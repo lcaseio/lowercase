@@ -1,4 +1,4 @@
-import { RunContext, StepContext } from "@lcase/types/engine";
+import { RunContext, StepContext } from "@lcase/types";
 
 export interface StepRunnerPort {
   run(context: RunContext, stepId: string): void;

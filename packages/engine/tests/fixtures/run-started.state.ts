@@ -1,60 +1,70 @@
-import type { RunContext } from "@lcase/types/engine";
-import type {
-  EngineState,
-  FlowContext,
-  FlowSubmittedMsg,
-} from "../../src/engine.types";
-import { flowSubmittedEvent } from "./flow-submitted.event";
-import { flowAnalysis } from "./flow-analysis.state";
+import type { RunContext } from "@lcase/types";
+import type { EngineState } from "../../src/engine.types";
+import { flowAnalysisB } from "./flow-analysis.state";
+import { flowDef } from "./flow-definition";
 
-const stepId = "test-stepid";
 export const runStartedNewState: EngineState = {
-  runs: {},
-  flows: {},
-};
+  runs: {
+    ["test-runid"]: {
+      flowId: "test-flowdefhash",
+      flowDefHash: "test-flowdefhash",
+      forkSpecHash: "test-forkspechash",
+      forkSpec: {
+        parentRunId: "test-parentrunid",
+        reuse: ["b"],
+      },
+      runIndex: {
+        flowId: "test-flowdefhash",
+        traceId: "test-traceid",
+        steps: {
+          b: { outputHash: "test-outputhash", status: "success" },
+        },
+      },
 
-const message: FlowSubmittedMsg = {
-  type: "FlowSubmitted",
-  event: flowSubmittedEvent,
-};
+      runId: "test-runid",
+      traceId: "test-traceid",
 
-const runCtx = {
-  flowId: message.event.flowid,
-  flowName: message.event.data.flow.name,
-  flowVersion: message.event.data.flow.version,
-  runId: message.event.runid,
-  traceId: message.event.traceid,
-  plannedSteps: { parallel: true }, // add step to object for set like lookup
-  startedSteps: {},
-  completedSteps: {},
-  failedSteps: {},
-  outstandingSteps: 1, // incremented as planned is considered outstanding
+      // create run plan
+      runPlan: {
+        reuse: {
+          b: {
+            status: "success",
+            outputHash: "test-outputhash",
+          },
+        },
+      },
+      startedSteps: {},
+      plannedSteps: { parallel: true }, // add step to object for set like lookup
+      completedSteps: {},
+      failedSteps: {},
+      outstandingSteps: 1, // incremented as planned is considered outstanding
+      input: {},
+      status: "started",
 
-  input: message.event.data.definition.inputs ?? {},
-  status: "started",
-  steps: {
-    parallel: {
-      status: "planned", // changed from initialized to planned
-      attempt: 0,
-      output: {},
-      resolved: {},
-      outputHash: null,
-    },
-    [stepId]: {
-      status: "initialized",
-      attempt: 0,
-      output: {},
-      resolved: {},
-      outputHash: null,
+      steps: {
+        b: {
+          status: "initialized",
+          attempt: 0,
+          output: {},
+          outputHash: null,
+          resolved: {},
+        },
+        parallel: {
+          status: "planned", // change to planned
+          attempt: 0,
+          output: {},
+          outputHash: null,
+          resolved: {},
+        },
+      },
+
+      flowAnalysis: flowAnalysisB,
+    } satisfies RunContext,
+  },
+  flows: {
+    "test-flowdefhash": {
+      definition: flowDef,
+      runIds: { "test-runid": true },
     },
   },
-  flowAnalysis: flowAnalysis,
-} satisfies RunContext;
-
-const flowCtx: FlowContext = {
-  definition: message.event.data.definition,
-  runIds: { [message.event.runid]: true },
 };
-
-runStartedNewState.runs[message.event.runid] = runCtx;
-runStartedNewState.flows[message.event.flowid] = flowCtx;

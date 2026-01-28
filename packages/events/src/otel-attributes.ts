@@ -15,6 +15,12 @@ export const stepOtelAttributes = {
     domain: "step",
     entity: undefined,
   },
+  "step.reused": {
+    action: "reused",
+    domain: "step",
+    entity: undefined,
+  },
+
   "step.started": {
     action: "started",
     domain: "step",
@@ -79,6 +85,16 @@ export const engineOtelAttributesMap = {
 } satisfies EngineOtelAttributesMap;
 
 export const runOtelAttributesMap = {
+  "run.requested": {
+    action: "requested",
+    domain: "run",
+    entity: undefined,
+  },
+  "run.denied": {
+    action: "denied",
+    domain: "run",
+    entity: undefined,
+  },
   "run.completed": {
     action: "completed",
     domain: "run",

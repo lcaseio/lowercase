@@ -1,11 +1,18 @@
-import type { EventBusPort, EventSink } from "@lcase/ports";
+import type {
+  EventBusPort,
+  EventSink,
+  ObservabilityTapPort,
+} from "@lcase/ports";
 import { AnyEvent } from "@lcase/types";
 
-export class ObservabilityTap {
+export class ObservabilityTap implements ObservabilityTapPort {
   #subscribeTopic = "observability";
   #sinks = new Map<string, EventSink>();
 
-  constructor(private readonly bus: EventBusPort, sinks?: EventSink[]) {
+  constructor(
+    private readonly bus: EventBusPort,
+    sinks?: EventSink[],
+  ) {
     if (sinks) sinks.forEach((s) => this.#sinks.set(s.id, s));
   }
 

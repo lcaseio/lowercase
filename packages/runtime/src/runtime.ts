@@ -11,10 +11,10 @@ import {
   ArtifactsPort,
   EventBusPort,
   JobParserPort,
+  RunIndexStorePort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
-  makeArtifactsFactory,
   makeBusFactory,
   makeQueueFactory,
 } from "./factories/registry.factory.js";
@@ -28,27 +28,55 @@ import {
   ConsoleSink,
   ObservabilityTap,
   ReplaySink,
+  RunIndexSink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
-import { FlowService, ReplayService } from "@lcase/services";
+import {
+  FlowService,
+  ReplayService,
+  SimService,
+  SystemService,
+} from "@lcase/services";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
 import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
-import { Artifacts } from "@lcase/artifacts";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
+import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
 
   const ef = new EmitterFactory(ctx.bus);
 
-  const flowService = new FlowService(ctx.bus, ef, new FlowStoreFs());
+  const flowService = new FlowService(
+    ctx.bus,
+    ef,
+    new FlowStoreFs(),
+    ctx.artifacts,
+  );
   const replayService = new ReplayService(ctx.replay);
-  const runtime = new WorkflowRuntime(ctx, { flowService, replayService });
+  const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+
+  const systemService = new SystemService({
+    bus: ctx.bus,
+    ef: ctx.ef,
+    engine: ctx.engine,
+    limiter: ctx.limiter,
+    router: ctx.router,
+    sinks: ctx.sinks,
+    tap: ctx.tap,
+    worker: ctx.worker,
+  });
+  const runtime = new WorkflowRuntime(ctx, {
+    flowService,
+    replayService,
+    simService,
+    systemService,
+  });
   return runtime;
 }
 
@@ -56,7 +84,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const busFactory = makeBusFactory(
     config.bus.placement,
     config.bus.transport,
-    config.bus.store
+    config.bus.store,
   );
 
   const bus = busFactory();
@@ -64,7 +92,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const queueFactory = makeQueueFactory(
     config.queue.placement,
     config.queue.transport,
-    config.queue.store
+    config.queue.store,
   );
   const queue = queueFactory();
 
@@ -75,9 +103,19 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const engine = createInProcessEngine(bus, ef, jobParser);
+  const runIndexStore = new FsRunIndexStore(
+    path.join(process.cwd(), "runs/index"),
+  );
 
   const artifacts = createArtifacts(config.artifacts);
+  const engine = createInProcessEngine(
+    bus,
+    ef,
+    jobParser,
+    runIndexStore,
+    artifacts,
+  );
+
   const worker = createInProcessWorker(
     config.worker.id,
     bus,
@@ -86,7 +124,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     jobParser,
     artifacts,
-    config.worker
+    config.worker,
   );
 
   const { tap, sinks } = createObservability(config.observability, bus);
@@ -97,7 +135,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const replay = new ReplayEngine(
     new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
     bus,
-    ef
+    ef,
   );
 
   return {
@@ -112,15 +150,22 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     ef,
     replay,
     limiter,
+    artifacts,
+    runIndexStore,
   };
 }
 
 export function createObservability(
   config: ObservabilityConfig,
-  bus: EventBusPort
+  bus: EventBusPort,
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
+  tap.attachSink(
+    new RunIndexSink(
+      new FsRunIndexStore(path.join(process.cwd(), "runs", "index")),
+    ),
+  );
   if (config.sinks) {
     for (const sink of config.sinks) {
       // TODO: move sink settings to config, not hardcoded
@@ -140,7 +185,7 @@ export function createObservability(
         case "websocket-sink":
           if (config.webSocketPort !== undefined) {
             const webSocketServerSink = new WebSocketServerSink(
-              config.webSocketPort
+              config.webSocketPort,
             );
             sinks["websocket-sink"] = webSocketServerSink;
             tap.attachSink(webSocketServerSink);
@@ -163,13 +208,17 @@ export function createObservability(
 
 export function createInProcessEngine(
   bus: EventBusPort,
-  emitterFactory: EmitterFactory,
-  jobParser: JobParserPort
+  ef: EmitterFactory,
+  jobParser: JobParserPort,
+  runIndexStore: RunIndexStorePort,
+  artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({
     bus,
-    ef: emitterFactory,
+    ef,
     jobParser,
+    runIndexStore,
+    artifacts,
   });
 
   return engine;
@@ -183,7 +232,7 @@ export function createInProcessWorker(
   emitterFactory: EmitterFactory,
   jobParser: JobParserPort,
   artifacts: ArtifactsPort,
-  config: WorkerConfig
+  config: WorkerConfig,
 ): Worker {
   const toolRegistry = new ToolRegistry(allToolBindingsMap);
   const worker = new Worker(id, {

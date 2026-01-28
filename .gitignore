@@ -24,6 +24,8 @@ run-artifacts/
 # os files
 .DS_Store
 
+# test coverage reports
+coverage/
 
 # logs
 logs

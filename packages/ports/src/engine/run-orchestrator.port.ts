@@ -1,4 +1,4 @@
-import { RunContext } from "@lcase/types/engine";
+import { RunContext } from "@lcase/types";
 
 export interface RunOrchestratorPort {
   handleStepOutcome(outcome: StepOutcome, ctx: RunContext): void;

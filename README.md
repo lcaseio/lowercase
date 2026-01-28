@@ -1,6 +1,6 @@
 # lowercase
 
-### ❗ Alpha Software (v0.1.0-alpha.8)
+### ❗ Alpha Software (v0.1.0-alpha.9)
 
 **lowercase** is in an early alpha stage and still taking shape. Some things work - mostly - but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 
@@ -12,7 +12,7 @@ Every component, from queues to workers, communicates through events, allowing f
 
 ## Current State
 
-In brief, currently the system has several in process components: engine, event bus, router, queues, worker, tools, limiter, and observability sinks + tap. An electron desktop app wires up the runtime to run flows from disk. A cli also runs flows, validates them, and optionally plugs into a web socket observability frontend, currently un-wired.
+In brief, currently the system has several in process components: engine, event bus, router, queues, worker, tools, limiter, and observability sinks + tap. An electron desktop app used to run flows, but the architecture is shifting and it is deprecated. A cli runs flows, validates them, runs forked sims, and optionally plugs into a web socket observability frontend, currently un-wired.
 
 ## Quickstart
 
@@ -33,36 +33,39 @@ pnpm install
 pnpm build
 ```
 
-### 2. run demo
-
-#### Desktop Demo
-
-```bash
-pnpm -F @lcase/desktop dev
-```
-
-Basic desktop usage:
-
-- Select a folder that contains flow definitions with the "folder button
-- Start the runtime with the "start" button
-- Run a flow with the "run" button
-- Click on events to see their details, and click "clear" to clear the event list
+### 2. Run With CLI
 
 #### CLI Parallel and Join Demo
 
 See [examples/parallel.flow.json](examples/parallel.flow.json) for the JSON flow definition.
 
+#### Add flow definition to CAS:
+
 ```bash
-pnpm -F @lcase/cli start run examples/parallel.flow.json
+pnpm -F @lcase/cli start add ./examples/parallel.flow.json
 ```
 
-### Examples
+#### Run flow with CAS hash:
 
-#### Demo flow executed in desktop application
+```bash
+pnpm -F @lcase/cli start run c6118f8f8c1a4545fba2249fb88f23e452605b0bd26f4620e9d1664b73ecd3db
+```
+
+#### Fork and Simulate the run from the resulting run id, reusing step `two`
+
+```bash
+pnpm -F @lcase/cli start sim run-e26b174c-ee72-4302-87bd-6d1b1f0c042c -r two
+```
+
+## Electron App (deprecated)
+
+#### Example of a demo flow being executed using the desktop app.
+
+Currently the desktop app is being rewritten to eventually be ported to Tauri via an http server + frontend.
 
 ![Electron Desktop](desktop.png)
 
-#### Basic Observability WebSocket Event Viewer
+### Basic Observability WebSocket Event Viewer (un-wired)
 
 This event viewer `@lcase/observe-web` is currently un-wired from the cli by default but can be wired in.
 
@@ -98,45 +101,32 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 | **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference. |
 | **@lcase/artifacts**       | JSON CAS file system store.                                  |
 | **@lcase/runtime**         | Wires up a configurable runtime.                             |
-| **@lcase/controller**      | Defines an api interface for backend apps.                   |
 | **@lcase/services**        | Implements grouped application logic.                        |
 | **@lcase/cli**             | CLI for running and validating flows.                        |
 | **@lcase/desktop**         | Electron desktop application.                                |
 | **@lcase/observe-web**     | Vite web observability event viewer.                         |
 | **@lcase/examples**        | Example / demo flows and servers.                            |
 
-## Alpha 8 Highlights: `v0.1.0-alpha.8`
+## Alpha 9 Highlights
 
-### Simulation Foundations
+### Simulation Basics
 
-Prepares for run simulation by adding a few pieces:
+- Add a simple `RunIndex` format to quickly read step outputs from a previous run.
+- Reference flow definitions and `ForkSpec` by hashes in CAS.
+- Engine uses `ForkSpec` + `RunIndex` to create a `RunPlan`.
+- Add a CLI command to run a forked simulation and store flows in CAS.
 
-- `packages/flow-analysis` for validation and template string binding.
-- `packages/json-ref-bind` for reading a template reference binding it to a value.
-- `packages/artifacts` + `packages/adapters/artifact-store` for JSON CAS used in storing artifacts related to runs.
-- Limiter component for event based tool concurrency limits (rate limit added later)
-- Remove scheduler from concurrency or tool resolution.
-- Small replay observability sink and jsonl store for storing all run events.
+## Next for Alpha 10
 
-## Next for Alpha 9
-
-### Milestone: Simulation
+### Milestone: HTTP Server + React UI
 
 Something like this or smaller:
 
-- Broader CAS for reusing run artifacts
-- Fork runs
-- Override inputs/steps
-- Reuse outputs from parent runs
-- Force rerun + cascade
+- Wrap existing services in an HTTP Rest API server.
+- Implement an browser web front end that communicates with the HTTP server.
+- Scaffold the outline of sections for a reusable UI across deployments.
+- Add basic UI functions for listing flows, viewing flows trees, running flows.
 
 ## License
 
-License may change to MIT later but currently:
-
-This project is licensed under [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/)
-
-You are free to use, modify, and share the source code for noncommercial purposes, including personal, educational, and research use.
-
-Commercial use is not permitted without permission from the author.
-If you're interested in commercial use or have questions, feel free to reach out.
+MIT Open Source License: [LICENSE](LICENSE)

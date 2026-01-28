@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "private": "true",
   "type": "module",
   "exports": {
@@ -35,6 +35,10 @@
     "./artifact-store": {
       "types": "./dist/artifact-store/index.d.ts",
       "import": "./dist/artifact-store/index.js"
+    },
+    "./run-index-store": {
+      "types": "./dist/run-index-store/index.d.ts",
+      "import": "./dist/run-index-store/index.js"
     }
   },
   "scripts": {

@@ -1,13 +1,23 @@
-import { FlowService, ReplayService, type Services } from "@lcase/services";
+import {
+  FlowService,
+  ReplayService,
+  SimService,
+  type Services,
+} from "@lcase/services";
 import { RuntimeContext } from "./types/runtime.context.js";
 import { EventSink, RuntimeStatus } from "@lcase/ports";
 
 export class WorkflowRuntime {
   flow: FlowService;
   replay: ReplayService;
-  constructor(private readonly ctx: RuntimeContext, services: Services) {
+  sim: SimService;
+  constructor(
+    public readonly ctx: RuntimeContext,
+    services: Services,
+  ) {
     this.flow = services.flowService;
     this.replay = services.replayService;
+    this.sim = services.simService;
   }
 
   async startRuntime(): Promise<RuntimeStatus> {

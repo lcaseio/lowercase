@@ -1,6 +1,6 @@
 {
   "name": "@lcase/json-ref-binder",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
   "exports": {
@@ -20,6 +20,7 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {},
   "devDependencies": {
+    "@vitest/coverage-v8": "3.2.4",
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
     "vitest": "^3.2.4"

@@ -26,6 +26,13 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
     if (stepContext.status !== "planned") return;
     if (!run.plannedSteps[stepId]) return;
 
+    if (run.runPlan.reuse[stepId]) {
+      stepContext.status = "reused";
+      delete run.plannedSteps[stepId];
+      stepContext.outputHash = run.runPlan.reuse[stepId].outputHash ?? null;
+      return;
+    }
+
     stepContext.status = "started";
     delete run.plannedSteps[stepId];
     run.startedSteps[stepId] = true;

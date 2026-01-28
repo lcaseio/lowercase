@@ -1,4 +1,8 @@
-import type { EmitterFactoryPort, QueuePort } from "@lcase/ports";
+import type {
+  ArtifactsPort,
+  EmitterFactoryPort,
+  RunIndexStorePort,
+} from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
@@ -7,12 +11,9 @@ import type {
   FlowDefinition,
   FlowFailedData,
   FlowScope,
-  FlowStartedData,
   JobCompletedEvent,
   JobFailedEvent,
-  JobHttpJsonData,
   JobHttpJsonSubmittedData,
-  JobMcpData,
   JobMcpSubmittedData,
   JobScope,
   RunCompletedData,
@@ -25,12 +26,25 @@ import type {
   StepScope,
   StepStartedData,
 } from "@lcase/types";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 import type {
+  FlowDefResultMsg,
+  ForkSpecResultMsg,
+  MakeRunPlanMsg,
+  RunIndexResultMsg,
+  RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
 } from "./types/message.types.js";
+import type {
+  EmitRunDeniedFx,
+  EmitStepReusedFx,
+  GetFlowDefFx,
+  GetForkSpecFx,
+  GetRunIndexFx,
+  MakeRunPlanFx,
+} from "./types/effect.types.js";
 
 type FlowId = string;
 export type EngineState = {
@@ -119,7 +133,11 @@ export type UpdateJoinMsg = {
 };
 
 export type EngineMessage =
-  | FlowSubmittedMsg
+  | FlowDefResultMsg
+  | ForkSpecResultMsg
+  | RunIndexResultMsg
+  | MakeRunPlanMsg
+  | RunRequestedMsg
   | RunStartedMsg
   | RunFinishedMsg
   | StepPlannedMsg
@@ -231,21 +249,27 @@ export type EngineEffect =
   | EmitRunStartedFx
   | EmitJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
+  | EmitRunDeniedFx
   | EmitRunCompletedFx
   | EmitRunFailedFx
   | EmitStepPlannedFx
+  | EmitStepReusedFx
   | EmitStepStartedFx
   | EmitStepCompletedFx
   | EmitStepFailedFx
   | EmitFlowAnalyzedFx
   | EmitFlowCompletedFx
+  | EmitFlowFailedFx
   | WriteContextToDiskFx
-  | EmitFlowFailedFx;
+  | GetFlowDefFx
+  | GetForkSpecFx
+  | GetRunIndexFx
+  | MakeRunPlanFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
   state: EngineState,
-  message: M
+  message: M,
 ) => EngineState;
 
 export type ReducerRegistry = {
@@ -256,7 +280,7 @@ export type ReducerRegistry = {
 export type Planner<M extends EngineMessage = EngineMessage> = (
   oldState: EngineState,
   newState: EngineState,
-  message: M
+  message: M,
 ) => EngineEffect[];
 
 export type PlannerRegistry = {
@@ -266,11 +290,11 @@ export type PlannerRegistry = {
 // handlers
 export type EffectHandler<T extends EngineEffect["type"]> = (
   effect: Extract<EngineEffect, { type: T }>,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => void | Promise<void>;
 
 export type EffectHandlerWrapped<T extends EngineEffect["type"]> = (
-  effect: Extract<EngineEffect, { type: T }>
+  effect: Extract<EngineEffect, { type: T }>,
 ) => void | Promise<void>;
 
 export type EffectHandlerRegistry = {
@@ -278,4 +302,8 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
+  runIndexStore: RunIndexStorePort;
+  enqueue: (message: EngineMessage) => void;
+  processAll: () => void;
+  artifacts: ArtifactsPort;
 };

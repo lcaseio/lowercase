@@ -1,5 +1,6 @@
 packages:
   - packages/*
+  - packages/use-cases/*
   - apps/*
   - examples/
 

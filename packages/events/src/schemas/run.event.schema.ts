@@ -3,7 +3,9 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 import { RunScope, AnyEvent } from "@lcase/types";
 import {
   RunCompletedDataSchema,
+  RunDeniedDataSchema,
   RunFailedDataSchema,
+  RunRequestedDataSchema,
   RunStartedDataSchema,
 } from "./run.data.schema.js";
 
@@ -15,6 +17,17 @@ export const RunContextSchema = z
   })
   .strict() satisfies z.ZodType<RunScope>;
 
+export const RunRequestedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...RunContextSchema.shape,
+    type: z.literal("run.requested"),
+    entity: z.undefined().optional(),
+    action: z.literal("requested"),
+    data: RunRequestedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"run.requested">>;
+
 export const RunStartedSchema = CloudEventContextSchema.merge(RunContextSchema)
   .merge(
     z.object({
@@ -22,12 +35,12 @@ export const RunStartedSchema = CloudEventContextSchema.merge(RunContextSchema)
       entity: z.undefined().optional(),
       action: z.literal("started"),
       data: RunStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"run.started">>;
 
 export const RunCompletedSchema = CloudEventContextSchema.merge(
-  RunContextSchema
+  RunContextSchema,
 )
   .merge(
     z.object({
@@ -35,7 +48,7 @@ export const RunCompletedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("completed"),
       data: RunCompletedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"run.completed">>;
 
@@ -46,6 +59,17 @@ export const RunFailedSchema = CloudEventContextSchema.merge(RunContextSchema)
       entity: z.undefined().optional(),
       action: z.literal("failed"),
       data: RunFailedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"run.failed">>;
+
+export const RunDeniedSchema = z
+  .object({
+    ...CloudEventContextSchema.shape,
+    ...RunContextSchema.shape,
+    type: z.literal("run.denied"),
+    entity: z.undefined().optional(),
+    action: z.literal("denied"),
+    data: RunDeniedDataSchema,
+  })
+  .strict() satisfies z.ZodType<AnyEvent<"run.denied">>;

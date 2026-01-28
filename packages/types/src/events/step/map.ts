@@ -3,6 +3,7 @@ import {
   StepCompletedData,
   StepFailedData,
   StepPlannedData,
+  StepReusedData,
   StepStartedData,
 } from "./data.js";
 
@@ -15,6 +16,7 @@ export type StepEventMap = {
     StepCompletedData
   >;
   "step.failed": DomainActionDescriptor<"step", "failed", StepFailedData>;
+  "step.reused": DomainActionDescriptor<"step", "reused", StepReusedData>;
 };
 
 export type StepEventType = Extract<keyof StepEventMap, `step.${string}`>;

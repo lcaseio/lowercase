@@ -18,7 +18,7 @@ export const stepPlannedEvent: AnyEvent<"step.planned"> = {
   traceparent: "test-traceparent",
   traceid: "test-traceid",
   spanid: "test-spanid",
-  flowid: "test-flowid",
+  flowid: "test-flowdefhash",
   runid: "test-runid",
   stepid: "parallel",
   steptype: "parallel",

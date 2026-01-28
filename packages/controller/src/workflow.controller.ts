@@ -6,6 +6,7 @@ import type {
 } from "@lcase/ports";
 import { WorkflowRuntime } from "@lcase/runtime";
 import { FlowQueuedData } from "@lcase/types";
+import { ForkSpecController } from "./fork-spec.controller.js";
 
 export class WorkflowController implements ServerControllerPort {
   constructor(private readonly runtime: WorkflowRuntime) {}

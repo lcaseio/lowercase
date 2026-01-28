@@ -24,6 +24,7 @@ import type {
   WriteContextToDiskFx,
 } from "./engine.types.js";
 import {
+  RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
   StepStartedMsg,
@@ -39,14 +40,13 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.8";
+  version = "0.1.0-alpha.9";
   state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;
 
   private queue: EngineMessage[] = [];
 
-  // di
   bus: EventBusPort;
   ef: EmitterFactoryPort;
   jobParser: JobParserPort;
@@ -57,16 +57,16 @@ export class Engine {
     this.ef = this.deps.ef;
     this.jobParser = this.deps.jobParser;
 
-    this.handlers = wireEffectHandlers({ ef: this.ef });
+    this.handlers = wireEffectHandlers({
+      ef: this.ef,
+      runIndexStore: deps.runIndexStore,
+      enqueue: this.enqueue.bind(this),
+      processAll: this.processAll.bind(this),
+      artifacts: deps.artifacts,
+    });
   }
 
   subscribeToTopics(): void {
-    this.bus.subscribe("flow.submitted", async (e: AnyEvent) => {
-      const event = e as AnyEvent<"flow.submitted">;
-      // TODO: parse enevelope or move this out of engine
-      this.handleFlowSubmitted(event);
-    });
-
     this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
@@ -74,28 +74,34 @@ export class Engine {
       this.handleJobFinished(e);
     });
     this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>
-      this.handleReplayModeSubmitted(e)
+      this.handleReplayModeSubmitted(e),
     );
     this.bus.subscribe("step.planned", async (e: AnyEvent) =>
-      this.handleStepPlanned(e)
+      this.handleStepPlanned(e),
     );
     this.bus.subscribe("step.started", async (e: AnyEvent) =>
-      this.handleStepStarted(e)
+      this.handleStepStarted(e),
+    );
+    this.bus.subscribe("step.reused", async (e: AnyEvent) =>
+      this.handleStepFinished(e),
     );
     this.bus.subscribe("step.completed", async (e: AnyEvent) =>
-      this.handleStepFinished(e)
+      this.handleStepFinished(e),
     );
     this.bus.subscribe("step.failed", async (e: AnyEvent) =>
-      this.handleStepFinished(e)
+      this.handleStepFinished(e),
+    );
+    this.bus.subscribe("run.requested", async (e: AnyEvent) =>
+      this.handleRunRequested(e),
     );
     this.bus.subscribe("run.started", async (e: AnyEvent) =>
-      this.handleRunStarted(e)
+      this.handleRunStarted(e),
     );
     this.bus.subscribe("run.completed", async (e: AnyEvent) =>
-      this.handleRunFinished(e)
+      this.handleRunFinished(e),
     );
     this.bus.subscribe("run.failed", async (e: AnyEvent) =>
-      this.handleRunFinished(e)
+      this.handleRunFinished(e),
     );
   }
 
@@ -154,7 +160,7 @@ export class Engine {
   }
 
   executeEffect<T extends EngineEffect["type"]>(
-    effect: Extract<EngineEffect, { type: T }>
+    effect: Extract<EngineEffect, { type: T }>,
   ): void {
     if (!this.enableSideEffects && effect.type !== "WriteContextToDisk") return;
 
@@ -196,15 +202,6 @@ export class Engine {
   submitExternal(message: EngineMessage) {
     this.queue.push(message);
     this.processAll();
-  }
-
-  handleFlowSubmitted(event: AnyEvent<"flow.submitted">): void {
-    if (event.type !== "flow.submitted") return;
-    const message: FlowSubmittedMsg = { type: "FlowSubmitted", event };
-
-    this.enqueue(message);
-    if (!this.isProcessing) this.processAll();
-    return;
   }
 
   handleJobFinished(event: AnyEvent): void {
@@ -252,13 +249,31 @@ export class Engine {
     if (!this.isProcessing) this.processAll();
   }
   handleStepFinished(e: AnyEvent): void {
-    if (e.type !== "step.completed" && e.type !== "step.failed") return;
-    const event = e as AnyEvent<"step.completed"> | AnyEvent<"step.failed">;
+    if (
+      e.type !== "step.completed" &&
+      e.type !== "step.failed" &&
+      e.type !== "step.reused"
+    )
+      return;
+    const event = e as
+      | AnyEvent<"step.completed">
+      | AnyEvent<"step.failed">
+      | AnyEvent<"step.reused">;
     const stepFinishedMsg: StepFinishedMsg = {
       type: "StepFinished",
       event,
     };
     this.enqueue(stepFinishedMsg);
+    if (!this.isProcessing) this.processAll();
+  }
+  handleRunRequested(e: AnyEvent): void {
+    if (e.type !== "run.requested") return;
+    const event = e as AnyEvent<"run.requested">;
+    const runStartedMsg: RunRequestedMsg = {
+      type: "RunRequested",
+      event,
+    };
+    this.enqueue(runStartedMsg);
     if (!this.isProcessing) this.processAll();
   }
   handleRunStarted(e: AnyEvent): void {

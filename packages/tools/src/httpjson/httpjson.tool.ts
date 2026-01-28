@@ -17,7 +17,7 @@ type GetResponseBody =
 
 export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   id = "httpjson" as const;
-  version = "0.1.0-alpha.7";
+  version = "0.1.0-alpha.9";
   name = "Internal Http Json Tool";
   #deps: ToolDeps;
   constructor(deps: ToolDeps) {
@@ -25,7 +25,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   }
 
   async invoke(
-    event: AnyEvent<"job.httpjson.started">
+    event: AnyEvent<"job.httpjson.started">,
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">> {
     await this.emitToolStarted(event);
 
@@ -39,7 +39,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
         method: event.data.method,
         body: inputBody,
       },
-      event
+      event,
     );
 
     if (r.error) return r.event;
@@ -76,7 +76,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
 
   async getResponseBody(
     r: Response,
-    event: AnyEvent<"job.httpjson.started">
+    event: AnyEvent<"job.httpjson.started">,
   ): Promise<GetResponseBody> {
     try {
       const contentType = r.headers.get("content-type");
@@ -93,8 +93,8 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
         `Could not parse response as json. respones: ${JSON.stringify(
           r,
           null,
-          2
-        )}; error: ${err};`
+          2,
+        )}; error: ${err};`,
       );
       return { error: true, event: e };
     }
@@ -107,7 +107,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
       headers?: Headers;
       body?: string;
     },
-    event: AnyEvent<"job.httpjson.started">
+    event: AnyEvent<"job.httpjson.started">,
   ): Promise<ResponseObject> {
     try {
       const { url, method, headers, body } = args;
@@ -120,7 +120,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
     } catch (err) {
       const e = await this.emitToolFailed(
         event,
-        `[httpjson-tool] error fetching ${args.url}: ${err}`
+        `[httpjson-tool] error fetching ${args.url}: ${err}`,
       );
       return { error: true, event: e };
     }
@@ -143,7 +143,7 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   async emitToolStarted(event: AnyEvent<"job.httpjson.started">) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       event,
-      "lowercase://httpjson-tool/emit-tool-started"
+      "lowercase://httpjson-tool/emit-tool-started",
     );
     await emitter.emit("tool.started", {
       tool: {
@@ -157,11 +157,11 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
 
   async emitToolCompleted(
     event: AnyEvent<"job.httpjson.started">,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<ToolEvent<"tool.completed">> {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       event,
-      "lowercase://httpjson-tool/emit-tool-compelted"
+      "lowercase://httpjson-tool/emit-tool-compelted",
     );
     const e = await emitter.emit("tool.completed", {
       tool: {
@@ -177,11 +177,11 @@ export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   async emitToolFailed(
     event: AnyEvent<"job.httpjson.started">,
     reason: string,
-    payload?: Record<string, unknown>
+    payload?: Record<string, unknown>,
   ) {
     const emitter = this.#deps.ef.newToolEmitterFromEvent(
       event,
-      "lowercase://httpjson-tool/emit-tool-compelted"
+      "lowercase://httpjson-tool/emit-tool-compelted",
     );
     return await emitter.emit("tool.failed", {
       tool: {

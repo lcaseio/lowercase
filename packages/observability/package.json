@@ -1,6 +1,6 @@
 {
   "name": "@lcase/observability",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,7 +19,8 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "@lcase/run-history": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

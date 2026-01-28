@@ -3,6 +3,8 @@ import type {
   RouterPort,
   QueuePort,
   LimiterPort,
+  ArtifactsPort,
+  RunIndexStorePort,
 } from "@lcase/ports";
 import { Worker } from "@lcase/worker";
 import { FlowStore } from "@lcase/adapters/flow-store";
@@ -34,4 +36,6 @@ export type RuntimeContext = {
   ef: EmitterFactory;
   replay: ReplayEngine;
   limiter: LimiterPort;
+  artifacts: ArtifactsPort;
+  runIndexStore: RunIndexStorePort;
 };

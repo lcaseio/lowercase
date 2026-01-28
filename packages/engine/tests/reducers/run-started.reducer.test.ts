@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { runStartedReducer } from "../../src/reducers/run-started.reducuer.js";
+import { runStartedReducer } from "../../src/reducers/run-started.reducer.js";
 import { EngineState, RunStartedMsg } from "../../src/engine.types.js";
 import { runStartedEvent } from "../fixtures/run-started.event.js";
-import { flowSubmittedNewState } from "../fixtures/flow-submitted.state.js";
 import { runStartedNewState } from "../fixtures/run-started.state.js";
+import { makeRunPlanNewState } from "../fixtures/make-run-plan.state.js";
 
 describe("runStartedReducer", () => {
   it("updates start step + run status to planned when state is initialized", () => {
@@ -12,12 +12,8 @@ describe("runStartedReducer", () => {
       event: runStartedEvent,
     };
 
-    // state the flowSubmittedReducer produced
-    const oldState: EngineState = flowSubmittedNewState;
-    const newState: EngineState = runStartedNewState;
-
-    const state = runStartedReducer(oldState, message);
-    expect(state).toEqual(newState);
+    const state = runStartedReducer(makeRunPlanNewState, message);
+    expect(state).toEqual(runStartedNewState);
   });
   it("makes no changes when no run context is found for runid", () => {
     const message: RunStartedMsg = {
@@ -26,7 +22,7 @@ describe("runStartedReducer", () => {
     };
 
     // state the flowSubmittedReducer produced
-    const oldState: EngineState = structuredClone(flowSubmittedNewState);
+    const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
     delete oldState.runs["test-runid"];
     const newState: EngineState = runStartedNewState;
@@ -41,9 +37,9 @@ describe("runStartedReducer", () => {
     };
 
     // state the flowSubmittedReducer produced
-    const oldState: EngineState = structuredClone(flowSubmittedNewState);
+    const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
-    delete oldState.flows["test-flowid"];
+    delete oldState.flows["test-flowdefhash"];
     const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);
@@ -56,9 +52,9 @@ describe("runStartedReducer", () => {
     };
 
     // state the flowSubmittedReducer produced
-    const oldState: EngineState = structuredClone(flowSubmittedNewState);
+    const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
-    oldState.flows["test-flowid"].definition.start = "";
+    oldState.flows["test-flowdefhash"].definition.start = "";
     const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);

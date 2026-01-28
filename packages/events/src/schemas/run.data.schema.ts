@@ -3,6 +3,8 @@ import type {
   RunStartedData,
   RunCompletedData,
   RunFailedData,
+  RunRequestedData,
+  RunDeniedData,
 } from "@lcase/types";
 
 // removed descriptor for now to reduce duplication of data
@@ -16,6 +18,13 @@ const RunDescriptorSchema = z.object({
   }),
 });
 
+export const RunRequestedDataSchema = z
+  .object({
+    flowDefHash: z.string(),
+    forkSpecHash: z.string().optional(),
+  })
+  .strict() satisfies z.ZodType<RunRequestedData>;
+
 export const RunStartedDataSchema =
   z.null() satisfies z.ZodType<RunStartedData>;
 
@@ -24,3 +33,9 @@ export const RunCompletedDataSchema =
 
 export const RunFailedDataSchema =
   RunStartedDataSchema satisfies z.ZodType<RunFailedData>;
+
+export const RunDeniedDataSchema = z
+  .object({
+    error: z.string(),
+  })
+  .strict() satisfies z.ZodType<RunDeniedData>;

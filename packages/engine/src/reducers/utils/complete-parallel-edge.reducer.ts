@@ -1,10 +1,10 @@
 import type { Edge } from "@lcase/types";
-import type { RunContext } from "@lcase/types/engine";
+import type { RunContext } from "@lcase/types";
 import type { WritableDraft } from "immer";
 
 export function completeParallelEdge(
   edge: WritableDraft<Edge>,
-  run: WritableDraft<RunContext>
+  run: WritableDraft<RunContext>,
 ) {
   if (run.steps[edge.startStepId] === undefined) return;
   const parallelStepId = edge.startStepId;

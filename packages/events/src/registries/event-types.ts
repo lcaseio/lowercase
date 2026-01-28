@@ -25,10 +25,13 @@ export const eventTypes = [
   "flow.analyzed",
   "engine.started",
   "engine.stopped",
+  "run.requested",
+  "run.denied",
   "run.completed",
   "run.started",
   "run.failed",
   "step.planned",
+  "step.reused",
   "step.started",
   "step.completed",
   "step.failed",
@@ -88,6 +91,7 @@ export const actionTypes = [
   "granted",
   "denied",
   "requested",
+  "reused",
 ] as const satisfies readonly EventActions[];
 
 export const domainTypes = [

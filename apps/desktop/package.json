@@ -1,11 +1,11 @@
 {
   "name": "@lcase/desktop",
   "private": true,
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "echo build",
     "pack": "electron-builder --dir",
     "make": "electron-builder",
     "make:mac:unsigned": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac"

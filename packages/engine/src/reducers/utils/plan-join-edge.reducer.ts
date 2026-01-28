@@ -1,11 +1,11 @@
 import { Edge } from "@lcase/types";
-import { RunContext } from "@lcase/types/engine";
+import { RunContext } from "@lcase/types";
 import { WritableDraft } from "immer";
 import { planControlEdge } from "./plan-control-edge.reducer.js";
 
 export function planJoinEdge(
   edge: WritableDraft<Edge>,
-  run: WritableDraft<RunContext>
+  run: WritableDraft<RunContext>,
 ) {
   if (edge.type !== "join") return;
   // if they all succeeded, succeed/complete join
@@ -26,16 +26,14 @@ export function planJoinEdge(
     }
   }
   if (allCompleted) {
-    console.log("all completed join");
     run.steps[edge.endStepId].status === "completed";
     run.completedSteps[edge.endStepId] = true;
 
     if (!fa.outEdges[edge.endStepId]) return;
     const joinOutEdge = fa.outEdges[edge.endStepId][0];
-    console.log("planning join completed next");
+
     planControlEdge(joinOutEdge, run, "onSuccess");
   } else if (allFinished === true) {
-    console.log("all failed join");
     run.steps[edge.endStepId].status === "failed";
     run.failedSteps[edge.endStepId] = true;
   }
