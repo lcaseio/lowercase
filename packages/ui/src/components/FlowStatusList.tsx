@@ -1,4 +1,4 @@
-import { FlowList } from "@lcase/ports";
+import type { FlowList } from "@lcase/ports";
 import { FlowValidItem } from "./FlowValidItem.js";
 import { FlowInvalidItem } from "./FlowInvalidItem.js";
 
