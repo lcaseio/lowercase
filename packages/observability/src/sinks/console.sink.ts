@@ -53,6 +53,9 @@ export class ConsoleSink implements EventSink {
     } else if (event.type === "step.started") {
       const l = event as AnyEvent<"step.started">;
       log = l.data.step.id + " | " + l.data.step.type;
+    } else if (event.type === "run.denied") {
+      const l = event as AnyEvent<"run.denied">;
+      log = l.data.error;
     }
     console.log(
       `${this.#c[event.domain]}[${event.type}]${this.#s}${ok} ${log}`,

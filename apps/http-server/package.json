@@ -1,11 +1,8 @@
 {
-  "name": "@lcase/cli",
+  "name": "@lcase/http-server",
   "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
-  "bin": {
-    "pwp": "./dist/main.js"
-  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
@@ -16,18 +13,13 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.19.1",
-    "@lcase/observability": "workspace:*",
-    "@lcase/runtime": "workspace:*",
-    "@lcase/specs": "workspace:*",
-    "commander": "^14.0.1",
-    "ws": "^8.18.3",
-    "zod": "3.25.76"
+    "@fastify/cors": "^11.2.0",
+    "fastify": "^5.7.2",
+    "@lcase/runtime": "workspace:*"
   },
   "devDependencies": {
-    "@lcase/types": "workspace:*",
     "@lcase/ports": "workspace:*",
-    "@types/ws": "^8.18.1",
+    "@lcase/types": "workspace:*",
     "vitest": "^3.2.4"
   }
 }
