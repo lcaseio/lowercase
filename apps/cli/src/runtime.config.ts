@@ -38,7 +38,7 @@ export const config = {
     transport: "event-emitter",
   },
   artifacts: {
-    path: path.resolve(process.cwd(), "run-artifacts"),
+    path: path.resolve(process.cwd(), "lcase-db/runs/artifacts"),
     placement: "embedded",
     transport: "local",
     store: "fs",

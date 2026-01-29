@@ -6,8 +6,9 @@ export function createArtifacts(config: ArtifactsConfig): ArtifactsPort {
   const makeArtifacts = makeArtifactsFactory(
     config.placement,
     config.transport,
-    config.store
+    config.store,
   );
+  console.log(config.path);
 
   const limiter = makeArtifacts(config.path);
   return limiter;

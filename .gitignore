@@ -14,9 +14,8 @@ dist-electron/
 *.sln
 *.sw?
 
-# run artifacts
-runs/
-run-artifacts/
+# storage from using the app
+lcase-db/
 
 # temp files
 *.temp.*
@@ -36,5 +35,3 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# jsonl replay test folder
-replay-test/

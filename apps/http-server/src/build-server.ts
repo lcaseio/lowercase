@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 
 import { config } from "./runtime.config.js";
 import { createServices } from "@lcase/runtime";
+import { routes } from "./routes/routes.js";
 
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify();
@@ -16,10 +17,11 @@ export async function buildServer(): Promise<FastifyInstance> {
     methods: ["GET", "POST", "PUT", "DELETE"],
   });
 
-  // await app.register(routes);
+  await app.register(routes);
 
   app.addHook("onClose", async (app) => {
     await app.services.system.stopSystem();
+    console.log("Stopped system runtime.");
   });
 
   return app;
