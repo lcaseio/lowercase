@@ -42,5 +42,7 @@ export * from "./engine/run-context.js";
 export * from "./engine/run-index.js";
 export * from "./engine/run-plan.type.js";
 
+export * from "./flow-index-store/flow-index.js";
+
 // api index
 export * from "./api/index.js";

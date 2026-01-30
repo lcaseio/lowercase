@@ -26,3 +26,4 @@ export * from "./run-index-store/run-index-store.port.js";
 export * from "./worker/worker.port.js";
 
 export * from "./services/services.port.js";
+export * from "./flow-index-store/flow-index-store.js";
