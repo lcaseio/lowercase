@@ -1,14 +1,13 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useController } from "../../context/ControllerContext.js";
 import { useObsEvent } from "../../hooks/obsEvent.js";
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
 import { ObsEventBar } from "./ObsEventBar.js";
 import { ObsControls } from "./ObsControls.js";
 import { AppContext } from "../../context/AppContext.js";
 
 const eventIds = new Set<string>();
-export function ObsPanel(props: {}) {
-  const controller = useController();
+export function ObsPanel() {
   const ctx = useContext(AppContext);
   if (!ctx) {
     console.error("[obs-panel] no app context");

@@ -5,3 +5,8 @@ export * from "./components/FlowFolder.js";
 export * from "./components/observability/ObsEventBar.js";
 export * from "./components/observability/ObsEventDetails.js";
 export * from "./components/observability/ObsPanel.js";
+export * from "./pages/Dashboard.js";
+export * from "./pages/Flows.js";
+export * from "./pages/Sims.js";
+export * from "./pages/Runs.js";
+export * from "./pages/System.js";

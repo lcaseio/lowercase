@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AppContext } from "../../context/AppContext.js";
 
-export function ObsControls(props: {}) {
+export function ObsControls() {
   const ctx = useContext(AppContext);
   if (!ctx) {
     console.error("[obs-controls] no app context");
