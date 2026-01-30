@@ -1,4 +1,4 @@
-import type { FlowDefinition } from "@lcase/types";
+import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
@@ -24,6 +24,9 @@ export interface FlowServicePort {
   listFlows(args: { absoluteDirPath?: string }): Promise<FlowList>;
   validateJsonFlow(blob: unknown): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
+  addJsonFlow(
+    json: Record<string, unknown>,
+  ): Promise<Result<FlowIndex, string>>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;

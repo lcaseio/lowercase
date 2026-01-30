@@ -1,18 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { MockApiClient } from "./api/mock-client-controller";
+import { WebClientApi } from "./api/web-client-api";
 import { BrowserRouter } from "react-router-dom";
 
-import { ControllerProvider } from "@lcase/ui";
+import { ClientApiProvider } from "@lcase/ui";
 import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ControllerProvider controller={new MockApiClient()}>
+    <ClientApiProvider api={new WebClientApi("http://localhost:3000")}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </ControllerProvider>
+    </ClientApiProvider>
   </StrictMode>,
 );

@@ -46,6 +46,7 @@ import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
+import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -54,9 +55,10 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
 
   const flowService = new FlowService(
     ctx.bus,
-    ef,
+    ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
+    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
   );
   const replayService = new ReplayService(ctx.replay);
   const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);

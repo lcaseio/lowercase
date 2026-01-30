@@ -4,14 +4,15 @@ import type {
   FlowList,
   FlowServicePort,
   ArtifactsPort,
+  FlowIndexStorePort,
 } from "@lcase/ports";
-import type { FlowDefinition } from "@lcase/types";
+import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
 import { FlowSchema, parseFlow } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { addFlowToCas, readFlowFile } from "@lcase/run-flow";
+import { addFlowIndex, addFlowToCas, readFlowFile } from "@lcase/run-flow";
 
 export class FlowService implements FlowServicePort {
   constructor(
@@ -19,6 +20,7 @@ export class FlowService implements FlowServicePort {
     private readonly ef: EmitterFactory,
     private readonly flowStore: FlowStorePort,
     private readonly artifacts: ArtifactsPort,
+    private readonly flowIndexStore: FlowIndexStorePort,
   ) {}
 
   async startFlow(args: { absoluteFilePath?: string }): Promise<void> {
@@ -114,6 +116,29 @@ export class FlowService implements FlowServicePort {
     } else {
       throw new Error(`Error adding flow to cas: ${result.error}`);
     }
+  }
+
+  async addJsonFlow(
+    json: Record<string, unknown>,
+  ): Promise<Result<FlowIndex, string>> {
+    const parseResult = parseFlow(json);
+    if (!parseResult.ok) {
+      return { ok: false, error: parseResult.error };
+    }
+
+    const hash = await addFlowToCas(parseResult.value, this.artifacts);
+    if (!hash) return { ok: false, error: "Error adding flow to CAS" };
+
+    const flowIndex: FlowIndex = {
+      name: parseResult.value.name,
+      version: parseResult.value.version,
+      hash,
+      description: parseResult.value.description,
+    };
+    const flowIndexResult = await addFlowIndex(flowIndex, this.flowIndexStore);
+
+    if (!flowIndexResult.ok) return { ...flowIndexResult };
+    return { ok: true, value: flowIndex };
   }
 
   makeId(name: string, version: string, path?: string, p0?: {}): string {
