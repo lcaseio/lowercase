@@ -1,3 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --color-mint-500: rgb(83, 242, 208);
+  --color-blues-500: rgb(100, 183, 255);
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -20,13 +28,12 @@ html {
 
 a {
   font-weight: 500;
-  color: #64b7ff;
+  color: rgb(100, 183, 255);
   text-decoration: inherit;
 }
 a:hover {
   color: #53f2d0;
 }
-
 body {
   margin: 0;
 }

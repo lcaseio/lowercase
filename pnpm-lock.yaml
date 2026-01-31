@@ -219,9 +219,18 @@ importers:
 
   apps/web-app:
     dependencies:
+      '@lcase/flow-analysis':
+        specifier: workspace:*
+        version: link:../../packages/flow-analysis
+      '@lcase/specs':
+        specifier: workspace:*
+        version: link:../../packages/specs
       '@reduxjs/toolkit':
         specifier: ^2.11.2
         version: 2.11.2(react-redux@9.2.0(@types/react@19.2.10)(react@19.2.0)(redux@5.0.1))(react@19.2.0)
+      '@tailwindcss/vite':
+        specifier: ^4.1.17
+        version: 4.1.17(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -234,6 +243,9 @@ importers:
       react-router-dom:
         specifier: ^7.13.0
         version: 7.13.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      tailwindcss:
+        specifier: ^4.1.17
+        version: 4.1.17
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -4961,6 +4973,13 @@ snapshots:
       '@tailwindcss/oxide': 4.1.17
       tailwindcss: 4.1.17
       vite: 7.2.2(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
+
+  '@tailwindcss/vite@4.1.17(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))':
+    dependencies:
+      '@tailwindcss/node': 4.1.17
+      '@tailwindcss/oxide': 4.1.17
+      tailwindcss: 4.1.17
+      vite: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
 
   '@tootallnate/once@2.0.0': {}
 
