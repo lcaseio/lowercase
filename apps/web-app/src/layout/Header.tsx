@@ -1,9 +1,6 @@
-import { FlowDefinition } from "@lcase/types";
-import { RuntimeControls } from "../components/RuntimeControls.js";
-import { useClientApi } from "../context/ClientApiContext.js";
-import { Nav } from "./Nav.js";
-import { useAppDispatch, useAppSelector } from "../redux/hooks.js";
-import { useAddJsonFlowMutation } from "../redux/api/flows-api.js";
+import type { FlowDefinition } from "@lcase/types";
+import { useAddJsonFlowMutation } from "../redux/api/flows-api";
+import { Nav } from "./Nav";
 
 const flow: FlowDefinition = {
   name: "HTTP JSON Flow",
@@ -32,8 +29,7 @@ const flow: FlowDefinition = {
   },
 };
 
-export function Header(props: { title: string }) {
-  // const result = api.postJsonFlow(flow);
+export function Header() {
   const [addJsonFlow, { isLoading }] = useAddJsonFlowMutation();
 
   const handleSubmit = async (flow: FlowDefinition) => {
@@ -43,16 +39,12 @@ export function Header(props: { title: string }) {
       console.error("error fetching", e);
     }
   };
-
-  // const flows = useAppSelector((state) => state.flows.value);
-
   return (
     <header>
-      <h2>{props.title}</h2>
+      <h2>lowercase</h2>
       <Nav />
       <button onClick={() => handleSubmit(flow)}>Submit</button>
       <p>Status: {isLoading ? "loading" : "not loading"}</p>
-      {/* <RuntimeControls /> */}
     </header>
   );
 }
