@@ -11,8 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@lcase/specs": "workspace:*",
     "@lcase/flow-analysis": "workspace:*",
+    "@lcase/specs": "workspace:*",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.1.17",
     "react": "^19.2.0",

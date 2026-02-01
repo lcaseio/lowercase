@@ -13,6 +13,7 @@ import { createHash } from "crypto";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { addFlowIndex, addFlowToCas, readFlowFile } from "@lcase/run-flow";
+import { analyzeFlow } from "@lcase/flow-analysis";
 
 export class FlowService implements FlowServicePort {
   constructor(
@@ -101,6 +102,11 @@ export class FlowService implements FlowServicePort {
       if (!result.success) {
         return JSON.stringify(result.error, null, 2);
       }
+
+      const fa = analyzeFlow(result.data);
+      if (fa.problems.length > 0) {
+        return "Flow analysis had problems";
+      }
       return result.data;
     } catch (err) {
       return `Invalid flow: Error parsing Json: ${err}"`;
@@ -118,22 +124,22 @@ export class FlowService implements FlowServicePort {
     }
   }
 
-  async addJsonFlow(
-    json: Record<string, unknown>,
-  ): Promise<Result<FlowIndex, string>> {
-    const parseResult = parseFlow(json);
-    if (!parseResult.ok) {
-      return { ok: false, error: parseResult.error };
+  async addJsonFlow(json: unknown): Promise<Result<FlowIndex, string>> {
+    // const parseResult = parseFlow(json);
+
+    const validateResult = this.validateJsonFlow(json);
+    if (typeof validateResult === "string") {
+      return { ok: false, error: validateResult };
     }
 
-    const hash = await addFlowToCas(parseResult.value, this.artifacts);
+    const hash = await addFlowToCas(validateResult, this.artifacts);
     if (!hash) return { ok: false, error: "Error adding flow to CAS" };
 
     const flowIndex: FlowIndex = {
-      name: parseResult.value.name,
-      version: parseResult.value.version,
+      name: validateResult.name,
+      version: validateResult.version,
       hash,
-      description: parseResult.value.description,
+      description: validateResult.description,
     };
     const flowIndexResult = await addFlowIndex(flowIndex, this.flowIndexStore);
 

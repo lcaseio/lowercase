@@ -1,6 +1,6 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
-
+import multipart from "@fastify/multipart";
 import { config } from "./runtime.config.js";
 import { createServices } from "@lcase/runtime";
 import { routes } from "./routes/routes.js";
@@ -16,6 +16,8 @@ export async function buildServer(): Promise<FastifyInstance> {
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
   });
+
+  await app.register(multipart, { limits: { fileSize: 1000 * 1024 * 1024 } });
 
   await app.register(routes);
 
