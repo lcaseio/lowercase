@@ -21,7 +21,9 @@
   "packageManager": "pnpm@10.17.1",
   "peerDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

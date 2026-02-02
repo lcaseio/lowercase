@@ -8,7 +8,9 @@ import {
 import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
 import { FlowStoreFs } from "@lcase/adapters/flow-store";
+import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
 import { ServicesPort } from "@lcase/ports";
+import path from "node:path";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
@@ -18,6 +20,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
+    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
   );
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);

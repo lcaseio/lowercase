@@ -1,18 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { MockApiClient } from "./api/mock-client-controller";
 import { BrowserRouter } from "react-router-dom";
 
-import { ControllerProvider } from "@lcase/ui";
 import { App } from "./App";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ControllerProvider controller={new MockApiClient()}>
+    <Provider store={store}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </ControllerProvider>
+    </Provider>
   </StrictMode>,
 );
