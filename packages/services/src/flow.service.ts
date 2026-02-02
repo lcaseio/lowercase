@@ -76,7 +76,7 @@ export class FlowService implements FlowServicePort {
     };
 
     for (const [absolutePath, blob] of flows.entries()) {
-      const flow = this.validateJsonFlow(blob);
+      const flow = this.validateJsonFlow(blob as string);
       if (typeof flow === "string") {
         flowList.invalidFlows[absolutePath] = { errorMessage: flow };
       } else {
@@ -94,11 +94,17 @@ export class FlowService implements FlowServicePort {
     return flowList;
   }
 
-  validateJsonFlow(blob: unknown): FlowDefinition | string {
-    if (blob === undefined) return "Invalid flow: Undefined";
+  async getAllFlowIndexes(): Promise<Result<FlowIndex[], string>> {
+    return await this.flowIndexStore.getAllFlowIndexes();
+  }
+
+  validateJsonFlow(
+    flow: string | Record<string, unknown>,
+  ): FlowDefinition | string {
+    if (flow === undefined) return "Invalid flow: Undefined";
     try {
-      const flow = JSON.parse(blob as string);
-      const result = FlowSchema.safeParse(flow);
+      const flowObject = typeof flow === "string" ? JSON.parse(flow) : flow;
+      const result = FlowSchema.safeParse(flowObject);
       if (!result.success) {
         return JSON.stringify(result.error, null, 2);
       }
@@ -124,10 +130,12 @@ export class FlowService implements FlowServicePort {
     }
   }
 
-  async addJsonFlow(json: unknown): Promise<Result<FlowIndex, string>> {
+  async addFlow(
+    flow: string | Record<string, unknown>,
+  ): Promise<Result<FlowIndex, string>> {
     // const parseResult = parseFlow(json);
 
-    const validateResult = this.validateJsonFlow(json);
+    const validateResult = this.validateJsonFlow(flow);
     if (typeof validateResult === "string") {
       return { ok: false, error: validateResult };
     }

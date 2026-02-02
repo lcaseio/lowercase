@@ -23,7 +23,7 @@ describe("FsFlowIndexStore", () => {
     const json = await JSON.parse(data);
     expect(json).toEqual(index);
   });
-  it("putFlowIndex() reads the expected index", async () => {
+  it("getFlowIndex() reads the expected index", async () => {
     const dirPath = path.resolve(
       import.meta.dirname,
       "../fixtures/flow-index-store",

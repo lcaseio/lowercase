@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { listFlowsRoute } from "./flows/list.js";
+import { listFlowsRoute } from "./flows/get.js";
 import { postFlowsRoute } from "./flows/add.js";
 import { listRunsRoute } from "./runs/list.js";
 import { postFlowsFilesRoute } from "./flows/files/post.js";

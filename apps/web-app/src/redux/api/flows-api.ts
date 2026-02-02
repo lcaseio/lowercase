@@ -1,4 +1,5 @@
 import type {
+  GetFlowsRes,
   PostFlowFileRes,
   PostJsonFlowReq,
   PostJsonFlowRes,
@@ -9,11 +10,15 @@ export const flowsApi = createApi({
   reducerPath: "flowsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
   endpoints: (builder) => ({
+    getFlows: builder.query<GetFlowsRes, void>({
+      query: () => "flows",
+    }),
     addJsonFlow: builder.mutation<PostJsonFlowRes, PostJsonFlowReq>({
       query: (arg) => ({
         url: "flows",
         method: "POST",
         body: arg.body,
+        headers: { "Content-Type": "application/json" },
       }),
     }),
     uploadFlowFile: builder.mutation<PostFlowFileRes, { files: File[] }>({
@@ -31,4 +36,8 @@ export const flowsApi = createApi({
   }),
 });
 
-export const { useAddJsonFlowMutation, useUploadFlowFileMutation } = flowsApi;
+export const {
+  useAddJsonFlowMutation,
+  useUploadFlowFileMutation,
+  useGetFlowsQuery,
+} = flowsApi;

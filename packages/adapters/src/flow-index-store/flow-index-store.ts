@@ -20,7 +20,6 @@ export class FsFlowIndexStore implements FlowIndexStorePort {
       fs.writeFileSync(fullPath, json, { encoding: "utf8" });
       return { ok: true, value: fullPath };
     } catch (e) {
-      console.log("Error writing run index", e);
       return { ok: false, error: `Error writing run index: ${e}` };
     }
   }
@@ -49,6 +48,9 @@ export class FsFlowIndexStore implements FlowIndexStorePort {
         const json = await JSON.parse(data);
         indexes.push(json as FlowIndex);
       }
+      indexes.sort((a, b) =>
+        a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1,
+      );
       return { ok: true, value: indexes };
     } catch (e) {
       return { ok: false, error: `Error getting all indexes: ${e}` };
