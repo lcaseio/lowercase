@@ -1,4 +1,5 @@
 import { AddJsonFlow } from "../components/AddJsonFlow";
+import { UploadFlowFile } from "../components/UploadFlowFile";
 import { Header } from "../layout/Header";
 import { Main } from "../layout/Main";
 
@@ -8,7 +9,7 @@ export function Flows() {
       <Header />
       <Main>
         <h2 className="text-lg font-bold">Flows</h2>
-
+        <UploadFlowFile />
         <AddJsonFlow />
       </Main>
     </div>
