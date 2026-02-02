@@ -25,6 +25,7 @@ export interface FlowServicePort {
   validateJsonFlow(blob: unknown): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
   addJsonFlow(json: unknown): Promise<Result<FlowIndex, string>>;
+  getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;

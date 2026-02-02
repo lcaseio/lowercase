@@ -94,6 +94,10 @@ export class FlowService implements FlowServicePort {
     return flowList;
   }
 
+  async getAllFlowIndexes(): Promise<Result<FlowIndex[], string>> {
+    return await this.flowIndexStore.getAllFlowIndexes();
+  }
+
   validateJsonFlow(blob: unknown): FlowDefinition | string {
     if (blob === undefined) return "Invalid flow: Undefined";
     try {
