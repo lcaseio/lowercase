@@ -22,9 +22,11 @@ export interface SimServicePort {
 export interface FlowServicePort {
   startFlow(args: { absoluteFilePath?: string }): Promise<void>;
   listFlows(args: { absoluteDirPath?: string }): Promise<FlowList>;
-  validateJsonFlow(blob: unknown): FlowDefinition | string;
+  validateJsonFlow(
+    flow: string | Record<string, unknown>,
+  ): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
-  addJsonFlow(json: unknown): Promise<Result<FlowIndex, string>>;
+  addFlow(flow: string | FlowDefinition): Promise<Result<FlowIndex, string>>;
   getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
 }
 export interface ReplayServicePort {

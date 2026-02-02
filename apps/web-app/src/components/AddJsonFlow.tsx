@@ -47,14 +47,15 @@ export function AddJsonFlow() {
   };
 
   return (
-    <>
-      <p className="mt-5">Json Flow Definition</p>
+    <div>
+      <p className="mt-8 text-md font-bold">Upload JSON Directly</p>
+      <hr className="text-sky-600 text-o mb-6"></hr>
       <textarea
         value={json}
         onChange={(e) => handleChange(e.target.value)}
         id="add-json-flow"
         className="w-6/6 min-h-[500px] resize-none bg-blue-100
-          dark:bg-slate-800 dark:border-slate-600 dark:border-2 dark:text-amber-200
+          dark:bg-slate-800 dark:border-slate-800 dark:text-amber-200
 
         rounded-md text-black p-4 mt-2 font-mono text-sm/4"
       ></textarea>
@@ -69,6 +70,6 @@ export function AddJsonFlow() {
             : ""}
         </span>
       </p>
-    </>
+    </div>
   );
 }

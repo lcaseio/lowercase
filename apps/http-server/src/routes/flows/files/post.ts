@@ -21,7 +21,7 @@ export const postFlowsFilesRoute = async (app: FastifyInstance) => {
 
         const buffer = await part.toBuffer();
         const text = buffer.toString("utf8");
-        const result = await app.services.flow.addJsonFlow(text);
+        const result = await app.services.flow.addFlow(text);
 
         if (result.ok === false) return reply.code(500).send(result);
         return result;

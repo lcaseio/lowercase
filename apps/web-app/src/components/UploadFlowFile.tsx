@@ -28,15 +28,17 @@ export function UploadFlowFile() {
     }
   };
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Upload JSON Flow File</h3>
-      <label>
-        File:
-        <input
-          type="file"
-          accept=".json,application/json,text/json"
-          onChange={onSelectFile}
-          className="bg-sky-800 cursor-pointer rounded-md
+    <div className="mt-8">
+      <form onSubmit={handleSubmit}>
+        <h3 className="font-bold">Upload JSON Flow File</h3>
+        <hr className="text-sky-600 text-o mb-5"></hr>
+        <label>
+          File:
+          <input
+            type="file"
+            accept=".json,application/json,text/json"
+            onChange={onSelectFile}
+            className="bg-sky-800 cursor-pointer rounded-md
             ml-2
             mr-2
             pl-2
@@ -44,15 +46,16 @@ export function UploadFlowFile() {
             text-md
             transition duration-300 ease-in-out hover:translate
            hover:inset-ring hover:inset-ring-sky-500"
-        />
-      </label>
-      <button
-        type="submit"
-        disabled={uploadState.isLoading || files.length === 0}
-      >
-        {uploadState.isLoading ? "Uploading... " : "Upload"}
-      </button>
-      <p>Status: {uploadRes.toString()}</p>
-    </form>
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={uploadState.isLoading || files.length === 0}
+        >
+          {uploadState.isLoading ? "Uploading... " : "Upload"}
+        </button>
+        <p>Status: {uploadRes.toString()}</p>
+      </form>
+    </div>
   );
 }
