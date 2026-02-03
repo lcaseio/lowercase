@@ -28,6 +28,7 @@ export interface FlowServicePort {
   storeFlowInCas(path: string): Promise<void>;
   addFlow(flow: string | FlowDefinition): Promise<Result<FlowIndex, string>>;
   getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
+  getFlowDef(hash: string): Promise<Result<FlowDefinition, string>>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;
