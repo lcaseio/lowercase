@@ -119,6 +119,18 @@ export class FlowService implements FlowServicePort {
     }
   }
 
+  validateFlow(flow: unknown): Result<FlowDefinition, string> {
+    const result = FlowSchema.safeParse(flow);
+    if (!result.success) return { ok: false, error: result.error.toString() };
+
+    const fa = analyzeFlow(result.data);
+    if (fa.problems.length > 0) {
+      return { ok: false, error: "Flow had problems" };
+    }
+
+    return { ok: true, value: result.data };
+  }
+
   async storeFlowInCas(path: string) {
     const json = readFlowFile(path);
     const result = parseFlow(json);
@@ -128,6 +140,14 @@ export class FlowService implements FlowServicePort {
     } else {
       throw new Error(`Error adding flow to cas: ${result.error}`);
     }
+  }
+
+  async getFlowDef(hash: string): Promise<Result<FlowDefinition, string>> {
+    const result = await this.artifacts.getJson(hash);
+    if (!result.ok) return { ok: result.ok, error: result.error.message };
+
+    const validateResult = this.validateFlow(result.value);
+    return validateResult;
   }
 
   async addFlow(
