@@ -18,6 +18,7 @@ export type FlowAnalysis = {
 
   inEdges: InEdges;
   outEdges: OutEdges;
+  toposort?: string[];
 
   joinDeps: Record<StepId, StepId[]>;
 

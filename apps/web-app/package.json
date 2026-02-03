@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dagrejs/dagre": "1.1.8",
     "@lcase/flow-analysis": "workspace:*",
     "@lcase/specs": "workspace:*",
     "@reduxjs/toolkit": "^2.11.2",
