@@ -15,6 +15,9 @@ export const flowsApi = createApi({
     getFlows: builder.query<GetFlowsRes, void>({
       query: () => "flows",
     }),
+    getFlow: builder.query<GetFlowsRes, void>({
+      query: () => "flows",
+    }),
     getFlowDef: builder.query<Result<FlowDefinition, string>, string>({
       query: (flowId: string) => `/flows/${flowId}`,
     }),

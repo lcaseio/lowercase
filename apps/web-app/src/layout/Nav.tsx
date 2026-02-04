@@ -1,9 +1,14 @@
+import { Link } from "react-router-dom";
+
 export function Nav() {
   return (
     <nav>
       <ul>
         <li>
           <a href="/">dashboard</a>
+        </li>
+        <li>
+          <Link to="/runner">runner</Link>
         </li>
         <li>
           <a href="/flows">flows</a>
@@ -14,6 +19,7 @@ export function Nav() {
         <li>
           <a href="/runs">runs</a>
         </li>
+
         <li>
           <a href="/system">system</a>
         </li>

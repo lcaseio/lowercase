@@ -9,6 +9,9 @@ export function FlowListItem({ index }: { index: FlowIndex }) {
           <Link to={`/flows/edit/${index.hash}`}>{index.name}</Link>
         </span>
         <span className="text-sm ml-3 text-slate-300">{index.version}</span>
+        <span className="pl-2">
+          <Link to={`/runner/${index.hash}`}>run</Link>
+        </span>
       </p>
       {index.description ? (
         <p className="text-sm text-slate-300">{index.description}</p>
