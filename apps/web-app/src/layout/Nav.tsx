@@ -11,7 +11,7 @@ export function Nav() {
           <Link to="/runner">runner</Link>
         </li>
         <li>
-          <a href="/flows">flows</a>
+          <Link to="/flows">flows</Link>
         </li>
         <li>
           <a href="/sims">sims</a>
@@ -21,7 +21,7 @@ export function Nav() {
         </li>
 
         <li>
-          <a href="/system">system</a>
+          <Link to="/system">system</Link>
         </li>
       </ul>
     </nav>

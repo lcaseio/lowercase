@@ -2,12 +2,15 @@ import { createAction, type Middleware } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { AnyEvent } from "@lcase/types";
 
-export const wsConnect = createAction<{ url: string }>("ws/connect");
-export const wsDisconnect = createAction("ws/disconnect");
-export const wsStatus = createAction<{
+export type WsStatus = {
   status: "open" | "closed" | "connecting" | "error";
   reason?: string;
-}>("ws/status");
+};
+
+export const wsConnect = createAction<{ url: string }>("ws/connect");
+export const wsDisconnect = createAction("ws/disconnect");
+export const wsStatus = createAction<WsStatus>("ws/setStatus");
+export const wsSend = createAction<{ message: string }>("ws/send");
 
 export const eventsBatch = createAction<{ events: AnyEvent[] }>("events/batch");
 
@@ -33,13 +36,15 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
 
   return (store) => (next) => (action) => {
     if (wsConnect.match(action)) {
+      if (socket) return next(action);
       const { url } = action.payload;
       store.dispatch(wsStatus({ status: "connecting" }));
 
-      if (socket) {
-        socket.close();
-        socket = null;
-      }
+      // if socket exists, dont create a new one
+      // if (socket) {
+      //   socket.close();
+      //   socket = null;
+      // }
 
       socket = new WebSocket(url);
       socket.onopen = () => store.dispatch(wsStatus({ status: "open" }));
@@ -51,6 +56,7 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
         store.dispatch(wsStatus({ status: "error", reason: `${e.type}` }));
 
       socket.onmessage = (e) => {
+        console.log("msg", e);
         const event = parseEvent(e.data);
         if (!event) return;
         buffer.push(event);
@@ -60,6 +66,11 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
       };
 
       scheduleFlush(store.dispatch);
+    }
+    if (wsSend.match(action)) {
+      if (socket) {
+        socket.send(action.payload.message);
+      }
     }
 
     if (wsDisconnect.match(action)) {

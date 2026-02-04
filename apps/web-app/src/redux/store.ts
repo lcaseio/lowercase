@@ -4,6 +4,7 @@ import { flowsSlice } from "./slices/flows-slice";
 import { routeEventListenerMiddleware } from "./middleware/route-event";
 import { createWsMiddleware } from "./middleware/ws";
 import { eventsSlice } from "./slices/events-slice";
+import { wsSlice } from "./slices/ws-slice";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -11,6 +12,7 @@ import { eventsSlice } from "./slices/events-slice";
 export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
+  ws: wsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
 });
 

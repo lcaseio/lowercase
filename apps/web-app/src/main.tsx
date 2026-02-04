@@ -6,11 +6,13 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import { WsBootstrap } from "./ws-bootstrap";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
+        <WsBootstrap />
         <App />
       </BrowserRouter>
     </Provider>
