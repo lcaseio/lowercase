@@ -12,7 +12,7 @@ export function App() {
       <Route path="/" element={<Dashboard />} />
       <Route path="/flows" element={<Flows />} />
       <Route path="/flows/edit/:flowId" element={<FlowsEdit />} />
-      <Route path="/runner/:flowId" element={<Runner />} />
+      <Route path="/runner" element={<Runner />} />
       <Route path="/runner" element={<Runner />} />
       <Route path="/system" element={<System />} />
       {/* <Route path="/sims" element={<Sims />} />
