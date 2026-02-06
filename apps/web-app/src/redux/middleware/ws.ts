@@ -27,6 +27,7 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
 
     requestAnimationFrame(() => {
       rafScheduled = false;
+      console.log("requested");
       if (buffer.length === 0) return;
       const batch = buffer;
       buffer = [];
@@ -56,16 +57,15 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
         store.dispatch(wsStatus({ status: "error", reason: `${e.type}` }));
 
       socket.onmessage = (e) => {
-        console.log("msg", e);
         const event = parseEvent(e.data);
+
         if (!event) return;
         buffer.push(event);
         // limit buffer size to 5000 as a safeguard for memory purposes.
         // slides a window to the latest 5000 messages
         if (buffer.length > 5000) buffer.splice(0, buffer.length - 5000);
+        scheduleFlush(store.dispatch);
       };
-
-      scheduleFlush(store.dispatch);
     }
     if (wsSend.match(action)) {
       if (socket) {

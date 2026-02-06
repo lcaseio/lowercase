@@ -5,11 +5,13 @@ export async function runFlow(
   flowDefHash: string,
   ef: EmitterFactoryPort,
   source: string,
+  runId?: string,
 ) {
+  const runid = runId ?? createRunId();
   const emitter = ef.newRunEmitterNewTrace({
     source,
     flowid: flowDefHash,
-    runid: createRunId(),
+    runid,
   });
   await emitter.emit("run.requested", { flowDefHash });
 }

@@ -37,6 +37,7 @@ import {
   ReplayService,
   SimService,
   SystemService,
+  WsService,
 } from "@lcase/services";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
@@ -62,6 +63,7 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   );
   const replayService = new ReplayService(ctx.replay);
   const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+  const wsService = new WsService(ctx.bus);
 
   const systemService = new SystemService({
     bus: ctx.bus,
@@ -78,6 +80,7 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     replayService,
     simService,
     systemService,
+    wsService,
   });
   return runtime;
 }

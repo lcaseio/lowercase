@@ -185,7 +185,6 @@ export class Engine {
     const effects = planner(oldState, newState, message);
     this.state = newState;
 
-    this.executeEffect;
     for (const effect of effects) {
       this.executeEffect(effect);
     }

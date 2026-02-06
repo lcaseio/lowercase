@@ -25,6 +25,10 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(routes);
   await app.register(wsRoute);
 
+  const system = await app.services.system.startSystem();
+  await app.services.ws.start();
+  console.log("System status: ", system);
+
   app.addHook("onClose", async (app) => {
     await app.services.system.stopSystem();
     console.log("Stopped system runtime.");

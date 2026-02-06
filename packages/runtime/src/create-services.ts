@@ -4,6 +4,7 @@ import {
   RunService,
   SimService,
   SystemService,
+  WsService,
 } from "@lcase/services";
 import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
@@ -24,6 +25,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   );
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+  const ws = new WsService(ctx.bus);
   const run = new RunService(ctx.ef);
 
   const system = new SystemService({
@@ -37,5 +39,5 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     worker: ctx.worker,
   });
 
-  return { flow, replay, sim, system, run };
+  return { flow, replay, sim, system, run, ws };
 }

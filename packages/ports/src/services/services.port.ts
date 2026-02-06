@@ -9,6 +9,7 @@ export interface ServicesPort {
   replay: ReplayServicePort;
   system: SystemServicePort;
   run: RunServicePort;
+  ws: WsServicePort;
 }
 
 export interface SimServicePort {
@@ -41,5 +42,16 @@ export interface SystemServicePort {
 }
 
 export interface RunServicePort {
-  requestRun(flowDefHash: string, source: string): Promise<void>;
+  requestRun(
+    flowDefHash: string,
+    source: string,
+    runId?: string,
+  ): Promise<void>;
+  makeRunId(): string;
+}
+
+export interface WsServicePort {
+  monitorRun(runId: string, socket: WebSocket): void;
+  stopMonitoringRun(runId: string): void;
+  start(): Promise<void>;
 }

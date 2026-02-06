@@ -17,8 +17,8 @@ export function App() {
       <Route path="/system" element={<System />} />
       {/* <Route path="/sims" element={<Sims />} />
       <Route path="/runs" element={<Runs />} />
-      <Route path="/system" element={<System />} />
-      <Route path="*" element={<Dashboard />} /> */}
+      <Route path="/system" element={<System />} /> */}
+      <Route path="*" element={<Dashboard />} />
     </Routes>
   );
 }
