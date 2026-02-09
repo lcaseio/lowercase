@@ -9,7 +9,9 @@ export function Flows() {
     <div id="page-wrapper">
       <Header />
       <Main>
-        <h2 className="text-xl font-bold mb-5">Flows</h2>
+        <h2 className="text-xl font-bold mb-5 text-amber-800 dark:text-amber-400">
+          Flows
+        </h2>
         <ListFlows />
         <UploadFlowFile />
         <AddJsonFlow />

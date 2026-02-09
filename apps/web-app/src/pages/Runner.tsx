@@ -6,6 +6,7 @@ import { useAppSelector } from "../redux/typed-hooks";
 import type { EChartsOption } from "echarts";
 import type { TopLevelFormatterParams } from "echarts/types/dist/shared";
 import { useMemo, useState } from "react";
+import { MonitorTabs } from "@/components/MonitorTabs";
 
 export function Runner() {
   const events = useAppSelector((state) => state.events.events);
@@ -163,7 +164,7 @@ export function Runner() {
         xAxisIndex: 0,
         yAxisIndex: 0,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderItem: (_params: any, api: any) => {
+        renderItem: (_params: any, api) => {
           const timeVal = api.value(0);
           const idx = api.value(1);
           const label = api.value(2);
@@ -176,7 +177,7 @@ export function Runner() {
           const endTime = minTime + (zoomRange.end / 100) * (maxTime - minTime);
 
           const span = endTime - startTime;
-          const pct = span > 0 ? (timeVal - startTime) / span : 0;
+          const pct = span > 0 ? ((timeVal as number) - startTime) / span : 0;
           const flip = pct >= 0.8;
           const gap = 6 + baseLabelSize / 2;
           const time = new Date(timeVal).toLocaleTimeString("en-US", {
@@ -296,6 +297,7 @@ export function Runner() {
       <Header />
       <Main>
         <h2 className="text-xl font-bold mb-5">Runner</h2>
+        <MonitorTabs />
         <div className="flex justify-between">
           <RunnerFlowSelector />
         </div>
