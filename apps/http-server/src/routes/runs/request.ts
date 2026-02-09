@@ -23,7 +23,7 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
         "lowercase://http-server",
         runId,
       );
-      return { ok: true };
+      return { ok: true, runId };
     },
   );
 };

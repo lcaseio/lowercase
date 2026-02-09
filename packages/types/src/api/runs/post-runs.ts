@@ -4,4 +4,6 @@ export type PostRunsReq = {
   forkSpecHash?: string;
 };
 
-export type PostRunsRes = { ok: true } | { ok: false; error: string };
+export type PostRunsRes =
+  | { ok: true; runId: string }
+  | { ok: false; error: string };

@@ -27,7 +27,6 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
 
     requestAnimationFrame(() => {
       rafScheduled = false;
-      console.log("requested");
       if (buffer.length === 0) return;
       const batch = buffer;
       buffer = [];
@@ -41,7 +40,7 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
       const { url } = action.payload;
       store.dispatch(wsStatus({ status: "connecting" }));
 
-      // if socket exists, dont create a new one
+      // if socket exists, don't create a new one
       // if (socket) {
       //   socket.close();
       //   socket = null;

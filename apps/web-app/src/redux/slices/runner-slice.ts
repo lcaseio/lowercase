@@ -8,6 +8,7 @@ type RunnerState = {
   forkSpecHash: string | null;
   forkSpec?: ForkSpec | null;
   flowSelectedId: string | null;
+  eventPanels: string[];
 };
 const initialState: RunnerState = {
   flowHash: null,
@@ -15,6 +16,7 @@ const initialState: RunnerState = {
   forkSpecHash: null,
   forkSpec: null,
   flowSelectedId: null,
+  eventPanels: [],
 };
 
 type FlowHash = string;
@@ -31,10 +33,14 @@ export const runSlice = createSlice({
     setFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
     },
+    addEventPanel: (state, action: PayloadAction<string>) => {
+      state.eventPanels.push(action.payload);
+    },
   },
 });
 
-export const { setFlowHash, setFlowDef, setFlowSelectedId } = runSlice.actions;
+export const { setFlowHash, setFlowDef, setFlowSelectedId, addEventPanel } =
+  runSlice.actions;
 export const selectFlowHash = (state: RootState) => {
   return state.runner.flowHash;
 };
