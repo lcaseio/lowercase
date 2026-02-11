@@ -1,12 +1,18 @@
+import { ModeToggle } from "@/components/mode-toggle";
+import { Link } from "react-router-dom";
+
 export function Nav() {
   return (
-    <nav>
-      <ul>
+    <nav className="flex items-center">
+      <ul className="flex gap-2">
         <li>
-          <a href="/">dashboard</a>
+          <Link to="/">dashboard</Link>
         </li>
         <li>
-          <a href="/flows">flows</a>
+          <Link to="/runner">runner</Link>
+        </li>
+        <li>
+          <Link to="/flows">flows</Link>
         </li>
         <li>
           <a href="/sims">sims</a>
@@ -14,10 +20,12 @@ export function Nav() {
         <li>
           <a href="/runs">runs</a>
         </li>
+
         <li>
-          <a href="/system">system</a>
+          <Link to="/system">system</Link>
         </li>
       </ul>
+      <ModeToggle />
     </nav>
   );
 }

@@ -1,11 +1,14 @@
-import { EmitterFactoryPort, RunServicePort } from "@lcase/ports";
-
-import { runFlow } from "@lcase/run-flow";
+import { EmitterFactoryPort, EventBusPort, RunServicePort } from "@lcase/ports";
+import { createRunId, runFlow } from "@lcase/run-flow";
 
 export class RunService implements RunServicePort {
   constructor(private readonly ef: EmitterFactoryPort) {}
 
-  async requestRun(flowDefHash: string, source: string) {
-    await runFlow(flowDefHash, this.ef, source);
+  async requestRun(flowDefHash: string, source: string, runId?: string) {
+    await runFlow(flowDefHash, this.ef, source, runId);
+  }
+
+  makeRunId() {
+    return createRunId();
   }
 }

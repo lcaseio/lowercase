@@ -12,7 +12,7 @@ export function ListFlows() {
   return (
     <div className="mt-4">
       <h3 className="text-lg font-bold">Flow List</h3>
-      <hr className="text-sky-600 text-o mb-6"></hr>
+      <hr className="text-gray-400 dark:text-gray-700 text-o mb-6"></hr>
       {data.indexes.map((index) => (
         <FlowListItem key={index.hash} index={index} />
       ))}

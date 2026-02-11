@@ -15,12 +15,14 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^9.4.0",
+    "@fastify/websocket": "^11.2.0",
     "@lcase/runtime": "workspace:*",
     "fastify": "^5.7.2"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
+    "@types/ws": "^8.18.1",
     "vitest": "^3.2.4"
   }
 }

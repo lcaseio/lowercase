@@ -24,5 +24,3 @@ export const { add } = flowsSlice.actions;
 export const selectFlows = (state: RootState) => {
   return state.flows.indexes;
 };
-
-export const flowsReducer = flowsSlice.reducer;
