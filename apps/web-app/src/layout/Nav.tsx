@@ -6,7 +6,7 @@ export function Nav() {
     <nav className="flex items-center">
       <ul className="flex gap-2">
         <li>
-          <a href="/">dashboard</a>
+          <Link to="/">dashboard</Link>
         </li>
         <li>
           <Link to="/runner">runner</Link>

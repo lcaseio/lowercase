@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useUploadFlowFileMutation } from "../redux/api/flows-api";
 import type { FlowList } from "@lcase/ports";
+import { Button } from "./ui/button";
 
 export function UploadFlowFile() {
   const [uploadFlowFile, uploadState] = useUploadFlowFileMutation();
@@ -31,29 +32,30 @@ export function UploadFlowFile() {
     <div className="mt-8">
       <form onSubmit={handleSubmit}>
         <h3 className="font-bold">Upload JSON Flow File</h3>
-        <hr className="text-sky-600 text-o mb-5"></hr>
+        <hr className="text-gray-400 dark:text-gray-700 text-o mb-5"></hr>
         <label>
           File:
           <input
             type="file"
             accept=".json,application/json,text/json"
             onChange={onSelectFile}
-            className="bg-sky-800 cursor-pointer rounded-md
+            className="bg-gray-300 dark:bg-gray-700  cursor-pointer rounded-md
             ml-2
             mr-2
             pl-2
             w-80
             text-md
             transition duration-300 ease-in-out hover:translate
-           hover:inset-ring hover:inset-ring-sky-500"
+           hover:inset-ring hover:inset-ring-gray-500"
           />
         </label>
-        <button
+        <Button
+          className="cursor-pointer"
           type="submit"
           disabled={uploadState.isLoading || files.length === 0}
         >
           {uploadState.isLoading ? "Uploading... " : "Upload"}
-        </button>
+        </Button>
         <p>Status: {uploadRes.toString()}</p>
       </form>
     </div>

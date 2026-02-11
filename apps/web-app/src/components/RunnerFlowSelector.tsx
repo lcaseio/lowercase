@@ -37,9 +37,10 @@ export function RunnerFlowSelector() {
           console.log(value);
           dispatch(setFlowSelectedId(value));
         }}
+        value={flowSelectedId ?? "Select A Flow"}
       >
         <SelectTrigger className="w-full max-w-100">
-          <SelectValue placeholder="Select A Flow" />
+          <SelectValue placeholder={flowSelectedId ?? "Select A Flow"} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
