@@ -6,6 +6,7 @@ import { analyzeFlow, graphLayout, toposort } from "@lcase/flow-analysis";
 import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
+import { useTheme } from "@/contexts/use-theme";
 
 function calcPosition(row: number, nodes: number, distance: number) {
   const offsetAmount = Math.floor(nodes / 2);
@@ -14,6 +15,7 @@ function calcPosition(row: number, nodes: number, distance: number) {
 }
 
 export function FlowEditPanel() {
+  const { resolvedTheme } = useTheme();
   const { flowId } = useParams<{ flowId: string }>();
   const { data } = useGetFlowDefQuery(flowId ?? skipToken);
 
@@ -21,6 +23,7 @@ export function FlowEditPanel() {
     if (!data || data.ok === false) return;
     const fa = analyzeFlow(data.value);
     fa.toposort = toposort(fa);
+
     const layout = graphLayout(fa);
     if (!layout) return { nodes: [], edges: [] };
 
@@ -58,8 +61,13 @@ export function FlowEditPanel() {
   if (!result) return <div>no nodes or edges</div>;
 
   return (
-    <div className="w-[800px] h-[800px] rounded-xl text-sm  bg-slate-800 color-white text-slate-200 ">
-      <ReactFlow nodes={result.nodes} edges={result.edges} fitView>
+    <div className="w-12/12 h-[800px] rounded-xl">
+      <ReactFlow
+        nodes={result.nodes}
+        edges={result.edges}
+        colorMode={resolvedTheme}
+        fitView
+      >
         <Controls />
       </ReactFlow>
     </div>

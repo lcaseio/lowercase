@@ -2,7 +2,10 @@ import { useAppSelector } from "../redux/typed-hooks";
 import { useGetFlowsQuery } from "../redux/api/flows-api";
 import { useRequestRunMutation } from "../redux/api/runs-api";
 import { useDispatch } from "react-redux";
-import { addEventPanel, setFlowSelectedId } from "../redux/slices/runner-slice";
+import {
+  setEventGraphRunId,
+  setFlowSelectedId,
+} from "../redux/slices/runner-slice";
 import { Button } from "./ui/button";
 
 import {
@@ -26,7 +29,7 @@ export function RunnerFlowSelector() {
     if (!flowSelectedId || !data?.ok) return;
     const result = await requestRun({ flowDefHash: flowSelectedId });
     if (result.data?.ok) {
-      dispatch(addEventPanel(result.data.runId));
+      dispatch(setEventGraphRunId(result.data.runId));
       console.log("event panel id:", result.data.runId);
     }
   };

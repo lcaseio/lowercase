@@ -1,3 +1,4 @@
+import { getEventGraphRunId } from "@/redux/slices/runner-slice";
 import { useAppSelector } from "@/redux/typed-hooks";
 import type { EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
@@ -5,24 +6,30 @@ import type { TopLevelFormatterParams } from "echarts/types/src/component/toolti
 import { useMemo, useState } from "react";
 
 export function RunDetailsEventGraph() {
+  const runId = useAppSelector(getEventGraphRunId);
   const events = useAppSelector((state) => state.events.events);
+  const runEvents = useAppSelector((state) => state.events.runEventIds);
 
   const eventsArr = useMemo(() => {
-    const arr = Object.values(events);
+    if (!runId) return [];
+
+    const arr = runEvents[runId]?.length ? [...runEvents[runId]] : [];
+    if (arr.length === 0) return [];
     return arr.sort(
-      (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+      (a, b) =>
+        new Date(events[a].time).getTime() - new Date(events[b].time).getTime(),
     );
-  }, [events]);
+  }, [runId, runEvents, events]);
 
   const data = useMemo(
     () =>
       eventsArr.map((e, index) => [
-        new Date(e.time).getTime(),
+        new Date(events[e].time).getTime(),
         index,
-        e.type as string,
-        e.id,
+        events[e].type as string,
+        events[e].id,
       ]),
-    [eventsArr],
+    [eventsArr, events],
   );
 
   const times = data.map((d) => d[0] as number);
@@ -44,14 +51,23 @@ export function RunDetailsEventGraph() {
 
       formatter: (params: TopLevelFormatterParams) => {
         const p = Array.isArray(params) ? params[0] : params;
-        const point = p.data as [number, number, string];
-        const [time, idx, label] = point;
+        const point = p.data as [number, number, string, string];
+        const [time, index, label, id] = point;
         const t = new Date(time).toLocaleString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
         });
-        return `#${idx} - ${label}<br/>${t}`;
+
+        const eventDetails = `id: ${events[id].id}<br/>`;
+        const eventSource = `source: ${events[id].source}<br/>`;
+        const eventData = `data:<br/><textarea cols="80" rows="40" wrap="hard" class="font-mono text-[0.5rem]/2">${JSON.stringify(events[id].data, null, 2)}</textarea><br/>`;
+        return (
+          `#${index} - ${label}<br/>${t}<br/>` +
+          eventDetails +
+          eventSource +
+          eventData
+        );
       },
     },
     grid: [
@@ -162,9 +178,10 @@ export function RunDetailsEventGraph() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         renderItem: (_params: any, api) => {
           const timeVal = api.value(0);
-          const idx = api.value(1);
+          const index = api.value(1);
           const label = api.value(2);
-          const point = api.coord([timeVal, idx]);
+          const point = api.coord([timeVal, index]);
+          const eventId = api.value(3);
           if (!point) return null;
 
           // const range = zoomRange ?? { start: minTime, end: maxTime };
@@ -194,7 +211,12 @@ export function RunDetailsEventGraph() {
                   cy: point[1],
                   r: Math.max(1, baseLabelSize / 3),
                 },
-                style: { fill: "#34d399" },
+                style: {
+                  fill:
+                    events[eventId]?.action === "failed"
+                      ? "#d3344a"
+                      : "#34d399",
+                },
               },
               {
                 type: "text",

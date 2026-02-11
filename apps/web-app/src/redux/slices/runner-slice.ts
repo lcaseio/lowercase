@@ -8,7 +8,7 @@ type RunnerState = {
   forkSpecHash: string | null;
   forkSpec?: ForkSpec | null;
   flowSelectedId: string | null;
-  eventPanels: string[];
+  eventGraphRunId: string | null;
 };
 const initialState: RunnerState = {
   flowHash: null,
@@ -16,7 +16,7 @@ const initialState: RunnerState = {
   forkSpecHash: null,
   forkSpec: null,
   flowSelectedId: null,
-  eventPanels: [],
+  eventGraphRunId: null,
 };
 
 type FlowHash = string;
@@ -33,18 +33,25 @@ export const runSlice = createSlice({
     setFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
     },
-    addEventPanel: (state, action: PayloadAction<string>) => {
-      state.eventPanels.push(action.payload);
+    setEventGraphRunId: (state, action: PayloadAction<string>) => {
+      state.eventGraphRunId = action.payload;
     },
   },
 });
 
-export const { setFlowHash, setFlowDef, setFlowSelectedId, addEventPanel } =
-  runSlice.actions;
+export const {
+  setFlowHash,
+  setFlowDef,
+  setFlowSelectedId,
+  setEventGraphRunId,
+} = runSlice.actions;
 export const selectFlowHash = (state: RootState) => {
   return state.runner.flowHash;
 };
 
 export const selectFlows = (state: RootState) => {
   return state.flows.indexes;
+};
+export const getEventGraphRunId = (state: RootState) => {
+  return state.runner.eventGraphRunId;
 };
