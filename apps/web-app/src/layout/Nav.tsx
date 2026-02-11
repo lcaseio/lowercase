@@ -1,9 +1,10 @@
+import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router-dom";
 
 export function Nav() {
   return (
-    <nav>
-      <ul>
+    <nav className="flex items-center">
+      <ul className="flex gap-2">
         <li>
           <a href="/">dashboard</a>
         </li>
@@ -24,6 +25,7 @@ export function Nav() {
           <Link to="/system">system</Link>
         </li>
       </ul>
+      <ModeToggle />
     </nav>
   );
 }

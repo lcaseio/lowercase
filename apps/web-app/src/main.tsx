@@ -7,7 +7,7 @@ import { App } from "./App";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { WsBootstrap } from "./ws-bootstrap";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "./contexts/theme-provider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
