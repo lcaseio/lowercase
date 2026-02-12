@@ -1,4 +1,4 @@
-import type { PostRunsReq, PostRunsRes } from "@lcase/types";
+import type { GetRunsRes, PostRunsReq, PostRunsRes } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const runsApi = createApi({
@@ -13,7 +13,13 @@ export const runsApi = createApi({
         headers: { "Content-Type": "application/json" },
       }),
     }),
+    listAllRuns: builder.query<GetRunsRes, void>({
+      query: () => ({
+        url: "runs",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useRequestRunMutation } = runsApi;
+export const { useRequestRunMutation, useListAllRunsQuery } = runsApi;

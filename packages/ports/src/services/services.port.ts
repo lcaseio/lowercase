@@ -1,4 +1,9 @@
-import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
+import type {
+  FlowDefinition,
+  FlowIndex,
+  Result,
+  RunListItem,
+} from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
@@ -48,6 +53,7 @@ export interface RunServicePort {
     runId?: string,
   ): Promise<void>;
   makeRunId(): string;
+  listAllRuns(): Promise<RunListItem[]>;
 }
 
 export interface WsServicePort {

@@ -12,4 +12,5 @@ export type RunIndexEvent =
 export interface RunIndexStorePort {
   putRunIndex(index: RunIndex, runId: string): Promise<void>;
   getRunIndex(runId: string): Promise<RunIndex | undefined>;
+  getAllRunIds(): Promise<string[]>;
 }

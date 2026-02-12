@@ -18,7 +18,7 @@ export function Nav() {
           <a href="/sims">sims</a>
         </li>
         <li>
-          <a href="/runs">runs</a>
+          <Link to="/runs">runs</Link>
         </li>
 
         <li>

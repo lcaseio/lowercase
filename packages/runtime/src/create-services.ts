@@ -15,18 +15,20 @@ import path from "node:path";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
-
+  const flowIndexStore = new FsFlowIndexStore(
+    path.join(process.cwd(), "lcase-db/flows/index"),
+  );
   const flow = new FlowService(
     ctx.bus,
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
-    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
+    flowIndexStore,
   );
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
   const ws = new WsService(ctx.bus);
-  const run = new RunService(ctx.ef);
+  const run = new RunService(ctx.ef, ctx.runIndexStore, flowIndexStore);
 
   const system = new SystemService({
     bus: ctx.bus,
