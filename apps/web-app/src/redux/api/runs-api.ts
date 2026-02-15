@@ -1,4 +1,10 @@
-import type { GetRunsRes, PostRunsReq, PostRunsRes } from "@lcase/types";
+import type {
+  GetRunEventsReq,
+  GetRunEventsRes,
+  GetRunsRes,
+  PostRunsReq,
+  PostRunsRes,
+} from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const runsApi = createApi({
@@ -19,7 +25,17 @@ export const runsApi = createApi({
         method: "GET",
       }),
     }),
+    getAllRunEvents: builder.query<GetRunEventsRes, GetRunEventsReq>({
+      query: (args: GetRunEventsReq) => ({
+        url: `runs/details?runId=${args.runId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useRequestRunMutation, useListAllRunsQuery } = runsApi;
+export const {
+  useRequestRunMutation,
+  useListAllRunsQuery,
+  useGetAllRunEventsQuery,
+} = runsApi;
