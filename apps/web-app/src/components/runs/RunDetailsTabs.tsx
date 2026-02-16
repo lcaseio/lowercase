@@ -2,13 +2,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { RunDetailsFlowViewer } from "./RunDetailsFlowViewer";
 import { RunDetailsEventGraph } from "./RunDetailsEventGraph";
-import { useAppSelector } from "@/redux/typed-hooks";
-import { useGetFlowDefQuery } from "@/redux/api/flows-api";
-import { skipToken } from "@reduxjs/toolkit/query";
+import { useRunDetailsData } from "./useRunDetailsData";
 
-export function RunDetailsTabs() {
-  const flowSelectedId = useAppSelector((state) => state.runner.flowSelectedId);
-  const flowDefQuery = useGetFlowDefQuery(flowSelectedId ?? skipToken);
+export type RunDetailsTabsProps = {
+  view: "live" | "historical";
+};
+
+export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
+  const { flowDef, runId, events, runEvents } = useRunDetailsData(view);
+
   return (
     <Tabs defaultValue="flow">
       <TabsList>
@@ -17,12 +19,14 @@ export function RunDetailsTabs() {
         <TabsTrigger value="events">Event Graph</TabsTrigger>
       </TabsList>
       <TabsContent value="flow">
-        <RunDetailsFlowViewer
-          flowDef={flowDefQuery?.data?.ok ? flowDefQuery.data.value : null}
-        />
+        <RunDetailsFlowViewer flowDef={flowDef} />
       </TabsContent>
       <TabsContent value="events">
-        <RunDetailsEventGraph />
+        <RunDetailsEventGraph
+          runId={runId}
+          runEvents={runEvents}
+          events={events}
+        />
       </TabsContent>
     </Tabs>
   );

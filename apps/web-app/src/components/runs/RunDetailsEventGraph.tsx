@@ -1,15 +1,20 @@
-import { getEventGraphRunId } from "@/redux/slices/runner-slice";
-import { useAppSelector } from "@/redux/typed-hooks";
+import type { AnyEvent } from "@lcase/types";
 import type { EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
 import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
 
-export function RunDetailsEventGraph() {
-  const runId = useAppSelector(getEventGraphRunId);
-  const events = useAppSelector((state) => state.events.events);
-  const runEvents = useAppSelector((state) => state.events.runEventIds);
+export type RunDetailsEventGraphProps = {
+  events: Record<string, AnyEvent>;
+  runEvents: Record<string, string[]>;
+  runId: string | null;
+};
 
+export function RunDetailsEventGraph({
+  runId,
+  runEvents,
+  events,
+}: RunDetailsEventGraphProps) {
   const eventsArr = useMemo(() => {
     if (!runId) return [];
 

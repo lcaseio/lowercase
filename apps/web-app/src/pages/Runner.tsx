@@ -12,7 +12,7 @@ export function Runner() {
         <div className="flex justify-between mb-4">
           <RunnerFlowSelector />
         </div>
-        <RunDetailsTabs />
+        <RunDetailsTabs view="live" />
       </Main>
     </div>
   );

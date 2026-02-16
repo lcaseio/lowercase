@@ -1,4 +1,10 @@
-import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
+import type {
+  AnyEvent,
+  FlowDefinition,
+  FlowIndex,
+  Result,
+  RunListItem,
+} from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
@@ -33,6 +39,10 @@ export interface FlowServicePort {
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;
+  getAllEvents(runId: string): Promise<{
+    eventIds: Record<string, string[]>;
+    events: Record<string, AnyEvent>;
+  }>;
 }
 
 export interface SystemServicePort {
@@ -48,6 +58,7 @@ export interface RunServicePort {
     runId?: string,
   ): Promise<void>;
   makeRunId(): string;
+  listAllRuns(): Promise<RunListItem[]>;
 }
 
 export interface WsServicePort {
