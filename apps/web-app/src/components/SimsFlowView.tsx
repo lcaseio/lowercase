@@ -10,8 +10,16 @@ import {
 
 import "@xyflow/react/dist/base.css";
 import type { FlowDefinition } from "@lcase/types";
-import { AutoFitView } from "../AutoFitView";
+import { AutoFitView } from "./AutoFitView";
 import { useTheme } from "@/contexts/use-theme";
+import { useAppSelector } from "@/redux/typed-hooks";
+import {
+  addReusedStepId,
+  removeReusedStepId,
+  selectReusedSteps,
+} from "@/redux/slices/sims-slice";
+import { useDispatch } from "react-redux";
+import clsx from "clsx";
 
 function calcPosition(row: number, nodes: number, distance: number) {
   const offsetAmount = Math.floor(nodes / 2);
@@ -21,9 +29,10 @@ function calcPosition(row: number, nodes: number, distance: number) {
 type Props = {
   flowDef: FlowDefinition | null;
 };
-export function RunDetailsFlowViewer({ flowDef }: Props) {
+export function SimsFlowView({ flowDef }: Props) {
   const { resolvedTheme } = useTheme();
-
+  const dispatch = useDispatch();
+  const reusedSteps = useAppSelector(selectReusedSteps);
   const result = useMemo(() => {
     if (!flowDef) return;
     const fa = analyzeFlow(flowDef);
@@ -43,6 +52,19 @@ export function RunDetailsFlowViewer({ flowDef }: Props) {
           id: node,
           position: { x, y: 150 * row },
           data: { label: `${node}: ${flowDef.steps[node]?.type}` },
+          className: clsx(
+            "bg-blue-300",
+            reusedSteps[node] && "bg-gray-500",
+            "cursor-default",
+          ),
+          style: {
+            background: reusedSteps[node] ? "#4d776e" : "",
+            outline: "blue 5px",
+            color:
+              resolvedTheme === "light" && reusedSteps[node]
+                ? "var(--background)"
+                : "var(--forground)",
+          },
         };
         newNodes.push(newNode);
 
@@ -60,18 +82,25 @@ export function RunDetailsFlowViewer({ flowDef }: Props) {
       }
     }
     return { nodes: newNodes, edges: newEdges };
-  }, [flowDef]);
+  }, [flowDef, reusedSteps, resolvedTheme]);
 
   if (!result) return <div>no nodes or edges</div>;
 
+  const handleNodeClick: NodeMouseHandler = (event, node) => {
+    console.log("Clicked node:", node);
+    console.log("Mouse event:", event);
+    if (reusedSteps[node.id]) dispatch(removeReusedStepId(node.id));
+    else dispatch(addReusedStepId(node.id));
+  };
+
   return (
-    <div className="w-12/12 h-[800px] rounded-xl text-sm  bg-background color-black text-slate-900 ">
+    <div className="w-12/12 h-[800px]  rounded-xl text-sm  bg-background text-foreground color-black">
       <ReactFlow
         nodes={result.nodes}
         edges={result.edges}
         fitView
         colorMode={resolvedTheme}
-        className="bg-background, text-foreground"
+        onNodeClick={handleNodeClick}
       >
         <Controls />
         <AutoFitView />

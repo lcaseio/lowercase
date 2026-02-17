@@ -7,6 +7,7 @@ import { eventsSlice } from "./slices/events-slice";
 import { wsSlice } from "./slices/ws-slice";
 import { runSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
+import { simsSlice } from "./slices/sims-slice";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -16,6 +17,7 @@ export const rootReducer = combineReducers({
   events: eventsSlice.reducer,
   ws: wsSlice.reducer,
   runner: runSlice.reducer,
+  sims: simsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
 });
