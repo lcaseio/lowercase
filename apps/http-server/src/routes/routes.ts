@@ -6,6 +6,7 @@ import { postFlowsFilesRoute } from "./flows/files/post.js";
 import { getFlowDefRoute } from "./flows/get-flow-def.js";
 import { requestRunsRoute } from "./runs/request.js";
 import { getRunsEventsListRoute } from "./runs/events/events.js";
+import { simsListRoute } from "./sims/list.js";
 
 export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // api/flows
@@ -20,4 +21,6 @@ export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
   // api/runs/details
   await app.register(getRunsEventsListRoute, { prefix: "/api/runs/details" }); // get
+
+  await app.register(simsListRoute, { prefix: "/api/sims" });
 };

@@ -1,3 +1,4 @@
+import { SimsList } from "@/components/sims/SimList";
 import { SimsFlowSelector } from "@/components/SimsFlowSelector";
 import { SimsFlowView } from "@/components/SimsFlowView";
 import { Header } from "@/layout/Header";
@@ -17,6 +18,7 @@ export function Sims() {
         <h2 className="text-xl font-bold mb-5">Sims</h2>
         <SimsFlowSelector selectedFlowId={selectedFlowId} />
         <SimsFlowView flowDef={flowDef.data?.ok ? flowDef.data.value : null} />
+        <SimsList />
       </Main>
     </div>
   );

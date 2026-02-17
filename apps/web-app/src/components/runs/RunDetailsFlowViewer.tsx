@@ -1,12 +1,6 @@
 import { useMemo } from "react";
 import { analyzeFlow, graphLayout, toposort } from "@lcase/flow-analysis";
-import {
-  Controls,
-  ReactFlow,
-  type Edge,
-  type Node,
-  type NodeMouseHandler,
-} from "@xyflow/react";
+import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import type { FlowDefinition } from "@lcase/types";

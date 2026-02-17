@@ -1,7 +1,7 @@
 import {
   ArtifactsPort,
   EmitterFactoryPort,
-  EventBusPort,
+  ForkSpecIndexStorePort,
   RunIndexStorePort,
   SimServicePort,
 } from "@lcase/ports";
@@ -14,6 +14,7 @@ export class SimService implements SimServicePort {
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
     private readonly runIndexStore: RunIndexStorePort,
+    private readonly forkSpecIndexStore: ForkSpecIndexStorePort,
   ) {}
 
   async startForkedRunSim(
@@ -30,5 +31,10 @@ export class SimService implements SimServicePort {
       ef: this.ef,
       artifacts: this.artifacts,
     });
+  }
+
+  async getAllForkSpecIndexes() {
+    const forkSpecIndexes = await this.forkSpecIndexStore.getAll();
+    return forkSpecIndexes;
   }
 }

@@ -2,6 +2,7 @@ import type {
   AnyEvent,
   FlowDefinition,
   FlowIndex,
+  ForkSpecIndex,
   Result,
   RunListItem,
 } from "@lcase/types";
@@ -24,6 +25,8 @@ export interface SimServicePort {
     reuseSteps: string[],
     source: string,
   ): Promise<void>;
+
+  getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
 }
 
 export interface FlowServicePort {
