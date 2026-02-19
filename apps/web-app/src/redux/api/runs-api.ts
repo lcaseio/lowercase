@@ -25,6 +25,7 @@ export const runsApi = createApi({
         method: "GET",
       }),
     }),
+
     getAllRunEvents: builder.query<GetRunEventsRes, GetRunEventsReq>({
       query: (args: GetRunEventsReq) => ({
         url: `runs/details?runId=${args.runId}`,

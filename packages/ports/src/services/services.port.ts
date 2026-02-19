@@ -2,6 +2,7 @@ import type {
   AnyEvent,
   FlowDefinition,
   FlowIndex,
+  ForkSpec,
   ForkSpecIndex,
   Result,
   RunListItem,
@@ -27,6 +28,11 @@ export interface SimServicePort {
   ): Promise<void>;
 
   getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
+  saveForkSpec(
+    forkSpec: ForkSpec,
+    flowDefHash: string,
+    description?: string,
+  ): Promise<Result<string, string>>;
 }
 
 export interface FlowServicePort {

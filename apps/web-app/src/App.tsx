@@ -7,7 +7,8 @@ import { Runner } from "./pages/Runner";
 import { System } from "./pages/System";
 import { Runs } from "./pages/Runs";
 import { RunDetails } from "./pages/RunDetails";
-import { Sims } from "./pages/Sims";
+import { Sims } from "./pages/sims/Sims";
+import { CreateSim } from "./pages/sims/CreateSim";
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
       <Route path="/runs" element={<Runs />} />
       <Route path="/runs/details" element={<RunDetails />} />
       <Route path="/sims" element={<Sims />} />
+      <Route path="/sims/create" element={<CreateSim />} />
       <Route path="*" element={<Dashboard />} />
     </Routes>
   );

@@ -1,5 +1,5 @@
 import { ForkSpecIndexStorePort } from "@lcase/ports";
-import type { ForkSpecIndex } from "@lcase/types";
+import type { ForkSpecIndex, Result } from "@lcase/types";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -26,16 +26,16 @@ export class FsForkSpecIndexStore implements ForkSpecIndexStorePort {
       }
     }
   }
-  async put(index: ForkSpecIndex): Promise<void> {
+  async put(index: ForkSpecIndex): Promise<Result<ForkSpecIndex, string>> {
     try {
       const json = JSON.stringify(index, null, 2);
       const fileName = `${index.forkSpecHash}.index.json`;
       const fullPath = path.join(this.dir, fileName);
       await fs.writeFile(fullPath, json, { encoding: "utf8" });
+      return { ok: true, value: index };
     } catch (e) {
-      console.log("Error writing fork spec index", e);
+      return { ok: false, error: `"Error writing fork spec index ${e}` };
     }
-    return;
   }
   async get(forkSpecIndexId: string): Promise<ForkSpecIndex | undefined> {
     try {

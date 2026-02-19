@@ -1,16 +1,17 @@
 import type { ForkSpecListItem } from "@lcase/types";
 
-export function SimsListItem({
-  simsListItem,
-}: {
+type SimsListItemProps = {
   simsListItem: ForkSpecListItem;
-}) {
+};
+export function SimsListItem({ simsListItem }: SimsListItemProps) {
   return (
     <div>
       <p>
         {simsListItem.flowDefName} - {simsListItem.flowDefVersion}
       </p>
-      <p>{simsListItem.flowDefDescription}</p>
+      {simsListItem.flowDefDescription ? (
+        <p> {simsListItem.flowDefDescription}</p>
+      ) : null}
     </div>
   );
 }

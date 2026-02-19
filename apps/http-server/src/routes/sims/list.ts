@@ -9,9 +9,10 @@ type ForkSpecListItem = {
 };
 
 export const simsListRoute = async (app: FastifyInstance) => {
-  const listItems: ForkSpecListItem[] = [];
   app.get("/", async (req, reply): Promise<GetSimsRes> => {
+    const listItems: ForkSpecListItem[] = [];
     const forkSpecIndexes = await app.services.sim.getAllForkSpecIndexes();
+    console.log("fsi", forkSpecIndexes.length);
     for (const forkSpecIndex of forkSpecIndexes) {
       const flowDef = await app.services.flow.getFlowDef(
         forkSpecIndex.flowDefHash,

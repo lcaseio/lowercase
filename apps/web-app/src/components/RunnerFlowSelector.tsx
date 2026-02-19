@@ -37,7 +37,6 @@ export function RunnerFlowSelector() {
     <div className="flex cursor-pointer">
       <Select
         onValueChange={(value) => {
-          console.log(value);
           dispatch(setFlowSelectedId(value));
         }}
         value={flowSelectedId ?? "Select A Flow"}

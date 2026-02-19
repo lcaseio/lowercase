@@ -2,8 +2,8 @@ import {
   type GetSimsRes,
   type GetRunEventsReq,
   type GetRunEventsRes,
-  type PostRunsReq,
-  type PostRunsRes,
+  type PostSimsRes,
+  type PostSimsReq,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -11,9 +11,9 @@ export const simsApi = createApi({
   reducerPath: "simsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
   endpoints: (builder) => ({
-    requestRun: builder.mutation<PostRunsRes, PostRunsReq>({
+    postSims: builder.mutation<PostSimsRes, PostSimsReq>({
       query: (arg) => ({
-        url: "runs",
+        url: "sims",
         method: "POST",
         body: arg,
         headers: { "Content-Type": "application/json" },
@@ -34,4 +34,4 @@ export const simsApi = createApi({
   }),
 });
 
-export const { useListAllSimsQuery } = simsApi;
+export const { useListAllSimsQuery, usePostSimsMutation } = simsApi;

@@ -2,14 +2,16 @@ import type { FlowDefinition, ForkSpec } from "@lcase/types";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
+type StepId = string;
+type FlowId = string;
 type SimsState = {
   flowHash: string | null;
   flowDef: FlowDefinition | null;
   forkSpecHash: string | null;
   forkSpec?: ForkSpec | null;
   flowSelectedId: string | null;
-  eventGraphRunId: string | null;
-  reusedSteps: Record<string, true>;
+  runSelectedId: string | null;
+  reusedSteps: Record<FlowId, Record<StepId, true>>;
 };
 const initialState: SimsState = {
   flowHash: null,
@@ -17,7 +19,7 @@ const initialState: SimsState = {
   forkSpecHash: null,
   forkSpec: null,
   flowSelectedId: null,
-  eventGraphRunId: null,
+  runSelectedId: null,
   reusedSteps: {},
 };
 
@@ -35,14 +37,22 @@ export const simsSlice = createSlice({
     setSimsFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
     },
-    setEventGraphRunId: (state, action: PayloadAction<string>) => {
-      state.eventGraphRunId = action.payload;
+    setSimsRunSelectedId: (state, action: PayloadAction<string | null>) => {
+      state.runSelectedId = action.payload;
     },
-    addReusedStepId: (state, action: PayloadAction<string>) => {
-      state.reusedSteps[action.payload] = true;
+    addReusedStepId: (
+      state,
+      action: PayloadAction<{ flowId: string; stepId: string }>,
+    ) => {
+      state.reusedSteps[action.payload.flowId] ??= {};
+      state.reusedSteps[action.payload.flowId][action.payload.stepId] = true;
     },
-    removeReusedStepId: (state, action: PayloadAction<string>) => {
-      delete state.reusedSteps[action.payload];
+    removeReusedStepId: (
+      state,
+      action: PayloadAction<{ flowId: string; stepId: string }>,
+    ) => {
+      state.reusedSteps[action.payload.flowId] ??= {};
+      delete state.reusedSteps[action.payload.flowId][action.payload.stepId];
     },
   },
 });
@@ -51,9 +61,9 @@ export const {
   setFlowHash,
   setFlowDef,
   setSimsFlowSelectedId,
-  setEventGraphRunId,
   addReusedStepId,
   removeReusedStepId,
+  setSimsRunSelectedId,
 } = simsSlice.actions;
 
 export const selectFlowHash = (state: RootState) => {

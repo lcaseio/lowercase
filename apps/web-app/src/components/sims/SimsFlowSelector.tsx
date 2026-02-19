@@ -1,4 +1,4 @@
-import { useGetFlowsQuery } from "../redux/api/flows-api";
+import { useGetFlowsQuery } from "../../redux/api/flows-api";
 import { useDispatch } from "react-redux";
 
 import {
@@ -9,14 +9,16 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { setSimsFlowSelectedId } from "@/redux/slices/sims-slice";
+} from "../ui/select";
+import {
+  setSimsFlowSelectedId,
+  setSimsRunSelectedId,
+} from "@/redux/slices/sims-slice";
 
-export function SimsFlowSelector({
-  selectedFlowId,
-}: {
+type SimsFlowSelectorProps = {
   selectedFlowId: string | null;
-}) {
+};
+export function SimsFlowSelector({ selectedFlowId }: SimsFlowSelectorProps) {
   const { data } = useGetFlowsQuery();
   const dispatch = useDispatch();
 
@@ -25,6 +27,7 @@ export function SimsFlowSelector({
       <Select
         onValueChange={(value) => {
           console.log(value);
+          dispatch(setSimsRunSelectedId(null));
           dispatch(setSimsFlowSelectedId(value));
         }}
         value={selectedFlowId ?? "Select A Flow"}

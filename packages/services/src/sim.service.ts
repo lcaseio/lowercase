@@ -8,6 +8,7 @@ import {
 
 import { getRunFlowHash } from "@lcase/run-history";
 import { startForkedSim } from "@lcase/run-flow";
+import { ForkSpec, ForkSpecIndex, Result } from "@lcase/types";
 
 export class SimService implements SimServicePort {
   constructor(
@@ -36,5 +37,23 @@ export class SimService implements SimServicePort {
   async getAllForkSpecIndexes() {
     const forkSpecIndexes = await this.forkSpecIndexStore.getAll();
     return forkSpecIndexes;
+  }
+
+  async saveForkSpec(
+    forkSpec: ForkSpec,
+    flowDefHash: string,
+    description?: string,
+  ): Promise<Result<string, string>> {
+    const result = await this.artifacts.putJson(forkSpec);
+    if (!result.ok) return { ok: false, error: result.error.message };
+
+    const forkSpecIndex: ForkSpecIndex = {
+      flowDefHash,
+      forkSpecHash: result.value,
+      ...(description ? { description } : {}),
+    };
+    const indexResult = await this.forkSpecIndexStore.put(forkSpecIndex);
+    if (!indexResult.ok) return { ok: false, error: indexResult.error };
+    return { ok: true, value: result.value };
   }
 }

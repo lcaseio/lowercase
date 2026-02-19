@@ -10,7 +10,7 @@ import {
 
 import "@xyflow/react/dist/base.css";
 import type { FlowDefinition } from "@lcase/types";
-import { AutoFitView } from "./AutoFitView";
+import { AutoFitView } from "../AutoFitView";
 import { useTheme } from "@/contexts/use-theme";
 import { useAppSelector } from "@/redux/typed-hooks";
 import {
@@ -33,6 +33,7 @@ export function SimsFlowView({ flowDef }: Props) {
   const { resolvedTheme } = useTheme();
   const dispatch = useDispatch();
   const reusedSteps = useAppSelector(selectReusedSteps);
+  const selectedFlowId = useAppSelector((state) => state.sims.flowSelectedId);
   const result = useMemo(() => {
     if (!flowDef) return;
     const fa = analyzeFlow(flowDef);
@@ -48,20 +49,20 @@ export function SimsFlowView({ flowDef }: Props) {
         const node = layout[row][col];
         const x = calcPosition(col, layout[row].length, 250);
 
+        const stepId = selectedFlowId
+          ? reusedSteps[selectedFlowId]?.[node]
+          : false;
+
         const newNode: Node = {
           id: node,
           position: { x, y: 150 * row },
           data: { label: `${node}: ${flowDef.steps[node]?.type}` },
-          className: clsx(
-            "bg-blue-300",
-            reusedSteps[node] && "bg-gray-500",
-            "cursor-default",
-          ),
+          className: clsx("cursor-default"),
           style: {
-            background: reusedSteps[node] ? "#4d776e" : "",
+            background: stepId ? "#4d776e" : "",
             outline: "blue 5px",
             color:
-              resolvedTheme === "light" && reusedSteps[node]
+              resolvedTheme === "light" && stepId
                 ? "var(--background)"
                 : "var(--forground)",
           },
@@ -82,15 +83,18 @@ export function SimsFlowView({ flowDef }: Props) {
       }
     }
     return { nodes: newNodes, edges: newEdges };
-  }, [flowDef, reusedSteps, resolvedTheme]);
+  }, [flowDef, reusedSteps, resolvedTheme, selectedFlowId]);
 
   if (!result) return <div>no nodes or edges</div>;
 
   const handleNodeClick: NodeMouseHandler = (event, node) => {
-    console.log("Clicked node:", node);
-    console.log("Mouse event:", event);
-    if (reusedSteps[node.id]) dispatch(removeReusedStepId(node.id));
-    else dispatch(addReusedStepId(node.id));
+    console.log("event", event);
+    console.log("node", node);
+    if (!selectedFlowId) return;
+    if (reusedSteps[selectedFlowId]?.[node.id]) {
+      dispatch(removeReusedStepId({ flowId: selectedFlowId, stepId: node.id }));
+    } else
+      dispatch(addReusedStepId({ flowId: selectedFlowId, stepId: node.id }));
   };
 
   return (
