@@ -13,6 +13,8 @@ export const simsListRoute = async (app: FastifyInstance) => {
       if (!flowDef.ok) continue;
       listItems.push({
         name: forkSpecIndex.name,
+        forkSpecHash: forkSpecIndex.forkSpecHash,
+        flowDefHash: forkSpecIndex.flowDefHash,
         flowDefName: flowDef.value.name,
         flowDefVersion: flowDef.value.version,
         flowDefDescription: flowDef.value.description,

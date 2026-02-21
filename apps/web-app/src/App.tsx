@@ -9,6 +9,7 @@ import { Runs } from "./pages/Runs";
 import { RunDetails } from "./pages/RunDetails";
 import { Sims } from "./pages/sims/Sims";
 import { CreateSim } from "./pages/sims/CreateSim";
+import { ViewSim } from "./pages/sims/ViewSim";
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
       <Route path="/runs/details" element={<RunDetails />} />
       <Route path="/sims" element={<Sims />} />
       <Route path="/sims/create" element={<CreateSim />} />
+      <Route path="/sims/view" element={<ViewSim />} />
       <Route path="*" element={<Dashboard />} />
     </Routes>
   );

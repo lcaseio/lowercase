@@ -13,7 +13,7 @@ export function SimsList() {
           <Link to="/sims/create">Create New</Link>
         </Button>
       </p>
-      <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-5/12 flex flex-col gap-6 mt-4">
+      <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-7/12 flex flex-col gap-6 mt-4">
         {data?.ok &&
           data.forkSpecList.map((f, i) => (
             <SimsListItem key={f.flowDefName + String(i)} simsListItem={f} />

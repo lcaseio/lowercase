@@ -10,6 +10,7 @@ import type {
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
+import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
   flow: FlowServicePort;
@@ -34,6 +35,7 @@ export interface SimServicePort {
   ): Promise<void>;
 
   getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
+  getForkSpec(hash: string): Promise<Result<JsonValue, string>>;
   saveForkSpec(
     forkSpecDetails: ForkSpecDetails,
   ): Promise<Result<string, string>>;

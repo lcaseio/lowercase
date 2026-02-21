@@ -12,13 +12,13 @@ import "@xyflow/react/dist/base.css";
 import type { FlowDefinition } from "@lcase/types";
 import { AutoFitView } from "../AutoFitView";
 import { useTheme } from "@/contexts/use-theme";
-import { useAppSelector } from "@/redux/typed-hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import {
   addReusedStepId,
   removeReusedStepId,
   selectReusedSteps,
 } from "@/redux/slices/sims-slice";
-import { useDispatch } from "react-redux";
+
 import clsx from "clsx";
 
 function calcPosition(row: number, nodes: number, distance: number) {
@@ -28,10 +28,11 @@ function calcPosition(row: number, nodes: number, distance: number) {
 }
 type Props = {
   flowDef: FlowDefinition | null;
+  isEditable?: boolean;
 };
-export function SimsFlowView({ flowDef }: Props) {
+export function SimsFlowView({ flowDef, isEditable }: Props) {
   const { resolvedTheme } = useTheme();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const reusedSteps = useAppSelector(selectReusedSteps);
   const selectedFlowId = useAppSelector((state) => state.sims.flowSelectedId);
   const result = useMemo(() => {
@@ -87,10 +88,9 @@ export function SimsFlowView({ flowDef }: Props) {
 
   if (!result) return <div>no nodes or edges</div>;
 
-  const handleNodeClick: NodeMouseHandler = (event, node) => {
-    console.log("event", event);
-    console.log("node", node);
+  const handleNodeClick: NodeMouseHandler = (_event, node) => {
     if (!selectedFlowId) return;
+    if (!isEditable) return;
     if (reusedSteps[selectedFlowId]?.[node.id]) {
       dispatch(removeReusedStepId({ flowId: selectedFlowId, stepId: node.id }));
     } else

@@ -6,13 +6,15 @@ import { SimsRunSelector } from "@/components/sims/SimsRunSelector";
 import { Header } from "@/layout/Header";
 import { Main } from "@/layout/Main";
 import { useGetFlowDefQuery } from "@/redux/api/flows-api";
-import { useAppSelector } from "@/redux/typed-hooks";
+import { clearReusedSteps } from "@/redux/slices/sims-slice";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 export function CreateSim() {
   const selectedFlowId = useAppSelector((state) => state.sims.flowSelectedId);
   const flowDef = useGetFlowDefQuery(selectedFlowId ?? skipToken);
-
+  const dispatch = useAppDispatch();
+  dispatch(clearReusedSteps());
   return (
     <div id="page-wrapper">
       <Header />
@@ -22,7 +24,10 @@ export function CreateSim() {
         <SimsRunSelector flowDefHash={selectedFlowId} />
         <SimsNewName />
         <SaveSimButton />
-        <SimsFlowView flowDef={flowDef.data?.ok ? flowDef.data.value : null} />
+        <SimsFlowView
+          flowDef={flowDef.data?.ok ? flowDef.data.value : null}
+          isEditable={true}
+        />
       </Main>
     </div>
   );

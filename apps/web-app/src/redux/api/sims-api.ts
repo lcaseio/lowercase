@@ -1,9 +1,9 @@
 import {
   type GetSimsRes,
-  type GetRunEventsReq,
-  type GetRunEventsRes,
   type PostSimsRes,
   type PostSimsReq,
+  type GetSimSpecRes,
+  type GetSimSpecReq,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -25,13 +25,14 @@ export const simsApi = createApi({
         method: "GET",
       }),
     }),
-    getAllRunEvents: builder.query<GetRunEventsRes, GetRunEventsReq>({
-      query: (args: GetRunEventsReq) => ({
-        url: `runs/details?runId=${args.runId}`,
+    getSimSpec: builder.query<GetSimSpecRes, GetSimSpecReq>({
+      query: (arg) => ({
+        url: `sims/${arg.hash}`,
         method: "GET",
       }),
     }),
   }),
 });
 
-export const { useListAllSimsQuery, usePostSimsMutation } = simsApi;
+export const { useListAllSimsQuery, usePostSimsMutation, useGetSimSpecQuery } =
+  simsApi;

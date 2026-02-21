@@ -3,6 +3,7 @@ import {
   EmitterFactoryPort,
   ForkSpecDetails,
   ForkSpecIndexStorePort,
+  JsonValue,
   RunIndexStorePort,
   SimServicePort,
 } from "@lcase/ports";
@@ -38,6 +39,12 @@ export class SimService implements SimServicePort {
   async getAllForkSpecIndexes() {
     const forkSpecIndexes = await this.forkSpecIndexStore.getAll();
     return forkSpecIndexes;
+  }
+
+  async getForkSpec(hash: string): Promise<Result<JsonValue, string>> {
+    const forkSpec = await this.artifacts.getJson(hash);
+    if (forkSpec.ok) return forkSpec;
+    return { ok: false, error: forkSpec.error.message };
   }
 
   async saveForkSpec(
