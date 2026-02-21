@@ -1,8 +1,10 @@
 // POST api/sims  request
 export type PostSimsReq = {
+  name: string;
   flowDefHash: string;
   parentRunId: string;
   reuse: string[];
+  description?: string;
 };
 
 export type PostSimsRes =

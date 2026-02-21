@@ -1,5 +1,5 @@
 import { AddJsonFlow } from "../components/AddJsonFlow";
-import { ListFlows } from "../components/ListFlows";
+import { FlowList } from "../components/FlowList";
 import { UploadFlowFile } from "../components/UploadFlowFile";
 import { Header } from "../layout/Header";
 import { Main } from "../layout/Main";
@@ -10,7 +10,7 @@ export function Flows() {
       <Header />
       <Main>
         <h2 className="text-xl font-bold mb-5">Flows</h2>
-        <ListFlows />
+        <FlowList />
         <UploadFlowFile />
         <AddJsonFlow />
       </Main>

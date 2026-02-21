@@ -1,7 +1,7 @@
 import { useGetFlowsQuery } from "../redux/api/flows-api";
 import { FlowListItem } from "./FlowListItem";
 
-export function ListFlows() {
+export function FlowList() {
   const { data, error, isLoading } = useGetFlowsQuery();
 
   if (isLoading) return <div>Loading Flow List...</div>;
@@ -11,11 +11,11 @@ export function ListFlows() {
 
   return (
     <div className="mt-4">
-      <h3 className="text-lg font-bold">Flow List</h3>
-      <hr className="text-gray-400 dark:text-gray-700 text-o mb-6"></hr>
-      {data.indexes.map((index) => (
-        <FlowListItem key={index.hash} index={index} />
-      ))}
+      <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-7/12 flex flex-col gap-6 mt-4">
+        {data.indexes.map((index) => (
+          <FlowListItem key={index.hash} index={index} />
+        ))}
+      </div>
     </div>
   );
 }

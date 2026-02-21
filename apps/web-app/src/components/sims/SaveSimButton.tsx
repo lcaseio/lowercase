@@ -7,14 +7,16 @@ export function SaveSimButton() {
   const flowDefHash = useAppSelector((state) => state.sims.flowSelectedId);
   const parentRunId = useAppSelector((state) => state.sims.runSelectedId);
   const reusedSteps = useAppSelector((state) => state.sims.reusedSteps);
+  const newSimName = useAppSelector((state) => state.sims.newSimName);
 
   const handleSave = () => {
     if (!flowDefHash || !parentRunId || !reusedSteps) return;
     if (!reusedSteps[flowDefHash]) return;
+    if (!newSimName) return;
     if (Object.keys(reusedSteps[flowDefHash]).length === 0) return;
 
     const reuse = Object.keys(reusedSteps[flowDefHash]);
-    postSim({ flowDefHash, parentRunId, reuse });
+    postSim({ flowDefHash, parentRunId, reuse, name: newSimName });
   };
 
   const hash = postState.data?.ok ? postState.data.forkSpecHash : null;

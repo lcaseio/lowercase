@@ -5,11 +5,11 @@ export function RunList() {
   const { data } = useListAllRunsQuery();
 
   if (data === undefined || data.ok === false) return <p>No runs</p>;
+  const runs = [...data.runList];
 
   return (
-    <div>
-      {data.runList
-        .map((d) => d)
+    <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-5/12 flex flex-col gap-6 mt-4">
+      {runs
         .sort(
           (a, b) =>
             new Date(b.endTime as string).getTime() -

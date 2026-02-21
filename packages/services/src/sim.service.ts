@@ -1,6 +1,7 @@
 import {
   ArtifactsPort,
   EmitterFactoryPort,
+  ForkSpecDetails,
   ForkSpecIndexStorePort,
   RunIndexStorePort,
   SimServicePort,
@@ -40,17 +41,16 @@ export class SimService implements SimServicePort {
   }
 
   async saveForkSpec(
-    forkSpec: ForkSpec,
-    flowDefHash: string,
-    description?: string,
+    details: ForkSpecDetails,
   ): Promise<Result<string, string>> {
-    const result = await this.artifacts.putJson(forkSpec);
+    const result = await this.artifacts.putJson(details.forkSpec);
     if (!result.ok) return { ok: false, error: result.error.message };
 
     const forkSpecIndex: ForkSpecIndex = {
-      flowDefHash,
+      flowDefHash: details.flowDefHash,
+      name: details.name,
       forkSpecHash: result.value,
-      ...(description ? { description } : {}),
+      ...(details.description ? { description: details.description } : {}),
     };
     const indexResult = await this.forkSpecIndexStore.put(forkSpecIndex);
     if (!indexResult.ok) return { ok: false, error: indexResult.error };

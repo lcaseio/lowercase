@@ -1,12 +1,5 @@
-import { GetSimsRes } from "@lcase/types";
+import { ForkSpecListItem, GetSimsRes } from "@lcase/types";
 import type { FastifyInstance } from "fastify";
-
-type ForkSpecListItem = {
-  flowDefName: string;
-  flowDefVersion: string;
-  flowDefDescription?: string;
-  parentRunId?: string;
-};
 
 export const simsListRoute = async (app: FastifyInstance) => {
   app.get("/", async (req, reply): Promise<GetSimsRes> => {
@@ -19,6 +12,7 @@ export const simsListRoute = async (app: FastifyInstance) => {
       );
       if (!flowDef.ok) continue;
       listItems.push({
+        name: forkSpecIndex.name,
         flowDefName: flowDef.value.name,
         flowDefVersion: flowDef.value.version,
         flowDefDescription: flowDef.value.description,

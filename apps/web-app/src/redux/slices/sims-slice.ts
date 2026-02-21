@@ -12,6 +12,7 @@ type SimsState = {
   flowSelectedId: string | null;
   runSelectedId: string | null;
   reusedSteps: Record<FlowId, Record<StepId, true>>;
+  newSimName: string | null;
 };
 const initialState: SimsState = {
   flowHash: null,
@@ -21,6 +22,7 @@ const initialState: SimsState = {
   flowSelectedId: null,
   runSelectedId: null,
   reusedSteps: {},
+  newSimName: null,
 };
 
 type FlowHash = string;
@@ -54,6 +56,9 @@ export const simsSlice = createSlice({
       state.reusedSteps[action.payload.flowId] ??= {};
       delete state.reusedSteps[action.payload.flowId][action.payload.stepId];
     },
+    setNewSimName: (state, action: PayloadAction<string | null>) => {
+      state.newSimName = action.payload;
+    },
   },
 });
 
@@ -64,6 +69,7 @@ export const {
   addReusedStepId,
   removeReusedStepId,
   setSimsRunSelectedId,
+  setNewSimName,
 } = simsSlice.actions;
 
 export const selectFlowHash = (state: RootState) => {

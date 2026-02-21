@@ -20,6 +20,12 @@ export interface ServicesPort {
   ws: WsServicePort;
 }
 
+export type ForkSpecDetails = {
+  name: string;
+  forkSpec: ForkSpec;
+  flowDefHash: string;
+  description?: string;
+};
 export interface SimServicePort {
   startForkedRunSim(
     parentRunId: string,
@@ -29,9 +35,7 @@ export interface SimServicePort {
 
   getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
   saveForkSpec(
-    forkSpec: ForkSpec,
-    flowDefHash: string,
-    description?: string,
+    forkSpecDetails: ForkSpecDetails,
   ): Promise<Result<string, string>>;
 }
 

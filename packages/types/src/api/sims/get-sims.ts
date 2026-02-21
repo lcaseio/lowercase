@@ -1,4 +1,5 @@
 export type ForkSpecListItem = {
+  name: string;
   flowDefName: string;
   flowDefVersion: string;
   flowDefDescription?: string;
