@@ -66,12 +66,14 @@ export interface SystemServicePort {
   attachSink(sink: EventSink): void;
 }
 
+export type RunRequest = {
+  flowDefHash: string;
+  source: string;
+  runId?: string;
+  forkSpecHash?: string;
+};
 export interface RunServicePort {
-  requestRun(
-    flowDefHash: string,
-    source: string,
-    runId?: string,
-  ): Promise<void>;
+  requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
 }

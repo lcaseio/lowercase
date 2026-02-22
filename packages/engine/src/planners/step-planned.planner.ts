@@ -33,7 +33,9 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   if (!step) return effects;
 
   // emit step.reused instead of step.started if reused by run plan
-  if (newRun.steps[stepId]?.status === "reused") {
+  if (newRun.runPlan.reuse[stepId]) {
+    const status =
+      newRun.steps[stepId].status === "completed" ? "success" : "failure";
     const emitStepReused: EmitStepReusedFx = {
       type: "EmitStepReused",
       scope: {
@@ -44,11 +46,11 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         source: "lowercase://engine",
       },
       data: {
-        status: "failure",
+        status,
         outputHash: newRun.steps[stepId].outputHash ?? undefined,
-        sourceRunId: "",
+        sourceRunId: newRun.forkSpec?.parentRunId ?? "",
       },
-      traceId: "",
+      traceId: message.event.traceid,
     };
     effects.push(emitStepReused);
     return effects;

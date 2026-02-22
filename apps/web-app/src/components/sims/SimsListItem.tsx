@@ -4,6 +4,7 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
+  ItemMedia,
   ItemTitle,
 } from "../ui/item";
 import { Button } from "../ui/button";
@@ -18,6 +19,11 @@ import {
   setViewedSimSpecHash,
 } from "@/redux/slices/sims-slice";
 import { useNavigate } from "react-router-dom";
+import { GitBranchIcon } from "lucide-react";
+import {
+  setRunnerFlowSelectedId,
+  setRunnerSimSelectedId,
+} from "@/redux/slices/runner-slice";
 
 type SimsListItemProps = {
   simsListItem: ForkSpecListItem;
@@ -38,14 +44,28 @@ export function SimsListItem({ simsListItem }: SimsListItemProps) {
     if (runId) dispatch(setSimsRunSelectedId(runId));
     navigate(`/sims/view`);
   };
+
+  const handleRun = () => {
+    const runId = simsListItem.parentRunId;
+    dispatch(setRunnerSimSelectedId(simsListItem.forkSpecHash));
+    dispatch(setRunnerFlowSelectedId(simsListItem.flowDefHash));
+
+    if (runId) dispatch(setSimsRunSelectedId(runId));
+    navigate(`/runner`);
+  };
   return (
     <Item variant="muted">
       <ItemContent>
         <ItemTitle>{simsListItem?.name && simsListItem.name}</ItemTitle>
-        <ItemDescription>
+        <ItemDescription className="flex flex-col">
           {simsListItem.flowDefName} - {simsListItem.flowDefVersion}
           <br />
           {simsListItem.forkSpecHash}
+          {simsListItem.forkSpecHash ? (
+            <ItemMedia className="mb-0.5 flex justify-start">
+              <GitBranchIcon size="20" />
+            </ItemMedia>
+          ) : null}
         </ItemDescription>
       </ItemContent>
       <ItemActions>
@@ -56,6 +76,13 @@ export function SimsListItem({ simsListItem }: SimsListItemProps) {
           onClick={handleView}
         >
           View
+        </Button>
+        <Button
+          variant="outline"
+          className="cursor-pointer"
+          onClick={handleRun}
+        >
+          Run
         </Button>
       </ItemActions>
     </Item>

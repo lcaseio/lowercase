@@ -7,7 +7,7 @@ export async function cliRunAction(
 ): Promise<void> {
   console.log("[cli] running run command");
   await services.system.startSystem();
-  await services.run.requestRun(flowDefHash, "lowercase://cli");
+  await services.run.requestRun({ flowDefHash, source: "lowercase://cli" });
 }
 
 export function registerRunCmd(

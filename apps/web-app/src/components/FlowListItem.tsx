@@ -2,7 +2,10 @@ import type { FlowIndex } from "@lcase/types";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useAppDispatch } from "@/redux/typed-hooks";
-import { setFlowHash, setFlowSelectedId } from "@/redux/slices/runner-slice";
+import {
+  setRunnerFlowHash,
+  setRunnerFlowSelectedId,
+} from "@/redux/slices/runner-slice";
 import {
   Item,
   ItemActions,
@@ -21,7 +24,8 @@ export function FlowListItem({ index }: { index: FlowIndex }) {
         <ItemTitle>{index.name}</ItemTitle>
         <ItemDescription>
           {index.version}
-          {index.description ? <p> {index.description} </p> : ""}
+          <br />
+          {index.description ? index.description : ""}
         </ItemDescription>
       </ItemContent>
       <ItemActions>
@@ -36,8 +40,8 @@ export function FlowListItem({ index }: { index: FlowIndex }) {
           size="sm"
           className="cursor-pointer"
           onClick={() => {
-            dispatch(setFlowSelectedId(index.hash));
-            dispatch(setFlowHash(index.hash));
+            dispatch(setRunnerFlowSelectedId(index.hash));
+            dispatch(setRunnerFlowHash(index.hash));
             navigate(`/runner`);
           }}
         >

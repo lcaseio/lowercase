@@ -91,6 +91,8 @@ export function SimsFlowView({ flowDef, isEditable }: Props) {
   const handleNodeClick: NodeMouseHandler = (_event, node) => {
     if (!selectedFlowId) return;
     if (!isEditable) return;
+    if (flowDef?.steps[node.id].type === "parallel") return;
+    if (flowDef?.steps[node.id].type === "join") return;
     if (reusedSteps[selectedFlowId]?.[node.id]) {
       dispatch(removeReusedStepId({ flowId: selectedFlowId, stepId: node.id }));
     } else

@@ -6,9 +6,10 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostRunsReq }>(
     "/",
     async (req, rep): Promise<PostRunsRes> => {
-      const { flowDefHash } = req.body;
-      const validFowDefHash = validateFlowHash(flowDefHash);
-      if (!validFowDefHash) return { ok: false, error: "Invalid flowDefHash" };
+      const { flowDefHash, forkSpecHash } = req.body;
+      const validFlowDefHash = validateFlowHash(flowDefHash);
+
+      if (!validFlowDefHash) return { ok: false, error: "Invalid flowDefHash" };
 
       const runId = app.services.run.makeRunId();
 
@@ -18,11 +19,12 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
         app.services.ws.monitorRun(runId, s as unknown as WebSocket);
         console.log("monitoring run");
       }
-      await app.services.run.requestRun(
-        validFowDefHash,
-        "lowercase://http-server",
+      await app.services.run.requestRun({
+        flowDefHash: validFlowDefHash,
+        source: "lowercase://http-server",
         runId,
-      );
+        forkSpecHash,
+      });
       return { ok: true, runId };
     },
   );

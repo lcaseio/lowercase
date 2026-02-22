@@ -20,6 +20,7 @@ export async function listAllRuns(
       flowName: flowIndexResult.value.name,
       flowVersion: flowIndexResult.value.version,
       flowDefHash: runIndex.flowDefHash,
+      forkSpecHash: runIndex.forkSpecHash,
       startTime: runIndex.startTime,
       endTime: runIndex.endTime,
       duration: runIndex.duration,

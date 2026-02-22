@@ -7,16 +7,21 @@ type RunnerState = {
   flowDef: FlowDefinition | null;
   forkSpecHash: string | null;
   forkSpec?: ForkSpec | null;
+  simSelectedId: string | null;
   flowSelectedId: string | null;
   eventGraphRunId: string | null;
+  enableSim: boolean;
 };
 const initialState: RunnerState = {
   flowHash: null,
   flowDef: null,
   forkSpecHash: null,
   forkSpec: null,
+
   flowSelectedId: null,
+  simSelectedId: null,
   eventGraphRunId: null,
+  enableSim: false,
 };
 
 type FlowHash = string;
@@ -24,26 +29,30 @@ export const runSlice = createSlice({
   name: "run",
   initialState,
   reducers: {
-    setFlowHash: (state, action: PayloadAction<FlowHash | null>) => {
+    setRunnerFlowHash: (state, action: PayloadAction<FlowHash | null>) => {
       state.flowHash = action.payload;
     },
-    setFlowDef: (state, action: PayloadAction<FlowDefinition | null>) => {
+    setRunnerFlowDef: (state, action: PayloadAction<FlowDefinition | null>) => {
       state.flowDef = action.payload;
     },
-    setFlowSelectedId: (state, action: PayloadAction<string | null>) => {
+    setRunnerFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
     },
     setEventGraphRunId: (state, action: PayloadAction<string>) => {
       state.eventGraphRunId = action.payload;
     },
+    setRunnerSimSelectedId: (state, action: PayloadAction<string>) => {
+      state.simSelectedId = action.payload;
+    },
   },
 });
 
 export const {
-  setFlowHash,
-  setFlowDef,
-  setFlowSelectedId,
+  setRunnerFlowHash,
+  setRunnerFlowDef,
+  setRunnerFlowSelectedId,
   setEventGraphRunId,
+  setRunnerSimSelectedId,
 } = runSlice.actions;
 export const selectFlowHash = (state: RootState) => {
   return state.runner.flowHash;

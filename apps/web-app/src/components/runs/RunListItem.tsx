@@ -1,19 +1,33 @@
 import type { RunListItem } from "@lcase/types";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
+  ItemMedia,
   ItemTitle,
 } from "../ui/item";
+import { useAppDispatch } from "@/redux/typed-hooks";
+import {
+  setSimsFlowSelectedId,
+  setSimsRunSelectedId,
+} from "@/redux/slices/sims-slice";
+import { TestTubeDiagonalIcon } from "lucide-react";
 
 export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const handleFork = () => {
+    dispatch(setSimsFlowSelectedId(runListItem.flowDefHash));
+    dispatch(setSimsRunSelectedId(runListItem.runId));
+    navigate("/sims/create");
+  };
   return (
     <div>
       <Item variant="muted">
-        <ItemContent>
+        <ItemContent className="">
           <ItemTitle>{runListItem.flowName}</ItemTitle>
           <ItemDescription>
             {runListItem.flowVersion + " "} -{" "}
@@ -25,6 +39,13 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
               ? " " + new Date(runListItem.endTime).toLocaleTimeString()
               : ""}
             {runListItem.duration ? " " + runListItem.duration + "s " : ""}
+            <br />
+            {runListItem.forkSpecHash ? (
+              <ItemMedia className="mb-0.5 flex justify-start">
+                {/* <GitBranchIcon size="20" /> */}
+                <TestTubeDiagonalIcon size="20" />
+              </ItemMedia>
+            ) : null}
           </ItemDescription>
         </ItemContent>
         <ItemActions>
@@ -35,6 +56,14 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
               View
             </Button>
           </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={handleFork}
+          >
+            Fork
+          </Button>
         </ItemActions>
       </Item>
     </div>

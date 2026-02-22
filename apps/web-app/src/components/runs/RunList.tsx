@@ -8,7 +8,7 @@ export function RunList() {
   const runs = [...data.runList];
 
   return (
-    <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-5/12 flex flex-col gap-6 mt-4">
+    <div className="xs:max-w-12/12 sm:max-w-12/12 lg:max-w-8/12 flex flex-col gap-6 mt-4">
       {runs
         .sort(
           (a, b) =>
