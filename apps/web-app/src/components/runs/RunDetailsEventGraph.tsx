@@ -1,8 +1,9 @@
 import type { AnyEvent } from "@lcase/types";
-import type { EChartsOption } from "echarts";
+import type { ECElementEvent, EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
 import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
+import { useRunDetailsController } from "./use-run-details-controller";
 
 export type RunDetailsEventGraphProps = {
   events: Record<string, AnyEvent>;
@@ -10,11 +11,21 @@ export type RunDetailsEventGraphProps = {
   runId: string | null;
 };
 
+type DataPoint = {
+  time: number;
+  index: number;
+  label: string;
+  eventId: string;
+};
+type Dim = keyof DataPoint;
+
 export function RunDetailsEventGraph({
   runId,
   runEvents,
   events,
 }: RunDetailsEventGraphProps) {
+  const { setSelectedEventId, setActiveTab, selectedEventId } =
+    useRunDetailsController();
   const eventsArr = useMemo(() => {
     if (!runId) return [];
 
@@ -37,6 +48,20 @@ export function RunDetailsEventGraph({
     [eventsArr, events],
   );
 
+  const dataObject = useMemo(
+    () =>
+      eventsArr.map(
+        (e, index) =>
+          ({
+            time: new Date(events[e].time).getTime(),
+            index,
+            label: events[e].type as string,
+            eventId: events[e].id,
+          }) satisfies DataPoint,
+      ),
+    [eventsArr, events],
+  );
+
   const times = data.map((d) => d[0] as number);
   const minTime = times.length ? Math.min(...times) : 0;
   const maxTime = times.length ? Math.max(...times) : 1;
@@ -51,22 +76,27 @@ export function RunDetailsEventGraph({
     animation: true,
     animationDurationUpdate: 300,
     animationEasingUpdate: "cubicOut",
+    dataset: {
+      dimensions: ["time", "index", "label", "eventId"],
+      source: dataObject,
+    },
     tooltip: {
       trigger: "item",
 
       formatter: (params: TopLevelFormatterParams) => {
         const p = Array.isArray(params) ? params[0] : params;
-        const point = p.data as [number, number, string, string];
-        const [time, index, label, id] = point;
+        if (!isEventPoint(p.data)) return "";
+        const point = p.data;
+        const { time, index, label, eventId } = point;
         const t = new Date(time).toLocaleString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
         });
 
-        const eventDetails = `id: ${events[id].id}<br/>`;
-        const eventSource = `source: ${events[id].source}<br/>`;
-        const eventData = `data:<br/><textarea cols="80" rows="40" wrap="hard" class="font-mono text-[0.5rem]/2">${JSON.stringify(events[id].data, null, 2)}</textarea><br/>`;
+        const eventDetails = `id: ${events[eventId].id}<br/>`;
+        const eventSource = `source: ${events[eventId].source}<br/>`;
+        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3">${JSON.stringify(events[eventId].data, null, 2)}</textarea><br/>`;
         return (
           `#${index} - ${label}<br/>${t}<br/>` +
           eventDetails +
@@ -75,6 +105,7 @@ export function RunDetailsEventGraph({
         );
       },
     },
+
     grid: [
       { left: 50, right: 80, top: 20, bottom: 180 },
       { left: 56, right: 80, height: 98, bottom: 25 },
@@ -173,20 +204,23 @@ export function RunDetailsEventGraph({
         filterMode: "filter",
       },
     ],
+
     series: [
       {
         type: "custom",
+        name: "events",
         universalTransition: true,
-        data,
+
         xAxisIndex: 0,
         yAxisIndex: 0,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         renderItem: (_params: any, api) => {
-          const timeVal = api.value(0);
-          const index = api.value(1);
-          const label = api.value(2);
+          const value = (d: Dim) => api.value(d);
+          const timeVal = value("time");
+          const index = value("index");
+          const label = value("label");
           const point = api.coord([timeVal, index]);
-          const eventId = api.value(3);
+          const eventId = value("eventId");
           if (!point) return null;
 
           // const range = zoomRange ?? { start: minTime, end: maxTime };
@@ -238,7 +272,10 @@ export function RunDetailsEventGraph({
                   rich: {
                     label: {
                       fontSize: baseLabelSize,
-                      fill: "#e2e8f0",
+                      fill:
+                        selectedEventId === eventId
+                          ? "oklch(94.5% 0.129 101.54)"
+                          : "#e2e8f0",
                     },
                     time: {
                       fontSize: Math.max(4, baseLabelSize - 1),
@@ -286,6 +323,16 @@ export function RunDetailsEventGraph({
     // setVisibleCount(right >= left ? right - left + 1 : 0);
   };
 
+  const onChartClick = (params: ECElementEvent) => {
+    if (!isEventPoint(params.data)) return;
+    const { eventId } = params.data;
+    if (!eventId) return;
+
+    console.log(eventId);
+    setSelectedEventId(eventId);
+    setActiveTab("details");
+  };
+
   const visibleCount = useMemo(() => {
     if (!data.length) return 0;
     const times = data.map((d) => d[0] as number);
@@ -319,7 +366,7 @@ export function RunDetailsEventGraph({
     <div className="w-12/12 h-[800px] mb-10 bg-slate-800 caret-blue-500 rounded-lg">
       <EChartsReact
         option={option}
-        onEvents={{ datazoom: onDataZoom }}
+        onEvents={{ datazoom: onDataZoom, click: onChartClick }}
         style={{
           height: "100%",
           width: "100%",
@@ -351,4 +398,15 @@ function upperBound(numbers: number[], target: number): number {
     else high = mid;
   }
   return low;
+}
+
+function isEventPoint(data: unknown): data is DataPoint {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.time === "number" &&
+    typeof d.index === "number" &&
+    typeof d.label === "string" &&
+    typeof d.eventId === "string"
+  );
 }

@@ -5,7 +5,7 @@ import { routeEventListenerMiddleware } from "./middleware/route-event";
 import { createWsMiddleware } from "./middleware/ws";
 import { eventsSlice } from "./slices/events-slice";
 import { wsSlice } from "./slices/ws-slice";
-import { runSlice } from "./slices/runner-slice";
+import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
 import { simsSlice } from "./slices/sims-slice";
 import { simsApi } from "./api/sims-api";
@@ -17,7 +17,7 @@ export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
   ws: wsSlice.reducer,
-  runner: runSlice.reducer,
+  runner: runnerSlice.reducer,
   sims: simsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,

@@ -1,7 +1,6 @@
 import type { FlowDefinition, ForkSpec } from "@lcase/types";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { Tab } from "@/components/runs/use-run-details-controller";
 
 type RunnerState = {
   flowHash: string | null;
@@ -12,8 +11,6 @@ type RunnerState = {
   flowSelectedId: string | null;
   eventGraphRunId: string | null;
   enableSim: boolean;
-  selectedEventId: string | null;
-  activeTab: Tab;
 };
 const initialState: RunnerState = {
   flowHash: null,
@@ -25,13 +22,10 @@ const initialState: RunnerState = {
   simSelectedId: null,
   eventGraphRunId: null,
   enableSim: false,
-  selectedEventId: null,
-  activeTab: "flow",
 };
 
 type FlowHash = string;
-type EventId = string;
-export const runnerSlice = createSlice({
+export const runSlice = createSlice({
   name: "run",
   initialState,
   reducers: {
@@ -50,15 +44,6 @@ export const runnerSlice = createSlice({
     setRunnerSimSelectedId: (state, action: PayloadAction<string>) => {
       state.simSelectedId = action.payload;
     },
-    setRunnerSelectedEventId: (
-      state,
-      action: PayloadAction<EventId | null>,
-    ) => {
-      state.selectedEventId = action.payload;
-    },
-    setRunnerActiveTab: (state, action: PayloadAction<Tab>) => {
-      state.activeTab = action.payload;
-    },
   },
 });
 
@@ -68,20 +53,11 @@ export const {
   setRunnerFlowSelectedId,
   setEventGraphRunId,
   setRunnerSimSelectedId,
-  setRunnerSelectedEventId,
-  setRunnerActiveTab,
-} = runnerSlice.actions;
+} = runSlice.actions;
 export const selectFlowHash = (state: RootState) => {
   return state.runner.flowHash;
 };
 
-export const getRunnerSelectedEventId = (state: RootState) => {
-  return state.runner.selectedEventId;
-};
-
-export const getRunnerActiveTab = (state: RootState) => {
-  return state.runner.activeTab;
-};
 export const selectFlows = (state: RootState) => {
   return state.flows.indexes;
 };

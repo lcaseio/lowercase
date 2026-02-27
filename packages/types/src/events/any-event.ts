@@ -40,29 +40,29 @@ import type { LimiterScope } from "./limiter/event.js";
  *   ...
  * }
  */
-export type ScopeFor<T extends EventType> = T extends StepEventType
+export type ScopeFor<T extends EventType = EventType> = T extends StepEventType
   ? StepScope
   : T extends FlowEventType
-  ? FlowScope
-  : T extends EngineEventType
-  ? EngineScope
-  : T extends RunEventType
-  ? RunScope
-  : T extends JobEventType
-  ? JobScope
-  : T extends ToolEventType
-  ? ToolScope
-  : T extends WorkerEventType
-  ? WorkerScope
-  : T extends SchedulerEventType
-  ? SchedulerScope
-  : T extends LimiterEventType
-  ? LimiterScope
-  : T extends ReplayEventType
-  ? ReplayScope
-  : T extends SystemEventType
-  ? SystemScope
-  : {};
+    ? FlowScope
+    : T extends EngineEventType
+      ? EngineScope
+      : T extends RunEventType
+        ? RunScope
+        : T extends JobEventType
+          ? JobScope
+          : T extends ToolEventType
+            ? ToolScope
+            : T extends WorkerEventType
+              ? WorkerScope
+              : T extends SchedulerEventType
+                ? SchedulerScope
+                : T extends LimiterEventType
+                  ? LimiterScope
+                  : T extends ReplayEventType
+                    ? ReplayScope
+                    : T extends SystemEventType
+                      ? SystemScope
+                      : {};
 
 /**
  * Access any event by event type.
@@ -76,6 +76,17 @@ export type ScopeFor<T extends EventType> = T extends StepEventType
  *   data: { ... },
  * }
  */
+export type AnyScope = StepScope &
+  FlowScope &
+  EngineScope &
+  RunScope &
+  JobScope &
+  ToolScope &
+  WorkerScope &
+  SchedulerScope &
+  LimiterScope &
+  ReplayScope &
+  SystemScope;
 export type AnyEvent<T extends EventType = EventType> = CloudEvent<T> &
   ScopeFor<T>;
 
