@@ -2,7 +2,10 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { LoggingMessageNotificationSchema } from "@modelcontextprotocol/sdk/types.js";
 
-const client = new Client({ name: "unicode-client", version: "0.1.0-alpha.9" });
+const client = new Client({
+  name: "unicode-client",
+  version: "0.1.0-alpha.10",
+});
 const transport = new SSEClientTransport(new URL("http://localhost:3004/sse"));
 console.log("[unicode-client] running");
 await client.connect(transport);

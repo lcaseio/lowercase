@@ -1,6 +1,6 @@
 # lowercase
 
-### ❗ Alpha Software (v0.1.0-alpha.9)
+### ❗ Alpha Software (v0.1.0-alpha.10)
 
 **lowercase** is in an early alpha stage and still taking shape. Some things work - mostly - but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 

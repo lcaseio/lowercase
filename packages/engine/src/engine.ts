@@ -38,7 +38,7 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.9";
+  version = "0.1.0-alpha.10";
   state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;

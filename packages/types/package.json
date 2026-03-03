@@ -1,7 +1,7 @@
 {
   "name": "@lcase/types",
   "version": "0.1.0-alpha.10",
-  "private": "true",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
