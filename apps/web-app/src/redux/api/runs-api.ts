@@ -1,6 +1,8 @@
 import type {
   GetRunEventsReq,
   GetRunEventsRes,
+  GetRunIndexReq,
+  GetRunIndexRes,
   GetRunsRes,
   PostRunsReq,
   PostRunsRes,
@@ -27,6 +29,12 @@ export const runsApi = createApi({
       }),
     }),
 
+    getRunIndex: builder.query<GetRunIndexRes, GetRunIndexReq>({
+      query: (arg) => ({
+        url: `runs/${arg.runId}`,
+        method: "GET",
+      }),
+    }),
     getAllRunEvents: builder.query<GetRunEventsRes, GetRunEventsReq>({
       query: (args: GetRunEventsReq) => ({
         url: `runs/details?runId=${args.runId}`,
@@ -50,4 +58,5 @@ export const {
   useRequestRunMutation,
   useListAllRunsQuery,
   useGetAllRunEventsQuery,
+  useGetRunIndexQuery,
 } = runsApi;

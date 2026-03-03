@@ -14,6 +14,7 @@ type RunState = {
   enableSim: boolean;
   activeTab: Tab;
   selectedEventId: string | null;
+  selectedArtifactHash: string | null;
 };
 const initialState: RunState = {
   flowHash: null,
@@ -28,6 +29,7 @@ const initialState: RunState = {
   activeTab: "flow",
 
   selectedEventId: null,
+  selectedArtifactHash: null,
 };
 
 type FlowHash = string;
@@ -53,6 +55,12 @@ export const runsSlice = createSlice({
     setRunsSelectedEventId: (state, action: PayloadAction<string | null>) => {
       state.selectedEventId = action.payload;
     },
+    setRunsSelectedArtifactHash: (
+      state,
+      action: PayloadAction<string | null>,
+    ) => {
+      state.selectedArtifactHash = action.payload;
+    },
   },
 });
 
@@ -63,6 +71,7 @@ export const {
   setRunsRunId,
   setRunsActiveTab,
   setRunsSelectedEventId,
+  setRunsSelectedArtifactHash,
 } = runsSlice.actions;
 export const getRunsFlowHash = (state: RootState) => {
   return state.runs.flowHash;
@@ -73,6 +82,9 @@ export const selectFlows = (state: RootState) => {
 };
 export const getEventGraphRunId = (state: RootState) => {
   return state.runner.eventGraphRunId;
+};
+export const getRunsSelectedArtifactHash = (state: RootState) => {
+  return state.runs.selectedArtifactHash;
 };
 
 export const getRunsSelectedEventId = (state: RootState) => {

@@ -51,7 +51,7 @@ export function Runner() {
         </div>
 
         <RunDetailsControllerProvider value={controller}>
-          <RunDetailsTabs />
+          <RunDetailsTabs view="live" />
         </RunDetailsControllerProvider>
       </Main>
     </div>

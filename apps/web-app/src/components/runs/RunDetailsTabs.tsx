@@ -17,12 +17,14 @@ import {
   selectEventById,
 } from "@/redux/slices/events-slice";
 import { shallowEqual } from "react-redux";
+import { RunArtifactList } from "./RunArtifactList";
+import { RunArtifactViewer } from "./RunArtifactViewer";
 
 export type RunDetailsTabsProps = {
   view: "live" | "historical";
 };
 
-export function RunDetailsTabs() {
+export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
   const { activeTab, setActiveTab, selectedEventId, runId, flowDefHash } =
     useRunDetailsController();
   // const allEvents = useAppSelector((state) => state.events.events);
@@ -54,7 +56,13 @@ export function RunDetailsTabs() {
 
         <TabsTrigger value="events">Event Graph</TabsTrigger>
         <TabsTrigger value="details">Event Details</TabsTrigger>
-        <TabsTrigger value="artifact">Artifact</TabsTrigger>
+
+        {view === "historical" ? (
+          <>
+            <TabsTrigger value="artifacts">Artifact List</TabsTrigger>
+            <TabsTrigger value="artifactViewer">Artifact Viewer</TabsTrigger>
+          </>
+        ) : null}
       </TabsList>
       <TabsContent value="flow">
         <RunDetailsFlowViewer flowDef={flowDef} />
@@ -65,7 +73,16 @@ export function RunDetailsTabs() {
       <TabsContent value="details">
         <EventDetails event={selectedEvent} />
       </TabsContent>
-      <TabsContent value="artifact">Event Details</TabsContent>
+      {view === "historical" ? (
+        <>
+          <TabsContent value="artifacts">
+            <RunArtifactList runId={runId} />
+          </TabsContent>
+          <TabsContent value="artifactViewer">
+            <RunArtifactViewer />
+          </TabsContent>
+        </>
+      ) : null}
     </Tabs>
   );
 }
