@@ -17,7 +17,7 @@ type GetResponseBody =
 
 export class HttpJsonTool implements ToolInstancePort<"httpjson"> {
   id = "httpjson" as const;
-  version = "0.1.0-alpha.9";
+  version = "0.1.0-alpha.10";
   name = "Internal Http Json Tool";
   #deps: ToolDeps;
   constructor(deps: ToolDeps) {

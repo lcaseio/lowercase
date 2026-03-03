@@ -33,4 +33,21 @@ export class FsRunIndexStore implements RunIndexStorePort {
       console.log(`Error reading index for run:${runId}. ${e}`);
     }
   }
+
+  async getAllRunIds(): Promise<string[]> {
+    try {
+      const files = await fs.promises.readdir(this.dir);
+
+      const fileNames: string[] = [];
+      if (!files || files.length === 0) return [];
+      for (const file of files) {
+        if (!file.endsWith(".index.json")) continue;
+        fileNames.push(file.replace(".index.json", ""));
+      }
+      return fileNames;
+    } catch (err) {
+      console.log(`Error reading directory ${this.dir}: ${err}`);
+      return [];
+    }
+  }
 }

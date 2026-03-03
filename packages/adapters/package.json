@@ -1,7 +1,7 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.9",
-  "private": "true",
+  "version": "0.1.0-alpha.10",
+  "private": true,
   "type": "module",
   "exports": {
     "./event-bus": {
@@ -39,6 +39,14 @@
     "./run-index-store": {
       "types": "./dist/run-index-store/index.d.ts",
       "import": "./dist/run-index-store/index.js"
+    },
+    "./flow-index-store": {
+      "types": "./dist/flow-index-store/index.d.ts",
+      "import": "./dist/flow-index-store/index.js"
+    },
+    "./fork-spec-index-store": {
+      "types": "./dist/fork-spec-index-store/index.d.ts",
+      "import": "./dist/fork-spec-index-store/index.js"
     }
   },
   "scripts": {

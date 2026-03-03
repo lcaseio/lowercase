@@ -1,6 +1,6 @@
 {
   "name": "@lcase/services",
-  "version": "0.1.0-alpha.9",
+  "version": "0.1.0-alpha.10",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,6 +18,7 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/run-flow": "workspace:*",
+    "@lcase/flow-analysis": "workspace:*",
     "@lcase/run-history": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/specs": "workspace:*"

@@ -37,6 +37,7 @@ import {
   ReplayService,
   SimService,
   SystemService,
+  WsService,
 } from "@lcase/services";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
@@ -46,6 +47,8 @@ import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
+import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
+import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -54,12 +57,23 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
 
   const flowService = new FlowService(
     ctx.bus,
-    ef,
+    ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
+    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
+  );
+
+  const forkSpecIndexStore = new FsForkSpecIndexStore(
+    path.join(process.cwd(), "lcase-db/sims/index"),
   );
   const replayService = new ReplayService(ctx.replay);
-  const simService = new SimService(ctx.artifacts, ctx.ef, ctx.runIndexStore);
+  const simService = new SimService(
+    ctx.artifacts,
+    ctx.ef,
+    ctx.runIndexStore,
+    forkSpecIndexStore,
+  );
+  const wsService = new WsService(ctx.bus);
 
   const systemService = new SystemService({
     bus: ctx.bus,
@@ -76,6 +90,7 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     replayService,
     simService,
     systemService,
+    wsService,
   });
   return runtime;
 }
@@ -104,7 +119,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const jobParser = new JobParser(eventSchemaRegistry);
 
   const runIndexStore = new FsRunIndexStore(
-    path.join(process.cwd(), "runs/index"),
+    path.resolve(process.cwd(), "lcase-db/runs/index"),
   );
 
   const artifacts = createArtifacts(config.artifacts);
@@ -133,7 +148,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const limiter = createLimiter(config.limiter, { bus, ef, cl });
 
   const replay = new ReplayEngine(
-    new JsonlEventLog(path.join(process.cwd(), "./replay-test")),
+    new JsonlEventLog(path.resolve(process.cwd(), "lcase-db/replay")),
     bus,
     ef,
   );
@@ -163,7 +178,7 @@ export function createObservability(
   const sinks: SinkMap = {};
   tap.attachSink(
     new RunIndexSink(
-      new FsRunIndexStore(path.join(process.cwd(), "runs", "index")),
+      new FsRunIndexStore(path.resolve(process.cwd(), "lcase-db/runs/index")),
     ),
   );
   if (config.sinks) {
@@ -192,7 +207,10 @@ export function createObservability(
           }
           break;
         case "replay-jsonl-sink":
-          const absoluteDirPath = path.join(process.cwd(), "./replay-test");
+          const absoluteDirPath = path.resolve(
+            process.cwd(),
+            "lcase-db/replay",
+          );
           const replaySink = new ReplaySink(new JsonlEventLog(absoluteDirPath));
           sinks["replay-jsonl-sink"] = replaySink;
           tap.attachSink(replaySink);

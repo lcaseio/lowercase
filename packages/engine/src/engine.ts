@@ -15,13 +15,11 @@ import type {
   EngineEffect,
   EngineMessage,
   EngineState,
-  FlowSubmittedMsg,
   JobFinishedMsg,
   Planner,
   Reducer,
   RunFinishedMsg,
   RunStartedMsg,
-  WriteContextToDiskFx,
 } from "./engine.types.js";
 import {
   RunRequestedMsg,
@@ -40,7 +38,7 @@ import {
 
 export class Engine {
   id = "internal-engine";
-  version = "0.1.0-alpha.9";
+  version = "0.1.0-alpha.10";
   state: EngineState = { runs: {}, flows: {} };
   isProcessing = false;
   enableSideEffects = true;
@@ -185,7 +183,6 @@ export class Engine {
     const effects = planner(oldState, newState, message);
     this.state = newState;
 
-    this.executeEffect;
     for (const effect of effects) {
       this.executeEffect(effect);
     }

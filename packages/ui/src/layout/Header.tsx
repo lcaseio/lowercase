@@ -1,10 +1,10 @@
-import { RuntimeControls } from "../components/RuntimeControls.js";
+import { Nav } from "./Nav.js";
 
-export function Header() {
+export function Header(props: { title: string }) {
   return (
     <header>
-      <h2>lowercase</h2>
-      <RuntimeControls />
+      <h2>{props.title}</h2>
+      <Nav />
     </header>
   );
 }

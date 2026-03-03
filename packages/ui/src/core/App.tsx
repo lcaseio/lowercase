@@ -12,8 +12,11 @@ export function App() {
   return (
     <>
       <AppContextProvider>
-        <Header />
+        <Header title="thing" />
         <main>
+          <div>
+            <h1>flows</h1>
+          </div>
           <div id="divided-main">
             <div id="left-panel">
               <FlowManager />

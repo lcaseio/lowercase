@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useController } from "../context/ControllerContext.js";
 import { FlowFolder } from "./FlowFolder.js";
 import { FlowStatusList } from "./FlowStatusList.js";
-import { FlowList } from "@lcase/ports";
+import type { FlowList } from "@lcase/ports";
 
 export function FlowManager() {
   const controller = useController();

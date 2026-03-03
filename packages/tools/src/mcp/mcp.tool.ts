@@ -29,7 +29,7 @@ type McpToolContext = {
 export class McpTool implements ToolInstancePort<"mcp"> {
   id = "mcp" as const;
   name = "Internal MCP SSE Tool";
-  version = "0.1.0-alpha.9";
+  version = "0.1.0-alpha.10";
   #deps: ToolDeps;
   #context: McpToolContext = {
     isProducing: false,
@@ -39,7 +39,7 @@ export class McpTool implements ToolInstancePort<"mcp"> {
   };
   #client: Client;
   constructor(deps: ToolDeps) {
-    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.9" });
+    this.#client = new Client({ name: "mcp-tool", version: "0.1.0-alpha.10" });
     this.#addShutdownHooks();
     this.#deps = deps;
   }
