@@ -1,5 +1,6 @@
 import { GetRunEventsReq, GetRunEventsRes } from "@lcase/types";
 import { FastifyInstance } from "fastify";
+import { isRunId } from "../../../utils/is-run-id.js";
 
 export const getRunsEventsListRoute = async (app: FastifyInstance) => {
   app.get<{ Querystring: GetRunEventsReq }>(
@@ -18,17 +19,3 @@ export const getRunsEventsListRoute = async (app: FastifyInstance) => {
     },
   );
 };
-
-/**
- * Narrows the type of run id if is a valid flow id string
- * @param runId unknown
- * @returns
- */
-export function isRunId(runId: unknown): runId is string {
-  if (typeof runId !== "string") return false;
-  const regex = /^run-[a-zA-Z0-9\-]+$/;
-  const match = runId.match(regex);
-
-  if (!match) return false;
-  return true;
-}

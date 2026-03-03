@@ -5,6 +5,7 @@ import type {
   ForkSpec,
   ForkSpecIndex,
   Result,
+  RunIndex,
   RunListItem,
 } from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
@@ -19,6 +20,7 @@ export interface ServicesPort {
   system: SystemServicePort;
   run: RunServicePort;
   ws: WsServicePort;
+  artifact: ArtifactServicePort;
 }
 
 export type ForkSpecDetails = {
@@ -75,10 +77,15 @@ export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
+  getRunIndex(runId: string): Promise<Result<RunIndex, string>>;
 }
 
 export interface WsServicePort {
   monitorRun(runId: string, socket: WebSocket): void;
   stopMonitoringRun(runId: string): void;
   start(): Promise<void>;
+}
+
+export interface ArtifactServicePort {
+  getArtifact(hash: string): Promise<Result<JsonValue, string>>;
 }

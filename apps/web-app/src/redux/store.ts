@@ -10,6 +10,7 @@ import { runsApi } from "./api/runs-api";
 import { simsSlice } from "./slices/sims-slice";
 import { simsApi } from "./api/sims-api";
 import { runsSlice } from "./slices/runs-slice";
+import { artifactsApi } from "./api/artifacts-api";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -24,6 +25,7 @@ export const rootReducer = combineReducers({
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
   [simsApi.reducerPath]: simsApi.reducer,
+  [artifactsApi.reducerPath]: artifactsApi.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -37,6 +39,7 @@ export const store = configureStore({
         flowsApi.middleware,
         runsApi.middleware,
         simsApi.middleware,
+        artifactsApi.middleware,
         createWsMiddleware(),
       ),
 });

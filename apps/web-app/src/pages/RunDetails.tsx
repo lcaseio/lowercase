@@ -48,7 +48,7 @@ export function RunDetails() {
           / details
         </p>
         <RunDetailsControllerProvider value={controller}>
-          <RunDetailsTabs />
+          <RunDetailsTabs view="historical" />
         </RunDetailsControllerProvider>
       </Main>
     </div>

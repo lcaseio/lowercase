@@ -5,3 +5,4 @@ export * from "./sim.service.js";
 export * from "./system.service.js";
 export * from "./run.service.js";
 export * from "./ws.service.js";
+export * from "./artifact.service.js";

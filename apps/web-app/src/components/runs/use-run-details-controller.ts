@@ -1,6 +1,12 @@
 import { createContext, useContext } from "react";
 
-export type Tab = "flow" | "events" | "details" | "artifacts";
+export type Tab =
+  | "flow"
+  | "events"
+  | "details"
+  | "artifacts"
+  | "artifactViewer";
+
 export type RunDetailsController = {
   selectedEventId: string | null;
   setSelectedEventId: (id: string | null) => void;
