@@ -11,7 +11,9 @@ export function RunArtifactViewer() {
     return <div> Error getting artifact: {artifact.data.error}</div>;
   return (
     <div>
-      <pre>{JSON.stringify(artifact.data.jsonValue, null, 2)}</pre>
+      <pre className="text-sm/4.5">
+        {JSON.stringify(artifact.data.jsonValue, null, 2)}
+      </pre>
     </div>
   );
 }

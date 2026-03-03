@@ -1,8 +1,12 @@
 import { useListAllRunsQuery } from "@/redux/api/runs-api";
 import { RunListItem } from "./RunListItem";
+import { useAppDispatch } from "@/redux/typed-hooks";
+import { setRunsSelectedArtifactHash } from "@/redux/slices/runs-slice";
 
 export function RunList() {
   const { data } = useListAllRunsQuery();
+  const dispatch = useAppDispatch();
+  dispatch(setRunsSelectedArtifactHash(null));
 
   if (data === undefined || data.ok === false) return <p>No runs</p>;
   const runs = [...data.runList];
