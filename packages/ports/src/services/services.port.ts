@@ -55,8 +55,7 @@ export interface FlowServicePort {
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;
   getAllEvents(runId: string): Promise<{
-    eventIds: Record<string, string[]>;
-    events: Record<string, AnyEvent>;
+    events: AnyEvent[];
   }>;
 }
 

@@ -6,6 +6,8 @@ export type RunDetailsController = {
   setSelectedEventId: (id: string | null) => void;
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  runId: string | null;
+  flowDefHash: string | null;
 };
 
 export const RunDetailsControllerContext =

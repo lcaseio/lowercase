@@ -1,14 +1,12 @@
-import type { AnyEvent } from "@lcase/types";
 import type { ECElementEvent, EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
 import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
 import { useRunDetailsController } from "./use-run-details-controller";
+import type { AnyEvent } from "@lcase/types";
 
 export type RunDetailsEventGraphProps = {
-  events: Record<string, AnyEvent>;
-  runEvents: Record<string, string[]>;
-  runId: string | null;
+  events: AnyEvent[];
 };
 
 type DataPoint = {
@@ -19,58 +17,66 @@ type DataPoint = {
 };
 type Dim = keyof DataPoint;
 
-export function RunDetailsEventGraph({
-  runId,
-  runEvents,
-  events,
-}: RunDetailsEventGraphProps) {
+export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
   const { setSelectedEventId, setActiveTab, selectedEventId } =
     useRunDetailsController();
-  const eventsArr = useMemo(() => {
-    if (!runId) return [];
 
-    const arr = runEvents[runId]?.length ? [...runEvents[runId]] : [];
-    if (arr.length === 0) return [];
-    return arr.sort(
-      (a, b) =>
-        new Date(events[a].time).getTime() - new Date(events[b].time).getTime(),
-    );
-  }, [runId, runEvents, events]);
+  /**
+   * old way to create events array, no longer used, here for reference.
+   */
 
+  // const eventsArr = useMemo(() => {
+  //   if (!runId) return [];
+
+  //   const arr = runEventIds[runId]?.length ? [...runEventIds[runId]] : [];
+  //   if (arr.length === 0) return [];
+  //   return arr.sort(
+  //     (a, b) =>
+  //       new Date(allEvents[a].time).getTime() -
+  //       new Date(allEvents[b].time).getTime(),
+  //   );
+  // }, [runId, runEventIds, allEvents]);
+
+  /**
+   * transitioning from data (array) to object format per point, but both
+   * here because both are still used, eventually object format will
+   * only be used.
+   */
   const data = useMemo(
     () =>
-      eventsArr.map((e, index) => [
-        new Date(events[e].time).getTime(),
+      events.map((e, index) => [
+        new Date(e.time).getTime(),
         index,
-        events[e].type as string,
-        events[e].id,
+        e.type as string,
+        e.id,
       ]),
-    [eventsArr, events],
+    [events],
   );
 
   const dataObject = useMemo(
     () =>
-      eventsArr.map(
+      events.map(
         (e, index) =>
           ({
-            time: new Date(events[e].time).getTime(),
+            time: new Date(e.time).getTime(),
             index,
-            label: events[e].type as string,
-            eventId: events[e].id,
+            label: e.type as string,
+            eventId: e.id,
           }) satisfies DataPoint,
       ),
-    [eventsArr, events],
+    [events],
   );
 
   const times = data.map((d) => d[0] as number);
   const minTime = times.length ? Math.min(...times) : 0;
   const maxTime = times.length ? Math.max(...times) : 1;
 
+  // may want to store this in state in the future to preserve zoom range when
+  // switching tabs/pages
   const [zoomRange, setZoomRange] = useState<{
     start: number;
     end: number;
   }>({ start: 0, end: 100 });
-  // const [visibleCount, setVisibleCount] = useState(data.length);
 
   const option: EChartsOption = {
     animation: true,
@@ -94,9 +100,9 @@ export function RunDetailsEventGraph({
           second: "2-digit",
         });
 
-        const eventDetails = `id: ${events[eventId].id}<br/>`;
-        const eventSource = `source: ${events[eventId].source}<br/>`;
-        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3">${JSON.stringify(events[eventId].data, null, 2)}</textarea><br/>`;
+        const eventDetails = `id: ${eventId}<br/>`;
+        const eventSource = `source: ${events[index].source}<br/>`;
+        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
         return (
           `#${index} - ${label}<br/>${t}<br/>` +
           eventDetails +
@@ -252,7 +258,7 @@ export function RunDetailsEventGraph({
                 },
                 style: {
                   fill:
-                    events[eventId]?.action === "failed"
+                    events[Number(index)]?.action === "failed"
                       ? "#d3344a"
                       : "#34d399",
                 },
@@ -302,25 +308,15 @@ export function RunDetailsEventGraph({
     ],
   };
 
+  // sotring data zoom into state in order to flip labels far on the positive x
+  // axis, and to scale font based on visible events.
   const onDataZoom = (params: {
     start: number;
     end: number;
     batch?: Array<{ start: number; end: number }>;
   }) => {
-    // zoom "settled" — do your label flipping / font changes now
     const event = params.batch?.[0] ?? params;
-    // const span = maxTime - minTime || 1;
-    // const startTime = minTime + (event.start / 100) * span;
-    // const endTime = minTime + (event.end / 100) * span;
     setZoomRange({ start: event.start, end: event.end });
-
-    // if (!times.length) {
-    //   setVisibleCount(0);
-    //   return;
-    // }
-    // const left = lowerBound(times, startTime);
-    // const right = upperBound(times, endTime) - 1;
-    // setVisibleCount(right >= left ? right - left + 1 : 0);
   };
 
   const onChartClick = (params: ECElementEvent) => {

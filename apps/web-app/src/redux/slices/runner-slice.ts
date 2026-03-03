@@ -32,7 +32,7 @@ const initialState: RunnerState = {
 type FlowHash = string;
 type EventId = string;
 export const runnerSlice = createSlice({
-  name: "run",
+  name: "runner",
   initialState,
   reducers: {
     setRunnerFlowHash: (state, action: PayloadAction<FlowHash | null>) => {
@@ -87,4 +87,8 @@ export const selectFlows = (state: RootState) => {
 };
 export const getEventGraphRunId = (state: RootState) => {
   return state.runner.eventGraphRunId;
+};
+
+export const getRunnerFlowSelectedId = (state: RootState) => {
+  return state.runner.flowSelectedId;
 };

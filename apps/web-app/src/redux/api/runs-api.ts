@@ -6,6 +6,7 @@ import type {
   PostRunsRes,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { eventsBatch } from "../middleware/ws";
 
 export const runsApi = createApi({
   reducerPath: "runsApi",
@@ -31,6 +32,16 @@ export const runsApi = createApi({
         url: `runs/details?runId=${args.runId}`,
         method: "GET",
       }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data.ok) {
+            dispatch(eventsBatch({ events: data.events }));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
     }),
   }),
 });

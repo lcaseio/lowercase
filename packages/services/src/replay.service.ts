@@ -13,20 +13,7 @@ export class ReplayService implements ReplayServicePort {
   }
 
   async getAllEvents(runId: string) {
-    const rawEvents = await this.replay.getAllEvents(runId);
-
-    const formattedEvents: {
-      eventIds: Record<RunId, EventId[]>;
-      events: Record<EventId, AnyEvent>;
-    } = {
-      eventIds: {},
-      events: {},
-    };
-
-    for (const event of rawEvents) {
-      formattedEvents.events[event.id] ??= event;
-      (formattedEvents.eventIds[runId] ??= []).push(event.id);
-    }
-    return formattedEvents;
+    const events = await this.replay.getAllEvents(runId);
+    return { events };
   }
 }

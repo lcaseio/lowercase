@@ -10,7 +10,9 @@ import type {
   Tab,
 } from "@/components/runs/use-run-details-controller";
 import {
+  getEventGraphRunId,
   getRunnerActiveTab,
+  getRunnerFlowSelectedId,
   getRunnerSelectedEventId,
   setRunnerActiveTab,
   setRunnerSelectedEventId,
@@ -21,6 +23,8 @@ export function Runner() {
   const dispatch = useAppDispatch();
   const selectedEventId = useAppSelector(getRunnerSelectedEventId);
   const activeTab = useAppSelector(getRunnerActiveTab);
+  const runId = useAppSelector(getEventGraphRunId);
+  const flowSelectedId = useAppSelector(getRunnerFlowSelectedId);
 
   const controller: RunDetailsController = {
     selectedEventId,
@@ -31,6 +35,8 @@ export function Runner() {
     setActiveTab: function (tab: Tab): void {
       dispatch(setRunnerActiveTab(tab));
     },
+    runId,
+    flowDefHash: flowSelectedId,
   };
 
   return (
@@ -45,7 +51,7 @@ export function Runner() {
         </div>
 
         <RunDetailsControllerProvider value={controller}>
-          <RunDetailsTabs view="live" />
+          <RunDetailsTabs />
         </RunDetailsControllerProvider>
       </Main>
     </div>

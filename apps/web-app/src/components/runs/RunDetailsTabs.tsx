@@ -2,25 +2,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { RunDetailsFlowViewer } from "./RunDetailsFlowViewer";
 import { RunDetailsEventGraph } from "./RunDetailsEventGraph";
-import { useRunDetailsData } from "./useRunDetailsData";
 import { EventDetails } from "../EventDetails";
 import {
   useRunDetailsController,
   type Tab,
 } from "./use-run-details-controller";
 import { useAppSelector } from "@/redux/typed-hooks";
+import { useGetFlowDefQuery } from "@/redux/api/flows-api";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
+import { useRef } from "react";
+import {
+  makeSelectRunEvents,
+  selectEventById,
+} from "@/redux/slices/events-slice";
+import { shallowEqual } from "react-redux";
 
 export type RunDetailsTabsProps = {
   view: "live" | "historical";
 };
 
-export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
-  const { flowDef, runId, events, runEvents } = useRunDetailsData(view);
-  const { activeTab, setActiveTab, selectedEventId } =
+export function RunDetailsTabs() {
+  const { activeTab, setActiveTab, selectedEventId, runId, flowDefHash } =
     useRunDetailsController();
-  const allEvents = useAppSelector((state) => state.events.events);
+  // const allEvents = useAppSelector((state) => state.events.events);
 
-  const selectedEvent = selectedEventId ? allEvents[selectedEventId] : null;
+  // use ref
+  const selectRunEventsRef = useRef(makeSelectRunEvents());
+  const events = useAppSelector(
+    (s) => selectRunEventsRef.current(s, runId),
+    shallowEqual,
+  );
+
+  const flowDefQuery = useGetFlowDefQuery(flowDefHash ?? skipToken);
+  const flowDef = flowDefQuery?.data?.ok ? flowDefQuery.data.value : null;
+
+  useGetAllRunEventsQuery(runId ? { runId } : skipToken);
+
+  const selectedEvent = useAppSelector((s) =>
+    selectEventById(s, selectedEventId),
+  );
+
   return (
     <Tabs
       defaultValue="flow"
@@ -38,11 +60,7 @@ export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
         <RunDetailsFlowViewer flowDef={flowDef} />
       </TabsContent>
       <TabsContent value="events">
-        <RunDetailsEventGraph
-          runId={runId}
-          runEvents={runEvents}
-          events={events}
-        />
+        <RunDetailsEventGraph events={events} />
       </TabsContent>
       <TabsContent value="details">
         <EventDetails event={selectedEvent} />

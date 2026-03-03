@@ -1,3 +1,10 @@
+/** 
+ * 
+ * no longer used, instead use react context to provide proper pieces of RTK
+ * per page.
+ * 
+ * not deleted yet for reference
+ * 
 import { useAppSelector } from "@/redux/typed-hooks";
 import type { RunDetailsTabsProps } from "./RunDetailsTabs";
 import { useSearchParams } from "react-router-dom";
@@ -51,8 +58,6 @@ export function useRunDetailsData(view: RunDetailsTabsProps["view"]) {
   return {
     flowDef,
     runId,
-    events,
-    runEvents,
   };
 }
 
@@ -67,3 +72,5 @@ function useRunDetailsHistoryParams() {
   const runDetailsFlowDefHash = searchParams.get("flowDefHash");
   return { runId: runHistoryRunId, flowDefHash: runDetailsFlowDefHash };
 }
+
+**/
