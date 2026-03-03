@@ -15,6 +15,9 @@ export function Nav() {
           <Link to="/flows">flows</Link>
         </li>
         <li className="hover:text-cyan-700 hover:dark:text-cyan-500">
+          <Link to="/sims">sims</Link>
+        </li>
+        <li className="hover:text-cyan-700 hover:dark:text-cyan-500">
           <Link to="/runs">runs</Link>
         </li>
         <li className="hover:text-cyan-700 hover:dark:text-cyan-500">

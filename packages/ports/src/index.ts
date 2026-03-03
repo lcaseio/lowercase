@@ -22,6 +22,7 @@ export * from "./limiter/limiter.port.js";
 export * from "./artifacts/artifact-store.port.js";
 export * from "./artifacts/artifacts.port.js";
 export * from "./run-index-store/run-index-store.port.js";
+export * from "./fork-spec-index-store/fork-spec-index-store.js";
 
 export * from "./worker/worker.port.js";
 

@@ -2,12 +2,15 @@ import type {
   AnyEvent,
   FlowDefinition,
   FlowIndex,
+  ForkSpec,
+  ForkSpecIndex,
   Result,
   RunListItem,
 } from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
+import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
   flow: FlowServicePort;
@@ -18,12 +21,24 @@ export interface ServicesPort {
   ws: WsServicePort;
 }
 
+export type ForkSpecDetails = {
+  name: string;
+  forkSpec: ForkSpec;
+  flowDefHash: string;
+  description?: string;
+};
 export interface SimServicePort {
   startForkedRunSim(
     parentRunId: string,
     reuseSteps: string[],
     source: string,
   ): Promise<void>;
+
+  getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
+  getForkSpec(hash: string): Promise<Result<JsonValue, string>>;
+  saveForkSpec(
+    forkSpecDetails: ForkSpecDetails,
+  ): Promise<Result<string, string>>;
 }
 
 export interface FlowServicePort {
@@ -40,8 +55,7 @@ export interface FlowServicePort {
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;
   getAllEvents(runId: string): Promise<{
-    eventIds: Record<string, string[]>;
-    events: Record<string, AnyEvent>;
+    events: AnyEvent[];
   }>;
 }
 
@@ -51,12 +65,14 @@ export interface SystemServicePort {
   attachSink(sink: EventSink): void;
 }
 
+export type RunRequest = {
+  flowDefHash: string;
+  source: string;
+  runId?: string;
+  forkSpecHash?: string;
+};
 export interface RunServicePort {
-  requestRun(
-    flowDefHash: string,
-    source: string,
-    runId?: string,
-  ): Promise<void>;
+  requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
 }

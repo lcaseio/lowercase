@@ -10,7 +10,7 @@ export const getRunsEventsListRoute = async (app: FastifyInstance) => {
 
       try {
         const result = await app.services.replay.getAllEvents(runId);
-        return { ok: true, events: result.events, eventIds: result.eventIds };
+        return { ok: true, events: result.events };
       } catch (err) {
         console.error(err);
         return { ok: false, error: `Error getting events` };

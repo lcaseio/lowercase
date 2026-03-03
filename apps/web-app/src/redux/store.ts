@@ -5,8 +5,11 @@ import { routeEventListenerMiddleware } from "./middleware/route-event";
 import { createWsMiddleware } from "./middleware/ws";
 import { eventsSlice } from "./slices/events-slice";
 import { wsSlice } from "./slices/ws-slice";
-import { runSlice } from "./slices/runner-slice";
+import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
+import { simsSlice } from "./slices/sims-slice";
+import { simsApi } from "./api/sims-api";
+import { runsSlice } from "./slices/runs-slice";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -15,9 +18,12 @@ export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
   ws: wsSlice.reducer,
-  runner: runSlice.reducer,
+  runner: runnerSlice.reducer,
+  sims: simsSlice.reducer,
+  runs: runsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
+  [simsApi.reducerPath]: simsApi.reducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
@@ -27,7 +33,12 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(routeEventListenerMiddleware.middleware)
-      .concat(flowsApi.middleware, runsApi.middleware, createWsMiddleware()),
+      .concat(
+        flowsApi.middleware,
+        runsApi.middleware,
+        simsApi.middleware,
+        createWsMiddleware(),
+      ),
 });
 
 export type AppDispatch = typeof store.dispatch;

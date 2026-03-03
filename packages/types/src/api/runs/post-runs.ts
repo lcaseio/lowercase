@@ -1,4 +1,4 @@
-// api/runner/requests
+// POST api/runs  request
 export type PostRunsReq = {
   flowDefHash: string;
   forkSpecHash?: string;

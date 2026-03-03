@@ -1,6 +1,11 @@
 import type { AnyEvent } from "@lcase/types";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { eventsBatch } from "../middleware/ws";
+import type { RootState } from "../store";
 
 type EventId = string;
 type RunId = string;
@@ -75,3 +80,25 @@ export const eventsSlice = createSlice({
 });
 
 export const { clearAll } = eventsSlice.actions;
+
+export const getEvents = (state: RootState) => {
+  return state.events.events;
+};
+
+export const getRunEventIds = (state: RootState) => {
+  return state.events.runEventIds;
+};
+
+export const selectRunEventIds = (state: RootState, runId: string | null) => {
+  return runId ? (state.events.runEventIds[runId] ?? []) : [];
+};
+
+export const selectEventById = (state: RootState, id: string | null) =>
+  id ? (state.events.events[id] ?? null) : null;
+
+export const selectEventsById = (state: RootState) => state.events.events;
+
+export const makeSelectRunEvents = () =>
+  createSelector([selectRunEventIds, selectEventsById], (ids, eventsById) =>
+    ids.map((id) => eventsById[id]).filter(Boolean),
+  );

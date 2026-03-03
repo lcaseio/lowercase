@@ -6,7 +6,6 @@ export type GetRunEventsReq = { runId: string };
 export type GetRunEventsRes =
   | {
       ok: true;
-      events: Record<EventId, AnyEvent>;
-      eventIds: Record<RunId, EventId[]>;
+      events: AnyEvent[];
     }
   | { ok: false; error: string };

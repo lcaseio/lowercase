@@ -4,7 +4,7 @@ import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import type { FlowDefinition } from "@lcase/types";
-import { AutoFitView } from "./AutoFitView";
+import { AutoFitView } from "../AutoFitView";
 
 function calcPosition(row: number, nodes: number, distance: number) {
   const offsetAmount = Math.floor(nodes / 2);

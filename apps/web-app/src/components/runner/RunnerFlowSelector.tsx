@@ -1,12 +1,7 @@
-import { useAppSelector } from "../redux/typed-hooks";
-import { useGetFlowsQuery } from "../redux/api/flows-api";
-import { useRequestRunMutation } from "../redux/api/runs-api";
+import { useAppSelector } from "../../redux/typed-hooks";
+import { useGetFlowsQuery } from "../../redux/api/flows-api";
 import { useDispatch } from "react-redux";
-import {
-  setEventGraphRunId,
-  setFlowSelectedId,
-} from "../redux/slices/runner-slice";
-import { Button } from "./ui/button";
+import { setRunnerFlowSelectedId } from "../../redux/slices/runner-slice";
 
 import {
   Select,
@@ -16,29 +11,20 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../ui/select";
 
 export function RunnerFlowSelector() {
   const { data } = useGetFlowsQuery();
   const dispatch = useDispatch();
   // const flowHash = useAppSelector((state) => state.runner.flowHash);
-  const [requestRun] = useRequestRunMutation();
+
   const flowSelectedId = useAppSelector((state) => state.runner.flowSelectedId);
 
-  const handleRun = async () => {
-    if (!flowSelectedId || !data?.ok) return;
-    const result = await requestRun({ flowDefHash: flowSelectedId });
-    if (result.data?.ok) {
-      dispatch(setEventGraphRunId(result.data.runId));
-      console.log("event panel id:", result.data.runId);
-    }
-  };
   return (
     <div className="flex cursor-pointer">
       <Select
         onValueChange={(value) => {
-          console.log(value);
-          dispatch(setFlowSelectedId(value));
+          dispatch(setRunnerFlowSelectedId(value));
         }}
         value={flowSelectedId ?? "Select A Flow"}
       >
@@ -58,15 +44,6 @@ export function RunnerFlowSelector() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Button
-        className="ml-3 cursor-pointer"
-        variant="outline"
-        onClick={handleRun}
-        disabled={flowSelectedId === null || flowSelectedId === ""}
-        style={{}}
-      >
-        Run
-      </Button>
     </div>
   );
 }

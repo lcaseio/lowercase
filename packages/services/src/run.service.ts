@@ -3,6 +3,7 @@ import {
   EventBusPort,
   FlowIndexStorePort,
   RunIndexStorePort,
+  RunRequest,
   RunServicePort,
 } from "@lcase/ports";
 import { createRunId, runFlow } from "@lcase/run-flow";
@@ -15,8 +16,8 @@ export class RunService implements RunServicePort {
     private readonly flowStore: FlowIndexStorePort,
   ) {}
 
-  async requestRun(flowDefHash: string, source: string, runId?: string) {
-    await runFlow(flowDefHash, this.ef, source, runId);
+  async requestRun(request: RunRequest) {
+    await runFlow({ ...request, ef: this.ef });
   }
 
   makeRunId() {

@@ -1,17 +1,16 @@
-import { EmitterFactoryPort } from "@lcase/ports";
+import { EmitterFactoryPort, RunRequest } from "@lcase/ports";
 import { createRunId } from "./create-fork-spec.js";
 
-export async function runFlow(
-  flowDefHash: string,
-  ef: EmitterFactoryPort,
-  source: string,
-  runId?: string,
-) {
+export type RunDetails = {
+  ef: EmitterFactoryPort;
+} & RunRequest;
+export async function runFlow(runDetails: RunDetails) {
+  const { runId, ef, source, flowDefHash, forkSpecHash } = runDetails;
   const runid = runId ?? createRunId();
   const emitter = ef.newRunEmitterNewTrace({
     source,
     flowid: flowDefHash,
     runid,
   });
-  await emitter.emit("run.requested", { flowDefHash });
+  await emitter.emit("run.requested", { flowDefHash, forkSpecHash });
 }
