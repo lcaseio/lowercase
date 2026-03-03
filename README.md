@@ -2,17 +2,13 @@
 
 ### ❗ Alpha Software (v0.1.0-alpha.10)
 
-**lowercase** is in an early alpha stage and still taking shape. Some things work - mostly - but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
+**lowercase** is in an early alpha stage and still taking shape. Some things work but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 
 ## Overview
 
-**lowercase** is an event driven workflow engine built for flexibility and composability. It's designed to run locally first, as a single process, and aims to make orchestrating complex systems, especially AI driven ones, feel simple, transparent, and powerful.
+**lowercase** is an event driven workflow engine built for testing AI pipelines. It's designed to run locally first, as a single process, but is built in a modular design.
 
-Every component, from queues to workers, communicates through events, allowing for generic components with swappable infrastructure. The architecture is modular and extensible, with the goal of supporting everything from lightweight in-memory execution to distributed setups. Observability is built into each component, with plans for an integrated dashboard and support for external monitoring tools. The goal is to create a laboratory for simulated run execution for AI pipelines.
-
-## Current State
-
-In brief, currently the system has several in process components: engine, event bus, router, queues, worker, tools, limiter, and observability sinks + tap. An electron desktop app used to run flows, but the architecture is shifting and it is deprecated. A cli runs flows, validates them, runs forked sims, and optionally plugs into a web socket observability frontend, currently un-wired.
+Every component communicates through events. Infra should be swappable through interfaces. The architecture is modular and extensible, with the goal of supporting everything from lightweight in-memory execution to distributed setups. This repo exists for me to orchestrate AI pipelines, while keeping them observable and measurable.
 
 ## Quickstart
 
@@ -57,19 +53,11 @@ pnpm -F @lcase/cli start run c6118f8f8c1a4545fba2249fb88f23e452605b0bd26f4620e9d
 pnpm -F @lcase/cli start sim run-e26b174c-ee72-4302-87bd-6d1b1f0c042c -r two
 ```
 
-## Electron App (deprecated)
+### 3. Run with http server and vite react
 
-#### Example of a demo flow being executed using the desktop app.
+I think you can go to `./apps/http-server` and type `pnpm dev` and `./apps/web-app` and type `pnpm dev` and get a user interface experience.
 
-Currently the desktop app is being rewritten to eventually be ported to Tauri via an http server + frontend.
-
-![Electron Desktop](desktop.png)
-
-### Basic Observability WebSocket Event Viewer (un-wired)
-
-This event viewer `@lcase/observe-web` is currently un-wired from the cli by default but can be wired in.
-
-![Art Streaming Demo Terminal Example](observe-web.png)
+Does not support authoring flows in a visual editor yet, but can view, run, create forked sims, etc.
 
 ## unit tests
 
@@ -101,32 +89,21 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 | **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference. |
 | **@lcase/artifacts**       | JSON CAS file system store.                                  |
 | **@lcase/runtime**         | Wires up a configurable runtime.                             |
-| **@lcase/services**        | Implements grouped application logic.                        |
+| **@lcase/services**        | Implements grouped application logic exposed to apps.        |
+| **@lcase/use-cases**       | Small business logic reusable pieces.                        |
 | **@lcase/cli**             | CLI for running and validating flows.                        |
-| **@lcase/desktop**         | Electron desktop application.                                |
+| **@lcase/desktop**         | Electron desktop application. (deprecated)                   |
+| **@lcase/http-server**     | Fastify http REST api and WebSocket server.                  |
+| **@lcase/web-app**         | Vite / React web application.                                |
 | **@lcase/observe-web**     | Vite web observability event viewer.                         |
 | **@lcase/examples**        | Example / demo flows and servers.                            |
 
-## Alpha 9 Highlights
+## Alpha 10 Highlights
 
-### Simulation Basics
+React Web App + Http Server
 
-- Add a simple `RunIndex` format to quickly read step outputs from a previous run.
-- Reference flow definitions and `ForkSpec` by hashes in CAS.
-- Engine uses `ForkSpec` + `RunIndex` to create a `RunPlan`.
-- Add a CLI command to run a forked simulation and store flows in CAS.
+## Next
 
-## Next for Alpha 10
-
-### Milestone: HTTP Server + React UI
-
-Something like this or smaller:
-
-- Wrap existing services in an HTTP Rest API server.
-- Implement an browser web front end that communicates with the HTTP server.
-- Scaffold the outline of sections for a reusable UI across deployments.
-- Add basic UI functions for listing flows, viewing flows trees, running flows.
-
-## License
+Testing simple use case, and adjusting until viable.
 
 MIT Open Source License: [LICENSE](LICENSE)
