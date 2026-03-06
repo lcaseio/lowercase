@@ -14,6 +14,7 @@ import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
 import { ServicesPort } from "@lcase/ports";
 import path from "node:path";
 import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
+import { FsRunParamsIndexStore } from "@lcase/adapters/run-params-index-store";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
@@ -22,6 +23,9 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   );
   const forkSpecIndexStore = new FsForkSpecIndexStore(
     path.join(process.cwd(), "lcase-db/sims/index"),
+  );
+  const runParamsIndexStore = new FsRunParamsIndexStore(
+    path.join(process.cwd(), "lcase-db/params/index"),
   );
   const flow = new FlowService(
     ctx.bus,
@@ -39,8 +43,14 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     forkSpecIndexStore,
   );
   forkSpecIndexStore.init();
+  runParamsIndexStore.init();
   const ws = new WsService(ctx.bus);
-  const run = new RunService(ctx.ef, ctx.runIndexStore, flowIndexStore);
+  const run = new RunService({
+    ef: ctx.ef,
+    runStore: ctx.runIndexStore,
+    flowStore: flowIndexStore,
+    runParamsStore: runParamsIndexStore,
+  });
 
   const artifact = new ArtifactService(ctx.artifacts);
 
