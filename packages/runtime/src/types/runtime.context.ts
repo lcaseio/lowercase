@@ -4,7 +4,7 @@ import type {
   QueuePort,
   LimiterPort,
   ArtifactsPort,
-  RunIndexStorePort,
+  IndexStorePort,
 } from "@lcase/ports";
 import { Worker } from "@lcase/worker";
 import { FlowStore } from "@lcase/adapters/flow-store";
@@ -17,6 +17,7 @@ import {
 } from "@lcase/observability";
 import { EmitterFactory } from "@lcase/events";
 import { ReplayEngine } from "@lcase/replay";
+import { RunIndex } from "@lcase/types";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
@@ -37,5 +38,5 @@ export type RuntimeContext = {
   replay: ReplayEngine;
   limiter: LimiterPort;
   artifacts: ArtifactsPort;
-  runIndexStore: RunIndexStorePort;
+  runIndexStore: IndexStorePort<RunIndex>;
 };

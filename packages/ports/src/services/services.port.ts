@@ -79,7 +79,7 @@ export interface RunServicePort {
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
   getRunIndex(runId: string): Promise<Result<RunIndex, string>>;
-  getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
+  // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
 }
 
 export interface WsServicePort {

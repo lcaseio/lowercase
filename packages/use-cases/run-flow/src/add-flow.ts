@@ -1,11 +1,13 @@
 import type {
   ArtifactsPort,
   FlowIndexStorePort,
+  IndexStorePort,
   JsonValue,
 } from "@lcase/ports";
 import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 
 export async function addFlowToCas(
   flowDef: FlowDefinition,
@@ -39,8 +41,15 @@ export function readFlowFile(absoluteFilePath: string): JsonValue {
 
 export async function addFlowIndex(
   index: FlowIndex,
-  store: FlowIndexStorePort,
+  store: IndexStorePort<FlowIndex>,
 ): Promise<Result<string, string>> {
-  const result = await store.putFlowIndex(index);
+  const id = makeId(index.name, index.version);
+  const result = await store.put(id, index);
   return result;
+}
+
+function makeId(name: string, version: string, path?: string, p0?: {}): string {
+  const hash = createHash("md5");
+  hash.update(name + version + path);
+  return hash.digest("hex");
 }

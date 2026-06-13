@@ -5,6 +5,7 @@ import type {
   FlowServicePort,
   ArtifactsPort,
   FlowIndexStorePort,
+  IndexStorePort,
 } from "@lcase/ports";
 import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
@@ -21,7 +22,7 @@ export class FlowService implements FlowServicePort {
     private readonly ef: EmitterFactory,
     private readonly flowStore: FlowStorePort,
     private readonly artifacts: ArtifactsPort,
-    private readonly flowIndexStore: FlowIndexStorePort,
+    private readonly flowIndexStore: IndexStorePort<FlowIndex>,
   ) {}
 
   async startFlow(args: { absoluteFilePath?: string }): Promise<void> {
@@ -95,7 +96,10 @@ export class FlowService implements FlowServicePort {
   }
 
   async getAllFlowIndexes(): Promise<Result<FlowIndex[], string>> {
-    return await this.flowIndexStore.getAllFlowIndexes();
+    const indexes = await this.flowIndexStore.getAll();
+    if (indexes.length === 0)
+      return { ok: false, error: "No flow indexes found" };
+    return { ok: true, value: indexes };
   }
 
   validateJsonFlow(

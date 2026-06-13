@@ -1,21 +1,15 @@
-import type { Result } from "@lcase/types";
+import type { AnyIndex, IndexStorePort } from "@lcase/ports";
+import type { Result, FsJsonIndexStoreOptions } from "@lcase/types";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-export type FsJsonIndexStoreOptions<T> = {
-  dir: string;
-  extension?: string;
-  encoding?: BufferEncoding;
-  sort?: (a: T, b: T) => number;
-};
-
-export class FsJsonIndexStore<T> {
+export class FsJsonIndexStore<I extends AnyIndex> implements IndexStorePort<I> {
   private dir: string;
   private extension: string;
   private encoding: BufferEncoding;
-  private sort?: (a: T, b: T) => number;
+  private sort?: (a: I, b: I) => number;
 
-  constructor(options: FsJsonIndexStoreOptions<T>) {
+  constructor(options: FsJsonIndexStoreOptions<I>) {
     const { dir } = options;
     if (!path.isAbsolute(dir) || path.extname(dir) !== "") {
       throw new Error(
@@ -25,6 +19,7 @@ export class FsJsonIndexStore<T> {
 
     this.dir = dir;
     this.extension = options.extension ?? ".index.json";
+
     if (!this.extension.startsWith(".")) {
       this.extension = `.${this.extension}`;
     }
@@ -47,7 +42,7 @@ export class FsJsonIndexStore<T> {
     }
   }
 
-  async put(id: string, value: T): Promise<Result<string, string>> {
+  async put(id: string, value: I): Promise<Result<string, string>> {
     try {
       const json = JSON.stringify(value, null, 2);
       const fullPath = path.join(this.dir, this.fileName(id));
@@ -58,11 +53,13 @@ export class FsJsonIndexStore<T> {
     }
   }
 
-  async get(id: string): Promise<T | undefined> {
+  async get(id: string): Promise<I | undefined> {
     try {
       const absoluteFilePath = path.join(this.dir, this.fileName(id));
-      const data = await fs.readFile(absoluteFilePath, { encoding: this.encoding });
-      return JSON.parse(data) as T;
+      const data = await fs.readFile(absoluteFilePath, {
+        encoding: this.encoding,
+      });
+      return JSON.parse(data) as I;
     } catch (e) {
       console.log(`Error reading index for id:${id}. ${e}`);
     }
@@ -85,9 +82,9 @@ export class FsJsonIndexStore<T> {
     }
   }
 
-  async getAll(): Promise<T[]> {
+  async getAll(): Promise<I[]> {
     try {
-      const items: T[] = [];
+      const items: I[] = [];
       const ids = await this.getIdList();
 
       for (const id of ids) {

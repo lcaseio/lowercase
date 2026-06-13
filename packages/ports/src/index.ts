@@ -31,3 +31,6 @@ export * from "./worker/worker.port.js";
 export * from "./services/services.port.js";
 export * from "./flow-index-store/flow-index-store.js";
 export * from "./client-api/client-api.js";
+
+// index store (json)
+export * from "./index-store/index-store.port.js";

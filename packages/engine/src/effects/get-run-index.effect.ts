@@ -6,7 +6,7 @@ export const getRunIndexFx: EffectHandler<"GetRunIndex"> = async (
   effect: GetRunIndexFx,
   deps: EffectHandlerDeps,
 ) => {
-  const index = await deps.runIndexStore.getRunIndex(effect.parentRunId);
+  const index = await deps.runIndexStore.get(effect.parentRunId);
 
   if (index) {
     const message: RunIndexResultMsg = {

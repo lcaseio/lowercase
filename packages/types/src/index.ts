@@ -55,3 +55,6 @@ export * from "./run-index-store/run-list.js";
 
 // artifacts
 export * from "./artifacts/artifact-index.js";
+
+// generic file system json index store
+export * from "./fs-json-index-store/fs-json-index-store.js";
