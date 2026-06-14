@@ -10,6 +10,6 @@ export function createArtifacts(config: ArtifactsConfig): ArtifactsPort {
   );
   console.log(config.path);
 
-  const limiter = makeArtifacts(config.path);
-  return limiter;
+  const artifacts = makeArtifacts(config.path);
+  return artifacts;
 }

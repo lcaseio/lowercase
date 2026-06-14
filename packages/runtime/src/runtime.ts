@@ -7,12 +7,11 @@ import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
-import {
+import type {
   ArtifactsPort,
   EventBusPort,
   IndexStorePort,
   JobParserPort,
-  RunIndexStorePort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
@@ -48,8 +47,6 @@ import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
-import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
-import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
 import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
 import { FlowIndex, ForkSpecIndex, RunIndex } from "@lcase/types";
 
