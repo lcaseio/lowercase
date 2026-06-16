@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "exports": {
@@ -36,9 +36,17 @@
       "types": "./dist/artifact-store/index.d.ts",
       "import": "./dist/artifact-store/index.js"
     },
+    "./artifact-index-store": {
+      "types": "./dist/artifact-index-store/index.d.ts",
+      "import": "./dist/artifact-index-store/index.js"
+    },
     "./run-index-store": {
       "types": "./dist/run-index-store/index.d.ts",
       "import": "./dist/run-index-store/index.js"
+    },
+    "./run-params-index-store": {
+      "types": "./dist/run-params-index-store/index.d.ts",
+      "import": "./dist/run-params-index-store/index.js"
     },
     "./flow-index-store": {
       "types": "./dist/flow-index-store/index.d.ts",
@@ -47,6 +55,9 @@
     "./fork-spec-index-store": {
       "types": "./dist/fork-spec-index-store/index.d.ts",
       "import": "./dist/fork-spec-index-store/index.js"
+    },
+    "./generic-store": {
+      "import": "./dist/generic-store/fs-json-index-store.js"
     }
   },
   "scripts": {

@@ -7,6 +7,7 @@ import type {
   Result,
   RunIndex,
   RunListItem,
+  RunParams,
 } from "@lcase/types";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
@@ -78,6 +79,7 @@ export interface RunServicePort {
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
   getRunIndex(runId: string): Promise<Result<RunIndex, string>>;
+  // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
 }
 
 export interface WsServicePort {

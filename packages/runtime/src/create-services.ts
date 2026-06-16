@@ -14,15 +14,32 @@ import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
 import { ServicesPort } from "@lcase/ports";
 import path from "node:path";
 import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
+// import { FsRunParamsIndexStore } from "@lcase/adapters/run-params-index-store";
+import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
+import { FlowIndex, ForkSpec, ForkSpecIndex, RunIndex } from "@lcase/types";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
-  const flowIndexStore = new FsFlowIndexStore(
+  const flowIndexStoreOld = new FsFlowIndexStore(
     path.join(process.cwd(), "lcase-db/flows/index"),
   );
-  const forkSpecIndexStore = new FsForkSpecIndexStore(
-    path.join(process.cwd(), "lcase-db/sims/index"),
-  );
+  // const forkSpecIndexStore = new FsForkSpecIndexStore(
+  //   path.join(process.cwd(), "lcase-db/sims/index"),
+  // );
+  // const runParamsIndexStore = new FsRunParamsIndexStore(
+  //   path.join(process.cwd(), "lcase-db/params/index"),
+  // );
+
+  const flowIndexStore = new FsJsonIndexStore<FlowIndex>({
+    dir: path.join(process.cwd(), "lcase-db/flows/index"),
+    extension: ".index.json",
+  });
+
+  const forkSpecIndexStore = new FsJsonIndexStore<ForkSpecIndex>({
+    dir: path.join(process.cwd(), "lcase-db/sims/index"),
+    extension: ".index.json",
+  });
+
   const flow = new FlowService(
     ctx.bus,
     ctx.ef,
@@ -39,8 +56,14 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     forkSpecIndexStore,
   );
   forkSpecIndexStore.init();
+  // runParamsIndexStore.init();
   const ws = new WsService(ctx.bus);
-  const run = new RunService(ctx.ef, ctx.runIndexStore, flowIndexStore);
+  const run = new RunService({
+    ef: ctx.ef,
+    runStore: ctx.runIndexStore,
+    flowStore: flowIndexStore,
+    // runParamsStore: runParamsIndexStore,
+  });
 
   const artifact = new ArtifactService(ctx.artifacts);
 

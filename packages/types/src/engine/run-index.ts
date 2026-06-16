@@ -7,6 +7,8 @@ export type RunIndex = {
   startTime?: string;
   endTime?: string;
   duration?: number;
+  runInputHash?: string;
+  runParamsHash?: string;
 
   steps: Record<
     string,

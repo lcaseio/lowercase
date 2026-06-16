@@ -43,7 +43,7 @@ export function parseRef(
       stepId,
       bindPath,
       string: matchedString,
-      interpolated: false,
+      interpolated: isInterpolated(matches.length, value),
       hash: null,
     };
     if (matchedScope === "steps") {
@@ -105,4 +105,10 @@ export function parseArray(part: string): { key?: string; index?: string[] } {
   if (!match) return {};
 
   return { key: match[0], index: match.slice(1) };
+}
+
+export function isInterpolated(matches: number, value: string) {
+  if (matches >= 2) return false;
+  if (value.startsWith("{{") && value.endsWith("}}")) return false;
+  return true;
 }

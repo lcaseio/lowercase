@@ -1,23 +1,22 @@
-import {
+import type {
   ArtifactsPort,
   EmitterFactoryPort,
   ForkSpecDetails,
-  ForkSpecIndexStorePort,
+  IndexStorePort,
   JsonValue,
-  RunIndexStorePort,
   SimServicePort,
 } from "@lcase/ports";
+import type { ForkSpecIndex, Result, RunIndex } from "@lcase/types";
 
 import { getRunFlowHash } from "@lcase/run-history";
 import { startForkedSim } from "@lcase/run-flow";
-import { ForkSpec, ForkSpecIndex, Result } from "@lcase/types";
 
 export class SimService implements SimServicePort {
   constructor(
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
-    private readonly runIndexStore: RunIndexStorePort,
-    private readonly forkSpecIndexStore: ForkSpecIndexStorePort,
+    private readonly runIndexStore: IndexStorePort<RunIndex>,
+    private readonly forkSpecIndexStore: IndexStorePort<ForkSpecIndex>,
   ) {}
 
   async startForkedRunSim(
@@ -59,7 +58,10 @@ export class SimService implements SimServicePort {
       forkSpecHash: result.value,
       ...(details.description ? { description: details.description } : {}),
     };
-    const indexResult = await this.forkSpecIndexStore.put(forkSpecIndex);
+    const indexResult = await this.forkSpecIndexStore.put(
+      result.value,
+      forkSpecIndex,
+    );
     if (!indexResult.ok) return { ok: false, error: indexResult.error };
     return { ok: true, value: result.value };
   }

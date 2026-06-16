@@ -18,7 +18,7 @@ export class FsArtifactStore implements ArtifactStorePort {
   }
   async putBytes(
     hash: string,
-    bytes: Uint8Array
+    bytes: Uint8Array,
   ): Promise<ArtifactStorePutResult> {
     const absoluteTempFilePath = this.getAbsoluteFilePath(hash, true);
     const absoluteFilePath = this.getAbsoluteFilePath(hash);
@@ -65,7 +65,7 @@ export class FsArtifactStore implements ArtifactStorePort {
   getAbsoluteFilePath(hash: string, tmp: boolean = false): string {
     return path.join(
       this.getAbsoluteDirPath(hash),
-      this.getFileName(hash, tmp)
+      this.getFileName(hash, tmp),
     );
   }
 

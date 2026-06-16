@@ -38,11 +38,13 @@ export * from "./tool/tool.types.js";
 
 export * from "./worker/metadata.js";
 export * from "./flow-analysis/types.js";
+
 export * from "./engine/fork-spec.type.js";
 export * from "./engine/run-context.js";
 export * from "./engine/run-index.js";
 export * from "./engine/run-plan.type.js";
 export * from "./engine/fork-spec-index.js";
+export * from "./engine/run-params.js";
 
 export * from "./flow-index-store/flow-index.js";
 
@@ -50,3 +52,9 @@ export * from "./flow-index-store/flow-index.js";
 export * from "./api/index.js";
 
 export * from "./run-index-store/run-list.js";
+
+// artifacts
+export * from "./artifacts/artifact-index.js";
+
+// generic file system json index store
+export * from "./fs-json-index-store/fs-json-index-store.js";

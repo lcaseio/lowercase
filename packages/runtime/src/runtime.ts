@@ -7,11 +7,11 @@ import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
-import {
+import type {
   ArtifactsPort,
   EventBusPort,
+  IndexStorePort,
   JobParserPort,
-  RunIndexStorePort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
@@ -47,8 +47,8 @@ import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
-import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
-import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
+import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
+import { FlowIndex, ForkSpecIndex, RunIndex } from "@lcase/types";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -60,12 +60,15 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
-    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
+    new FsJsonIndexStore<FlowIndex>({
+      dir: path.join(process.cwd(), "lcase-db/flows/index"),
+    }),
   );
 
-  const forkSpecIndexStore = new FsForkSpecIndexStore(
-    path.join(process.cwd(), "lcase-db/sims/index"),
-  );
+  const forkSpecIndexStore = new FsJsonIndexStore<ForkSpecIndex>({
+    dir: path.join(process.cwd(), "lcase-db/sims/index"),
+    extension: ".index.json",
+  });
   const replayService = new ReplayService(ctx.replay);
   const simService = new SimService(
     ctx.artifacts,
@@ -118,9 +121,14 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const runIndexStore = new FsRunIndexStore(
+  const runIndexStoreOld = new FsRunIndexStore(
     path.resolve(process.cwd(), "lcase-db/runs/index"),
   );
+
+  const runIndexStore = new FsJsonIndexStore<RunIndex>({
+    dir: path.resolve(process.cwd(), "lcase-db/runs/index"),
+    extension: ".index.json",
+  });
 
   const artifacts = createArtifacts(config.artifacts);
   const engine = createInProcessEngine(
@@ -228,7 +236,7 @@ export function createInProcessEngine(
   bus: EventBusPort,
   ef: EmitterFactory,
   jobParser: JobParserPort,
-  runIndexStore: RunIndexStorePort,
+  runIndexStore: IndexStorePort<RunIndex>,
   artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({

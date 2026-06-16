@@ -1,4 +1,5 @@
-import type { RunIndexStorePort } from "@lcase/ports";
+import type { IndexStorePort } from "@lcase/ports";
+import type { RunIndex } from "@lcase/types";
 
 type RunId = string;
 type OutputHash = string;
@@ -13,9 +14,9 @@ type OutputHash = string;
 export async function getStepOutputHashes(
   stepIds: string[],
   runId: string,
-  store: RunIndexStorePort,
+  store: IndexStorePort<RunIndex>,
 ): Promise<Record<RunId, OutputHash> | undefined> {
-  const json = await store.getRunIndex(runId);
+  const json = await store.get(runId);
   if (!json) return;
 
   const hashMap: Record<RunId, OutputHash> = {};
@@ -30,9 +31,9 @@ export async function getStepOutputHashes(
 
 export async function getRunFlowHash(
   runId: string,
-  store: RunIndexStorePort,
+  store: IndexStorePort<RunIndex>,
 ): Promise<string | undefined> {
-  const json = await store.getRunIndex(runId);
+  const json = await store.get(runId);
 
   if (!json) return;
   return json.flowDefHash;

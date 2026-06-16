@@ -1,6 +1,7 @@
 import type {
   ArtifactsPort,
   EmitterFactoryPort,
+  IndexStorePort,
   RunIndexStorePort,
 } from "@lcase/ports";
 import type {
@@ -18,6 +19,7 @@ import type {
   JobScope,
   RunCompletedData,
   RunFailedData,
+  RunIndex,
   RunScope,
   RunStartedData,
   StepCompletedData,
@@ -302,7 +304,7 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
-  runIndexStore: RunIndexStorePort;
+  runIndexStore: IndexStorePort<RunIndex>;
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactsPort;

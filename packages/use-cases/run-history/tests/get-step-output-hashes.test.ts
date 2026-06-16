@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { getStepOutputHashes } from "../src/get-step-output-hashes.js";
-import type { RunIndexStorePort } from "@lcase/ports";
+import type { IndexStorePort, RunIndexStorePort } from "@lcase/ports";
 import type { RunIndex } from "@lcase/types";
 describe("run-history getStepOutputHashes()", () => {
   it("returns the correct step hashes from a list of steps", async () => {
@@ -20,8 +20,8 @@ describe("run-history getStepOutputHashes()", () => {
       },
     };
 
-    const getRunIndex = vi.fn().mockReturnValue(index);
-    const store = { getRunIndex } as unknown as RunIndexStorePort;
+    const get = vi.fn().mockReturnValue(index);
+    const store = { get } as unknown as IndexStorePort<RunIndex>;
 
     const result = await getStepOutputHashes(["a", "b"], "test-runid", store);
 

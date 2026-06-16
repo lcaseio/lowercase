@@ -373,6 +373,7 @@ export class Worker implements WorkerPort {
   async bindValueRefs(refs: Ref[], data: Record<string, unknown>) {
     for (const ref of refs) {
       if (ref.hash === null) continue;
+
       const json = await this.getJsonArtifact(ref.hash);
       if (json === undefined) continue;
       const value = resolveJsonPath(ref.valuePath, json);

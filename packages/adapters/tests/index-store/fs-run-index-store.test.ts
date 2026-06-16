@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { FsRunIndexStore } from "../../src/run-index-store/fs-run-index-store.js";
+import { describe, it, expect } from "vitest";
+import { FsJsonIndexStore } from "../../src/index-store/fs-json-index-store.js";
 import type { RunIndex } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";
@@ -7,7 +7,7 @@ describe("FsRunIndexStore", () => {
   it("putRunIndex() writes the correct index to the correct path", async () => {
     const dirPath = import.meta.dirname;
     const runId = "run-242b4e22-d5aa-44fc-bec2-f745eb96f605";
-    const store = new FsRunIndexStore(dirPath);
+    const store = new FsJsonIndexStore<RunIndex>({ dir: dirPath });
     const index: RunIndex = {
       flowId: "933dcae021a90ab5df5a5b1b47b590bd",
       steps: {
@@ -33,7 +33,7 @@ describe("FsRunIndexStore", () => {
       endTime: "2026-01-23T00:01:38.984Z",
       duration: 30.356,
     };
-    await store.putRunIndex(index, runId);
+    await store.put(runId, index);
     const expectedFilePath = path.join(dirPath, `${runId}.index.json`);
     const data = fs.readFileSync(expectedFilePath, {
       encoding: "utf8",
@@ -48,8 +48,8 @@ describe("FsRunIndexStore", () => {
       "../fixtures/run-index-store",
     );
     const runId = "run-242b4e22-d5aa-44fc-bec2-f745eb96f605";
-    const store = new FsRunIndexStore(dirPath);
-    const index = await store.getRunIndex(runId);
+    const store = new FsJsonIndexStore<RunIndex>({ dir: dirPath });
+    const index = await store.get(runId);
     const expectedIndex: RunIndex = {
       flowId: "933dcae021a90ab5df5a5b1b47b590bd",
       steps: {
