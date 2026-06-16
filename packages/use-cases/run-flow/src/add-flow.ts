@@ -44,7 +44,7 @@ export async function addFlowIndex(
   store: IndexStorePort<FlowIndex>,
 ): Promise<Result<string, string>> {
   const id = makeId(index.name, index.version);
-  const result = await store.put(id, index);
+  const result = await store.put(index.hash, index);
   return result;
 }
 
