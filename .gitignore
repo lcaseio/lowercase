@@ -14,14 +14,14 @@ dist-electron/
 *.sln
 *.sw?
 
-# storage from using the app
-lcase-db/
-
 # temp files
 *.temp.*
 
 # os files
 .DS_Store
+
+# environment vars
+.env
 
 # test coverage reports
 coverage/
@@ -35,3 +35,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# prisma generated files
+packages/db-prisma/src/generated/client/
+
+# database files
+lcase-db/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
