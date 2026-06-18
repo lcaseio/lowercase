@@ -68,14 +68,16 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.19.1",
-    "@lcase/specs": "workspace:*",
     "@lcase/events": "workspace:*",
+    "@lcase/specs": "workspace:*",
+    "@lcase/db-prisma": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "dotenv": "^17.4.2",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "vitest": "^3.2.4",
+    "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
-    "@lcase/ports": "workspace:*"
+    "vitest": "^3.2.4"
   }
 }

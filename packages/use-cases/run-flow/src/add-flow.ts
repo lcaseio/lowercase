@@ -4,6 +4,8 @@ import type {
   IndexStorePort,
   JsonValue,
 } from "@lcase/ports";
+
+import type { PrismaClient } from "@lcase/db-prisma";
 import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";
@@ -52,4 +54,9 @@ function makeId(name: string, version: string, path?: string, p0?: {}): string {
   const hash = createHash("md5");
   hash.update(name + version + path);
   return hash.digest("hex");
+}
+
+export async function addFlowToDb(index: FlowIndex, store: PrismaClient) {
+  const result = await store.flow.create({ data: index });
+  return result;
 }

@@ -365,6 +365,9 @@ importers:
 
   packages/adapters:
     dependencies:
+      '@lcase/db-prisma':
+        specifier: workspace:*
+        version: link:../db-prisma
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
@@ -374,12 +377,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.19.1
         version: 1.19.1
-      '@prisma/adapter-better-sqlite3':
-        specifier: ^7.8.0
-        version: 7.8.0
-      '@prisma/client':
-        specifier: ^7.8.0
-        version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(better-sqlite3@12.11.1)(magicast@0.3.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(typescript@5.9.3)
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -393,15 +390,6 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
-      '@types/better-sqlite3':
-        specifier: ^7.6.13
-        version: 7.6.13
-      '@types/node':
-        specifier: ^25.9.3
-        version: 25.9.3
-      prisma:
-        specifier: ^7.8.0
-        version: 7.8.0(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(better-sqlite3@12.11.1)(magicast@0.3.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -720,6 +708,9 @@ importers:
 
   packages/use-cases/run-flow:
     devDependencies:
+      '@lcase/db-prisma':
+        specifier: workspace:*
+        version: link:../../db-prisma
       '@lcase/ports':
         specifier: workspace:*
         version: link:../../ports
