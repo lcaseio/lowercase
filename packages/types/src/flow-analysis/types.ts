@@ -79,4 +79,6 @@ export type Ref = {
   string: string; // the actual string reference without {{}} characters
   interpolated: boolean; // whether it should be interpolated as a string or not
   hash: string | null;
+  // later more robust tranforms should be implemented
+  json?: true; // whether to parse this as json, simple transform flag
 };

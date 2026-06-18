@@ -19,4 +19,21 @@ describe("getRegStrings()", () => {
     ];
     expect(refs).toEqual(expectedRefs);
   });
+  it("parses simple strings correctly", () => {
+    const refs: Ref[] = [];
+    parseRef("{{steps.bar | json}}", ["foo"], "stepId", refs, []);
+    const expectedRefs: Ref[] = [
+      {
+        valuePath: ["steps", "bar"],
+        scope: "steps",
+        bindPath: ["foo"],
+        stepId: "stepId",
+        string: "steps.bar",
+        interpolated: false,
+        hash: null,
+        json: true,
+      },
+    ];
+    expect(refs).toEqual(expectedRefs);
+  });
 });

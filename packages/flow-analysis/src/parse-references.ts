@@ -34,6 +34,7 @@ export function parseRef(
   for (let i = 0; i < matches.length; i++) {
     const matchedString = matches[i][i + 1];
     const matchedScope = matches[i][i + 2];
+    const matchedTransform = matches[i][i + 3];
 
     const path = makePath(matchedString);
 
@@ -45,6 +46,7 @@ export function parseRef(
       string: matchedString,
       interpolated: isInterpolated(matches.length, value),
       hash: null,
+      ...(matchedTransform ? { json: true } : {}),
     };
     if (matchedScope === "steps") {
       refs.push(ref);
@@ -67,7 +69,8 @@ export function parseRef(
 
 export function getRefStrings(value: string): RegExpExecArray[] {
   // {{steps.like.this[3][3].ok}}
-  const regex = /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)}}/g;
+  const regex =
+    /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}/g;
   const matches = [...value.matchAll(regex)];
   return matches;
 }
