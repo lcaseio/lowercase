@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { parseRef } from "../src/parse-references.js";
-import { Ref } from "@lcase/types";
+import { parseExportRef, parseRef } from "../src/parse-references.js";
+import { FlowProblem, Ref } from "@lcase/types";
 
 describe("getRegStrings()", () => {
   it("parses simple strings correctly", () => {
@@ -35,5 +35,23 @@ describe("getRegStrings()", () => {
       },
     ];
     expect(refs).toEqual(expectedRefs);
+  });
+  it("parses output export refs correctly", () => {
+    const problems: FlowProblem[] = [];
+    const ref = parseExportRef(
+      "{{output.choices[0].message.content | json}}",
+      "stepId",
+      "parsed",
+      problems,
+    );
+
+    expect(ref).toEqual({
+      exportName: "parsed",
+      valuePath: ["output", "choices", 0, "message", "content"],
+      scope: "output",
+      string: "output.choices[0].message.content",
+      json: true,
+    });
+    expect(problems).toEqual([]);
   });
 });

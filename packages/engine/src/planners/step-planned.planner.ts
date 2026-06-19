@@ -10,6 +10,7 @@ import type {
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
 import { EmitStepReusedFx } from "../types/effect.types.js";
+import { parseStepRefs } from "@lcase/flow-analysis";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
@@ -26,7 +27,6 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const newRun = newState.runs[runId];
   const flow = newState.flows[flowId];
   const step = flow.definition.steps[stepId];
-  const refs = newRun.flowAnalysis.refs.filter((ref) => ref.stepId === stepId);
 
   if (!newRun) return effects;
   if (!flow) return effects;
@@ -48,6 +48,10 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       data: {
         status,
         outputHash: newRun.steps[stepId].outputHash ?? undefined,
+        exportHashes:
+          Object.keys(newRun.steps[stepId].exportHashes).length > 0
+            ? newRun.steps[stepId].exportHashes
+            : undefined,
         sourceRunId: newRun.forkSpec?.parentRunId ?? "",
       },
       traceId: message.event.traceid,
@@ -81,17 +85,12 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
    * no longer materialize steps here, worker resolves json to values using CAS.
    */
   if (stepType === "httpjson" && step.type === "httpjson") {
-    // const materializedStep = bindStepRefs(
-    //   refs,
-    //   newRun.steps[stepId].resolved,
-    //   step as StepHttpJson
-    // );
-
     const jobRefs = makeStepRefs(
       stepId,
       newRun.flowAnalysis.refs,
       newRun.steps,
     );
+    const { exportRefs } = parseStepRefs(step, stepId);
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
       scope: {
@@ -108,6 +107,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         ...(step.method ? { method: step.method } : {}),
         ...(step.args ? { args: step.args } : {}),
         refs: jobRefs,
+        ...(Object.keys(exportRefs).length > 0 ? { exportRefs } : {}),
       },
       traceId: newRun.traceId,
     };

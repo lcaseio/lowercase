@@ -5,6 +5,7 @@ export type RunPlan = {
     StepId,
     {
       outputHash?: OutputHash;
+      exportHashes?: Record<string, string>;
       status: string;
     }
   >;

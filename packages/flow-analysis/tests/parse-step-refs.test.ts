@@ -14,6 +14,7 @@ describe("parseStepRefs()", () => {
 
     const expectedOutput = {
       refs: [],
+      exportRefs: {},
       problems: [],
     };
 
@@ -42,6 +43,7 @@ describe("parseStepRefs()", () => {
 
     const expectedOutput = {
       refs: expectedRefs,
+      exportRefs: {},
       problems: [],
     };
     expect(r).toEqual(expectedOutput);

@@ -14,6 +14,7 @@ export type RunIndex = {
     string,
     {
       outputHash?: string;
+      exportHashes?: Record<string, string>;
       status?: string;
       startTime?: string;
       reusedTime?: string;

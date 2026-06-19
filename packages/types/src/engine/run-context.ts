@@ -45,6 +45,7 @@ export type StepContext = {
   attempt: number;
   output: Record<StepId, unknown> | null;
   outputHash: string | null;
+  exportHashes: Record<string, string>;
   resolved: Record<StepId, unknown>;
 };
 

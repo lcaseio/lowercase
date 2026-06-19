@@ -40,6 +40,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
         run.runPlan.reuse[stepId] = {
           status: run.runIndex.steps[stepId].status!,
           outputHash: run.runIndex.steps[stepId].outputHash,
+          exportHashes: run.runIndex.steps[stepId].exportHashes,
         };
       }
     }
@@ -53,6 +54,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
         attempt: 0,
         output: {},
         outputHash: null,
+        exportHashes: {},
         resolved: {},
       };
 

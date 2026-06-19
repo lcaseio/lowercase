@@ -109,6 +109,9 @@ describe("run-history updateRunIndex()", () => {
       stepid: "test-stepid",
       data: {
         status: "success",
+        exportHashes: {
+          parsed: "parsed-hash",
+        },
       },
     } as unknown as AnyEvent<"step.completed">;
 
@@ -118,6 +121,9 @@ describe("run-history updateRunIndex()", () => {
       steps: {
         "test-stepid": {
           endTime: "test-time",
+          exportHashes: {
+            parsed: "parsed-hash",
+          },
           status: "success",
         },
       },

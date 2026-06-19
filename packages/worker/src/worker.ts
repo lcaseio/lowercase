@@ -11,6 +11,7 @@ import type {
 } from "@lcase/ports";
 import type {
   AnyEvent,
+  ExportRef,
   WorkerMetadata,
   ToolId,
   PipeData,
@@ -19,6 +20,8 @@ import type {
   JobQueuedEvent,
   Ref,
   JobStartedEvent,
+  JobHttpJsonData,
+  JobMcpData,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
@@ -208,10 +211,13 @@ export class Worker implements WorkerPort {
     );
 
     if (!this.enableSideEffects) return;
-    const { refs, ...data } = event.data;
+    const { refs, exportRefs: _exportRefs, ...data } = event.data as {
+      refs: Ref[];
+      exportRefs?: Record<string, ExportRef>;
+    } & Record<string, unknown>;
 
     await this.bindValueRefs(event.data.refs, data);
-    return await jobEmitter.emit(type, data);
+    return await jobEmitter.emit(type, data as JobHttpJsonData | JobMcpData);
   }
 
   async handleNewJob(event: JobQueuedEvent): Promise<void> {
@@ -233,9 +239,17 @@ export class Worker implements WorkerPort {
     if (!startedEvent) return;
 
     toolEvent = await tool.invoke(startedEvent);
+
     const storeHash = await this.storeJsonArtifact(
       toolEvent.data.payload as JsonValue,
     );
+    const exportResult =
+      toolEvent.type === "tool.completed" && e.capid === "httpjson"
+        ? await this.storeExportArtifacts(
+            toolEvent.data.payload as JsonValue | undefined,
+            (e.data as { exportRefs?: Record<string, ExportRef> }).exportRefs,
+          )
+        : { ok: true as const, hashes: undefined };
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
       {
@@ -255,7 +269,19 @@ export class Worker implements WorkerPort {
       `lowercase://worker/${this.#ctx.workerId}`,
     );
 
-    if (toolEvent.type === "tool.completed") {
+    if (!exportResult.ok) {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
+      await jobEmitter.emit(type, {
+        status: "failure",
+        output: storeHash ? storeHash : null,
+        message: exportResult.message,
+      });
+    } else if (toolEvent.type === "tool.completed") {
       const manualType = `job.${job.capId}.completed`;
       const type = this.#jobParser.parseJobCompletedType(manualType);
       if (!type) {
@@ -265,6 +291,7 @@ export class Worker implements WorkerPort {
       await jobEmitter.emit(type, {
         status: "success",
         output: storeHash ? storeHash : null,
+        ...(exportResult.hashes ? { exportHashes: exportResult.hashes } : {}),
       });
     } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
@@ -275,6 +302,7 @@ export class Worker implements WorkerPort {
       await jobEmitter.emit(type, {
         status: "failure",
         output: storeHash ? storeHash : null,
+        ...(exportResult.hashes ? { exportHashes: exportResult.hashes } : {}),
         message: toolEvent.data.reason,
       });
     }
@@ -377,8 +405,58 @@ export class Worker implements WorkerPort {
       const json = await this.getJsonArtifact(ref.hash);
       if (json === undefined) continue;
       const value = resolveJsonPath(ref.valuePath, json);
+
       bindReference(ref, data, value);
     }
+  }
+
+  async storeExportArtifacts(
+    output: JsonValue | undefined,
+    exportRefs?: Record<string, ExportRef>,
+  ): Promise<
+    | { ok: true; hashes?: Record<string, string> }
+    | { ok: false; message: string }
+  > {
+    if (!exportRefs || Object.keys(exportRefs).length === 0) {
+      return { ok: true };
+    }
+    if (output === undefined) {
+      return { ok: false, message: "Could not resolve step exports: output missing" };
+    }
+
+    const hashes: Record<string, string> = {};
+    for (const ref of Object.values(exportRefs)) {
+      const selected = resolveJsonPath(ref.valuePath.slice(1), output);
+      if (selected === undefined) {
+        return {
+          ok: false,
+          message: `Could not resolve export ${ref.exportName} from ${ref.string}`,
+        };
+      }
+
+      let artifactValue = selected;
+      if (ref.json && typeof selected === "string") {
+        try {
+          artifactValue = JSON.parse(selected);
+        } catch (error) {
+          return {
+            ok: false,
+            message: `Could not parse export ${ref.exportName} as json: ${String(error)}`,
+          };
+        }
+      }
+
+      const hash = await this.storeJsonArtifact(artifactValue as JsonValue);
+      if (!hash) {
+        return {
+          ok: false,
+          message: `Could not store export ${ref.exportName} as artifact`,
+        };
+      }
+      hashes[ref.exportName] = hash;
+    }
+
+    return { ok: true, hashes };
   }
 
   /**

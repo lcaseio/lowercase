@@ -26,6 +26,7 @@ export const jobFinishedReducer: Reducer<JobFinishedMsg> = (
     }
 
     step.outputHash = message.event.data.output;
+    step.exportHashes = message.event.data.exportHashes ?? {};
     step.output = null;
   });
 };

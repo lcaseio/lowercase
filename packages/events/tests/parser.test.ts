@@ -15,6 +15,14 @@ describe("parser", () => {
       data: {
         url: "",
         refs: [],
+        exportRefs: {
+          parsed: {
+            exportName: "parsed",
+            valuePath: ["output", "foo"],
+            scope: "output",
+            string: "output.foo",
+          },
+        },
       },
       domain: "job",
       action: "submitted",
@@ -45,6 +53,14 @@ describe("parser", () => {
       data: {
         url: "",
         refs: [],
+        exportRefs: {
+          parsed: {
+            exportName: "parsed",
+            valuePath: ["output", "foo"],
+            scope: "output",
+            string: "output.foo",
+          },
+        },
       },
       domain: "job",
       action: "submitted",

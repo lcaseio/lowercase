@@ -43,6 +43,10 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
       data: {
         status: "success",
         outputHash: newRunState.steps[stepId].outputHash ?? undefined,
+        exportHashes:
+          Object.keys(newRunState.steps[stepId].exportHashes).length > 0
+            ? newRunState.steps[stepId].exportHashes
+            : undefined,
         step: {
           id: stepId,
           name: stepId,
@@ -69,6 +73,10 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
         reason: e.data.message ?? "",
         status: e.data.status,
         outputHash: newRunState.steps[stepId].outputHash ?? undefined,
+        exportHashes:
+          Object.keys(newRunState.steps[stepId].exportHashes).length > 0
+            ? newRunState.steps[stepId].exportHashes
+            : undefined,
         step: {
           id: stepId,
           name: stepId,

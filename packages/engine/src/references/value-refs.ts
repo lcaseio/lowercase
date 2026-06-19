@@ -24,9 +24,15 @@ export function makeStepRefs(
   for (const ref of stepRefs) {
     // if reference is not a {{steps.x.output}} format, skip.
     if (ref.scope !== "steps") continue;
+    const valuePath =
+      ref.valuePath[2] === "exports"
+        ? ref.valuePath.slice(4)
+        : ref.valuePath[2] === "output"
+          ? ref.valuePath.slice(3)
+          : ref.valuePath.slice(2);
     const jobRef: Ref = {
       ...ref,
-      valuePath: ref.valuePath.slice(3), // remove "steps.stepId.output" from path
+      valuePath,
       hash: getStepRefHash(ref, stepContext),
     };
     jobRefs.push(jobRef);
@@ -49,9 +55,18 @@ export function getStepRefHash(
   ref: Ref,
   stepContext: RunContext["steps"],
 ): string | null {
-  if (ref.scope === "steps" && stepContext[ref.valuePath[1]] !== undefined) {
-    return stepContext[ref.valuePath[1]].outputHash;
-  } else return null;
+  if (ref.scope !== "steps") return null;
+
+  const step = stepContext[ref.valuePath[1]];
+  if (step === undefined) return null;
+
+  if (ref.valuePath[2] === "exports") {
+    const exportName = ref.valuePath[3];
+    if (typeof exportName !== "string") return null;
+    return step.exportHashes[exportName] ?? null;
+  }
+
+  return step.outputHash;
 }
 
 /**

@@ -1,24 +1,44 @@
-import type { FlowProblem, Path, Ref, StepDefinition } from "@lcase/types";
+import type {
+  ExportRef,
+  FlowProblem,
+  Path,
+  Ref,
+  StepHttpJson,
+  StepDefinition,
+} from "@lcase/types";
 import { traverse } from "./traverse.js";
 
 export function parseStepRefs<D extends StepDefinition>(
   step: D,
   stepId: string,
-): { refs: Ref[]; problems: FlowProblem[] } {
+): { refs: Ref[]; exportRefs: Record<string, ExportRef>; problems: FlowProblem[] } {
   const refs: Ref[] = [];
+  const exportRefs: Record<string, ExportRef> = {};
   const problems: FlowProblem[] = [];
 
   for (const key in step) {
     const k = key as keyof D;
     // ignore fields which impact control flow in engine
-    if (k === "type" || k === "on" || k === "next") continue;
+    if (k === "type" || k === "on" || k === "next" || k === "exports") continue;
     traverse(
       step[k],
       (value, path) => parseRef(value, path, stepId, refs, problems),
       [String(k)],
     );
   }
-  return { refs, problems };
+
+  if (step.type === "httpjson") {
+    const httpStep = step as StepHttpJson;
+    if (!httpStep.exports) return { refs, exportRefs, problems };
+
+    for (const [exportName, exportValue] of Object.entries(httpStep.exports)) {
+      const ref = parseExportRef(exportValue, stepId, exportName, problems);
+      if (!ref) continue;
+      exportRefs[exportName] = ref;
+    }
+  }
+
+  return { refs, exportRefs, problems };
 }
 
 export function parseRef(
@@ -73,6 +93,35 @@ export function getRefStrings(value: string): RegExpExecArray[] {
     /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}/g;
   const matches = [...value.matchAll(regex)];
   return matches;
+}
+
+export function parseExportRef(
+  value: string,
+  stepId: string,
+  exportName: string,
+  problems: FlowProblem[],
+): ExportRef | undefined {
+  const match = value.match(
+    /^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}$/,
+  );
+
+  if (!match) {
+    problems.push({
+      type: "InvalidExportRef",
+      stepId,
+      exportName,
+      exportValue: value,
+    });
+    return;
+  }
+
+  return {
+    exportName,
+    valuePath: makePath(match[1]),
+    scope: "output",
+    string: match[1],
+    ...(match[3] ? { json: true } : {}),
+  };
 }
 
 /**
