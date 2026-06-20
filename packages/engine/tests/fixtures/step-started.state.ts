@@ -43,6 +43,7 @@ const runCtx = {
       output: {},
       resolved: {},
       outputHash: null,
+      exportHashes: {},
     },
     [stepId]: {
       status: "initialized",
@@ -50,6 +51,7 @@ const runCtx = {
       output: {},
       resolved: {},
       outputHash: null,
+      exportHashes: {},
     },
   },
   flowAnalysis: flowAnalysis,

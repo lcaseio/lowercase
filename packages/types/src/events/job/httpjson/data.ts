@@ -1,6 +1,16 @@
 import type { StepHttpJson } from "../../../flow/http-json.step.js";
+import type { ExportRef } from "../../../flow-analysis/types.js";
 import type { JobSubmittedData } from "../data.js";
 
-export type JobHttpJsonData = Omit<StepHttpJson, "type" | "on" | "tool">;
-export type JobHttpJsonSubmittedData = JobHttpJsonData & JobSubmittedData;
-export type JobHttpJsonQueuedData = JobHttpJsonData & JobSubmittedData;
+export type JobHttpJsonData = Omit<
+  StepHttpJson,
+  "type" | "on" | "tool" | "exports"
+>;
+export type JobHttpJsonSubmittedData = JobHttpJsonData &
+  JobSubmittedData & {
+    exportRefs?: Record<string, ExportRef>;
+  };
+export type JobHttpJsonQueuedData = JobHttpJsonData &
+  JobSubmittedData & {
+    exportRefs?: Record<string, ExportRef>;
+  };

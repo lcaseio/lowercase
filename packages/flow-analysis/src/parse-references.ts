@@ -1,24 +1,48 @@
-import type { FlowProblem, Path, Ref, StepDefinition } from "@lcase/types";
+import type {
+  ExportRef,
+  FlowProblem,
+  Path,
+  Ref,
+  StepHttpJson,
+  StepDefinition,
+} from "@lcase/types";
 import { traverse } from "./traverse.js";
 
 export function parseStepRefs<D extends StepDefinition>(
   step: D,
   stepId: string,
-): { refs: Ref[]; problems: FlowProblem[] } {
+): {
+  refs: Ref[];
+  exportRefs: Record<string, ExportRef>;
+  problems: FlowProblem[];
+} {
   const refs: Ref[] = [];
+  const exportRefs: Record<string, ExportRef> = {};
   const problems: FlowProblem[] = [];
 
   for (const key in step) {
     const k = key as keyof D;
     // ignore fields which impact control flow in engine
-    if (k === "type" || k === "on" || k === "next") continue;
+    if (k === "type" || k === "on" || k === "next" || k === "exports") continue;
     traverse(
       step[k],
       (value, path) => parseRef(value, path, stepId, refs, problems),
       [String(k)],
     );
   }
-  return { refs, problems };
+
+  if (step.type === "httpjson") {
+    const httpStep = step as StepHttpJson;
+    if (!httpStep.exports) return { refs, exportRefs, problems };
+
+    for (const [exportName, exportValue] of Object.entries(httpStep.exports)) {
+      const ref = parseExportRef(exportValue, stepId, exportName, problems);
+      if (!ref) continue;
+      exportRefs[exportName] = ref;
+    }
+  }
+
+  return { refs, exportRefs, problems };
 }
 
 export function parseRef(
@@ -32,8 +56,9 @@ export function parseRef(
   const matches = getRefStrings(value);
 
   for (let i = 0; i < matches.length; i++) {
-    const matchedString = matches[i][i + 1];
-    const matchedScope = matches[i][i + 2];
+    const matchedString = matches[i][1];
+    const matchedScope = matches[i][2];
+    const matchedTransform = matches[i][3];
 
     const path = makePath(matchedString);
 
@@ -45,6 +70,7 @@ export function parseRef(
       string: matchedString,
       interpolated: isInterpolated(matches.length, value),
       hash: null,
+      ...(matchedTransform ? { json: true } : {}),
     };
     if (matchedScope === "steps") {
       refs.push(ref);
@@ -55,6 +81,8 @@ export function parseRef(
       ref.scope = "env";
       refs.push(ref);
     } else {
+      console.log("ms", matchedScope);
+      console.log(matches);
       problems.push({
         type: "InvalidRefScope",
         refString: matchedString,
@@ -67,9 +95,39 @@ export function parseRef(
 
 export function getRefStrings(value: string): RegExpExecArray[] {
   // {{steps.like.this[3][3].ok}}
-  const regex = /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)}}/g;
+  const regex =
+    /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}/g;
   const matches = [...value.matchAll(regex)];
   return matches;
+}
+
+export function parseExportRef(
+  value: string,
+  stepId: string,
+  exportName: string,
+  problems: FlowProblem[],
+): ExportRef | undefined {
+  const match = value.match(
+    /^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}$/,
+  );
+
+  if (!match) {
+    problems.push({
+      type: "InvalidExportRef",
+      stepId,
+      exportName,
+      exportValue: value,
+    });
+    return;
+  }
+
+  return {
+    exportName,
+    valuePath: makePath(match[1]),
+    scope: "output",
+    string: match[1],
+    ...(match[3] ? { json: true } : {}),
+  };
 }
 
 /**
@@ -108,7 +166,7 @@ export function parseArray(part: string): { key?: string; index?: string[] } {
 }
 
 export function isInterpolated(matches: number, value: string) {
-  if (matches >= 2) return false;
+  if (matches >= 2) return true;
   if (value.startsWith("{{") && value.endsWith("}}")) return false;
   return true;
 }

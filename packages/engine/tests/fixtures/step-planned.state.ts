@@ -48,6 +48,7 @@ export const stepPlannedNewState: EngineState = {
           attempt: 0,
           output: {},
           outputHash: null,
+          exportHashes: {},
           resolved: {},
         },
         parallel: {
@@ -55,6 +56,7 @@ export const stepPlannedNewState: EngineState = {
           attempt: 0,
           output: {},
           outputHash: null,
+          exportHashes: {},
           resolved: {},
         },
       },

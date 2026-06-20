@@ -24,6 +24,7 @@ export type FlowAnalysis = {
 
   problems: FlowProblem[];
   refs: Ref[];
+  exportRefsByStep?: Record<StepId, Record<string, ExportRef>>;
 };
 
 /*-- problem types for flow analysis to surface in UI/validation --*/
@@ -49,6 +50,12 @@ export type InvalidRefScopeProblem = {
   bindPath: Path;
   refString: string;
 };
+export type InvalidExportRefProblem = {
+  type: "InvalidExportRef";
+  stepId: StepId;
+  exportName: string;
+  exportValue: string;
+};
 export type InvalidRefStepIdProblem = {
   type: "InvalidRefStepId";
   ref: Ref;
@@ -64,6 +71,7 @@ export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
   | SelfReferencedProblem
+  | InvalidExportRefProblem
   | InvalidRefStepIdProblem
   | UnreachableRefProblem
   | InvalidRefScopeProblem;
@@ -79,4 +87,14 @@ export type Ref = {
   string: string; // the actual string reference without {{}} characters
   interpolated: boolean; // whether it should be interpolated as a string or not
   hash: string | null;
+  // later more robust tranforms should be implemented
+  json?: true; // whether to parse this as json, simple transform flag
+};
+
+export type ExportRef = {
+  exportName: string;
+  valuePath: Path;
+  scope: "output";
+  string: string;
+  json?: true;
 };

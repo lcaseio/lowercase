@@ -44,6 +44,7 @@ export function processStepFinished(
   const step = index.steps[event.stepid];
   step.endTime = event.time;
   step.outputHash = event.data.outputHash;
+  step.exportHashes = event.data.exportHashes;
   step.status = event.data.status;
   step.duration = getDuration(step.startTime, step.endTime);
 }
@@ -55,6 +56,7 @@ export function processStepReused(
   index.steps[event.stepid] ??= {};
   const step = index.steps[event.stepid];
   step.outputHash = event.data.outputHash;
+  step.exportHashes = event.data.exportHashes;
   step.status = event.data.status;
   step.wasReused = true;
   step.reusedTime = event.time;

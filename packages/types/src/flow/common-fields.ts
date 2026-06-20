@@ -11,3 +11,7 @@ export type StepOnField = {
     failure?: string;
   };
 };
+
+export type StepExportsField = {
+  exports?: Record<string, string>;
+};

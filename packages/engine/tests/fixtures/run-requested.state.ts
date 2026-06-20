@@ -32,6 +32,7 @@ export const runRequestedNewState: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },

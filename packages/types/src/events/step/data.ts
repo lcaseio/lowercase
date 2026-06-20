@@ -16,16 +16,19 @@ export type StepStartedData = StepDescriptor & {
 export type StepCompletedData = StepDescriptor & {
   status: "success";
   outputHash?: string;
+  exportHashes?: Record<string, string>;
 };
 
 export type StepFailedData = StepDescriptor & {
   status: "failure";
   outputHash?: string;
+  exportHashes?: Record<string, string>;
   reason: string;
 };
 
 export type StepReusedData = {
   status: "success" | "failure";
   outputHash?: string;
+  exportHashes?: Record<string, string>;
   sourceRunId: string;
 };

@@ -33,6 +33,7 @@ describe("findAndParseRefs()", () => {
       },
       joinDeps: {},
       refs: [],
+      exportRefsByStep: {},
       problems: [],
     };
 
@@ -61,6 +62,10 @@ describe("findAndParseRefs()", () => {
           hash: null,
         },
       ],
+      exportRefsByStep: {
+        foo: {},
+        bar: {},
+      },
       problems: [],
     };
     const fd = {
