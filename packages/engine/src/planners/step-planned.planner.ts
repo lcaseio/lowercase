@@ -10,7 +10,6 @@ import type {
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
 import { EmitStepReusedFx } from "../types/effect.types.js";
-import { parseStepRefs } from "@lcase/flow-analysis";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
@@ -90,7 +89,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       newRun.flowAnalysis.refs,
       newRun.steps,
     );
-    const { exportRefs } = parseStepRefs(step, stepId);
+    const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
       scope: {

@@ -11,7 +11,11 @@ import { traverse } from "./traverse.js";
 export function parseStepRefs<D extends StepDefinition>(
   step: D,
   stepId: string,
-): { refs: Ref[]; exportRefs: Record<string, ExportRef>; problems: FlowProblem[] } {
+): {
+  refs: Ref[];
+  exportRefs: Record<string, ExportRef>;
+  problems: FlowProblem[];
+} {
   const refs: Ref[] = [];
   const exportRefs: Record<string, ExportRef> = {};
   const problems: FlowProblem[] = [];
@@ -52,9 +56,9 @@ export function parseRef(
   const matches = getRefStrings(value);
 
   for (let i = 0; i < matches.length; i++) {
-    const matchedString = matches[i][i + 1];
-    const matchedScope = matches[i][i + 2];
-    const matchedTransform = matches[i][i + 3];
+    const matchedString = matches[i][1];
+    const matchedScope = matches[i][2];
+    const matchedTransform = matches[i][3];
 
     const path = makePath(matchedString);
 
@@ -77,6 +81,8 @@ export function parseRef(
       ref.scope = "env";
       refs.push(ref);
     } else {
+      console.log("ms", matchedScope);
+      console.log(matches);
       problems.push({
         type: "InvalidRefScope",
         refString: matchedString,
@@ -160,7 +166,7 @@ export function parseArray(part: string): { key?: string; index?: string[] } {
 }
 
 export function isInterpolated(matches: number, value: string) {
-  if (matches >= 2) return false;
+  if (matches >= 2) return true;
   if (value.startsWith("{{") && value.endsWith("}}")) return false;
   return true;
 }

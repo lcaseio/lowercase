@@ -53,6 +53,9 @@ export const flowAnalysisB: FlowAnalysis = {
   joinDeps: {},
   problems: [],
   refs: [],
+  exportRefsByStep: {
+    b: {},
+  },
 };
 
 export const flowAnalysisBWithProblem: FlowAnalysis = {

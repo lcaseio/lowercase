@@ -24,6 +24,7 @@ export type FlowAnalysis = {
 
   problems: FlowProblem[];
   refs: Ref[];
+  exportRefsByStep?: Record<StepId, Record<string, ExportRef>>;
 };
 
 /*-- problem types for flow analysis to surface in UI/validation --*/

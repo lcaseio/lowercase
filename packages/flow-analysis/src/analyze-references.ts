@@ -17,6 +17,7 @@ import { parseStepRefs } from "./parse-references.js";
  * @returns FlowAnalysis
  */
 export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
+  fa.exportRefsByStep ??= {};
   for (const stepId of Object.keys(fd.steps)) {
     const stepType = fd.steps[stepId].type;
     // skip control flow step types for now
@@ -43,8 +44,10 @@ export function findAndParseRefs(
   fd: FlowDefinition,
   fa: FlowAnalysis
 ) {
-  const { refs, problems } = parseStepRefs(fd.steps[stepId], stepId);
+  const { refs, exportRefs, problems } = parseStepRefs(fd.steps[stepId], stepId);
   fa.refs = fa.refs.concat(refs);
+  fa.exportRefsByStep ??= {};
+  fa.exportRefsByStep[stepId] = exportRefs;
   fa.problems = fa.problems.concat(problems);
 }
 

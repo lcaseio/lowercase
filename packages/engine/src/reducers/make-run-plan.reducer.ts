@@ -21,6 +21,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     run.flowAnalysis = flowAnalysis;
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("1", flowAnalysis.problems);
       run.status = "failed";
       return;
     }
@@ -28,6 +29,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     analyzeRefs(flow.definition, flowAnalysis);
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("2", flowAnalysis.problems);
       run.status = "failed";
       return;
     }

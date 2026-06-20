@@ -40,6 +40,7 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext;
     draft.runs[runId] = runCtx;

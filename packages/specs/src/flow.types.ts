@@ -53,7 +53,7 @@ export const StepBaseSchema = z
   })
   .merge(StepOnSchema);
 export const StepCapBaseSchema = StepCapCommonFieldsSchema.extend(
-  StepOnSchema.shape
+  StepOnSchema.shape,
 );
 
 export const StepMcpSchema = StepCapBaseSchema.extend({
@@ -82,6 +82,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
 
   headers: z.record(z.string(), z.string()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
+  exports: z.record(z.string(), z.string()).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 
 export const StepSchema = z.discriminatedUnion("type", [
