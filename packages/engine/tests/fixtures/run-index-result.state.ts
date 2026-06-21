@@ -22,6 +22,7 @@ export const runIndexResultOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -66,6 +67,7 @@ export const runIndexResultNotOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },

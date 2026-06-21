@@ -2,7 +2,7 @@ import { produce } from "immer";
 import { EngineState, Reducer } from "../engine.types.js";
 import { MakeRunPlanMsg } from "../types/message.types.js";
 import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
-import { StepContext } from "@lcase/types";
+import { FlowParamDefinition, StepContext } from "@lcase/types";
 
 export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
   state: EngineState,
@@ -30,6 +30,12 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
 
     if (flowAnalysis.problems.length !== 0) {
       console.log("2", flowAnalysis.problems);
+      run.status = "failed";
+      return;
+    }
+
+    const paramValidationError = validateRunParams(run.params, flow.definition.params);
+    if (paramValidationError) {
       run.status = "failed";
       return;
     }
@@ -66,3 +72,22 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     run.status = "started";
   });
 };
+
+function validateRunParams(
+  params: Record<string, string>,
+  declarations?: Record<string, FlowParamDefinition>,
+): string | undefined {
+  if (!declarations) {
+    return Object.keys(params).length > 0 ? "undeclared params supplied" : undefined;
+  }
+
+  for (const supplied of Object.keys(params)) {
+    if (declarations[supplied] === undefined) return `undeclared param:${supplied}`;
+  }
+
+  for (const [name, declaration] of Object.entries(declarations)) {
+    if (!declaration.optional && params[name] === undefined) {
+      return `missing required param:${name}`;
+    }
+  }
+}

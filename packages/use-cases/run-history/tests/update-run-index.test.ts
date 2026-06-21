@@ -12,6 +12,9 @@ describe("run-history updateRunIndex()", () => {
       data: {
         flowDefHash: "test-flowdefhash",
         forkSpecHash: "test-forkspechash",
+        params: {
+          payload: "payload-hash",
+        },
       },
     } as unknown as AnyEvent<"run.requested">;
 
@@ -22,6 +25,9 @@ describe("run-history updateRunIndex()", () => {
       traceId: "test-traceid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
+      params: {
+        payload: "payload-hash",
+      },
     };
     expect(index).toEqual(expectedIndex);
   });

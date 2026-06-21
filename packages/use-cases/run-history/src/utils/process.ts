@@ -11,6 +11,7 @@ export function processRunRequested(
 ) {
   index.flowDefHash = event.data.flowDefHash;
   index.forkSpecHash = event.data.forkSpecHash;
+  index.params = event.data.params;
 }
 export function processRunStarted(
   event: AnyEvent<"run.started">,

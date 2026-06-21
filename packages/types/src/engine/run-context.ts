@@ -18,6 +18,7 @@ export type RunContext = {
   runId: string;
   traceId: string;
 
+  params: Record<string, string>;
   input: Record<string, unknown>;
   // global: Record<string, unknown>;  add later
 

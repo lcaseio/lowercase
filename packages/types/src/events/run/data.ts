@@ -10,6 +10,7 @@ type RunDescriptor = {
 export type RunRequestedData = {
   flowDefHash: string;
   forkSpecHash?: string;
+  params?: Record<string, string>;
 };
 export type RunStartedData = null;
 export type RunCompletedData = null;
