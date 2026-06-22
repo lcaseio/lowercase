@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  FlowParamDefinition,
   StepHttpJson,
   StepMcp,
   StepCapCommonFields,
@@ -92,11 +93,19 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepJoinSchema,
 ]);
 
+export const FlowParamDefinitionSchema = z
+  .object({
+    type: z.literal("application/json"),
+    optional: z.literal(true).optional(),
+  })
+  .strict() satisfies z.ZodType<FlowParamDefinition>;
+
 export const FlowSchema = z
   .object({
     name: z.string().min(1),
     version: z.string(),
     description: z.string().optional(),
+    params: z.record(z.string(), FlowParamDefinitionSchema).optional(),
     inputs: z.record(z.string(), z.unknown()).optional(),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),

@@ -14,6 +14,7 @@ export const runRequestedNewState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },

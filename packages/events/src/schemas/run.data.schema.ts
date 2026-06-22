@@ -22,6 +22,7 @@ export const RunRequestedDataSchema = z
   .object({
     flowDefHash: z.string(),
     forkSpecHash: z.string().optional(),
+    params: z.record(z.string(), z.string()).optional(),
   })
   .strict() satisfies z.ZodType<RunRequestedData>;
 

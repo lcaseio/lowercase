@@ -24,6 +24,7 @@ export const makeRunPlanNewState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
 
       // create run plan
       runPlan: {
@@ -93,6 +94,7 @@ export const makeRunPlanNewStateFAProblems: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
 
       // run plan is empty
       runPlan: {

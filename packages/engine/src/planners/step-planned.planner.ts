@@ -88,6 +88,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       stepId,
       newRun.flowAnalysis.refs,
       newRun.steps,
+      newRun.params,
     );
     const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
     const emitJob: EmitJobHttpJsonSubmittedFx = {
@@ -121,6 +122,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       stepId,
       newRun.flowAnalysis.refs,
       newRun.steps,
+      newRun.params,
     );
     const emitJob: EmitJobMcpSubmittedFx = {
       type: "EmitJobMcpSubmitted",

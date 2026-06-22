@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Ref, RunContext } from "@lcase/types";
-import { getStepRefHash, makeStepRefs } from "../src/references/value-refs.js";
+import { getRefHash, makeStepRefs } from "../src/references/value-refs.js";
 
 describe("value refs", () => {
   it("resolves export hashes for steps.<id>.exports.<name>", () => {
@@ -26,8 +26,8 @@ describe("value refs", () => {
       },
     } satisfies RunContext["steps"];
 
-    expect(getStepRefHash(ref, steps)).toBe("parsed-hash");
-    expect(makeStepRefs("bar", [ref], steps)).toEqual([
+    expect(getRefHash(ref, steps, {})).toBe("parsed-hash");
+    expect(makeStepRefs("bar", [ref], steps, {})).toEqual([
       {
         ...ref,
         valuePath: [],
@@ -57,11 +57,32 @@ describe("value refs", () => {
       },
     } satisfies RunContext["steps"];
 
-    expect(makeStepRefs("bar", [ref], steps)).toEqual([
+    expect(makeStepRefs("bar", [ref], steps, {})).toEqual([
       {
         ...ref,
         valuePath: ["body", "answer"],
         hash: "output-hash",
+      },
+    ]);
+  });
+
+  it("resolves param hashes for params.<name> refs", () => {
+    const ref: Ref = {
+      valuePath: ["params", "payload", "answer"],
+      scope: "params",
+      stepId: "bar",
+      bindPath: ["body"],
+      string: "params.payload.answer",
+      interpolated: false,
+      hash: null,
+    };
+
+    expect(getRefHash(ref, {}, { payload: "param-hash" })).toBe("param-hash");
+    expect(makeStepRefs("bar", [ref], {}, { payload: "param-hash" })).toEqual([
+      {
+        ...ref,
+        valuePath: ["answer"],
+        hash: "param-hash",
       },
     ]);
   });

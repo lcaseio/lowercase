@@ -10,6 +10,7 @@ export const flowDefResultOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -50,6 +51,7 @@ export const flowDefResultOkStateForkSpecHash: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -89,6 +91,7 @@ export const flowDefResultNotOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },

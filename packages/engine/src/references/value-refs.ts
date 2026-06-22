@@ -17,23 +17,25 @@ export function makeStepRefs(
   stepId: string,
   allRefs: Ref[],
   stepContext: RunContext["steps"],
+  params: RunContext["params"],
 ): Ref[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
   const jobRefs: Ref[] = [];
   for (const ref of stepRefs) {
-    // if reference is not a {{steps.x.output}} format, skip.
-    if (ref.scope !== "steps") continue;
+    if (ref.scope !== "steps" && ref.scope !== "params") continue;
     const valuePath =
-      ref.valuePath[2] === "exports"
-        ? ref.valuePath.slice(4)
-        : ref.valuePath[2] === "output"
-          ? ref.valuePath.slice(3)
-          : ref.valuePath.slice(2);
+      ref.scope === "params"
+        ? ref.valuePath.slice(2)
+        : ref.valuePath[2] === "exports"
+          ? ref.valuePath.slice(4)
+          : ref.valuePath[2] === "output"
+            ? ref.valuePath.slice(3)
+            : ref.valuePath.slice(2);
     const jobRef: Ref = {
       ...ref,
       valuePath,
-      hash: getStepRefHash(ref, stepContext),
+      hash: getRefHash(ref, stepContext, params),
     };
     jobRefs.push(jobRef);
   }
@@ -51,10 +53,16 @@ export function makeStepRefs(
  * @param runContext
  * @returns string of the hash or null if reference is empty
  */
-export function getStepRefHash(
+export function getRefHash(
   ref: Ref,
   stepContext: RunContext["steps"],
+  params: RunContext["params"],
 ): string | null {
+  if (ref.scope === "params") {
+    const paramName = ref.valuePath[1];
+    if (typeof paramName !== "string") return null;
+    return params[paramName] ?? null;
+  }
   if (ref.scope !== "steps") return null;
 
   const step = stepContext[ref.valuePath[1]];
