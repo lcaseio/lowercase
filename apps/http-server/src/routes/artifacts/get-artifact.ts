@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify/types/instance.js";
 import { isHash } from "../../utils/is-hash.js";
-import type { GetArtifactReq, GetArtifactRes } from "@lcase/types";
+import type { GetArtifactReq, GetArtifactRes, JsonValue } from "@lcase/types";
 
 export const getArtifactRoute = async (app: FastifyInstance) => {
   app.get<{ Params: GetArtifactReq }>(

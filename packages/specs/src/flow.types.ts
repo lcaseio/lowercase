@@ -5,6 +5,7 @@ import type {
   StepCapCommonFields,
   StepOnField,
   FlowDefinition,
+  RunParams,
 } from "@lcase/types";
 import { StepParallelSchema } from "./parallel.schema.js";
 import { StepJoinSchema } from "./join.schema.js";
@@ -92,12 +93,17 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepJoinSchema,
 ]);
 
+export const ParamSchema = z.object({
+  type: z.string(),
+  optional: z.boolean().optional(),
+});
+
 export const FlowSchema = z
   .object({
     name: z.string().min(1),
     version: z.string(),
     description: z.string().optional(),
-    inputs: z.record(z.string(), z.unknown()).optional(),
+    params: z.record(z.string(), ParamSchema),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),
     steps: z.record(z.string(), StepSchema),

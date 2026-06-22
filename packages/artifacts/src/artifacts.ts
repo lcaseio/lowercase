@@ -1,4 +1,5 @@
 import type {
+  ArtifactPutInput,
   ArtifactsPort,
   ArtifactIndexInput,
   ArtifactStorePort,
@@ -8,7 +9,7 @@ import type {
   PutError,
 } from "@lcase/ports";
 import type { ArtifactIndexStorePort } from "@lcase/ports";
-import { Result } from "@lcase/types";
+import type { Result } from "@lcase/types";
 import { createHash } from "node:crypto";
 
 export class Artifacts implements ArtifactsPort {
@@ -22,40 +23,24 @@ export class Artifacts implements ArtifactsPort {
     this.decoder = new TextDecoder();
   }
 
-  // typed overloads for a simplified callsite implementation
-  async put(
-    value: JsonValue,
-    opts: { format: "json"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: string,
-    opts: { format: "text"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: string,
-    opts: { format: "markdown"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: Uint8Array,
-    opts: { format: "bytes"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: JsonValue | string | Uint8Array,
-    opts: {
-      format: "json" | "text" | "markdown" | "bytes";
-      index?: ArtifactIndexInput;
-    },
-  ): Promise<Result<string, PutError>> {
-    switch (opts.format) {
+  async put(input: ArtifactPutInput): Promise<Result<string, PutError>> {
+    switch (input.format) {
       case "json":
-        return this.putJson(value as JsonValue, opts.index);
+        return this.putJson(input.value, input.index);
       case "text":
-        return this.putText(value as string, opts.index);
+        return this.putText(input.value, input.index);
       case "markdown":
-        return this.putMarkdown(value as string, opts.index);
+        return this.putMarkdown(input.value, input.index);
       case "bytes":
-        return this.putBytes(value as Uint8Array, opts.index);
+        return this.putBytes(input.value, input.index);
     }
+    return {
+      ok: false,
+      error: {
+        code: "UNKNOWN",
+        message: "Unsupported artifact format",
+      },
+    };
   }
 
   async get(

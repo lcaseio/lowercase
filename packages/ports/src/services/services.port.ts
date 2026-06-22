@@ -1,4 +1,5 @@
 import type {
+  ArtifactPutInput,
   AnyEvent,
   FlowDefinition,
   FlowIndex,
@@ -73,6 +74,7 @@ export type RunRequest = {
   source: string;
   runId?: string;
   forkSpecHash?: string;
+  params?: RunParams;
 };
 export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
@@ -90,4 +92,5 @@ export interface WsServicePort {
 
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<Result<JsonValue, string>>;
+  putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
 }

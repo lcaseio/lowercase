@@ -1,13 +1,9 @@
-import type { ArtifactIndex } from "@lcase/types";
-import { Result } from "@lcase/types";
-
-export type JsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | JsonValue[]
-  | { [I in string]: JsonValue };
+import type {
+  ArtifactIndexInput,
+  ArtifactPutInput,
+  JsonValue,
+  Result,
+} from "@lcase/types";
 
 export type PutResponse = {
   hash?: string;
@@ -34,27 +30,10 @@ export type AutoGetResult =
   | { ok: true; format: "bytes"; value: Uint8Array }
   | { ok: false; error: GetError };
 
-export type ArtifactIndexInput = Partial<Omit<ArtifactIndex, "hash" | "time">> & {
-  time?: string;
-};
+export type { ArtifactIndexInput, ArtifactPutInput, JsonValue };
 
 export interface ArtifactsPort {
-  put(
-    value: JsonValue,
-    opts: { format: "json"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  put(
-    value: string,
-    opts: { format: "text"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  put(
-    value: string,
-    opts: { format: "markdown"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  put(
-    value: Uint8Array,
-    opts: { format: "bytes"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
+  put(input: ArtifactPutInput): Promise<Result<string, PutError>>;
 
   get(
     hash: string,
