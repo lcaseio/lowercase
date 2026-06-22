@@ -9,6 +9,7 @@ import type {
 import type { ExportRef, ToolId } from "@lcase/types";
 import { Worker } from "../src/worker.js";
 import { ToolRegistry } from "@lcase/tools";
+import type { Ref } from "@lcase/types";
 
 function makeWorker(artifacts: ArtifactsPort) {
   return new Worker("workerId", {

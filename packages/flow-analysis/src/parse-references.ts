@@ -74,6 +74,9 @@ export function parseRef(
     };
     if (matchedScope === "steps") {
       refs.push(ref);
+    } else if (matchedScope === "params") {
+      ref.scope = "params";
+      refs.push(ref);
     } else if (matchedScope === "input") {
       ref.scope = "input";
       refs.push(ref);
@@ -96,7 +99,7 @@ export function parseRef(
 export function getRefStrings(value: string): RegExpExecArray[] {
   // {{steps.like.this[3][3].ok}}
   const regex =
-    /{{((input|steps|env)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}/g;
+    /{{((input|steps|env|params)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}/g;
   const matches = [...value.matchAll(regex)];
   return matches;
 }

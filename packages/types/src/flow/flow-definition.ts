@@ -1,9 +1,15 @@
 import { StepDefinition } from "./step.type.js";
 
+export type FlowParamDefinition = {
+  type: "application/json";
+  optional?: true;
+};
+
 export type FlowDefinition = {
   name: string;
   version: string;
   description?: string;
+  params?: Record<string, FlowParamDefinition>;
   inputs?: Record<string, unknown>;
   outputs?: Record<string, unknown>;
   start: string;

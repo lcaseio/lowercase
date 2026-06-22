@@ -54,4 +54,19 @@ describe("getRegStrings()", () => {
     });
     expect(problems).toEqual([]);
   });
+  it("parses params refs correctly", () => {
+    const refs: Ref[] = [];
+    parseRef("{{params.payload.answer}}", ["foo"], "stepId", refs, []);
+    expect(refs).toEqual([
+      {
+        valuePath: ["params", "payload", "answer"],
+        scope: "params",
+        bindPath: ["foo"],
+        stepId: "stepId",
+        string: "params.payload.answer",
+        interpolated: false,
+        hash: null,
+      },
+    ]);
+  });
 });

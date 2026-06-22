@@ -45,6 +45,7 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
     for (const ref of refs) {
       const value = resolvePath(ref.valuePath, {
         steps: run.steps,
+        params: run.params,
         input: run.input,
       });
       run.steps[stepId].resolved[ref.string] = value;

@@ -15,6 +15,7 @@ export const forkSpecOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -54,6 +55,7 @@ export const forkSpecNotOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },

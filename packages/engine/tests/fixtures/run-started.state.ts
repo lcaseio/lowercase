@@ -23,6 +23,7 @@ export const runStartedNewState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
 
       // create run plan
       runPlan: {

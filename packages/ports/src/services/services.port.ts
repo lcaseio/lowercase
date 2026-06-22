@@ -74,7 +74,7 @@ export type RunRequest = {
   source: string;
   runId?: string;
   forkSpecHash?: string;
-  params?: RunParams;
+  params?: Record<string, string>;
 };
 export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;

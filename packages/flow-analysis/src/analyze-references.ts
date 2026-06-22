@@ -26,7 +26,8 @@ export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
   }
 
   for (const ref of fa.refs) {
-    const problem = validateRefTargetStep(ref, fd, fa);
+    const problem =
+      validateRefTargetStep(ref, fd, fa) ?? validateRefTargetParam(ref, fd);
     if (problem) fa.problems.push(problem);
   }
   return fa;
@@ -83,6 +84,25 @@ export function validateRefTargetStep(
       type: "UnreachableRef",
       ref,
       targetStepId,
+    };
+  }
+}
+
+export function validateRefTargetParam(
+  ref: Ref,
+  fd: FlowDefinition,
+): FlowProblem | undefined {
+  if (ref.scope !== "params") return;
+  const paramName = ref.valuePath[1];
+  if (
+    typeof paramName !== "string" ||
+    fd.params === undefined ||
+    fd.params[paramName] === undefined
+  ) {
+    return {
+      type: "InvalidRefParamName",
+      ref,
+      paramName: typeof paramName === "string" ? paramName : "",
     };
   }
 }

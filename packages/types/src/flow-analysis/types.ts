@@ -50,6 +50,11 @@ export type InvalidRefScopeProblem = {
   bindPath: Path;
   refString: string;
 };
+export type InvalidRefParamNameProblem = {
+  type: "InvalidRefParamName";
+  ref: Ref;
+  paramName: string;
+};
 export type InvalidExportRefProblem = {
   type: "InvalidExportRef";
   stepId: StepId;
@@ -71,6 +76,7 @@ export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
   | SelfReferencedProblem
+  | InvalidRefParamNameProblem
   | InvalidExportRefProblem
   | InvalidRefStepIdProblem
   | UnreachableRefProblem
@@ -81,7 +87,7 @@ export type ProblemType = FlowProblem["type"];
 export type Path = Array<string | number>;
 export type Ref = {
   valuePath: Path; // path to the value inside the json object
-  scope: "steps" | "input" | "env"; // type of reference
+  scope: "steps" | "input" | "env" | "params"; // type of reference
   stepId: StepId; // step id this reference is found in
   bindPath: Path; // path inside the step for where the reference is found
   string: string; // the actual string reference without {{}} characters
