@@ -6,7 +6,7 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostRunsReq }>(
     "/",
     async (req, rep): Promise<PostRunsRes> => {
-      const { flowDefHash, forkSpecHash } = req.body;
+      const { flowDefHash, forkSpecHash, params } = req.body;
       const validFlowDefHash = validateFlowHash(flowDefHash);
 
       if (!validFlowDefHash) return { ok: false, error: "Invalid flowDefHash" };
@@ -24,6 +24,7 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
         source: "lowercase://http-server",
         runId,
         forkSpecHash,
+        params,
       });
       return { ok: true, runId };
     },

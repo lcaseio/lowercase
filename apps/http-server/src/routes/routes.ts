@@ -11,6 +11,8 @@ import { postSimsRoute } from "./sims/post.js";
 import { getSimSpec } from "./sims/get-sim-spec.js";
 import { getRunIndex } from "./runs/get-run-index.js";
 import { getArtifactRoute } from "./artifacts/get-artifact.js";
+import { putJsonArtifactRoute } from "./artifacts/put-json-artifact.js";
+import { postArtifactFileRoute } from "./artifacts/post-artifact-file.js";
 
 export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // api/flows
@@ -34,4 +36,6 @@ export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
   // api/artifacts
   await app.register(getArtifactRoute, { prefix: "/api/artifacts" });
+  await app.register(putJsonArtifactRoute, { prefix: "/api/artifacts" });
+  await app.register(postArtifactFileRoute, { prefix: "/api/artifacts/files" });
 };

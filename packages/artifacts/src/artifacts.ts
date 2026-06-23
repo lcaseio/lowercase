@@ -1,6 +1,5 @@
 import type {
   ArtifactsPort,
-  ArtifactIndexInput,
   ArtifactStorePort,
   AutoGetResult,
   GetError,
@@ -8,8 +7,20 @@ import type {
   PutError,
 } from "@lcase/ports";
 import type { ArtifactIndexStorePort } from "@lcase/ports";
-import { Result } from "@lcase/types";
+import type {
+  Result,
+  ArtifactPutInput,
+  ArtifactIndexInput,
+  ArtifactFormat,
+} from "@lcase/types";
 import { createHash } from "node:crypto";
+
+const artifactFileExtensions: Record<ArtifactFormat, string> = {
+  json: ".json",
+  text: ".txt",
+  markdown: ".md",
+  bytes: ".bin",
+};
 
 export class Artifacts implements ArtifactsPort {
   encoder: TextEncoder;
@@ -22,40 +33,24 @@ export class Artifacts implements ArtifactsPort {
     this.decoder = new TextDecoder();
   }
 
-  // typed overloads for a simplified callsite implementation
-  async put(
-    value: JsonValue,
-    opts: { format: "json"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: string,
-    opts: { format: "text"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: string,
-    opts: { format: "markdown"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: Uint8Array,
-    opts: { format: "bytes"; index?: ArtifactIndexInput },
-  ): Promise<Result<string, PutError>>;
-  async put(
-    value: JsonValue | string | Uint8Array,
-    opts: {
-      format: "json" | "text" | "markdown" | "bytes";
-      index?: ArtifactIndexInput;
-    },
-  ): Promise<Result<string, PutError>> {
-    switch (opts.format) {
+  async put(input: ArtifactPutInput): Promise<Result<string, PutError>> {
+    switch (input.format) {
       case "json":
-        return this.putJson(value as JsonValue, opts.index);
+        return this.putJson(input.value, input.index);
       case "text":
-        return this.putText(value as string, opts.index);
+        return this.putText(input.value, input.index);
       case "markdown":
-        return this.putMarkdown(value as string, opts.index);
+        return this.putMarkdown(input.value, input.index);
       case "bytes":
-        return this.putBytes(value as Uint8Array, opts.index);
+        return this.putBytes(input.value, input.index);
     }
+    return {
+      ok: false,
+      error: {
+        code: "UNKNOWN",
+        message: "Unsupported artifact format",
+      },
+    };
   }
 
   async get(
@@ -222,11 +217,12 @@ export class Artifacts implements ArtifactsPort {
   private async putBytesInternal(
     bytes: Uint8Array,
     index: ArtifactIndexInput | undefined,
-    format: "json" | "text" | "markdown" | "bytes",
+    format: ArtifactFormat,
   ): Promise<Result<string, PutError>> {
     try {
       const hash = this.hashBytes(bytes);
-      const result = await this.store.putBytes(hash, bytes);
+      const extension = artifactFileExtensions[format];
+      const result = await this.store.putBytes(hash, bytes, extension);
 
       if (!result.ok) {
         return {
@@ -239,7 +235,12 @@ export class Artifacts implements ArtifactsPort {
         };
       }
 
-      const indexResult = await this.putIndex(hash, index, bytes.length, format);
+      const indexResult = await this.putIndex(
+        hash,
+        index,
+        bytes.length,
+        format,
+      );
       if (!indexResult.ok) return indexResult;
 
       return { ok: true, value: hash };
@@ -272,7 +273,7 @@ export class Artifacts implements ArtifactsPort {
     hash: string,
     index: ArtifactIndexInput | undefined,
     size: number,
-    format: "json" | "text" | "markdown" | "bytes",
+    format: ArtifactFormat,
   ): Promise<Result<string, PutError>> {
     if (!this.indexStore) return { ok: true, value: hash };
 
@@ -310,9 +311,9 @@ export class Artifacts implements ArtifactsPort {
   }
 
   private inferFormat(
-    format: "json" | "text" | "markdown" | "bytes" | undefined,
+    format: ArtifactFormat | undefined,
     contentType: string | undefined,
-  ): "json" | "text" | "markdown" | "bytes" {
+  ): ArtifactFormat {
     if (format) return format;
     if (!contentType) return "bytes";
     if (contentType === "application/json") return "json";

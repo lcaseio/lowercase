@@ -6,6 +6,7 @@ import type {
   StepCapCommonFields,
   StepOnField,
   FlowDefinition,
+  RunParams,
 } from "@lcase/types";
 import { StepParallelSchema } from "./parallel.schema.js";
 import { StepJoinSchema } from "./join.schema.js";
@@ -106,7 +107,6 @@ export const FlowSchema = z
     version: z.string(),
     description: z.string().optional(),
     params: z.record(z.string(), FlowParamDefinitionSchema).optional(),
-    inputs: z.record(z.string(), z.unknown()).optional(),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),
     steps: z.record(z.string(), StepSchema),

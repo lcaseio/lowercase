@@ -10,7 +10,6 @@ const flowDef: FlowDefinition = {
   name: "test-flowname",
   version: "test-flowversion",
   description: "test-flowdescription",
-  inputs: {},
   outputs: {},
   start: "parallel",
   steps: {
@@ -94,7 +93,6 @@ describe("getFlowDefFx()", () => {
       name: "test-flowname",
       version: "test-flowversion",
       description: "test-flowdescription",
-      inputs: {},
       outputs: {},
 
       steps: {

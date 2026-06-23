@@ -2,6 +2,7 @@
 export type PostRunsReq = {
   flowDefHash: string;
   forkSpecHash?: string;
+  params?: Record<string, string>;
 };
 
 export type PostRunsRes =

@@ -1,4 +1,5 @@
 import type {
+  ArtifactPutInput,
   AnyEvent,
   FlowDefinition,
   FlowIndex,
@@ -91,4 +92,5 @@ export interface WsServicePort {
 
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<Result<JsonValue, string>>;
+  putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
 }

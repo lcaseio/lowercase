@@ -1,3 +1,5 @@
+import type { RunParams } from "../../engine/run-params.js";
+
 type RunDescriptor = {
   run: {
     id: string;

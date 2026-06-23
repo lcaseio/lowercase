@@ -21,7 +21,7 @@ describe("Artifacts putJson()", () => {
     const result = await artifacts.putJson(data);
 
     expect(result).toEqual({ ok: true, value: hash });
-    expect(putBytes).toHaveBeenCalledWith(hash, bytes);
+    expect(putBytes).toHaveBeenCalledWith(hash, bytes, ".json");
   });
 
   it("returns error result when store returns error", async () => {
@@ -48,6 +48,6 @@ describe("Artifacts putJson()", () => {
         cause: mockResult.cause,
       },
     });
-    expect(putBytes).toHaveBeenCalledWith(hash, bytes);
+    expect(putBytes).toHaveBeenCalledWith(hash, bytes, ".json");
   });
 });
