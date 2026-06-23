@@ -1,7 +1,5 @@
 import type {
-  ArtifactPutInput,
   ArtifactsPort,
-  ArtifactIndexInput,
   ArtifactStorePort,
   AutoGetResult,
   GetError,
@@ -9,8 +7,20 @@ import type {
   PutError,
 } from "@lcase/ports";
 import type { ArtifactIndexStorePort } from "@lcase/ports";
-import type { Result } from "@lcase/types";
+import type {
+  Result,
+  ArtifactPutInput,
+  ArtifactIndexInput,
+  ArtifactFormat,
+} from "@lcase/types";
 import { createHash } from "node:crypto";
+
+const artifactFileExtensions: Record<ArtifactFormat, string> = {
+  json: ".json",
+  text: ".txt",
+  markdown: ".md",
+  bytes: ".bin",
+};
 
 export class Artifacts implements ArtifactsPort {
   encoder: TextEncoder;
@@ -207,11 +217,12 @@ export class Artifacts implements ArtifactsPort {
   private async putBytesInternal(
     bytes: Uint8Array,
     index: ArtifactIndexInput | undefined,
-    format: "json" | "text" | "markdown" | "bytes",
+    format: ArtifactFormat,
   ): Promise<Result<string, PutError>> {
     try {
       const hash = this.hashBytes(bytes);
-      const result = await this.store.putBytes(hash, bytes);
+      const extension = artifactFileExtensions[format];
+      const result = await this.store.putBytes(hash, bytes, extension);
 
       if (!result.ok) {
         return {
@@ -224,7 +235,12 @@ export class Artifacts implements ArtifactsPort {
         };
       }
 
-      const indexResult = await this.putIndex(hash, index, bytes.length, format);
+      const indexResult = await this.putIndex(
+        hash,
+        index,
+        bytes.length,
+        format,
+      );
       if (!indexResult.ok) return indexResult;
 
       return { ok: true, value: hash };
@@ -257,7 +273,7 @@ export class Artifacts implements ArtifactsPort {
     hash: string,
     index: ArtifactIndexInput | undefined,
     size: number,
-    format: "json" | "text" | "markdown" | "bytes",
+    format: ArtifactFormat,
   ): Promise<Result<string, PutError>> {
     if (!this.indexStore) return { ok: true, value: hash };
 
@@ -295,9 +311,9 @@ export class Artifacts implements ArtifactsPort {
   }
 
   private inferFormat(
-    format: "json" | "text" | "markdown" | "bytes" | undefined,
+    format: ArtifactFormat | undefined,
     contentType: string | undefined,
-  ): "json" | "text" | "markdown" | "bytes" {
+  ): ArtifactFormat {
     if (format) return format;
     if (!contentType) return "bytes";
     if (contentType === "application/json") return "json";

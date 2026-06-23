@@ -10,8 +10,6 @@ const testPath = path.join(filePath, "test-artifacts");
 
 const testHash =
   "2fde28ecc973a1fe910c4000b9afade87085cedb17f3da379148ffc75a9339b8";
-const testFileName =
-  "28ecc973a1fe910c4000b9afade87085cedb17f3da379148ffc75a9339b8.json";
 
 describe("FsArtifactStore getBytes()", () => {
   afterEach(async () => {
@@ -21,18 +19,28 @@ describe("FsArtifactStore getBytes()", () => {
     const store = new FsArtifactStore(testPath);
     const json = JSON.stringify({ hello: "world" });
     const bytes = new TextEncoder().encode(json);
-    const result = await store.putBytes(testHash, bytes);
+    const result = await store.putBytes(testHash, bytes, ".txt");
 
-    const expectedPath = path.join(testPath, "2f", "de", testFileName);
+    const expectedPath = path.join(
+      testPath,
+      "2f",
+      "de",
+      "28ecc973a1fe910c4000b9afade87085cedb17f3da379148ffc75a9339b8.txt",
+    );
     expect(result).toEqual({ ok: true, path: expectedPath });
   });
   it("does not write a file for a hash that already exists", async () => {
     const store = new FsArtifactStore(testPath);
     const json = JSON.stringify({ hello: "world" });
     const bytes = new TextEncoder().encode(json);
-    const result = await store.putBytes(testHash, bytes);
+    const result = await store.putBytes(testHash, bytes, ".md");
 
-    const expectedPath = path.join(testPath, "2f", "de", testFileName);
+    const expectedPath = path.join(
+      testPath,
+      "2f",
+      "de",
+      "28ecc973a1fe910c4000b9afade87085cedb17f3da379148ffc75a9339b8.md",
+    );
     expect(result).toEqual({ ok: true, path: expectedPath });
 
     if (!result.ok) return;
@@ -41,7 +49,7 @@ describe("FsArtifactStore getBytes()", () => {
       setTimeout(resolve, 1);
     });
 
-    const result2 = await store.putBytes(testHash, bytes);
+    const result2 = await store.putBytes(testHash, bytes, ".md");
     expect(result2).toEqual({ ok: true, path: expectedPath });
 
     if (!result2.ok) return;

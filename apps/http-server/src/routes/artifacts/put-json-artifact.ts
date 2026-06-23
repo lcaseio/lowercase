@@ -1,13 +1,19 @@
 import type { FastifyInstance } from "fastify/types/instance.js";
-import type { JsonValue } from "@lcase/types";
+import type {
+  PostJsonArtifactReq,
+  PostJsonArtifactRes,
+} from "@lcase/types";
 
 export const putJsonArtifactRoute = async (app: FastifyInstance) => {
-  app.post<{ Body: JsonValue }>("/json", async (req, reply) => {
+  app.post<{ Body: PostJsonArtifactReq["body"] }>(
+    "/json",
+    async (req, reply): Promise<PostJsonArtifactRes> => {
     const artifact = req.body;
     const result = await app.services.artifact.putArtifact({
       format: "json",
       value: artifact,
     });
     return result;
-  });
+    },
+  );
 };

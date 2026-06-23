@@ -3,7 +3,6 @@ import { createRunId } from "./create-fork-spec.js";
 
 export type RunDetails = {
   ef: EmitterFactoryPort;
-  params?: Record<string, string>;
 } & RunRequest;
 export async function runFlow(runDetails: RunDetails) {
   const { runId, ef, source, flowDefHash, forkSpecHash, params } = runDetails;
