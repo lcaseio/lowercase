@@ -1,9 +1,20 @@
-import { JsonValue } from "../../json-value.js";
+import type { JsonValue } from "../../json-value.js";
 
 export type GetArtifactReq = { hash: string };
 export type GetArtifactRes =
   | {
       ok: true;
-      jsonValue: JsonValue;
+      format: "json";
+      value: JsonValue;
+    }
+  | {
+      ok: true;
+      format: "text" | "markdown";
+      value: string;
+    }
+  | {
+      ok: true;
+      format: "bytes";
+      byteLength: number;
     }
   | { ok: false; error: string };
