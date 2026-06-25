@@ -9,5 +9,6 @@ export * from "./sims/get-sims.js";
 export * from "./sims/post-sims.js";
 export * from "./sims/get-sim.js";
 export * from "./artifacts/get-artifact.js";
+export * from "./artifacts/get-artifacts.js";
 export * from "./artifacts/post-artifact-file.js";
 export * from "./artifacts/post-json-artifact.js";

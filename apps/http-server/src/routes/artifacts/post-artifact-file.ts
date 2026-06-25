@@ -25,9 +25,16 @@ export const postArtifactFileRoute = async (app: FastifyInstance) => {
   app.post("/", async (req, reply): Promise<PostArtifactFileRes> => {
     let fileCount = 0;
     let upload: MultipartFile | undefined;
+    let label: string | undefined;
 
     for await (const part of req.parts()) {
-      if (part.type !== "file") continue;
+      if (part.type === "field") {
+        if (part.fieldname === "label" && typeof part.value === "string") {
+          label = part.value;
+        }
+        continue;
+      }
+
       fileCount += 1;
 
       if (fileCount > 1) {
@@ -50,7 +57,7 @@ export const postArtifactFileRoute = async (app: FastifyInstance) => {
         .send({ ok: false, error: "Unsupported artifact file type" });
     }
 
-    const putInput = await makeArtifactPutInput(upload, format);
+    const putInput = await makeArtifactPutInput(upload, format, label);
     if (!putInput.ok) {
       return reply.code(400).send(putInput);
     }
@@ -83,12 +90,14 @@ export function detectArtifactFileFormat(
 export async function makeArtifactPutInput(
   part: MultipartFile,
   format: SupportedArtifactFormat,
+  label?: string,
 ): Promise<{ ok: true; value: ArtifactPutInput } | { ok: false; error: string }> {
   const buffer = await part.toBuffer();
   const text = buffer.toString("utf8");
   const index = {
     filename: part.filename,
     contentType: part.mimetype,
+    ...(label ? { label } : {}),
   };
 
   switch (format) {

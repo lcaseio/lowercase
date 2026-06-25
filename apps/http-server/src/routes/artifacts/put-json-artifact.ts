@@ -5,15 +5,16 @@ import type {
 } from "@lcase/types";
 
 export const putJsonArtifactRoute = async (app: FastifyInstance) => {
-  app.post<{ Body: PostJsonArtifactReq["body"] }>(
+  app.post<{ Body: PostJsonArtifactReq }>(
     "/json",
     async (req, reply): Promise<PostJsonArtifactRes> => {
-    const artifact = req.body;
-    const result = await app.services.artifact.putArtifact({
-      format: "json",
-      value: artifact,
-    });
-    return result;
+      const { value, label } = req.body;
+      const result = await app.services.artifact.putArtifact({
+        format: "json",
+        value,
+        ...(label ? { index: { label } } : {}),
+      });
+      return result;
     },
   );
 };

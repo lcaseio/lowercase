@@ -102,7 +102,7 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
 
         const eventDetails = `id: ${eventId}<br/>`;
         const eventSource = `source: ${events[index].source}<br/>`;
-        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
+        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3 whitespace-pre-wrap wrap-break-word">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
         return (
           `#${index} - ${label}<br/>${t}<br/>` +
           eventDetails +
@@ -359,16 +359,15 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
                   ? 14
                   : 15;
   return (
-    <div className="w-12/12 h-[800px] mb-10 bg-slate-800 caret-blue-500 rounded-lg">
+    <div className="w-12/12 h-[800px] mb-10 caret-blue-500 rounded-lg">
       <EChartsReact
         option={option}
         onEvents={{ datazoom: onDataZoom, click: onChartClick }}
         style={{
           height: "100%",
           width: "100%",
-          background: "#13293d",
         }}
-        className="p-4 rounded-xl"
+        className="p-4 rounded-xl bg-neutral-800 dark:bg-neutral-800"
       />
     </div>
   );

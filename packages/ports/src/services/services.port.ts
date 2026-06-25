@@ -1,4 +1,5 @@
 import type {
+  ArtifactIndex,
   ArtifactPutInput,
   AnyEvent,
   FlowDefinition,
@@ -10,6 +11,7 @@ import type {
   RunListItem,
   RunParams,
 } from "@lcase/types";
+import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
 import type { FlowList } from "../flow/list.type.js";
@@ -91,6 +93,7 @@ export interface WsServicePort {
 }
 
 export interface ArtifactServicePort {
-  getArtifact(hash: string): Promise<Result<JsonValue, string>>;
+  getArtifact(hash: string): Promise<AutoGetResult>;
+  listArtifacts(): Promise<ArtifactIndex[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
 }

@@ -48,13 +48,14 @@ describe("artifact file upload helpers", () => {
   it("parses a json file into a json artifact input", async () => {
     const part = makeMultipartFile('{"hello":"world"}', "data.json", "application/json");
 
-    const result = await makeArtifactPutInput(part, "json");
+    const result = await makeArtifactPutInput(part, "json", "Prompt");
     expect(result).toEqual({
       ok: true,
       value: {
         format: "json",
         value: { hello: "world" },
         index: {
+          label: "Prompt",
           filename: "data.json",
           contentType: "application/json",
         },
@@ -73,6 +74,7 @@ describe("artifact file upload helpers", () => {
     const textResult = await makeArtifactPutInput(
       makeMultipartFile("plain text", "notes.txt", "text/plain"),
       "text",
+      "Notes",
     );
 
     expect(textResult).toEqual({
@@ -81,6 +83,7 @@ describe("artifact file upload helpers", () => {
         format: "text",
         value: "plain text",
         index: {
+          label: "Notes",
           filename: "notes.txt",
           contentType: "text/plain",
         },
