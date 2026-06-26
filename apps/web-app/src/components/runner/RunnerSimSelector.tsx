@@ -13,47 +13,61 @@ import {
 } from "../ui/select";
 import { useListAllSimsQuery } from "@/redux/api/sims-api";
 
+const UNSET_VALUE = "__unset__";
+
 export function RunnerSimSelector() {
   const { data } = useListAllSimsQuery();
   const dispatch = useDispatch();
-  // const flowHash = useAppSelector((state) => state.runner.flowHash);
   const simSpecSelectedId = useAppSelector(
     (state) => state.runner.simSelectedId,
   );
   const flowSelectedId = useAppSelector((state) => state.runner.flowSelectedId);
+  const sims =
+    data?.ok === true
+      ? data.forkSpecList.filter(
+          (forkSpecListItem) => forkSpecListItem.flowDefHash === flowSelectedId,
+        )
+      : [];
+
+  if (!flowSelectedId || sims.length === 0) return null;
 
   return (
-    <div className="flex cursor-pointer">
-      <Select
-        onValueChange={(value) => {
-          dispatch(setRunnerSimSelectedId(value));
-        }}
-        value={simSpecSelectedId ?? "Select A Flow"}
-      >
-        <SelectTrigger className="w-full max-w-100">
-          <SelectValue placeholder={simSpecSelectedId ?? "Select A Flow"} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Select A Flow</SelectLabel>
-            {data?.ok === true
-              ? data.forkSpecList
-                  .filter(
-                    (forkSpecListItem) =>
-                      forkSpecListItem.flowDefHash === flowSelectedId,
-                  )
-                  .map((forkSpecListItem) => (
-                    <SelectItem
-                      value={forkSpecListItem.forkSpecHash}
-                      key={forkSpecListItem.forkSpecHash}
-                    >
-                      {forkSpecListItem.name}
-                    </SelectItem>
-                  ))
-              : ""}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+    <div className="flex items-center gap-3">
+      <div className="w-10 text-md font-medium">Sim:</div>
+      <div className="cursor-pointer">
+        <Select
+          onValueChange={(value) => {
+            dispatch(setRunnerSimSelectedId(value));
+          }}
+          value={
+            simSpecSelectedId &&
+            sims.some((sim) => sim.forkSpecHash === simSpecSelectedId)
+              ? simSpecSelectedId
+              : UNSET_VALUE
+          }
+        >
+          <SelectTrigger className="w-[26rem] max-w-full">
+            <SelectValue placeholder="Select A Sim (Optional)" />
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            className="w-[var(--radix-select-trigger-width)]"
+          >
+            <SelectGroup>
+              <SelectLabel>Select A Sim (Optional)</SelectLabel>
+              <SelectItem value={UNSET_VALUE}>None</SelectItem>
+              {sims.map((forkSpecListItem) => (
+                <SelectItem
+                  value={forkSpecListItem.forkSpecHash}
+                  key={forkSpecListItem.forkSpecHash}
+                >
+                  {forkSpecListItem.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
