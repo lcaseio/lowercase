@@ -37,7 +37,7 @@ export function ArtifactViewer({ hash }: Props) {
         <span className="font-semibold">Format: </span>
         {artifact.data.format}
       </p>
-      <pre className="text-sm whitespace-pre-wrap break-words rounded-md bg-slate-100 p-4 dark:bg-neutral-800">
+      <pre className="text-sm whitespace-pre-wrap wrap-break-word rounded-md bg-slate-100 p-4 dark:bg-neutral-800">
         {artifact.data.format === "json"
           ? JSON.stringify(artifact.data.value, null, 2)
           : artifact.data.value}
