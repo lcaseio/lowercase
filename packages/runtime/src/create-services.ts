@@ -11,6 +11,7 @@ import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
 import { FlowStoreFs } from "@lcase/adapters/flow-store";
 import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
+import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { ServicesPort } from "@lcase/ports";
 import path from "node:path";
 import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
@@ -18,6 +19,7 @@ import { FsArtifactIndexStore } from "@lcase/adapters/artifact-index-store";
 // import { FsRunParamsIndexStore } from "@lcase/adapters/run-params-index-store";
 import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
 import { FlowIndex, ForkSpec, ForkSpecIndex, RunIndex } from "@lcase/types";
+import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
@@ -50,6 +52,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     new FlowStoreFs(),
     ctx.artifacts,
     flowIndexStore,
+    new PrismaFlowRepository(prisma),
   );
 
   const replay = new ReplayService(ctx.replay);

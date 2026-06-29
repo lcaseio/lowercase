@@ -1,5 +1,6 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
+import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
@@ -49,6 +50,7 @@ import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
 import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
 import { FlowIndex, ForkSpecIndex, RunIndex } from "@lcase/types";
+import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
@@ -63,6 +65,7 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     new FsJsonIndexStore<FlowIndex>({
       dir: path.join(process.cwd(), "lcase-db/flows/index"),
     }),
+    new PrismaFlowRepository(prisma),
   );
 
   const forkSpecIndexStore = new FsJsonIndexStore<ForkSpecIndex>({

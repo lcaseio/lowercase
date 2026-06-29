@@ -5,9 +5,15 @@ import type {
   FlowServicePort,
   ArtifactsPort,
   FlowIndexStorePort,
+  FlowRepositoryPort,
   IndexStorePort,
 } from "@lcase/ports";
-import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
+import type {
+  CreateFlowRecordResult,
+  FlowDefinition,
+  FlowIndex,
+  Result,
+} from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
 import { FlowSchema, parseFlow } from "@lcase/specs";
 import { createHash } from "crypto";
@@ -23,6 +29,7 @@ export class FlowService implements FlowServicePort {
     private readonly flowStore: FlowStorePort,
     private readonly artifacts: ArtifactsPort,
     private readonly flowIndexStore: IndexStorePort<FlowIndex>,
+    private readonly flowRepository?: FlowRepositoryPort,
   ) {}
 
   async startFlow(args: { absoluteFilePath?: string }): Promise<void> {
@@ -177,6 +184,30 @@ export class FlowService implements FlowServicePort {
 
     if (!flowIndexResult.ok) return { ...flowIndexResult };
     return { ok: true, value: flowIndex };
+  }
+
+  async addFlowSql(
+    flow: string | FlowDefinition,
+  ): Promise<Result<CreateFlowRecordResult, string>> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const validateResult = this.validateJsonFlow(flow);
+    if (typeof validateResult === "string") {
+      return { ok: false, error: validateResult };
+    }
+
+    const hash = await addFlowToCas(validateResult, this.artifacts);
+    if (!hash) return { ok: false, error: "Error adding flow to CAS" };
+
+    return this.flowRepository.createFlow({
+      name: validateResult.name,
+      description: validateResult.description,
+      definitionHash: hash,
+      versionLabel: validateResult.version,
+      versionDescription: validateResult.description,
+    });
   }
 
   makeId(name: string, version: string, path?: string, p0?: {}): string {
