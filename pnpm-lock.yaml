@@ -158,12 +158,30 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
     devDependencies:
+      '@lcase/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
+      '@lcase/artifacts':
+        specifier: workspace:*
+        version: link:../../packages/artifacts
+      '@lcase/db-prisma':
+        specifier: workspace:*
+        version: link:../../packages/db-prisma
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../packages/events
       '@lcase/ports':
         specifier: workspace:*
         version: link:../../packages/ports
+      '@lcase/services':
+        specifier: workspace:*
+        version: link:../../packages/services
       '@lcase/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@prisma/adapter-better-sqlite3':
+        specifier: ^7.8.0
+        version: 7.8.0
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
