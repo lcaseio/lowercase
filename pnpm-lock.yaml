@@ -390,6 +390,9 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      '@prisma/adapter-better-sqlite3':
+        specifier: ^7.8.0
+        version: 7.8.0
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -593,6 +596,9 @@ importers:
       '@lcase/artifacts':
         specifier: workspace:*
         version: link:../artifacts
+      '@lcase/db-prisma':
+        specifier: workspace:*
+        version: link:../db-prisma
       '@lcase/engine':
         specifier: workspace:*
         version: link:../engine
@@ -708,9 +714,6 @@ importers:
 
   packages/use-cases/run-flow:
     devDependencies:
-      '@lcase/db-prisma':
-        specifier: workspace:*
-        version: link:../../db-prisma
       '@lcase/ports':
         specifier: workspace:*
         version: link:../../ports

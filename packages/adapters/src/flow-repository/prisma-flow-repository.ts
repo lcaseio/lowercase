@@ -53,16 +53,20 @@ export class PrismaFlowRepository implements FlowRepositoryPort {
     input: CreateFlowRecordInput,
   ): Promise<Result<CreateFlowRecordResult, string>> {
     try {
+      const createdAt = new Date();
       const created = await this.db.flow.create({
         data: {
           name: input.name,
           description: input.description,
+          createdAt,
+          updatedAt: createdAt,
           versions: {
             create: {
               sequence: 1,
               definitionHash: input.definitionHash,
               versionLabel: input.versionLabel,
               description: input.versionDescription,
+              createdAt,
             },
           },
         },
@@ -109,7 +113,7 @@ export class PrismaFlowRepository implements FlowRepositoryPort {
 
   async listFlows(): Promise<FlowRecord[]> {
     const flows = await this.db.flow.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
     return flows.map(toFlowRecord);
   }

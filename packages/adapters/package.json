@@ -82,6 +82,7 @@
   "devDependencies": {
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
     "vitest": "^3.2.4"
   }
 }

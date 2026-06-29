@@ -1,137 +1,61 @@
-import { describe, expect, it } from "vitest";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "@lcase/db-prisma";
 import { PrismaFlowRepository } from "../../src/flow-repository/prisma-flow-repository.js";
 
-type FlowRow = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+async function applySqlFile(
+  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
+  filePath: string,
+) {
+  const sql = await fs.readFile(filePath, "utf8");
+  const statements = sql
+    .split(";")
+    .map((statement) => statement.trim())
+    .filter((statement) => statement.length > 0);
 
-type FlowVersionRow = {
-  id: string;
-  flowId: string;
-  sequence: number;
-  definitionHash: string;
-  versionLabel: string | null;
-  description: string | null;
-  createdAt: Date;
-};
-
-function makeFakeDb() {
-  const flows: FlowRow[] = [];
-  const versions: FlowVersionRow[] = [];
-  let flowCounter = 0;
-  let versionCounter = 0;
-
-  return {
-    flow: {
-      async create(args: {
-        data: {
-          name: string;
-          description?: string;
-          versions: {
-            create: {
-              sequence: number;
-              definitionHash: string;
-              versionLabel?: string;
-              description?: string;
-            };
-          };
-        };
-        include: {
-          versions: {
-            orderBy: { sequence: "asc" | "desc" };
-            take: number;
-          };
-        };
-      }) {
-        const now = new Date(Date.UTC(2026, 5, 27, 0, 0, flowCounter));
-        const flow: FlowRow = {
-          id: `flow_${++flowCounter}`,
-          name: args.data.name,
-          description: args.data.description ?? null,
-          createdAt: now,
-          updatedAt: now,
-        };
-        const version: FlowVersionRow = {
-          id: `version_${++versionCounter}`,
-          flowId: flow.id,
-          sequence: args.data.versions.create.sequence,
-          definitionHash: args.data.versions.create.definitionHash,
-          versionLabel: args.data.versions.create.versionLabel ?? null,
-          description: args.data.versions.create.description ?? null,
-          createdAt: now,
-        };
-        flows.push(flow);
-        versions.push(version);
-        return {
-          ...flow,
-          versions: [version],
-        };
-      },
-      async findUnique(args: { where: { id: string } }) {
-        return flows.find((flow) => flow.id === args.where.id) ?? null;
-      },
-      async findMany(args: { orderBy: { createdAt: "asc" | "desc" } }) {
-        return [...flows].sort((left, right) =>
-          args.orderBy.createdAt === "desc"
-            ? right.createdAt.getTime() - left.createdAt.getTime()
-            : left.createdAt.getTime() - right.createdAt.getTime(),
-        );
-      },
-    },
-    flowVersion: {
-      async findMany(args: {
-        where: { flowId: string };
-        orderBy: { sequence: "asc" | "desc" };
-      }) {
-        return versions
-          .filter((version) => version.flowId === args.where.flowId)
-          .sort((left, right) =>
-            args.orderBy.sequence === "asc"
-              ? left.sequence - right.sequence
-              : right.sequence - left.sequence,
-          );
-      },
-      async findUnique(args: {
-        where: { id: string };
-        select?: { definitionHash: true };
-      }) {
-        const version =
-          versions.find((item) => item.id === args.where.id) ?? null;
-        if (!version || !args.select) return version;
-        return { definitionHash: version.definitionHash };
-      },
-      async create(args: {
-        data: {
-          flowId: string;
-          sequence: number;
-          definitionHash: string;
-          versionLabel?: string;
-        };
-      }) {
-        const version: FlowVersionRow = {
-          id: `version_${++versionCounter}`,
-          flowId: args.data.flowId,
-          sequence: args.data.sequence,
-          definitionHash: args.data.definitionHash,
-          versionLabel: args.data.versionLabel ?? null,
-          description: null,
-          createdAt: new Date(Date.UTC(2026, 5, 27, 0, 0, versionCounter)),
-        };
-        versions.push(version);
-        return version;
-      },
-    },
-  };
+  for (const statement of statements) {
+    await prisma.$executeRawUnsafe(statement);
+  }
 }
 
 describe("PrismaFlowRepository", () => {
-  it("creates a stable flow with its first version", async () => {
-    const repository = new PrismaFlowRepository(makeFakeDb() as never);
+  let tmpDir: string;
+  let prisma: PrismaClient;
+  let repository: PrismaFlowRepository;
 
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-flow-repo-"));
+    const dbPath = path.join(tmpDir, "test.sqlite");
+    const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
+    prisma = new PrismaClient({ adapter });
+
+    await applySqlFile(
+      prisma,
+      path.resolve(
+        process.cwd(),
+        "../db-prisma/prisma/migrations/20260617124320_init/migration.sql",
+      ),
+    );
+    await applySqlFile(
+      prisma,
+      path.resolve(
+        process.cwd(),
+        "../db-prisma/prisma/migrations/20260627130000_flow_versions/migration.sql",
+      ),
+    );
+
+    repository = new PrismaFlowRepository(prisma);
+  });
+
+  afterEach(async () => {
+    await prisma.$disconnect();
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("creates a stable flow with its first version", async () => {
     const result = await repository.createFlow({
       name: "Prompt Flow",
       description: "Reusable prompt flow",
@@ -152,8 +76,6 @@ describe("PrismaFlowRepository", () => {
   });
 
   it("lists flows newest first", async () => {
-    const repository = new PrismaFlowRepository(makeFakeDb() as never);
-
     const first = await repository.createFlow({
       name: "First Flow",
       definitionHash: "a".repeat(64),
@@ -173,9 +95,6 @@ describe("PrismaFlowRepository", () => {
   });
 
   it("lists versions ordered by sequence", async () => {
-    const db = makeFakeDb();
-    const repository = new PrismaFlowRepository(db as never);
-
     const created = await repository.createFlow({
       name: "Versioned Flow",
       definitionHash: "a".repeat(64),
@@ -184,7 +103,7 @@ describe("PrismaFlowRepository", () => {
     expect(created.ok).toBe(true);
     if (!created.ok) return;
 
-    await db.flowVersion.create({
+    await prisma.flowVersion.create({
       data: {
         flowId: created.value.flow.id,
         sequence: 2,
@@ -202,8 +121,6 @@ describe("PrismaFlowRepository", () => {
   });
 
   it("resolves a version to its definition hash", async () => {
-    const repository = new PrismaFlowRepository(makeFakeDb() as never);
-
     const created = await repository.createFlow({
       name: "Hash Flow",
       definitionHash: "c".repeat(64),
