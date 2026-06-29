@@ -16,6 +16,11 @@ import { EmitterFactory } from "@lcase/events";
 import { FlowService } from "@lcase/services";
 import type { IndexStorePort } from "@lcase/ports";
 import type { FlowDefinition, FlowIndex } from "@lcase/types";
+import {
+  getSqlFlowVersionRoute,
+  listSqlFlowsRoute,
+  listSqlFlowVersionsRoute,
+} from "../src/routes/flows/sql/get.js";
 import { postSqlFlowsRoute } from "../src/routes/flows/sql/post.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -112,7 +117,10 @@ describe("sql flow routes", () => {
       flow: flowService,
     });
 
-    await app.register(postSqlFlowsRoute);
+    await app.register(listSqlFlowsRoute, { prefix: "/api/flows/sql" });
+    await app.register(listSqlFlowVersionsRoute, { prefix: "/api/flows/sql" });
+    await app.register(getSqlFlowVersionRoute, { prefix: "/api/flows/sql" });
+    await app.register(postSqlFlowsRoute, { prefix: "/api/flows/sql" });
 
     const flowDefinition: FlowDefinition = {
       name: "Prompt Flow",
@@ -129,7 +137,7 @@ describe("sql flow routes", () => {
 
     const response = await app.inject({
       method: "POST",
-      url: "/",
+      url: "/api/flows/sql",
       payload: flowDefinition,
     });
 
@@ -172,6 +180,88 @@ describe("sql flow routes", () => {
     if (artifact.ok) {
       expect(artifact.value).toEqual(flowDefinition);
     }
+
+    const listResponse = await app.inject({
+      method: "GET",
+      url: "/api/flows/sql",
+    });
+    expect(listResponse.statusCode).toBe(200);
+    expect(listResponse.json()).toEqual({
+      ok: true,
+      value: [
+        {
+          flow: expect.objectContaining({
+            id: body.value.flow.id,
+            name: "Prompt Flow",
+            description: "Reusable flow",
+          }),
+          latestVersion: expect.objectContaining({
+            id: body.value.version.id,
+            flowId: body.value.flow.id,
+            sequence: 1,
+            definitionHash: body.value.version.definitionHash,
+            versionLabel: "v1",
+          }),
+        },
+      ],
+    });
+
+    const versionsResponse = await app.inject({
+      method: "GET",
+      url: `/api/flows/sql/${body.value.flow.id}/versions`,
+    });
+    expect(versionsResponse.statusCode).toBe(200);
+    expect(versionsResponse.json()).toEqual({
+      ok: true,
+      value: [
+        expect.objectContaining({
+          id: body.value.version.id,
+          flowId: body.value.flow.id,
+          sequence: 1,
+          definitionHash: body.value.version.definitionHash,
+          versionLabel: "v1",
+        }),
+      ],
+    });
+
+    const versionResponse = await app.inject({
+      method: "GET",
+      url: `/api/flows/sql/versions/${body.value.version.id}`,
+    });
+    expect(versionResponse.statusCode).toBe(200);
+    expect(versionResponse.json()).toEqual({
+      ok: true,
+      value: {
+        version: expect.objectContaining({
+          id: body.value.version.id,
+          flowId: body.value.flow.id,
+          sequence: 1,
+          definitionHash: body.value.version.definitionHash,
+          versionLabel: "v1",
+        }),
+        definition: flowDefinition,
+      },
+    });
+
+    const missingVersionsResponse = await app.inject({
+      method: "GET",
+      url: "/api/flows/sql/missing-flow/versions",
+    });
+    expect(missingVersionsResponse.statusCode).toBe(200);
+    expect(missingVersionsResponse.json()).toEqual({
+      ok: false,
+      error: "Flow not found: missing-flow",
+    });
+
+    const missingVersionResponse = await app.inject({
+      method: "GET",
+      url: "/api/flows/sql/versions/missing-version",
+    });
+    expect(missingVersionResponse.statusCode).toBe(200);
+    expect(missingVersionResponse.json()).toEqual({
+      ok: false,
+      error: "Flow version not found: missing-version",
+    });
 
     await app.close();
   });

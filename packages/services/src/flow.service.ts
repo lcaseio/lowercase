@@ -12,6 +12,9 @@ import type {
   CreateFlowRecordResult,
   FlowDefinition,
   FlowIndex,
+  GetSqlFlowsRes,
+  GetSqlFlowVersionRes,
+  GetSqlFlowVersionsRes,
   Result,
 } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
@@ -208,6 +211,49 @@ export class FlowService implements FlowServicePort {
       versionLabel: validateResult.version,
       versionDescription: validateResult.description,
     });
+  }
+
+  async getAllFlowRecordsSql(): Promise<GetSqlFlowsRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const flows = await this.flowRepository.listFlowsWithLatestVersion();
+    return { ok: true, value: flows };
+  }
+
+  async getFlowVersionsSql(flowId: string): Promise<GetSqlFlowVersionsRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const flowResult = await this.flowRepository.getFlow(flowId);
+    if (!flowResult.ok) return flowResult;
+
+    const versions = await this.flowRepository.listFlowVersions(flowId);
+    return { ok: true, value: versions };
+  }
+
+  async getFlowVersionDefSql(
+    flowVersionId: string,
+  ): Promise<GetSqlFlowVersionRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const versionResult = await this.flowRepository.getFlowVersion(flowVersionId);
+    if (!versionResult.ok) return versionResult;
+
+    const definitionResult = await this.getFlowDef(versionResult.value.definitionHash);
+    if (!definitionResult.ok) return definitionResult;
+
+    return {
+      ok: true,
+      value: {
+        version: versionResult.value,
+        definition: definitionResult.value,
+      },
+    };
   }
 
   makeId(name: string, version: string, path?: string, p0?: {}): string {

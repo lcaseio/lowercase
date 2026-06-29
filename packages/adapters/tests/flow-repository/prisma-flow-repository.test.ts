@@ -94,6 +94,31 @@ describe("PrismaFlowRepository", () => {
     expect(flows.map((flow) => flow.name)).toEqual(["Second Flow", "First Flow"]);
   });
 
+  it("lists flows with latest version summary", async () => {
+    const created = await repository.createFlow({
+      name: "Prompt Flow",
+      definitionHash: "a".repeat(64),
+      versionLabel: "v1",
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    await prisma.flowVersion.create({
+      data: {
+        flowId: created.value.flow.id,
+        sequence: 2,
+        definitionHash: "b".repeat(64),
+        versionLabel: "v2",
+      },
+    });
+
+    const flows = await repository.listFlowsWithLatestVersion();
+    expect(flows).toHaveLength(1);
+    expect(flows[0]?.flow.name).toBe("Prompt Flow");
+    expect(flows[0]?.latestVersion.sequence).toBe(2);
+    expect(flows[0]?.latestVersion.definitionHash).toBe("b".repeat(64));
+  });
+
   it("lists versions ordered by sequence", async () => {
     const created = await repository.createFlow({
       name: "Versioned Flow",
@@ -133,5 +158,21 @@ describe("PrismaFlowRepository", () => {
       created.value.version.id,
     );
     expect(hash).toEqual({ ok: true, value: "c".repeat(64) });
+  });
+
+  it("gets version metadata by id", async () => {
+    const created = await repository.createFlow({
+      name: "Version Flow",
+      definitionHash: "d".repeat(64),
+      versionLabel: "v1",
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const version = await repository.getFlowVersion(created.value.version.id);
+    expect(version).toEqual({
+      ok: true,
+      value: created.value.version,
+    });
   });
 });

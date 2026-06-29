@@ -1,5 +1,7 @@
 import type { PrismaClient } from "@lcase/db-prisma";
 import type {
+  FlowLatestVersionSummary,
+  SqlFlowListItem,
   CreateFlowRecordInput,
   CreateFlowRecordResult,
   FlowRecord,
@@ -35,6 +37,26 @@ function toFlowVersionRecord(version: {
   description: string | null;
   createdAt: Date;
 }): FlowVersionRecord {
+  return {
+    id: version.id,
+    flowId: version.flowId,
+    sequence: version.sequence,
+    definitionHash: version.definitionHash,
+    versionLabel: version.versionLabel ?? undefined,
+    description: version.description ?? undefined,
+    createdAt: version.createdAt.toISOString(),
+  };
+}
+
+function toLatestVersionSummary(version: {
+  id: string;
+  flowId: string;
+  sequence: number;
+  definitionHash: string;
+  versionLabel: string | null;
+  description: string | null;
+  createdAt: Date;
+}): FlowLatestVersionSummary {
   return {
     id: version.id,
     flowId: version.flowId,
@@ -118,12 +140,58 @@ export class PrismaFlowRepository implements FlowRepositoryPort {
     return flows.map(toFlowRecord);
   }
 
+  async listFlowsWithLatestVersion(): Promise<SqlFlowListItem[]> {
+    const flows = await this.db.flow.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      include: {
+        versions: {
+          orderBy: [{ sequence: "desc" }],
+          take: 1,
+        },
+      },
+    });
+
+    return flows.flatMap((flow) => {
+      const latestVersion = flow.versions[0];
+      if (!latestVersion) return [];
+      return [
+        {
+          flow: toFlowRecord(flow),
+          latestVersion: toLatestVersionSummary(latestVersion),
+        },
+      ];
+    });
+  }
+
   async listFlowVersions(flowId: string): Promise<FlowVersionRecord[]> {
     const versions = await this.db.flowVersion.findMany({
       where: { flowId },
       orderBy: { sequence: "asc" },
     });
     return versions.map(toFlowVersionRecord);
+  }
+
+  async getFlowVersion(
+    flowVersionId: string,
+  ): Promise<Result<FlowVersionRecord, string>> {
+    try {
+      const version = await this.db.flowVersion.findUnique({
+        where: { id: flowVersionId },
+      });
+      if (!version) {
+        return {
+          ok: false,
+          error: `Flow version not found: ${flowVersionId}`,
+        };
+      }
+
+      return { ok: true, value: toFlowVersionRecord(version) };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Unable to read flow version: ${String(error)}`,
+      };
+    }
   }
 
   async getFlowVersionDefinitionHash(

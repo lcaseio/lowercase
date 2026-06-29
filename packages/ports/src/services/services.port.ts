@@ -2,6 +2,9 @@ import type {
   ArtifactIndex,
   ArtifactPutInput,
   AnyEvent,
+  GetSqlFlowsRes,
+  GetSqlFlowVersionRes,
+  GetSqlFlowVersionsRes,
   FlowDefinition,
   CreateFlowRecordResult,
   FlowIndex,
@@ -59,6 +62,9 @@ export interface FlowServicePort {
   addFlowSql(
     flow: string | FlowDefinition,
   ): Promise<Result<CreateFlowRecordResult, string>>;
+  getAllFlowRecordsSql(): Promise<GetSqlFlowsRes>;
+  getFlowVersionsSql(flowId: string): Promise<GetSqlFlowVersionsRes>;
+  getFlowVersionDefSql(flowVersionId: string): Promise<GetSqlFlowVersionRes>;
   getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
   getFlowDef(hash: string): Promise<Result<FlowDefinition, string>>;
 }
