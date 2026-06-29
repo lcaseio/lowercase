@@ -13,9 +13,25 @@ datasource db {
 }
 
 model Flow {
-  id  Int   @id @default(autoincrement())
-  name String
-  version String
-  hash String
+  id          String        @id @default(cuid())
+  name        String
   description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  versions    FlowVersion[]
+}
+
+model FlowVersion {
+  id             String   @id @default(cuid())
+  flowId         String
+  sequence       Int
+  definitionHash String
+  versionLabel   String?
+  description    String?
+  createdAt      DateTime @default(now())
+
+  flow Flow @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([flowId, sequence])
+  @@index([flowId])
 }

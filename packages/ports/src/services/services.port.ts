@@ -3,6 +3,7 @@ import type {
   ArtifactPutInput,
   AnyEvent,
   FlowDefinition,
+  CreateFlowRecordResult,
   FlowIndex,
   ForkSpec,
   ForkSpecIndex,
@@ -55,6 +56,9 @@ export interface FlowServicePort {
   ): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
   addFlow(flow: string | FlowDefinition): Promise<Result<FlowIndex, string>>;
+  addFlowSql(
+    flow: string | FlowDefinition,
+  ): Promise<Result<CreateFlowRecordResult, string>>;
   getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
   getFlowDef(hash: string): Promise<Result<FlowDefinition, string>>;
 }

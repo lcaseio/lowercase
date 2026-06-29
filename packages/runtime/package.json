@@ -28,7 +28,8 @@
     "@lcase/services": "workspace:*",
     "@lcase/replay": "workspace:*",
     "@lcase/limiter": "workspace:*",
-    "@lcase/artifacts": "workspace:*"
+    "@lcase/artifacts": "workspace:*",
+    "@lcase/db-prisma": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

@@ -38,6 +38,7 @@ export * from "./tool/tool.types.js";
 
 export * from "./worker/metadata.js";
 export * from "./flow-analysis/types.js";
+export * from "./flow/flow-record.js";
 
 export * from "./engine/fork-spec.type.js";
 export * from "./engine/run-context.js";

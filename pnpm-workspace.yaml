@@ -11,3 +11,4 @@ onlyBuiltDependencies:
   - electron
   - esbuild
   - "@esbuild/*"
+  - better-sqlite3
