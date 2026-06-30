@@ -1,5 +1,5 @@
-import { FlowDefinition, PostJsonFlowReq, PostJsonFlowRes } from "@lcase/types";
+import { FlowDefinition, PostFlowReq, PostFlowRes } from "@lcase/types";
 
 export interface ClientApiPort {
-  postJsonFlow(json: FlowDefinition): Promise<PostJsonFlowRes>;
+  postJsonFlow(json: FlowDefinition): Promise<PostFlowRes>;
 }

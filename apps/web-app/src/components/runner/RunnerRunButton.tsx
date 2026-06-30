@@ -4,20 +4,24 @@ import { useRequestRunMutation } from "@/redux/api/runs-api";
 import { setEventGraphRunId } from "@/redux/slices/runner-slice";
 
 type Props = {
+  flowDefHash?: string | null;
   params?: Record<string, string>;
   disabled?: boolean;
 };
 
-export function RunnerRunButton({ params, disabled = false }: Props) {
-  const flowSelectedId = useAppSelector((state) => state.runner.flowSelectedId);
+export function RunnerRunButton({
+  flowDefHash,
+  params,
+  disabled = false,
+}: Props) {
   const simSelectedId = useAppSelector((state) => state.runner.simSelectedId);
 
   const [requestRun] = useRequestRunMutation();
   const dispatch = useAppDispatch();
   const handleRun = async () => {
-    if (!flowSelectedId) return;
+    if (!flowDefHash) return;
     const result = await requestRun({
-      flowDefHash: flowSelectedId,
+      flowDefHash,
       ...(simSelectedId ? { forkSpecHash: simSelectedId } : {}),
       ...(params && Object.keys(params).length > 0 ? { params } : {}),
     });
@@ -31,7 +35,7 @@ export function RunnerRunButton({ params, disabled = false }: Props) {
       className="mt-1 ml-13 cursor-pointer bg-green-200 dark:bg-green-900 w-1/8"
       variant="outline"
       onClick={handleRun}
-      disabled={disabled || flowSelectedId === null || flowSelectedId === ""}
+      disabled={disabled || !flowDefHash}
       style={{}}
     >
       Run

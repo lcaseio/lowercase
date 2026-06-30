@@ -4,17 +4,14 @@ import type {
   FlowList,
   FlowServicePort,
   ArtifactsPort,
-  FlowIndexStorePort,
   FlowRepositoryPort,
-  IndexStorePort,
 } from "@lcase/ports";
 import type {
   CreateFlowRecordResult,
   FlowDefinition,
-  FlowIndex,
-  GetSqlFlowsRes,
-  GetSqlFlowVersionRes,
-  GetSqlFlowVersionsRes,
+  GetFlowsRes,
+  GetFlowVersionRes,
+  GetFlowVersionsRes,
   Result,
 } from "@lcase/types";
 import { EmitterFactory } from "@lcase/events";
@@ -22,7 +19,7 @@ import { FlowSchema, parseFlow } from "@lcase/specs";
 import { createHash } from "crypto";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { addFlowIndex, addFlowToCas, readFlowFile } from "@lcase/run-flow";
+import { addFlowToCas, readFlowFile } from "@lcase/run-flow";
 import { analyzeFlow } from "@lcase/flow-analysis";
 
 export class FlowService implements FlowServicePort {
@@ -31,7 +28,6 @@ export class FlowService implements FlowServicePort {
     private readonly ef: EmitterFactory,
     private readonly flowStore: FlowStorePort,
     private readonly artifacts: ArtifactsPort,
-    private readonly flowIndexStore: IndexStorePort<FlowIndex>,
     private readonly flowRepository?: FlowRepositoryPort,
   ) {}
 
@@ -105,13 +101,6 @@ export class FlowService implements FlowServicePort {
     return flowList;
   }
 
-  async getAllFlowIndexes(): Promise<Result<FlowIndex[], string>> {
-    const indexes = await this.flowIndexStore.getAll();
-    if (indexes.length === 0)
-      return { ok: false, error: "No flow indexes found" };
-    return { ok: true, value: indexes };
-  }
-
   validateJsonFlow(
     flow: string | Record<string, unknown>,
   ): FlowDefinition | string {
@@ -156,7 +145,31 @@ export class FlowService implements FlowServicePort {
     }
   }
 
-  async getFlowDef(hash: string): Promise<Result<FlowDefinition, string>> {
+  async getFlowDef(
+    flowIdOrHash: string,
+  ): Promise<Result<FlowDefinition, string>> {
+    if (this.flowRepository) {
+      const flowResult = await this.flowRepository.getFlow(flowIdOrHash);
+      if (flowResult.ok) {
+        const versions =
+          await this.flowRepository.listFlowVersions(flowIdOrHash);
+        const latestVersion = versions.at(-1);
+        if (!latestVersion) {
+          return {
+            ok: false,
+            error: `No flow versions found for flow: ${flowIdOrHash}`,
+          };
+        }
+        return this.getFlowDefByHash(latestVersion.definitionHash);
+      }
+    }
+
+    return this.getFlowDefByHash(flowIdOrHash);
+  }
+
+  private async getFlowDefByHash(
+    hash: string,
+  ): Promise<Result<FlowDefinition, string>> {
     const result = await this.artifacts.getJson(hash);
     if (!result.ok) return { ok: result.ok, error: result.error.message };
 
@@ -166,31 +179,6 @@ export class FlowService implements FlowServicePort {
 
   async addFlow(
     flow: string | Record<string, unknown>,
-  ): Promise<Result<FlowIndex, string>> {
-    // const parseResult = parseFlow(json);
-
-    const validateResult = this.validateJsonFlow(flow);
-    if (typeof validateResult === "string") {
-      return { ok: false, error: validateResult };
-    }
-
-    const hash = await addFlowToCas(validateResult, this.artifacts);
-    if (!hash) return { ok: false, error: "Error adding flow to CAS" };
-
-    const flowIndex: FlowIndex = {
-      name: validateResult.name,
-      version: validateResult.version,
-      hash,
-      description: validateResult.description,
-    };
-    const flowIndexResult = await addFlowIndex(flowIndex, this.flowIndexStore);
-
-    if (!flowIndexResult.ok) return { ...flowIndexResult };
-    return { ok: true, value: flowIndex };
-  }
-
-  async addFlowSql(
-    flow: string | FlowDefinition,
   ): Promise<Result<CreateFlowRecordResult, string>> {
     if (!this.flowRepository) {
       return { ok: false, error: "Flow repository not configured" };
@@ -213,7 +201,7 @@ export class FlowService implements FlowServicePort {
     });
   }
 
-  async getAllFlowRecordsSql(): Promise<GetSqlFlowsRes> {
+  async getAllFlows(): Promise<GetFlowsRes> {
     if (!this.flowRepository) {
       return { ok: false, error: "Flow repository not configured" };
     }
@@ -222,7 +210,7 @@ export class FlowService implements FlowServicePort {
     return { ok: true, value: flows };
   }
 
-  async getFlowVersionsSql(flowId: string): Promise<GetSqlFlowVersionsRes> {
+  async getFlowVersions(flowId: string): Promise<GetFlowVersionsRes> {
     if (!this.flowRepository) {
       return { ok: false, error: "Flow repository not configured" };
     }
@@ -234,17 +222,18 @@ export class FlowService implements FlowServicePort {
     return { ok: true, value: versions };
   }
 
-  async getFlowVersionDefSql(
-    flowVersionId: string,
-  ): Promise<GetSqlFlowVersionRes> {
+  async getFlowVersionDef(flowVersionId: string): Promise<GetFlowVersionRes> {
     if (!this.flowRepository) {
       return { ok: false, error: "Flow repository not configured" };
     }
 
-    const versionResult = await this.flowRepository.getFlowVersion(flowVersionId);
+    const versionResult =
+      await this.flowRepository.getFlowVersion(flowVersionId);
     if (!versionResult.ok) return versionResult;
 
-    const definitionResult = await this.getFlowDef(versionResult.value.definitionHash);
+    const definitionResult = await this.getFlowDefByHash(
+      versionResult.value.definitionHash,
+    );
     if (!definitionResult.ok) return definitionResult;
 
     return {

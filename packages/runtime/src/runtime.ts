@@ -62,9 +62,6 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
-    new FsJsonIndexStore<FlowIndex>({
-      dir: path.join(process.cwd(), "lcase-db/flows/index"),
-    }),
     new PrismaFlowRepository(prisma),
   );
 

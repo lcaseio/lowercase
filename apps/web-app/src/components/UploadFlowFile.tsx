@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useUploadFlowFileMutation } from "../redux/api/flows-api";
-import type { FlowList } from "@lcase/ports";
 import { Button } from "./ui/button";
 
 export function UploadFlowFile() {
   const [uploadFlowFile, uploadState] = useUploadFlowFileMutation();
 
   const [files, setFiles] = useState<File[]>([]);
-  const [uploadRes, setUploadRes] = useState<FlowList | string>("");
+  const [uploadRes, setUploadRes] = useState<string>("");
 
   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;

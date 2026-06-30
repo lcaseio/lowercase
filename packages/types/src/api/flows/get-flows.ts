@@ -2,7 +2,7 @@ import type { FlowDefinition } from "../../flow/flow-definition.js";
 import type {
   FlowRecord,
   FlowVersionRecord,
-} from "../../flow/flow-record.js";
+} from "../../db-sql/flow-record.js";
 import type { Result } from "../../result.type.js";
 
 export type FlowLatestVersionSummary = {
@@ -15,18 +15,19 @@ export type FlowLatestVersionSummary = {
   createdAt: string;
 };
 
-export type SqlFlowListItem = {
+export type FlowListItem = {
   flow: FlowRecord;
   latestVersion: FlowLatestVersionSummary;
 };
 
-export type GetSqlFlowsRes = Result<SqlFlowListItem[], string>;
+// http response shapes
+export type GetFlowsRes = Result<FlowListItem[], string>;
 
-export type GetSqlFlowVersionsRes = Result<FlowVersionRecord[], string>;
+export type GetFlowVersionsRes = Result<FlowVersionRecord[], string>;
 
-export type SqlFlowVersionDefinition = {
+export type FlowVersionDefinition = {
   version: FlowVersionRecord;
   definition: FlowDefinition;
 };
 
-export type GetSqlFlowVersionRes = Result<SqlFlowVersionDefinition, string>;
+export type GetFlowVersionRes = Result<FlowVersionDefinition, string>;

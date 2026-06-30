@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
@@ -16,12 +17,14 @@ import { EmitterFactory } from "@lcase/events";
 import { FlowService } from "@lcase/services";
 import type { IndexStorePort } from "@lcase/ports";
 import type { FlowDefinition, FlowIndex } from "@lcase/types";
+import { postFlowsRoute } from "../src/routes/flows/post.js";
+import { postFlowsFilesRoute } from "../src/routes/flows/files/post.js";
+import { getFlowDefRoute } from "../src/routes/flows/get-flow-def.js";
+import { listFlowsRoute } from "../src/routes/flows/get.js";
 import {
-  getSqlFlowVersionRoute,
-  listSqlFlowsRoute,
-  listSqlFlowVersionsRoute,
-} from "../src/routes/flows/sql/get.js";
-import { postSqlFlowsRoute } from "../src/routes/flows/sql/post.js";
+  getFlowVersionRoute,
+  listFlowVersionsRoute,
+} from "../src/routes/flows/get-versions.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../..");
@@ -41,7 +44,7 @@ async function applySqlFile(
   }
 }
 
-describe("sql flow routes", () => {
+describe("flow routes", () => {
   let tmpDir: string;
   let artifactDir: string;
   let flowIndexDir: string;
@@ -77,7 +80,7 @@ describe("sql flow routes", () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("creates a flow through the real sql application path", async () => {
+  it("uses the main flow routes with SQL-backed metadata", async () => {
     const artifactIndexStore = new FsArtifactIndexStore(artifactDir);
     await artifactIndexStore.init();
 
@@ -90,7 +93,10 @@ describe("sql flow routes", () => {
     const flowIndexStore: IndexStorePort<FlowIndex> = {
       async init() {},
       async put() {
-        return { ok: true, value: path.join(flowIndexDir, "unused.index.json") };
+        return {
+          ok: true,
+          value: path.join(flowIndexDir, "unused.index.json"),
+        };
       },
       async get() {
         return undefined;
@@ -108,19 +114,21 @@ describe("sql flow routes", () => {
       ef,
       new FlowStoreFs(),
       artifacts,
-      flowIndexStore,
       new PrismaFlowRepository(prisma),
     );
 
     const app = Fastify();
+    await app.register(import("@fastify/multipart"));
     app.decorate("services", {
       flow: flowService,
     });
 
-    await app.register(listSqlFlowsRoute, { prefix: "/api/flows/sql" });
-    await app.register(listSqlFlowVersionsRoute, { prefix: "/api/flows/sql" });
-    await app.register(getSqlFlowVersionRoute, { prefix: "/api/flows/sql" });
-    await app.register(postSqlFlowsRoute, { prefix: "/api/flows/sql" });
+    await app.register(listFlowsRoute, { prefix: "/api/flows" });
+    await app.register(listFlowVersionsRoute, { prefix: "/api/flows" });
+    await app.register(getFlowVersionRoute, { prefix: "/api/flows" });
+    await app.register(getFlowDefRoute, { prefix: "/api/flows" });
+    await app.register(postFlowsRoute, { prefix: "/api/flows" });
+    await app.register(postFlowsFilesRoute, { prefix: "/api/flows/files" });
 
     const flowDefinition: FlowDefinition = {
       name: "Prompt Flow",
@@ -137,7 +145,7 @@ describe("sql flow routes", () => {
 
     const response = await app.inject({
       method: "POST",
-      url: "/api/flows/sql",
+      url: "/api/flows",
       payload: flowDefinition,
     });
 
@@ -183,7 +191,7 @@ describe("sql flow routes", () => {
 
     const listResponse = await app.inject({
       method: "GET",
-      url: "/api/flows/sql",
+      url: "/api/flows",
     });
     expect(listResponse.statusCode).toBe(200);
     expect(listResponse.json()).toEqual({
@@ -206,9 +214,19 @@ describe("sql flow routes", () => {
       ],
     });
 
+    const flowDefResponse = await app.inject({
+      method: "GET",
+      url: `/api/flows/${body.value.flow.id}`,
+    });
+    expect(flowDefResponse.statusCode).toBe(200);
+    expect(flowDefResponse.json()).toEqual({
+      ok: true,
+      value: flowDefinition,
+    });
+
     const versionsResponse = await app.inject({
       method: "GET",
-      url: `/api/flows/sql/${body.value.flow.id}/versions`,
+      url: `/api/flows/${body.value.flow.id}/versions`,
     });
     expect(versionsResponse.statusCode).toBe(200);
     expect(versionsResponse.json()).toEqual({
@@ -226,7 +244,7 @@ describe("sql flow routes", () => {
 
     const versionResponse = await app.inject({
       method: "GET",
-      url: `/api/flows/sql/versions/${body.value.version.id}`,
+      url: `/api/flows/versions/${body.value.version.id}`,
     });
     expect(versionResponse.statusCode).toBe(200);
     expect(versionResponse.json()).toEqual({
@@ -245,7 +263,7 @@ describe("sql flow routes", () => {
 
     const missingVersionsResponse = await app.inject({
       method: "GET",
-      url: "/api/flows/sql/missing-flow/versions",
+      url: "/api/flows/missing-flow/versions",
     });
     expect(missingVersionsResponse.statusCode).toBe(200);
     expect(missingVersionsResponse.json()).toEqual({
@@ -255,7 +273,7 @@ describe("sql flow routes", () => {
 
     const missingVersionResponse = await app.inject({
       method: "GET",
-      url: "/api/flows/sql/versions/missing-version",
+      url: "/api/flows/versions/missing-version",
     });
     expect(missingVersionResponse.statusCode).toBe(200);
     expect(missingVersionResponse.json()).toEqual({
@@ -263,6 +281,61 @@ describe("sql flow routes", () => {
       error: "Flow version not found: missing-version",
     });
 
+    const uploadResponse = await app.inject({
+      method: "POST",
+      url: "/api/flows/files",
+      payload: makeMultipartBody(
+        JSON.stringify({
+          ...flowDefinition,
+          name: "Uploaded Flow",
+          version: "v2",
+        }),
+        "uploaded-flow.json",
+        "application/json",
+      ),
+      headers: makeMultipartHeaders(),
+    });
+    expect(uploadResponse.statusCode).toBe(200);
+    const uploadBody = uploadResponse.json() as {
+      ok: true;
+      value: {
+        flow: { id: string; name: string };
+        version: { definitionHash: string };
+      };
+    };
+    expect(uploadBody.ok).toBe(true);
+    expect(uploadBody.value.flow.name).toBe("Uploaded Flow");
+    expect(uploadBody.value.version.definitionHash).toMatch(/^[a-f0-9]{64}$/);
+
+    const storedFlowCount = await prisma.flow.count();
+    const storedVersionCount = await prisma.flowVersion.count();
+    expect(storedFlowCount).toBe(2);
+    expect(storedVersionCount).toBe(2);
+
     await app.close();
   });
 });
+
+const multipartBoundary = `----lcase-${randomUUID()}`;
+
+function makeMultipartHeaders() {
+  return {
+    "content-type": `multipart/form-data; boundary=${multipartBoundary}`,
+  };
+}
+
+function makeMultipartBody(
+  content: string,
+  filename: string,
+  contentType: string,
+) {
+  return [
+    `--${multipartBoundary}`,
+    `Content-Disposition: form-data; name="files"; filename="${filename}"`,
+    `Content-Type: ${contentType}`,
+    "",
+    content,
+    `--${multipartBoundary}--`,
+    "",
+  ].join("\r\n");
+}

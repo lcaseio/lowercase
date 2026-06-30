@@ -39,9 +39,11 @@ export function SimsFlowSelector({ selectedFlowId }: SimsFlowSelectorProps) {
           <SelectGroup>
             <SelectLabel>Select A Flow</SelectLabel>
             {data?.ok === true
-              ? data.indexes.map((index) => (
-                  <SelectItem value={index.hash} key={index.hash}>
-                    {index.name} - {index.version}
+              ? data.value.map((flowItem) => (
+                  <SelectItem value={flowItem.flow.id} key={flowItem.flow.id}>
+                    {flowItem.flow.name} -{" "}
+                    {flowItem.latestVersion.versionLabel ??
+                      `Version ${flowItem.latestVersion.sequence}`}
                   </SelectItem>
                 ))
               : ""}

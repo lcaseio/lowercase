@@ -5,7 +5,7 @@ import { RunDetailsTabs } from "@/components/runs/RunDetailsTabs";
 import { RunnerSimSelector } from "@/components/runner/RunnerSimSelector";
 import { RunnerRunButton } from "@/components/runner/RunnerRunButton";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
-import { useGetFlowDefQuery } from "@/redux/api/flows-api";
+import { useGetFlowDefQuery, useGetFlowsQuery } from "@/redux/api/flows-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useMemo, useState } from "react";
 import type {
@@ -30,6 +30,7 @@ export function Runner() {
   const activeTab = useAppSelector(getRunnerActiveTab);
   const runId = useAppSelector(getEventGraphRunId);
   const flowSelectedId = useAppSelector(getRunnerFlowSelectedId);
+  const { data: flowsData } = useGetFlowsQuery();
   const [selectedParams, setSelectedParams] = useState<Record<string, string>>(
     {},
   );
@@ -40,10 +41,21 @@ export function Runner() {
   const flowParams =
     flowDefData?.ok === true ? flowDefData.value.params : undefined;
 
+  const selectedFlow = useMemo(() => {
+    if (flowsData?.ok !== true || !flowSelectedId) return null;
+    return (
+      flowsData.value.find((flowItem) => flowItem.flow.id === flowSelectedId) ??
+      null
+    );
+  }, [flowsData, flowSelectedId]);
+
+  const selectedFlowDefHash =
+    selectedFlow?.latestVersion.definitionHash ?? flowSelectedId ?? null;
+
   useEffect(() => {
     setSelectedParams({});
     dispatch(setRunnerSimSelectedId(null));
-  }, [flowSelectedId]);
+  }, [flowSelectedId, dispatch]);
 
   const requiredParamNames = useMemo(() => {
     if (!flowParams) return [];
@@ -87,8 +99,12 @@ export function Runner() {
         <h2 className="text-xl font-bold mb-5">Runner</h2>
         <div className="flex flex-col gap-3 mb-4">
           <RunnerFlowSelector />
-          <RunnerSimSelector />
-          <RunnerRunButton params={runParams} disabled={runDisabled} />
+          <RunnerSimSelector flowDefHash={selectedFlowDefHash} />
+          <RunnerRunButton
+            flowDefHash={selectedFlowDefHash}
+            params={runParams}
+            disabled={runDisabled}
+          />
         </div>
 
         <div className="mb-6">

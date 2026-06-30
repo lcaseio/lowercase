@@ -7,8 +7,7 @@ export const getFlowDefRoute = async (app: FastifyInstance) => {
       return { ok: false, error: "Invalid flow id format" };
     }
 
-    const result = await app.services.flow.getFlowDef(flowId);
-    return result;
+    return app.services.flow.getFlowDef(flowId);
   });
 };
 

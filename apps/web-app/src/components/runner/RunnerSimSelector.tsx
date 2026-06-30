@@ -15,21 +15,24 @@ import { useListAllSimsQuery } from "@/redux/api/sims-api";
 
 const UNSET_VALUE = "__unset__";
 
-export function RunnerSimSelector() {
+type Props = {
+  flowDefHash?: string | null;
+};
+
+export function RunnerSimSelector({ flowDefHash }: Props) {
   const { data } = useListAllSimsQuery();
   const dispatch = useDispatch();
   const simSpecSelectedId = useAppSelector(
     (state) => state.runner.simSelectedId,
   );
-  const flowSelectedId = useAppSelector((state) => state.runner.flowSelectedId);
   const sims =
     data?.ok === true
       ? data.forkSpecList.filter(
-          (forkSpecListItem) => forkSpecListItem.flowDefHash === flowSelectedId,
+          (forkSpecListItem) => forkSpecListItem.flowDefHash === flowDefHash,
         )
       : [];
 
-  if (!flowSelectedId || sims.length === 0) return null;
+  if (!flowDefHash || sims.length === 0) return null;
 
   return (
     <div className="flex items-center gap-3">

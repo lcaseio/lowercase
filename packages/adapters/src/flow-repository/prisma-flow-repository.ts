@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@lcase/db-prisma";
 import type {
   FlowLatestVersionSummary,
-  SqlFlowListItem,
+  FlowListItem,
   CreateFlowRecordInput,
   CreateFlowRecordResult,
   FlowRecord,
@@ -140,7 +140,7 @@ export class PrismaFlowRepository implements FlowRepositoryPort {
     return flows.map(toFlowRecord);
   }
 
-  async listFlowsWithLatestVersion(): Promise<SqlFlowListItem[]> {
+  async listFlowsWithLatestVersion(): Promise<FlowListItem[]> {
     const flows = await this.db.flow.findMany({
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: {

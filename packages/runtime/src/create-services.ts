@@ -51,7 +51,6 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
-    flowIndexStore,
     new PrismaFlowRepository(prisma),
   );
 

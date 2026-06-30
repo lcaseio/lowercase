@@ -1,12 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { listFlowsRoute } from "./flows/get.js";
-import { postFlowsRoute } from "./flows/add.js";
-import {
-  getSqlFlowVersionRoute,
-  listSqlFlowsRoute,
-  listSqlFlowVersionsRoute,
-} from "./flows/sql/get.js";
-import { postSqlFlowsRoute } from "./flows/sql/post.js";
+import { postFlowsRoute } from "./flows/post.js";
 import { listRunsRoute } from "./runs/list.js";
 import { postFlowsFilesRoute } from "./flows/files/post.js";
 import { getFlowDefRoute } from "./flows/get-flow-def.js";
@@ -20,16 +14,14 @@ import { getArtifactRoute } from "./artifacts/get-artifact.js";
 import { putJsonArtifactRoute } from "./artifacts/put-json-artifact.js";
 import { postArtifactFileRoute } from "./artifacts/post-artifact-file.js";
 import { listArtifactsRoute } from "./artifacts/list-artifacts.js";
+import { getFlowVersionRoute } from "./flows/get-versions.js";
 
 export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // api/flows
   await app.register(listFlowsRoute, { prefix: "/api/flows" });
   await app.register(getFlowDefRoute, { prefix: "/api/flows" });
+  await app.register(getFlowVersionRoute, { prefix: "/api/flows" });
   await app.register(postFlowsRoute, { prefix: "/api/flows" });
-  await app.register(listSqlFlowsRoute, { prefix: "/api/flows/sql" });
-  await app.register(listSqlFlowVersionsRoute, { prefix: "/api/flows/sql" });
-  await app.register(getSqlFlowVersionRoute, { prefix: "/api/flows/sql" });
-  await app.register(postSqlFlowsRoute, { prefix: "/api/flows/sql" });
   await app.register(postFlowsFilesRoute, { prefix: "/api/flows/files" });
 
   // api/runs
