@@ -21,6 +21,21 @@ async function applySqlFile(
   }
 }
 
+async function applyMigrations(
+  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
+  migrationsDir: string,
+) {
+  const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
+  const migrationFiles = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(migrationsDir, entry.name, "migration.sql"))
+    .sort();
+
+  for (const filePath of migrationFiles) {
+    await applySqlFile(prisma, filePath);
+  }
+}
+
 describe("PrismaFlowRepository", () => {
   let tmpDir: string;
   let prisma: PrismaClient;
@@ -32,18 +47,11 @@ describe("PrismaFlowRepository", () => {
     const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
     prisma = new PrismaClient({ adapter });
 
-    await applySqlFile(
+    await applyMigrations(
       prisma,
       path.resolve(
         process.cwd(),
-        "../db-prisma/prisma/migrations/20260617124320_init/migration.sql",
-      ),
-    );
-    await applySqlFile(
-      prisma,
-      path.resolve(
-        process.cwd(),
-        "../db-prisma/prisma/migrations/20260627130000_flow_versions/migration.sql",
+        "../db-prisma/prisma/migrations",
       ),
     );
 

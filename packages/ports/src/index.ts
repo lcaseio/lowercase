@@ -22,6 +22,7 @@ export * from "./concurrency-limiter/concurrency-limiter.port.js";
 export * from "./limiter/limiter.port.js";
 export * from "./artifacts/artifact-store.port.js";
 export * from "./artifacts/artifacts.port.js";
+export * from "./artifacts/artifact-repository.port.js";
 export * from "./run-index-store/run-index-store.port.js";
 export * from "./run-params-index-store/run-params-index-store.port.js";
 export * from "./artifact-index-store/artifact-index-store.port.js";

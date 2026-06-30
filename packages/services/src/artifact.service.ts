@@ -1,6 +1,6 @@
 import {
   AutoGetResult,
-  ArtifactIndexStorePort,
+  ArtifactRepositoryPort,
   ArtifactServicePort,
   ArtifactPutInput,
   ArtifactsPort,
@@ -10,7 +10,7 @@ import type { ArtifactIndex, Result } from "@lcase/types";
 export class ArtifactService implements ArtifactServicePort {
   constructor(
     private readonly artifacts: ArtifactsPort,
-    private readonly artifactIndexStore: ArtifactIndexStorePort,
+    private readonly artifactRepository: ArtifactRepositoryPort,
   ) {}
 
   async getArtifact(hash: string): Promise<AutoGetResult> {
@@ -18,7 +18,7 @@ export class ArtifactService implements ArtifactServicePort {
   }
 
   async listArtifacts(): Promise<ArtifactIndex[]> {
-    const artifacts = await this.artifactIndexStore.getAll();
+    const artifacts = await this.artifactRepository.listArtifacts();
     return artifacts.sort((a, b) => b.time.localeCompare(a.time));
   }
 
