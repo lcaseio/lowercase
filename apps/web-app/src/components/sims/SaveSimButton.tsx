@@ -2,20 +2,24 @@ import { usePostSimsMutation } from "@/redux/api/sims-api";
 import { Button } from "../ui/button";
 import { useAppSelector } from "@/redux/typed-hooks";
 
-export function SaveSimButton() {
+type Props = {
+  flowDefHash: string | null;
+};
+
+export function SaveSimButton({ flowDefHash }: Props) {
   const [postSim, postState] = usePostSimsMutation();
-  const flowDefHash = useAppSelector((state) => state.sims.flowSelectedId);
+  const flowSelectedId = useAppSelector((state) => state.sims.flowSelectedId);
   const parentRunId = useAppSelector((state) => state.sims.runSelectedId);
   const reusedSteps = useAppSelector((state) => state.sims.reusedSteps);
   const newSimName = useAppSelector((state) => state.sims.newSimName);
 
   const handleSave = () => {
-    if (!flowDefHash || !parentRunId || !reusedSteps) return;
-    if (!reusedSteps[flowDefHash]) return;
+    if (!flowDefHash || !flowSelectedId || !parentRunId || !reusedSteps) return;
+    if (!reusedSteps[flowSelectedId]) return;
     if (!newSimName) return;
-    if (Object.keys(reusedSteps[flowDefHash]).length === 0) return;
+    if (Object.keys(reusedSteps[flowSelectedId]).length === 0) return;
 
-    const reuse = Object.keys(reusedSteps[flowDefHash]);
+    const reuse = Object.keys(reusedSteps[flowSelectedId]);
     postSim({ flowDefHash, parentRunId, reuse, name: newSimName });
   };
 

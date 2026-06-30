@@ -1,9 +1,9 @@
-import type { FlowIndex } from "@lcase/types";
+import type { FlowListItem } from "@lcase/types";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store.js";
 
 export type FlowsState = {
-  indexes: FlowIndex[];
+  indexes: FlowListItem[];
 };
 
 const initialState: FlowsState = {
@@ -14,7 +14,7 @@ export const flowsSlice = createSlice({
   name: "flows",
   initialState,
   reducers: {
-    add: (state, action: PayloadAction<FlowIndex>) => {
+    add: (state, action: PayloadAction<FlowListItem>) => {
       state.indexes.push(action.payload);
     },
   },

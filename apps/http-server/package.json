@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc --incremental false",
+    "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest",
     "lint": "echo lint",
     "start": "node ./dist/main.js",

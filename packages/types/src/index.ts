@@ -38,7 +38,6 @@ export * from "./tool/tool.types.js";
 
 export * from "./worker/metadata.js";
 export * from "./flow-analysis/types.js";
-export * from "./flow/flow-record.js";
 
 export * from "./engine/fork-spec.type.js";
 export * from "./engine/run-context.js";
@@ -60,3 +59,6 @@ export * from "./artifacts/artifact-put.js";
 
 // generic file system json index store
 export * from "./fs-json-index-store/fs-json-index-store.js";
+
+// sql return types used in adapters / api responses
+export * from "./db-sql/index.js";

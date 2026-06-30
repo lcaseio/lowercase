@@ -2,12 +2,11 @@ import type {
   ArtifactIndex,
   ArtifactPutInput,
   AnyEvent,
-  GetSqlFlowsRes,
-  GetSqlFlowVersionRes,
-  GetSqlFlowVersionsRes,
+  GetFlowsRes,
+  GetFlowVersionRes,
+  GetFlowVersionsRes,
   FlowDefinition,
   CreateFlowRecordResult,
-  FlowIndex,
   ForkSpec,
   ForkSpecIndex,
   Result,
@@ -58,15 +57,13 @@ export interface FlowServicePort {
     flow: string | Record<string, unknown>,
   ): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
-  addFlow(flow: string | FlowDefinition): Promise<Result<FlowIndex, string>>;
-  addFlowSql(
+  addFlow(
     flow: string | FlowDefinition,
   ): Promise<Result<CreateFlowRecordResult, string>>;
-  getAllFlowRecordsSql(): Promise<GetSqlFlowsRes>;
-  getFlowVersionsSql(flowId: string): Promise<GetSqlFlowVersionsRes>;
-  getFlowVersionDefSql(flowVersionId: string): Promise<GetSqlFlowVersionRes>;
-  getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
-  getFlowDef(hash: string): Promise<Result<FlowDefinition, string>>;
+  getAllFlows(): Promise<GetFlowsRes>;
+  getFlowVersions(flowId: string): Promise<GetFlowVersionsRes>;
+  getFlowVersionDef(flowVersionId: string): Promise<GetFlowVersionRes>;
+  getFlowDef(flowIdOrHash: string): Promise<Result<FlowDefinition, string>>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;

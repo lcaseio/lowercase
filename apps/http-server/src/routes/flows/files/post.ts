@@ -1,5 +1,5 @@
 import type { MultipartFile } from "@fastify/multipart";
-import type { FastifyInstance } from "fastify/types/instance.js";
+import type { FastifyInstance } from "fastify";
 
 /**
  * Route meant for uploading json files an adding them to the store.
@@ -15,7 +15,7 @@ export const postFlowsFilesRoute = async (app: FastifyInstance) => {
         const isJsonFile = isJsonLikeFile(part);
         if (!isJsonFile) {
           return reply
-            .code(500)
+            .code(400)
             .send({ ok: false, error: "Invalid headers or file extension" });
         }
 
@@ -23,7 +23,7 @@ export const postFlowsFilesRoute = async (app: FastifyInstance) => {
         const text = buffer.toString("utf8");
         const result = await app.services.flow.addFlow(text);
 
-        if (result.ok === false) return reply.code(500).send(result);
+        if (!result.ok) return reply.code(400).send(result);
         return result;
       }
     }

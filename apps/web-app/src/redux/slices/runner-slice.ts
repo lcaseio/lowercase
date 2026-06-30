@@ -47,7 +47,7 @@ export const runnerSlice = createSlice({
     setEventGraphRunId: (state, action: PayloadAction<string>) => {
       state.eventGraphRunId = action.payload;
     },
-    setRunnerSimSelectedId: (state, action: PayloadAction<string>) => {
+    setRunnerSimSelectedId: (state, action: PayloadAction<string | null>) => {
       state.simSelectedId = action.payload;
     },
     setRunnerSelectedEventId: (

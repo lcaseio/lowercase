@@ -4,7 +4,6 @@ export * from "./pipe.fields.js";
 export * from "./map.js";
 export * from "./common-fields.js";
 export * from "./flow-definition.js";
-export * from "./flow-record.js";
 export * from "./step.type.js";
 export * from "./parallel.step.js";
 export * from "./join.step.js";
