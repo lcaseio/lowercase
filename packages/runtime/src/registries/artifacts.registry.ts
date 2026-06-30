@@ -1,3 +1,4 @@
+import { ArtifactIndexStorePort } from "@lcase/ports";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import type { Registry } from "../types/registry.js";
 import { Artifacts } from "@lcase/artifacts";
@@ -6,10 +7,10 @@ import { FsArtifactIndexStore } from "@lcase/adapters/artifact-index-store";
 export const artifactRegistry = {
   embedded: {
     local: {
-      fs: (path: string) =>
+      fs: (path: string, indexStore?: ArtifactIndexStorePort) =>
         new Artifacts(
           new FsArtifactStore(path),
-          new FsArtifactIndexStore(path),
+          indexStore ?? new FsArtifactIndexStore(path),
         ),
     },
   },

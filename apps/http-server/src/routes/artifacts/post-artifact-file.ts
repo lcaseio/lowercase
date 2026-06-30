@@ -21,10 +21,16 @@ type SupportedArtifactFormat = ArtifactPutInput["format"] & (
   | "markdown"
 );
 
+type BufferedUpload = {
+  filename: string;
+  mimetype: string;
+  buffer: Buffer;
+};
+
 export const postArtifactFileRoute = async (app: FastifyInstance) => {
   app.post("/", async (req, reply): Promise<PostArtifactFileRes> => {
     let fileCount = 0;
-    let upload: MultipartFile | undefined;
+    let upload: BufferedUpload | undefined;
     let label: string | undefined;
 
     for await (const part of req.parts()) {
@@ -43,7 +49,11 @@ export const postArtifactFileRoute = async (app: FastifyInstance) => {
           .send({ ok: false, error: "Only one file upload is supported" });
       }
 
-      upload = part;
+      upload = {
+        filename: part.filename,
+        mimetype: part.mimetype,
+        buffer: await part.toBuffer(),
+      };
     }
 
     if (!upload) {
@@ -57,7 +67,7 @@ export const postArtifactFileRoute = async (app: FastifyInstance) => {
         .send({ ok: false, error: "Unsupported artifact file type" });
     }
 
-    const putInput = await makeArtifactPutInput(upload, format, label);
+    const putInput = makeArtifactPutInputFromBuffer(upload, format, label);
     if (!putInput.ok) {
       return reply.code(400).send(putInput);
     }
@@ -92,11 +102,26 @@ export async function makeArtifactPutInput(
   format: SupportedArtifactFormat,
   label?: string,
 ): Promise<{ ok: true; value: ArtifactPutInput } | { ok: false; error: string }> {
-  const buffer = await part.toBuffer();
-  const text = buffer.toString("utf8");
+  return makeArtifactPutInputFromBuffer(
+    {
+      filename: part.filename,
+      mimetype: part.mimetype,
+      buffer: await part.toBuffer(),
+    },
+    format,
+    label,
+  );
+}
+
+export function makeArtifactPutInputFromBuffer(
+  upload: BufferedUpload,
+  format: SupportedArtifactFormat,
+  label?: string,
+): { ok: true; value: ArtifactPutInput } | { ok: false; error: string } {
+  const text = upload.buffer.toString("utf8");
   const index = {
-    filename: part.filename,
-    contentType: part.mimetype,
+    filename: upload.filename,
+    contentType: upload.mimetype,
     ...(label ? { label } : {}),
   };
 

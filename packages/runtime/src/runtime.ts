@@ -1,5 +1,6 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
+import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
@@ -130,7 +131,10 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     extension: ".index.json",
   });
 
-  const artifacts = createArtifacts(config.artifacts);
+  const artifacts = createArtifacts(
+    config.artifacts,
+    new PrismaArtifactRepository(prisma),
+  );
   const engine = createInProcessEngine(
     bus,
     ef,

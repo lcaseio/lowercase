@@ -12,6 +12,13 @@ datasource db {
   provider = "sqlite"
 }
 
+enum ArtifactFormat {
+  json
+  text
+  markdown
+  bytes
+}
+
 model Flow {
   id          String        @id @default(cuid())
   name        String
@@ -34,4 +41,16 @@ model FlowVersion {
 
   @@unique([flowId, sequence])
   @@index([flowId])
+}
+
+model Artifact {
+  hash        String         @id
+  time        DateTime       @default(now())
+  label       String?
+  filename    String?
+  contentType String?
+  size        Int?
+  format      ArtifactFormat?
+
+  @@index([time])
 }

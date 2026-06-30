@@ -1,5 +1,3 @@
-DROP TABLE "Flow";
-
 CREATE TABLE "Flow" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -19,5 +17,16 @@ CREATE TABLE "FlowVersion" (
     CONSTRAINT "FlowVersion_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+CREATE TABLE "Artifact" (
+    "hash" TEXT NOT NULL PRIMARY KEY,
+    "time" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "label" TEXT,
+    "filename" TEXT,
+    "contentType" TEXT,
+    "size" INTEGER,
+    "format" TEXT
+);
+
 CREATE INDEX "FlowVersion_flowId_idx" ON "FlowVersion"("flowId");
 CREATE UNIQUE INDEX "FlowVersion_flowId_sequence_key" ON "FlowVersion"("flowId", "sequence");
+CREATE INDEX "Artifact_time_idx" ON "Artifact"("time");

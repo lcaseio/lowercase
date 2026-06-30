@@ -1,8 +1,11 @@
-import { ArtifactsPort } from "@lcase/ports";
+import { ArtifactIndexStorePort, ArtifactsPort } from "@lcase/ports";
 import { makeArtifactsFactory } from "../factories/registry.factory.js";
 import { ArtifactsConfig } from "../types/runtime.config.js";
 
-export function createArtifacts(config: ArtifactsConfig): ArtifactsPort {
+export function createArtifacts(
+  config: ArtifactsConfig,
+  indexStore?: ArtifactIndexStorePort,
+): ArtifactsPort {
   const makeArtifacts = makeArtifactsFactory(
     config.placement,
     config.transport,
@@ -10,6 +13,6 @@ export function createArtifacts(config: ArtifactsConfig): ArtifactsPort {
   );
   console.log(config.path);
 
-  const artifacts = makeArtifacts(config.path);
+  const artifacts = makeArtifacts(config.path, indexStore);
   return artifacts;
 }
