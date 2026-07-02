@@ -19,6 +19,13 @@ enum ArtifactFormat {
   bytes
 }
 
+enum RunStatus {
+  requested
+  started
+  completed
+  failed
+}
+
 model Flow {
   id          String        @id @default(cuid())
   name        String
@@ -27,6 +34,7 @@ model Flow {
   updatedAt   DateTime      @updatedAt
   versions    FlowVersion[]
   sims        Sim[]
+  runs        Run[]
 }
 
 model FlowVersion {
@@ -40,6 +48,7 @@ model FlowVersion {
 
   flow Flow @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   sims Sim[]
+  runs Run[]
 
   @@unique([flowId, sequence])
   @@index([flowId])
@@ -73,4 +82,51 @@ model Sim {
   @@index([createdAt])
   @@index([flowId])
   @@index([flowVersionId])
+}
+
+model Run {
+  id            String      @id
+  traceId       String
+  status        RunStatus
+  source        String
+  flowId        String?
+  flowVersionId String?
+  flowDefHash   String
+  parentRunId   String?
+  forkSpecHash  String?
+  runParamsHash String?
+  startTime     DateTime?
+  endTime       DateTime?
+  duration      Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  flow            Flow?                @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion     FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  stepProjections RunStepProjection[]
+
+  @@index([createdAt])
+  @@index([flowId])
+  @@index([flowVersionId])
+  @@index([parentRunId])
+}
+
+model RunStepProjection {
+  runId        String
+  stepId       String
+  status       String?
+  startTime    DateTime?
+  endTime      DateTime?
+  duration     Float?
+  reusedTime   DateTime?
+  wasReused    Boolean?
+  outputHash   String?
+  argsHash     String?
+  exportHashes String?
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([runId, stepId])
+  @@index([runId])
+  @@index([status])
 }
