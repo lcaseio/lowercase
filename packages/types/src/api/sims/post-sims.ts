@@ -1,12 +1,13 @@
-// POST api/sims  request
+import type { Result } from "../../result.type.js";
+import type { SimRecord } from "../../db-sql/sim-record.js";
+
 export type PostSimsReq = {
   name: string;
-  flowDefHash: string;
+  flowId: string;
+  flowVersionId: string;
   parentRunId: string;
   reuse: string[];
   description?: string;
 };
 
-export type PostSimsRes =
-  | { ok: true; forkSpecHash: string }
-  | { ok: false; error: string };
+export type PostSimsRes = Result<SimRecord, string>;

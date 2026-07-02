@@ -1,13 +1,4 @@
-export type ForkSpecListItem = {
-  name: string;
-  flowDefName: string;
-  flowDefHash: string;
-  forkSpecHash: string;
-  flowDefVersion: string;
-  flowDefDescription?: string;
-  parentRunId?: string;
-};
+import type { Result } from "../../result.type.js";
+import type { SimListItem } from "../../db-sql/sim-record.js";
 
-export type GetSimsRes =
-  | { ok: true; forkSpecList: ForkSpecListItem[] }
-  | { ok: false; error: string };
+export type GetSimsRes = Result<SimListItem[], string>;

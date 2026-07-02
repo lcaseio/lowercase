@@ -15,8 +15,8 @@ export function SimsList() {
       </p>
       <div className=" md:max-w-12/12 lg:max-w-9/12 flex flex-col gap-6 mt-4">
         {data?.ok &&
-          data.forkSpecList.map((f, i) => (
-            <SimsListItem key={f.flowDefName + String(i)} simsListItem={f} />
+          data.value.map((item) => (
+            <SimsListItem key={item.sim.id} simsListItem={item} />
           ))}
       </div>
     </div>

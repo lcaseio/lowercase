@@ -13,12 +13,12 @@ import { FlowStoreFs } from "@lcase/adapters/flow-store";
 import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { ServicesPort } from "@lcase/ports";
 import path from "node:path";
-import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
 // import { FsRunParamsIndexStore } from "@lcase/adapters/run-params-index-store";
 import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
-import { FlowIndex, ForkSpec, ForkSpecIndex, RunIndex } from "@lcase/types";
+import { FlowIndex, RunIndex } from "@lcase/types";
 import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createServices(config: RuntimeConfig): ServicesPort {
@@ -38,18 +38,16 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     extension: ".index.json",
   });
 
-  const forkSpecIndexStore = new FsJsonIndexStore<ForkSpecIndex>({
-    dir: path.join(process.cwd(), "lcase-db/sims/index"),
-    extension: ".index.json",
-  });
   const artifactRepository = new PrismaArtifactRepository(prisma);
+  const flowRepository = new PrismaFlowRepository(prisma);
+  const simRepository = new PrismaSimRepository(prisma);
 
   const flow = new FlowService(
     ctx.bus,
     ctx.ef,
     new FlowStoreFs(),
     ctx.artifacts,
-    new PrismaFlowRepository(prisma),
+    flowRepository,
   );
 
   const replay = new ReplayService(ctx.replay);
@@ -57,9 +55,9 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     ctx.artifacts,
     ctx.ef,
     ctx.runIndexStore,
-    forkSpecIndexStore,
+    simRepository,
+    flowRepository,
   );
-  forkSpecIndexStore.init();
   // runParamsIndexStore.init();
   const ws = new WsService(ctx.bus);
   const run = new RunService({

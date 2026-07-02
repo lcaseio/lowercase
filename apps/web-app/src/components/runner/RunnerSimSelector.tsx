@@ -16,10 +16,10 @@ import { useListAllSimsQuery } from "@/redux/api/sims-api";
 const UNSET_VALUE = "__unset__";
 
 type Props = {
-  flowDefHash?: string | null;
+  flowVersionId?: string | null;
 };
 
-export function RunnerSimSelector({ flowDefHash }: Props) {
+export function RunnerSimSelector({ flowVersionId }: Props) {
   const { data } = useListAllSimsQuery();
   const dispatch = useDispatch();
   const simSpecSelectedId = useAppSelector(
@@ -27,12 +27,12 @@ export function RunnerSimSelector({ flowDefHash }: Props) {
   );
   const sims =
     data?.ok === true
-      ? data.forkSpecList.filter(
-          (forkSpecListItem) => forkSpecListItem.flowDefHash === flowDefHash,
+      ? data.value.filter(
+          (simListItem) => simListItem.sim.flowVersionId === flowVersionId,
         )
       : [];
 
-  if (!flowDefHash || sims.length === 0) return null;
+  if (!flowVersionId || sims.length === 0) return null;
 
   return (
     <div className="flex items-center gap-3">
@@ -40,11 +40,13 @@ export function RunnerSimSelector({ flowDefHash }: Props) {
       <div className="cursor-pointer">
         <Select
           onValueChange={(value) => {
-            dispatch(setRunnerSimSelectedId(value));
+            dispatch(
+              setRunnerSimSelectedId(value === UNSET_VALUE ? null : value),
+            );
           }}
           value={
             simSpecSelectedId &&
-            sims.some((sim) => sim.forkSpecHash === simSpecSelectedId)
+            sims.some((item) => item.sim.id === simSpecSelectedId)
               ? simSpecSelectedId
               : UNSET_VALUE
           }
@@ -59,12 +61,9 @@ export function RunnerSimSelector({ flowDefHash }: Props) {
             <SelectGroup>
               <SelectLabel>Select A Sim (Optional)</SelectLabel>
               <SelectItem value={UNSET_VALUE}>None</SelectItem>
-              {sims.map((forkSpecListItem) => (
-                <SelectItem
-                  value={forkSpecListItem.forkSpecHash}
-                  key={forkSpecListItem.forkSpecHash}
-                >
-                  {forkSpecListItem.name}
+              {sims.map((simListItem) => (
+                <SelectItem value={simListItem.sim.id} key={simListItem.sim.id}>
+                  {simListItem.sim.name}
                 </SelectItem>
               ))}
             </SelectGroup>

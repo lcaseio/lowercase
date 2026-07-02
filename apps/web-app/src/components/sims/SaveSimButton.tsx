@@ -3,10 +3,11 @@ import { Button } from "../ui/button";
 import { useAppSelector } from "@/redux/typed-hooks";
 
 type Props = {
-  flowDefHash: string | null;
+  flowId: string | null;
+  flowVersionId: string | null;
 };
 
-export function SaveSimButton({ flowDefHash }: Props) {
+export function SaveSimButton({ flowId, flowVersionId }: Props) {
   const [postSim, postState] = usePostSimsMutation();
   const flowSelectedId = useAppSelector((state) => state.sims.flowSelectedId);
   const parentRunId = useAppSelector((state) => state.sims.runSelectedId);
@@ -14,22 +15,24 @@ export function SaveSimButton({ flowDefHash }: Props) {
   const newSimName = useAppSelector((state) => state.sims.newSimName);
 
   const handleSave = () => {
-    if (!flowDefHash || !flowSelectedId || !parentRunId || !reusedSteps) return;
+    if (!flowId || !flowVersionId || !flowSelectedId || !parentRunId || !reusedSteps) {
+      return;
+    }
     if (!reusedSteps[flowSelectedId]) return;
     if (!newSimName) return;
     if (Object.keys(reusedSteps[flowSelectedId]).length === 0) return;
 
     const reuse = Object.keys(reusedSteps[flowSelectedId]);
-    postSim({ flowDefHash, parentRunId, reuse, name: newSimName });
+    postSim({ flowId, flowVersionId, parentRunId, reuse, name: newSimName });
   };
 
-  const hash = postState.data?.ok ? postState.data.forkSpecHash : null;
+  const simId = postState.data?.ok ? postState.data.value.id : null;
   return (
     <div>
       <Button onClick={handleSave} className="mt-2 mb-2 cursor-pointer">
         Save Sim
       </Button>
-      {hash ? <p>Saved! ForkSpec Hash: {hash}</p> : null}
+      {simId ? <p>Saved! Sim Id: {simId}</p> : null}
     </div>
   );
 }

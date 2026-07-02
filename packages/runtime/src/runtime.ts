@@ -2,6 +2,7 @@ import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
@@ -50,7 +51,7 @@ import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
 import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
-import { FlowIndex, ForkSpecIndex, RunIndex } from "@lcase/types";
+import { RunIndex } from "@lcase/types";
 import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
@@ -66,16 +67,14 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     new PrismaFlowRepository(prisma),
   );
 
-  const forkSpecIndexStore = new FsJsonIndexStore<ForkSpecIndex>({
-    dir: path.join(process.cwd(), "lcase-db/sims/index"),
-    extension: ".index.json",
-  });
   const replayService = new ReplayService(ctx.replay);
+  const flowRepository = new PrismaFlowRepository(prisma);
   const simService = new SimService(
     ctx.artifacts,
     ctx.ef,
     ctx.runIndexStore,
-    forkSpecIndexStore,
+    new PrismaSimRepository(prisma),
+    flowRepository,
   );
   const wsService = new WsService(ctx.bus);
 

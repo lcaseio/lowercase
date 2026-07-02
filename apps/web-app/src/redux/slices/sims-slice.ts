@@ -7,24 +7,24 @@ type FlowId = string;
 type SimsState = {
   flowDefHash: string | null;
   flowDef: FlowDefinition | null;
-  forkSpecHash: string | null;
+  simId: string | null;
   forkSpec?: ForkSpec | null;
   flowSelectedId: string | null;
   runSelectedId: string | null;
   reusedSteps: Record<FlowId, Record<StepId, true>>;
   newSimName: string | null;
-  viewedSimSpecHash: string | null;
+  viewedSimId: string | null;
 };
 const initialState: SimsState = {
   flowDefHash: null,
   flowDef: null,
-  forkSpecHash: null,
+  simId: null,
   forkSpec: null,
   flowSelectedId: null,
   runSelectedId: null,
   reusedSteps: {},
   newSimName: null,
-  viewedSimSpecHash: null,
+  viewedSimId: null,
 };
 
 type FlowHash = string;
@@ -37,6 +37,9 @@ export const simsSlice = createSlice({
     },
     setFlowDef: (state, action: PayloadAction<FlowDefinition | null>) => {
       state.flowDef = action.payload;
+    },
+    setSimId: (state, action: PayloadAction<string | null>) => {
+      state.simId = action.payload;
     },
     setSimsFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
@@ -70,8 +73,8 @@ export const simsSlice = createSlice({
     setNewSimName: (state, action: PayloadAction<string | null>) => {
       state.newSimName = action.payload;
     },
-    setViewedSimSpecHash: (state, action: PayloadAction<string | null>) => {
-      state.viewedSimSpecHash = action.payload;
+    setViewedSimId: (state, action: PayloadAction<string | null>) => {
+      state.viewedSimId = action.payload;
     },
     clearReusedSteps: (state) => {
       state.reusedSteps = {};
@@ -82,13 +85,14 @@ export const simsSlice = createSlice({
 export const {
   setSimsFlowHash,
   setFlowDef,
+  setSimId,
   setSimsFlowSelectedId,
   addReusedStepId,
   removeReusedStepId,
   setReusedStepIds,
   setSimsRunSelectedId,
   setNewSimName,
-  setViewedSimSpecHash,
+  setViewedSimId,
   clearReusedSteps,
 } = simsSlice.actions;
 

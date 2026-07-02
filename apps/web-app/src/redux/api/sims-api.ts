@@ -25,14 +25,14 @@ export const simsApi = createApi({
         method: "GET",
       }),
     }),
-    getSimSpec: builder.query<GetSimSpecRes, GetSimSpecReq>({
+    getSim: builder.query<GetSimSpecRes, GetSimSpecReq>({
       query: (arg) => ({
-        url: `sims/${arg.hash}`,
+        url: `sims/${arg.simId}`,
         method: "GET",
       }),
     }),
   }),
 });
 
-export const { useListAllSimsQuery, usePostSimsMutation, useGetSimSpecQuery } =
+export const { useListAllSimsQuery, usePostSimsMutation, useGetSimQuery } =
   simsApi;
