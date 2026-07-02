@@ -16,6 +16,10 @@
       "types": "./dist/flow-repository/index.d.ts",
       "import": "./dist/flow-repository/index.js"
     },
+    "./sim-repository": {
+      "types": "./dist/sim-repository/index.d.ts",
+      "import": "./dist/sim-repository/index.js"
+    },
     "./mcp-manager": {
       "types": "./dist/mcp-manager/index.d.ts",
       "import": "./dist/mcp-manager/index.js"

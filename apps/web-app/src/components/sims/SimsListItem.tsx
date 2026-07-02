@@ -1,4 +1,4 @@
-import type { ForkSpecListItem } from "@lcase/types";
+import type { SimListItem } from "@lcase/types";
 import {
   Item,
   ItemActions,
@@ -15,8 +15,7 @@ import {
   setReusedStepIds,
   setSimsFlowHash,
   setSimsFlowSelectedId,
-  setSimsRunSelectedId,
-  setViewedSimSpecHash,
+  setViewedSimId,
 } from "@/redux/slices/sims-slice";
 import { useNavigate } from "react-router-dom";
 import { GitBranchIcon } from "lucide-react";
@@ -26,42 +25,36 @@ import {
 } from "@/redux/slices/runner-slice";
 
 type SimsListItemProps = {
-  simsListItem: ForkSpecListItem;
+  simsListItem: SimListItem;
 };
 export function SimsListItem({ simsListItem }: SimsListItemProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleView = () => {
-    const runId = simsListItem.parentRunId;
-    dispatch(setSimsFlowHash(simsListItem.flowDefHash));
-    dispatch(setSimsFlowSelectedId(simsListItem.flowDefHash));
-    dispatch(setViewedSimSpecHash(simsListItem.forkSpecHash));
+    dispatch(setSimsFlowHash(simsListItem.flowVersion.definitionHash));
+    dispatch(setSimsFlowSelectedId(simsListItem.sim.flowId));
+    dispatch(setViewedSimId(simsListItem.sim.id));
     dispatch(
-      setReusedStepIds({ flowId: simsListItem.flowDefHash, reused: [] }),
+      setReusedStepIds({ flowId: simsListItem.sim.flowId, reused: [] }),
     );
-
-    if (runId) dispatch(setSimsRunSelectedId(runId));
     navigate(`/sims/view`);
   };
 
   const handleRun = () => {
-    const runId = simsListItem.parentRunId;
-    dispatch(setRunnerSimSelectedId(simsListItem.forkSpecHash));
-    dispatch(setRunnerFlowSelectedId(simsListItem.flowDefHash));
-
-    if (runId) dispatch(setSimsRunSelectedId(runId));
+    dispatch(setRunnerSimSelectedId(simsListItem.sim.id));
+    dispatch(setRunnerFlowSelectedId(simsListItem.sim.flowId));
     navigate(`/runner`);
   };
   return (
     <Item variant="muted">
       <ItemContent>
-        <ItemTitle>{simsListItem?.name && simsListItem.name}</ItemTitle>
+        <ItemTitle>{simsListItem.sim.name}</ItemTitle>
         <ItemDescription className="flex flex-col">
-          {simsListItem.flowDefName} - {simsListItem.flowDefVersion}
+          {simsListItem.flow.name} - {simsListItem.flowVersion.versionLabel}
           <br />
-          {simsListItem.forkSpecHash}
-          {simsListItem.forkSpecHash ? (
+          {simsListItem.sim.forkSpecHash}
+          {simsListItem.sim.forkSpecHash ? (
             <ItemMedia className="mb-0.5 flex justify-start">
               <GitBranchIcon size="20" />
             </ItemMedia>

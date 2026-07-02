@@ -26,6 +26,7 @@ model Flow {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   versions    FlowVersion[]
+  sims        Sim[]
 }
 
 model FlowVersion {
@@ -38,6 +39,7 @@ model FlowVersion {
   createdAt      DateTime @default(now())
 
   flow Flow @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sims Sim[]
 
   @@unique([flowId, sequence])
   @@index([flowId])
@@ -53,4 +55,22 @@ model Artifact {
   format      ArtifactFormat?
 
   @@index([time])
+}
+
+model Sim {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  flowId        String
+  flowVersionId String
+  forkSpecHash  String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  flow        Flow        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion FlowVersion @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([createdAt])
+  @@index([flowId])
+  @@index([flowVersionId])
 }

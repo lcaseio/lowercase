@@ -11,6 +11,7 @@ export * from "./controller.port.js";
 export * from "./flow/store.port.js";
 export * from "./flow/list.type.js";
 export * from "./flow/flow-repository.port.js";
+export * from "./sim/sim-repository.port.js";
 
 // folder indexes
 export * from "./events/index.js";

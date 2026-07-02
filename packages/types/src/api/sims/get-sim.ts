@@ -1,11 +1,7 @@
-import type { ForkSpec } from "../../engine/fork-spec.type.js";
+import type { Result } from "../../result.type.js";
+import type { SimDefinition } from "../../db-sql/sim-record.js";
 
 export type GetSimSpecReq = {
-  hash: string;
+  simId: string;
 };
-export type GetSimSpecRes =
-  | {
-      ok: true;
-      spec: ForkSpec;
-    }
-  | { ok: false; error: string };
+export type GetSimSpecRes = Result<SimDefinition, string>;

@@ -2,17 +2,20 @@ import type {
   ArtifactIndex,
   ArtifactPutInput,
   AnyEvent,
+  CreateSimRecordInput,
   GetFlowsRes,
   GetFlowVersionRes,
   GetFlowVersionsRes,
   FlowDefinition,
   CreateFlowRecordResult,
   ForkSpec,
-  ForkSpecIndex,
   Result,
   RunIndex,
   RunListItem,
   RunParams,
+  SimDefinition,
+  SimListItem,
+  SimRecord,
 } from "@lcase/types";
 import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
@@ -30,12 +33,6 @@ export interface ServicesPort {
   artifact: ArtifactServicePort;
 }
 
-export type ForkSpecDetails = {
-  name: string;
-  forkSpec: ForkSpec;
-  flowDefHash: string;
-  description?: string;
-};
 export interface SimServicePort {
   startForkedRunSim(
     parentRunId: string,
@@ -43,11 +40,13 @@ export interface SimServicePort {
     source: string,
   ): Promise<void>;
 
-  getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
-  getForkSpec(hash: string): Promise<Result<JsonValue, string>>;
-  saveForkSpec(
-    forkSpecDetails: ForkSpecDetails,
-  ): Promise<Result<string, string>>;
+  getAllSims(): Promise<SimListItem[]>;
+  getSim(simId: string): Promise<Result<SimDefinition, string>>;
+  saveSim(
+    simDetails: Omit<CreateSimRecordInput, "forkSpecHash"> & {
+      forkSpec: ForkSpec;
+    },
+  ): Promise<Result<SimRecord, string>>;
 }
 
 export interface FlowServicePort {

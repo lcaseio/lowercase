@@ -5,7 +5,11 @@ import { RunDetailsTabs } from "@/components/runs/RunDetailsTabs";
 import { RunnerSimSelector } from "@/components/runner/RunnerSimSelector";
 import { RunnerRunButton } from "@/components/runner/RunnerRunButton";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
-import { useGetFlowDefQuery, useGetFlowsQuery } from "@/redux/api/flows-api";
+import {
+  useGetFlowDefQuery,
+  useGetFlowsQuery,
+  useGetFlowVersionDefQuery,
+} from "@/redux/api/flows-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useMemo, useState } from "react";
 import type {
@@ -23,6 +27,7 @@ import {
 } from "@/redux/slices/runner-slice";
 import { RunDetailsControllerProvider } from "@/components/runs/RunDetailsControllerProvider";
 import { RunnerParamsPanel } from "@/components/runner/RunnerParamsPanel";
+import { useListAllSimsQuery } from "@/redux/api/sims-api";
 
 export function Runner() {
   const dispatch = useAppDispatch();
@@ -30,16 +35,12 @@ export function Runner() {
   const activeTab = useAppSelector(getRunnerActiveTab);
   const runId = useAppSelector(getEventGraphRunId);
   const flowSelectedId = useAppSelector(getRunnerFlowSelectedId);
+  const simSelectedId = useAppSelector((state) => state.runner.simSelectedId);
   const { data: flowsData } = useGetFlowsQuery();
+  const { data: simsData } = useListAllSimsQuery();
   const [selectedParams, setSelectedParams] = useState<Record<string, string>>(
     {},
   );
-  const { data: flowDefData, isLoading: isFlowLoading } = useGetFlowDefQuery(
-    flowSelectedId ?? skipToken,
-  );
-
-  const flowParams =
-    flowDefData?.ok === true ? flowDefData.value.params : undefined;
 
   const selectedFlow = useMemo(() => {
     if (flowsData?.ok !== true || !flowSelectedId) return null;
@@ -49,8 +50,33 @@ export function Runner() {
     );
   }, [flowsData, flowSelectedId]);
 
+  const selectedSim =
+    simsData?.ok === true && simSelectedId
+      ? simsData.value.find((sim) => sim.sim.id === simSelectedId) ?? null
+      : null;
+
+  const { data: latestFlowDefData, isLoading: isLatestFlowLoading } =
+    useGetFlowDefQuery(
+      selectedSim ? skipToken : flowSelectedId ?? skipToken,
+    );
+  const { data: simFlowVersionData, isLoading: isSimFlowLoading } =
+    useGetFlowVersionDefQuery(selectedSim?.flowVersion.id ?? skipToken);
+
+  const activeFlowDefinition =
+    selectedSim && simFlowVersionData?.ok === true
+      ? simFlowVersionData.value.definition
+      : latestFlowDefData?.ok === true
+        ? latestFlowDefData.value
+        : undefined;
+
+  const flowParams = activeFlowDefinition?.params;
+
   const selectedFlowDefHash =
-    selectedFlow?.latestVersion.definitionHash ?? flowSelectedId ?? null;
+    selectedSim?.flowVersion.definitionHash ??
+    selectedFlow?.latestVersion.definitionHash ??
+    null;
+  const selectedFlowVersionId =
+    selectedSim?.flowVersion.id ?? selectedFlow?.latestVersion.id ?? null;
 
   useEffect(() => {
     setSelectedParams({});
@@ -69,8 +95,9 @@ export function Runner() {
   );
   const runDisabled =
     !flowSelectedId ||
-    isFlowLoading ||
-    (flowDefData?.ok === true && missingRequiredParams.length > 0);
+    isLatestFlowLoading ||
+    isSimFlowLoading ||
+    (activeFlowDefinition && missingRequiredParams.length > 0);
 
   const runParams = useMemo(() => {
     const entries = Object.entries(selectedParams).filter(([, hash]) =>
@@ -89,7 +116,7 @@ export function Runner() {
       dispatch(setRunnerActiveTab(tab));
     },
     runId,
-    flowDefHash: flowSelectedId,
+    flowDefHash: selectedFlowDefHash ?? flowSelectedId,
   };
 
   return (
@@ -99,9 +126,10 @@ export function Runner() {
         <h2 className="text-xl font-bold mb-5">Runner</h2>
         <div className="flex flex-col gap-3 mb-4">
           <RunnerFlowSelector />
-          <RunnerSimSelector flowDefHash={selectedFlowDefHash} />
+          <RunnerSimSelector flowVersionId={selectedFlowVersionId} />
           <RunnerRunButton
             flowDefHash={selectedFlowDefHash}
+            forkSpecHash={selectedSim?.sim.forkSpecHash ?? null}
             params={runParams}
             disabled={runDisabled}
           />
@@ -123,7 +151,7 @@ export function Runner() {
             }}
           />
           {flowSelectedId &&
-          flowDefData?.ok === true &&
+          activeFlowDefinition &&
           missingRequiredParams.length > 0 ? (
             <p className="mt-2 text-md text-amber-700 dark:text-amber-400">
               Select artifacts for all required params before running this flow.
