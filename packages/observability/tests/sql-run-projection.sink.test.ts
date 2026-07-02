@@ -3,7 +3,12 @@ import type {
   RunRepositoryPort,
   RunStepProjectionRepositoryPort,
 } from "@lcase/ports";
-import type { AnyEvent, Result, RunRecord, RunStepProjectionRecord } from "@lcase/types";
+import type {
+  AnyEvent,
+  Result,
+  RunRecord,
+  RunStepProjectionRecord,
+} from "@lcase/types";
 import { SqlRunProjectionSink } from "../src/sinks/sql-run-projection.sink.js";
 
 function makeRunRequestedEvent(): AnyEvent<"run.requested"> {
@@ -77,6 +82,11 @@ function makeStepCompletedEvent(): AnyEvent<"step.completed"> {
     type: "step.completed",
     action: "completed",
     data: {
+      step: {
+        id: "fetch",
+        name: "fetch",
+        type: "httpjson",
+      },
       status: "success",
       outputHash: "c".repeat(64),
       exportHashes: {
@@ -116,7 +126,9 @@ function makeRunCompletedEvent(): AnyEvent<"run.completed"> {
   };
 }
 
-function okRunRecord(input: Partial<RunRecord> = {}): Result<RunRecord, string> {
+function okRunRecord(
+  input: Partial<RunRecord> = {},
+): Result<RunRecord, string> {
   return {
     ok: true,
     value: {
