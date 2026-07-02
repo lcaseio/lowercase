@@ -2,6 +2,8 @@ import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaRunRepository } from "@lcase/adapters/run-repository";
+import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
@@ -32,6 +34,7 @@ import {
   ObservabilityTap,
   ReplaySink,
   RunIndexSink,
+  SqlRunProjectionSink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
@@ -190,6 +193,12 @@ export function createObservability(
   tap.attachSink(
     new RunIndexSink(
       new FsRunIndexStore(path.resolve(process.cwd(), "lcase-db/runs/index")),
+    ),
+  );
+  tap.attachSink(
+    new SqlRunProjectionSink(
+      new PrismaRunRepository(prisma),
+      new PrismaRunStepProjectionRepository(prisma),
     ),
   );
   if (config.sinks) {
