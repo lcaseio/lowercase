@@ -12,7 +12,6 @@ import type {
   Result,
   RunDetail,
   RunListItem,
-  RunParams,
   SimDefinition,
   SimListItem,
   SimRecord,
@@ -20,7 +19,6 @@ import type {
 import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
-import type { FlowList } from "../flow/list.type.js";
 import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
@@ -50,8 +48,6 @@ export interface SimServicePort {
 }
 
 export interface FlowServicePort {
-  startFlow(args: { absoluteFilePath?: string }): Promise<void>;
-  listFlows(args: { absoluteDirPath?: string }): Promise<FlowList>;
   validateJsonFlow(
     flow: string | Record<string, unknown>,
   ): FlowDefinition | string;

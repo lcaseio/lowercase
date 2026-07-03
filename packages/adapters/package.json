@@ -8,10 +8,6 @@
       "types": "./dist/event-bus/index.d.ts",
       "import": "./dist/event-bus/index.js"
     },
-    "./flow-store": {
-      "types": "./dist/flow-store/index.d.ts",
-      "import": "./dist/flow-store/index.js"
-    },
     "./flow-repository": {
       "types": "./dist/flow-repository/index.d.ts",
       "import": "./dist/flow-repository/index.js"
@@ -63,21 +59,6 @@
     "./artifact-repository": {
       "types": "./dist/artifact-repository/index.d.ts",
       "import": "./dist/artifact-repository/index.js"
-    },
-    "./run-params-index-store": {
-      "types": "./dist/run-params-index-store/index.d.ts",
-      "import": "./dist/run-params-index-store/index.js"
-    },
-    "./flow-index-store": {
-      "types": "./dist/flow-index-store/index.d.ts",
-      "import": "./dist/flow-index-store/index.js"
-    },
-    "./fork-spec-index-store": {
-      "types": "./dist/fork-spec-index-store/index.d.ts",
-      "import": "./dist/fork-spec-index-store/index.js"
-    },
-    "./generic-store": {
-      "import": "./dist/generic-store/fs-json-index-store.js"
     }
   },
   "scripts": {

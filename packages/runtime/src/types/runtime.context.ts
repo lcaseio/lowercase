@@ -6,7 +6,6 @@ import type {
   ArtifactsPort,
 } from "@lcase/ports";
 import { Worker } from "@lcase/worker";
-import { FlowStore } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 import {
   ConsoleSink,
@@ -29,7 +28,6 @@ export type RuntimeContext = {
   router: RouterPort;
   engine: Engine;
   worker: Worker;
-  flowStore: FlowStore;
   tap: ObservabilityTap;
   sinks: SinkMap;
   ef: EmitterFactory;

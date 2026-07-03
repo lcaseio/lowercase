@@ -46,8 +46,6 @@ export * from "./engine/run-plan.type.js";
 export * from "./engine/fork-spec-index.js";
 export * from "./engine/run-params.js";
 
-export * from "./flow-index-store/flow-index.js";
-
 // api index
 export * from "./api/index.js";
 
@@ -56,9 +54,6 @@ export * from "./run-index-store/run-list.js";
 // artifacts
 export * from "./artifacts/artifact-index.js";
 export * from "./artifacts/artifact-put.js";
-
-// generic file system json index store
-export * from "./fs-json-index-store/fs-json-index-store.js";
 
 // sql return types used in adapters / api responses
 export * from "./db-sql/index.js";
