@@ -78,9 +78,12 @@ export interface SystemServicePort {
 }
 
 export type RunRequest = {
+  flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
   source: string;
   runId?: string;
+  simId?: string;
   forkSpecHash?: string;
   params?: Record<string, string>;
 };

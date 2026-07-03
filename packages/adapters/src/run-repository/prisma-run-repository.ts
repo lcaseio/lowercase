@@ -30,6 +30,7 @@ function toRunRecord(run: {
   flowId: string | null;
   flowVersionId: string | null;
   flowDefHash: string;
+  simId: string | null;
   parentRunId: string | null;
   forkSpecHash: string | null;
   runParamsHash: string | null;
@@ -47,6 +48,7 @@ function toRunRecord(run: {
     flowId: run.flowId ?? undefined,
     flowVersionId: run.flowVersionId ?? undefined,
     flowDefHash: run.flowDefHash,
+    simId: run.simId ?? undefined,
     parentRunId: run.parentRunId ?? undefined,
     forkSpecHash: run.forkSpecHash ?? undefined,
     runParamsHash: run.runParamsHash ?? undefined,
@@ -82,6 +84,7 @@ export class PrismaRunRepository implements RunRepositoryPort {
           flowId: input.flowId,
           flowVersionId: input.flowVersionId,
           flowDefHash: input.flowDefHash,
+          simId: input.simId,
           parentRunId: input.parentRunId,
           forkSpecHash: input.forkSpecHash,
           runParamsHash: input.runParamsHash,
@@ -97,6 +100,7 @@ export class PrismaRunRepository implements RunRepositoryPort {
           flowId: input.flowId,
           flowVersionId: input.flowVersionId,
           flowDefHash: input.flowDefHash,
+          simId: input.simId,
           parentRunId: input.parentRunId,
           forkSpecHash: input.forkSpecHash,
           runParamsHash: input.runParamsHash,
@@ -125,6 +129,7 @@ export class PrismaRunRepository implements RunRepositoryPort {
           flowId: input.flowId,
           flowVersionId: input.flowVersionId,
           flowDefHash: input.flowDefHash,
+          simId: input.simId,
           parentRunId: input.parentRunId,
           forkSpecHash: input.forkSpecHash,
           runParamsHash: input.runParamsHash,

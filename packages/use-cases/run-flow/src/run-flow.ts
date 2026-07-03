@@ -5,7 +5,17 @@ export type RunDetails = {
   ef: EmitterFactoryPort;
 } & RunRequest;
 export async function runFlow(runDetails: RunDetails) {
-  const { runId, ef, source, flowDefHash, forkSpecHash, params } = runDetails;
+  const {
+    runId,
+    ef,
+    source,
+    flowId,
+    flowVersionId,
+    flowDefHash,
+    simId,
+    forkSpecHash,
+    params,
+  } = runDetails;
   const runid = runId ?? createRunId();
   const emitter = ef.newRunEmitterNewTrace({
     source,
@@ -13,7 +23,10 @@ export async function runFlow(runDetails: RunDetails) {
     runid,
   });
   await emitter.emit("run.requested", {
+    flowId,
+    flowVersionId,
     flowDefHash,
+    ...(simId ? { simId } : {}),
     ...(forkSpecHash ? { forkSpecHash } : {}),
     ...(params ? { params } : {}),
   });

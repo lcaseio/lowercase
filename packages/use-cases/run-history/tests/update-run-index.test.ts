@@ -10,6 +10,8 @@ describe("run-history updateRunIndex()", () => {
       runid: "test-runid",
       traceid: "test-traceid",
       data: {
+        flowId: "flow-rel-id",
+        flowVersionId: "flow-version-id",
         flowDefHash: "test-flowdefhash",
         forkSpecHash: "test-forkspechash",
         params: {

@@ -97,6 +97,8 @@ describe("run sql routes", () => {
         traceId: "trace-1",
         status: "completed",
         source: "lowercase://test",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
         flowDefHash: "a".repeat(64),
         forkSpecHash: "b".repeat(64),
         startTime: new Date("2026-07-02T10:00:01.000Z"),
@@ -133,6 +135,8 @@ describe("run sql routes", () => {
         flowid: "a".repeat(64),
         runid: "run-1",
         data: {
+          flowId: "flow-1",
+          flowVersionId: "flow-version-1",
           flowDefHash: "a".repeat(64),
         },
       },

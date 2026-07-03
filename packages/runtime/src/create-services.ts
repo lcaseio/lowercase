@@ -37,6 +37,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     ctx.artifacts,
     ctx.ef,
     ctx.runIndexStore,
+    runQuery,
     simRepository,
     flowRepository,
   );

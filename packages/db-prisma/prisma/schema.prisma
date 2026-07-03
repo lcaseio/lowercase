@@ -78,6 +78,7 @@ model Sim {
 
   flow        Flow        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   flowVersion FlowVersion @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  runs        Run[]
 
   @@index([createdAt])
   @@index([flowId])
@@ -92,6 +93,7 @@ model Run {
   flowId        String?
   flowVersionId String?
   flowDefHash   String
+  simId         String?
   parentRunId   String?
   forkSpecHash  String?
   runParamsHash String?
@@ -103,11 +105,13 @@ model Run {
 
   flow            Flow?                @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   flowVersion     FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sim             Sim?                 @relation(fields: [simId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   stepProjections RunStepProjection[]
 
   @@index([createdAt])
   @@index([flowId])
   @@index([flowVersionId])
+  @@index([simId])
   @@index([parentRunId])
 }
 

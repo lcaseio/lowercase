@@ -2,6 +2,7 @@ import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
@@ -72,10 +73,12 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
 
   const replayService = new ReplayService(ctx.replay);
   const flowRepository = new PrismaFlowRepository(prisma);
+  const runQuery = new PrismaRunQuery(prisma);
   const simService = new SimService(
     ctx.artifacts,
     ctx.ef,
     ctx.runIndexStore,
+    runQuery,
     new PrismaSimRepository(prisma),
     flowRepository,
   );

@@ -6,10 +6,20 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostRunsReq }>(
     "/",
     async (req, rep): Promise<PostRunsRes> => {
-      const { flowDefHash, forkSpecHash, params } = req.body;
+      const { flowId, flowVersionId, flowDefHash, simId, forkSpecHash, params } =
+        req.body;
+      if (!isNonEmptyString(flowId)) {
+        return { ok: false, error: "Invalid flowId" };
+      }
+      if (!isNonEmptyString(flowVersionId)) {
+        return { ok: false, error: "Invalid flowVersionId" };
+      }
       const validFlowDefHash = validateFlowHash(flowDefHash);
 
       if (!validFlowDefHash) return { ok: false, error: "Invalid flowDefHash" };
+      if (simId !== undefined && !isNonEmptyString(simId)) {
+        return { ok: false, error: "Invalid simId" };
+      }
 
       const runId = app.services.run.makeRunId();
 
@@ -20,9 +30,12 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
         console.log("monitoring run");
       }
       await app.services.run.requestRun({
+        flowId,
+        flowVersionId,
         flowDefHash: validFlowDefHash,
         source: "lowercase://http-server",
         runId,
+        ...(simId ? { simId } : {}),
         forkSpecHash,
         params,
       });
@@ -37,4 +50,8 @@ export function validateFlowHash(hash: unknown) {
   const match = hash.match(regex);
   if (!match) return;
   return match[0];
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }

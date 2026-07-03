@@ -36,6 +36,7 @@ function toRunRecord(run: {
   flowId: string | null;
   flowVersionId: string | null;
   flowDefHash: string;
+  simId: string | null;
   parentRunId: string | null;
   forkSpecHash: string | null;
   runParamsHash: string | null;
@@ -53,6 +54,7 @@ function toRunRecord(run: {
     flowId: run.flowId ?? undefined,
     flowVersionId: run.flowVersionId ?? undefined,
     flowDefHash: run.flowDefHash,
+    simId: run.simId ?? undefined,
     parentRunId: run.parentRunId ?? undefined,
     forkSpecHash: run.forkSpecHash ?? undefined,
     runParamsHash: run.runParamsHash ?? undefined,
@@ -190,21 +192,42 @@ export class PrismaRunQuery implements RunQueryPort {
     });
 
     const flowDefHashes = [...new Set(runs.map((run) => run.flowDefHash))];
+    const flowVersionIds = [
+      ...new Set(
+        runs.map((run) => run.flowVersionId).filter((id): id is string => Boolean(id)),
+      ),
+    ];
     const flowVersions = await this.db.flowVersion.findMany({
-      where: { definitionHash: { in: flowDefHashes } },
+      where:
+        flowVersionIds.length > 0
+          ? {
+              OR: [
+                { id: { in: flowVersionIds } },
+                { definitionHash: { in: flowDefHashes } },
+              ],
+            }
+          : { definitionHash: { in: flowDefHashes } },
       include: { flow: true },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 
     const byDefinitionHash = new Map<string, FlowVersionLookup>();
+    const byId = new Map<string, FlowVersionLookup>();
     for (const version of flowVersions) {
+      if (!byId.has(version.id)) {
+        byId.set(version.id, version);
+      }
       if (!byDefinitionHash.has(version.definitionHash)) {
         byDefinitionHash.set(version.definitionHash, version);
       }
     }
 
     return runs.map((run) =>
-      toRunListItem(toRunRecord(run), byDefinitionHash.get(run.flowDefHash)),
+      toRunListItem(
+        toRunRecord(run),
+        (run.flowVersionId ? byId.get(run.flowVersionId) : undefined) ??
+          byDefinitionHash.get(run.flowDefHash),
+      ),
     );
   }
 
@@ -218,11 +241,16 @@ export class PrismaRunQuery implements RunQueryPort {
         orderBy: [{ stepId: "asc" }],
       });
 
-      const flowVersion = await this.db.flowVersion.findFirst({
-        where: { definitionHash: run.flowDefHash },
-        include: { flow: true },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      });
+      const flowVersion = run.flowVersionId
+        ? await this.db.flowVersion.findUnique({
+            where: { id: run.flowVersionId },
+            include: { flow: true },
+          })
+        : await this.db.flowVersion.findFirst({
+            where: { definitionHash: run.flowDefHash },
+            include: { flow: true },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          });
 
       return {
         ok: true,

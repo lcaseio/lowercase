@@ -56,6 +56,36 @@ describe("PrismaRunRepository", () => {
       path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
     );
 
+    const createdAt = new Date("2026-07-02T10:00:00.000Z");
+    await prisma.flow.create({
+      data: {
+        id: "flow-1",
+        name: "Prompt Flow",
+        createdAt,
+        updatedAt: createdAt,
+        versions: {
+          create: {
+            id: "flow-version-1",
+            sequence: 1,
+            definitionHash: "a".repeat(64),
+            versionLabel: "v1",
+            createdAt,
+          },
+        },
+      },
+    });
+    await prisma.sim.create({
+      data: {
+        id: "sim-1",
+        name: "Saved Sim",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
+        forkSpecHash: "b".repeat(64),
+        createdAt,
+        updatedAt: createdAt,
+      },
+    });
+
     repository = new PrismaRunRepository(prisma);
   });
 
@@ -70,7 +100,10 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-1",
       status: "requested",
       source: "lowercase://test",
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
       flowDefHash: "a".repeat(64),
+      simId: "sim-1",
       forkSpecHash: "b".repeat(64),
     });
 
@@ -83,7 +116,10 @@ describe("PrismaRunRepository", () => {
         traceId: "trace-1",
         status: "requested",
         source: "lowercase://test",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
         flowDefHash: "a".repeat(64),
+        simId: "sim-1",
         forkSpecHash: "b".repeat(64),
       }),
     );
@@ -103,7 +139,9 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-2",
       status: "requested",
       source: "lowercase://test",
-      flowDefHash: "c".repeat(64),
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
     });
 
     const result = await repository.updateRun({
@@ -132,7 +170,9 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-first",
       status: "requested",
       source: "lowercase://test",
-      flowDefHash: "d".repeat(64),
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
     });
 
     await new Promise((resolve) => setTimeout(resolve, 5));
@@ -142,7 +182,9 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-second",
       status: "requested",
       source: "lowercase://test",
-      flowDefHash: "e".repeat(64),
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
     });
 
     const runs = await repository.listRuns();
@@ -155,7 +197,9 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-3",
       status: "requested",
       source: "lowercase://test",
-      flowDefHash: "f".repeat(64),
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
     });
 
     const result = await repository.createRun({
@@ -163,7 +207,9 @@ describe("PrismaRunRepository", () => {
       traceId: "trace-3",
       status: "started",
       source: "lowercase://updated",
-      flowDefHash: "f".repeat(64),
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
       startTime: "2026-07-02T10:00:00.000Z",
     });
 
