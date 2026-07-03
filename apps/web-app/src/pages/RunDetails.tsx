@@ -22,7 +22,7 @@ export function RunDetails() {
   const dispatch = useAppDispatch();
   const selectedEventId = useAppSelector(getRunsSelectedEventId);
   const activeTab = useAppSelector(getRunsActiveTab);
-  const { runId, flowDefHash } = useRunDetailsHistoryParams();
+  const { runId } = useRunDetailsHistoryParams();
 
   const controller: RunDetailsController = {
     selectedEventId,
@@ -34,7 +34,7 @@ export function RunDetails() {
       dispatch(setRunsActiveTab(tab));
     },
     runId,
-    flowDefHash,
+    flowDefHash: null,
   };
   return (
     <div id="page-wrapper">
@@ -58,6 +58,5 @@ export function RunDetails() {
 function useRunDetailsHistoryParams() {
   const [searchParams] = useSearchParams();
   const runHistoryRunId = searchParams.get("runId");
-  const runDetailsFlowDefHash = searchParams.get("flowDefHash");
-  return { runId: runHistoryRunId, flowDefHash: runDetailsFlowDefHash };
+  return { runId: runHistoryRunId };
 }

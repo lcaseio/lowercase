@@ -1,9 +1,6 @@
-import type { Result, ReusableRunStepData, RunDetail } from "@lcase/types";
+import type { Result, RunDetail, RunListItem } from "@lcase/types";
 
 export interface RunQueryPort {
+  listRuns(): Promise<RunListItem[]>;
   getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
-  getReusableStepData(
-    runId: string,
-    stepId: string,
-  ): Promise<Result<ReusableRunStepData, string>>;
 }

@@ -2,7 +2,7 @@ import { GetSimSpecReq, GetSimSpecRes } from "@lcase/types";
 import type { FastifyInstance } from "fastify";
 import { isHash } from "../../utils/is-hash.js";
 
-export const getSimSpec = async (app: FastifyInstance) => {
+export const getSimSpecRoute = async (app: FastifyInstance) => {
   app.get<{ Params: GetSimSpecReq }>(
     "/:simId",
     async (req, reply): Promise<GetSimSpecRes> => {

@@ -10,7 +10,7 @@ import type {
   CreateFlowRecordResult,
   ForkSpec,
   Result,
-  RunIndex,
+  RunDetail,
   RunListItem,
   RunParams,
   SimDefinition,
@@ -88,7 +88,7 @@ export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
-  getRunIndex(runId: string): Promise<Result<RunIndex, string>>;
+  getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
   // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
 }
 
