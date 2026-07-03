@@ -12,6 +12,7 @@ import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
+import type { RunQueryPort } from "@lcase/ports";
 import type { IndexStorePort } from "@lcase/ports";
 import { SimService } from "@lcase/services";
 import type { RunIndex } from "@lcase/types";
@@ -117,6 +118,13 @@ describe("sim sql routes", () => {
       artifacts,
       new EmitterFactory(new InMemoryEventBus()),
       makeRunIndexStore(),
+      {
+        listRuns: async () => [],
+        getRunDetail: async () => ({
+          ok: false,
+          error: "unused",
+        }),
+      } satisfies RunQueryPort,
       simRepository,
       flowRepository,
     );

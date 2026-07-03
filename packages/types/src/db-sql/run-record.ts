@@ -10,6 +10,7 @@ export type RunRecord = {
   flowId?: string;
   flowVersionId?: string;
   flowDefHash: string;
+  simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
   runParamsHash?: string;
@@ -28,6 +29,7 @@ export type CreateRunRecordInput = {
   flowDefHash: string;
   flowId?: string;
   flowVersionId?: string;
+  simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
   runParamsHash?: string;
@@ -43,6 +45,7 @@ export type UpdateRunRecordInput = {
   flowId?: string;
   flowVersionId?: string;
   flowDefHash?: string;
+  simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
   runParamsHash?: string;

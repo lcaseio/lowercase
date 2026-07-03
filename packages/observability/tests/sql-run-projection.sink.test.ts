@@ -16,6 +16,8 @@ function makeRunRequestedEvent(): AnyEvent<"run.requested"> {
     type: "run.requested",
     action: "requested",
     data: {
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
       flowDefHash: "a".repeat(64),
       forkSpecHash: "b".repeat(64),
     },
@@ -136,6 +138,8 @@ function okRunRecord(
       traceId: "trace-id",
       status: "requested",
       source: "lowercase://test",
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
       flowDefHash: "a".repeat(64),
       createdAt: "2026-07-02T10:00:00.000Z",
       updatedAt: "2026-07-02T10:00:00.000Z",
@@ -189,6 +193,8 @@ describe("SqlRunProjectionSink", () => {
     expect(runs.createRun).toHaveBeenLastCalledWith(
       expect.objectContaining({
         id: "run-1",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
         status: "completed",
         startTime: "2026-07-02T10:00:01.000Z",
         endTime: "2026-07-02T10:00:05.000Z",

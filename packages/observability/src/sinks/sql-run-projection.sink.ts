@@ -10,7 +10,10 @@ type ShadowRunState = {
   index: RunIndex;
   traceId: string;
   source: string;
+  flowId?: string;
+  flowVersionId?: string;
   flowDefHash?: string;
+  simId?: string;
   forkSpecHash?: string;
   status: RunStatus;
   dirty: boolean;
@@ -75,6 +78,9 @@ export class SqlRunProjectionSink implements EventSink {
     if (event.type === "run.requested") {
       const requestedEvent = event as AnyEvent<"run.requested">;
       state.status = "requested";
+      state.flowId = requestedEvent.data.flowId;
+      state.flowVersionId = requestedEvent.data.flowVersionId;
+      state.simId = requestedEvent.data.simId;
       state.forkSpecHash = requestedEvent.data.forkSpecHash;
     } else if (event.type === "run.started") {
       state.status = "started";
@@ -129,7 +135,10 @@ export class SqlRunProjectionSink implements EventSink {
       traceId: state.traceId,
       status: state.status,
       source: state.source,
+      ...(state.flowId ? { flowId: state.flowId } : {}),
+      ...(state.flowVersionId ? { flowVersionId: state.flowVersionId } : {}),
       flowDefHash: state.flowDefHash,
+      ...(state.simId ? { simId: state.simId } : {}),
       ...(state.forkSpecHash ? { forkSpecHash: state.forkSpecHash } : {}),
       ...(state.index.startTime ? { startTime: state.index.startTime } : {}),
       ...(state.index.endTime ? { endTime: state.index.endTime } : {}),

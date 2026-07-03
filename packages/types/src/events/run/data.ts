@@ -10,7 +10,10 @@ type RunDescriptor = {
   };
 };
 export type RunRequestedData = {
+  flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
+  simId?: string;
   forkSpecHash?: string;
   params?: Record<string, string>;
 };

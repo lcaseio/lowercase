@@ -75,6 +75,7 @@ export function Runner() {
     selectedSim?.flowVersion.definitionHash ??
     selectedFlow?.latestVersion.definitionHash ??
     null;
+  const selectedFlowId = selectedSim?.flow.id ?? selectedFlow?.flow.id ?? null;
   const selectedFlowVersionId =
     selectedSim?.flowVersion.id ?? selectedFlow?.latestVersion.id ?? null;
 
@@ -128,7 +129,10 @@ export function Runner() {
           <RunnerFlowSelector />
           <RunnerSimSelector flowVersionId={selectedFlowVersionId} />
           <RunnerRunButton
+            flowId={selectedFlowId}
+            flowVersionId={selectedFlowVersionId}
             flowDefHash={selectedFlowDefHash}
+            simId={selectedSim?.sim.id ?? null}
             forkSpecHash={selectedSim?.sim.forkSpecHash ?? null}
             params={runParams}
             disabled={runDisabled}

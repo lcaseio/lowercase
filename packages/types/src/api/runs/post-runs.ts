@@ -1,6 +1,9 @@
 // POST api/runs  request
 export type PostRunsReq = {
+  flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
+  simId?: string;
   forkSpecHash?: string;
   params?: Record<string, string>;
 };

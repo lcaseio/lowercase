@@ -4,6 +4,8 @@ export const runRequestedEvent: AnyEvent<"run.requested"> = {
   type: "run.requested",
   action: "requested",
   data: {
+    flowId: "test-flowid-rel",
+    flowVersionId: "test-flowversionid",
     flowDefHash: "test-flowdefhash",
   },
   traceparent: "test-traceparent",
