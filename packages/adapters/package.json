@@ -64,10 +64,6 @@
       "types": "./dist/artifact-repository/index.d.ts",
       "import": "./dist/artifact-repository/index.js"
     },
-    "./run-index-store": {
-      "types": "./dist/run-index-store/index.d.ts",
-      "import": "./dist/run-index-store/index.js"
-    },
     "./run-params-index-store": {
       "types": "./dist/run-params-index-store/index.d.ts",
       "import": "./dist/run-params-index-store/index.js"
