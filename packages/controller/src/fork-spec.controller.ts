@@ -1,17 +1,14 @@
 import type {
   ArtifactsPort,
   EmitterFactoryPort,
-  IndexStorePort,
   RunQueryPort,
 } from "@lcase/ports";
 import { startForkedSim } from "@lcase/run-flow";
-import { RunIndex } from "@lcase/types";
 
 export class ForkSpecController {
   constructor(
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
-    private readonly runIndexStore: IndexStorePort<RunIndex>,
     private readonly runQuery: RunQueryPort,
   ) {}
 

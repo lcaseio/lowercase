@@ -1,8 +1,7 @@
 import type {
   ArtifactsPort,
   EmitterFactoryPort,
-  IndexStorePort,
-  RunIndexStorePort,
+  RunQueryPort,
 } from "@lcase/ports";
 import type {
   AnyEvent,
@@ -19,7 +18,6 @@ import type {
   JobScope,
   RunCompletedData,
   RunFailedData,
-  RunIndex,
   RunScope,
   RunStartedData,
   StepCompletedData,
@@ -33,7 +31,7 @@ import type {
   FlowDefResultMsg,
   ForkSpecResultMsg,
   MakeRunPlanMsg,
-  RunIndexResultMsg,
+  ReusableStepDataResultMsg,
   RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
@@ -44,7 +42,7 @@ import type {
   EmitStepReusedFx,
   GetFlowDefFx,
   GetForkSpecFx,
-  GetRunIndexFx,
+  GetReusableStepDataFx,
   MakeRunPlanFx,
 } from "./types/effect.types.js";
 
@@ -137,7 +135,7 @@ export type UpdateJoinMsg = {
 export type EngineMessage =
   | FlowDefResultMsg
   | ForkSpecResultMsg
-  | RunIndexResultMsg
+  | ReusableStepDataResultMsg
   | MakeRunPlanMsg
   | RunRequestedMsg
   | RunStartedMsg
@@ -265,7 +263,7 @@ export type EngineEffect =
   | WriteContextToDiskFx
   | GetFlowDefFx
   | GetForkSpecFx
-  | GetRunIndexFx
+  | GetReusableStepDataFx
   | MakeRunPlanFx;
 
 // reducers
@@ -304,7 +302,7 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
-  runIndexStore: IndexStorePort<RunIndex>;
+  runQuery: RunQueryPort;
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactsPort;

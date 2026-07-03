@@ -36,7 +36,6 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const sim = new SimService(
     ctx.artifacts,
     ctx.ef,
-    ctx.runIndexStore,
     runQuery,
     simRepository,
     flowRepository,

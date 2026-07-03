@@ -14,11 +14,11 @@ export const makeRunPlanNewState: EngineState = {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 
@@ -84,11 +84,11 @@ export const makeRunPlanNewStateFAProblems: EngineState = {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 

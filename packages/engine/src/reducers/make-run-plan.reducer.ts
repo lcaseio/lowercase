@@ -43,12 +43,17 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     // try to build run plan inline for now.
     // assumes steps not reused are rerun
 
-    if (run.forkSpec && run.runIndex) {
+    if (run.forkSpec && run.reusableStepData) {
       for (const stepId of run.forkSpec.reuse) {
+        const reusableStep = run.reusableStepData[stepId];
+        if (!reusableStep) {
+          run.status = "failed";
+          return;
+        }
         run.runPlan.reuse[stepId] = {
-          status: run.runIndex.steps[stepId].status!,
-          outputHash: run.runIndex.steps[stepId].outputHash,
-          exportHashes: run.runIndex.steps[stepId].exportHashes,
+          status: reusableStep.status!,
+          outputHash: reusableStep.outputHash,
+          exportHashes: reusableStep.exportHashes,
         };
       }
     }

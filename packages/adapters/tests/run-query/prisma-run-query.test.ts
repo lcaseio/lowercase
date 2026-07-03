@@ -229,4 +229,82 @@ describe("PrismaRunQuery", () => {
       },
     });
   });
+
+  it("returns reusable step data for requested step ids", async () => {
+    await prisma.run.create({
+      data: {
+        id: "run-4",
+        traceId: "trace-4",
+        status: "completed",
+        source: "lowercase://reuse",
+        flowDefHash: "g".repeat(64),
+      },
+    });
+
+    await prisma.runStepProjection.createMany({
+      data: [
+        {
+          runId: "run-4",
+          stepId: "fetch",
+          status: "completed",
+          outputHash: "h".repeat(64),
+          exportHashes: JSON.stringify({ body: "i".repeat(64) }),
+        },
+        {
+          runId: "run-4",
+          stepId: "transform",
+          status: "completed",
+          outputHash: "j".repeat(64),
+        },
+      ],
+    });
+
+    await expect(
+      query.getReusableStepData("run-4", ["fetch", "transform"]),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        fetch: {
+          stepId: "fetch",
+          status: "completed",
+          outputHash: "h".repeat(64),
+          exportHashes: { body: "i".repeat(64) },
+        },
+        transform: {
+          stepId: "transform",
+          status: "completed",
+          outputHash: "j".repeat(64),
+          exportHashes: undefined,
+        },
+      },
+    });
+  });
+
+  it("returns not found when reusable step data is missing for a requested step", async () => {
+    await prisma.run.create({
+      data: {
+        id: "run-5",
+        traceId: "trace-5",
+        status: "completed",
+        source: "lowercase://reuse-missing",
+        flowDefHash: "k".repeat(64),
+      },
+    });
+
+    await prisma.runStepProjection.create({
+      data: {
+        runId: "run-5",
+        stepId: "fetch",
+        status: "completed",
+        outputHash: "l".repeat(64),
+      },
+    });
+
+    await expect(
+      query.getReusableStepData("run-5", ["fetch", "transform"]),
+    ).resolves.toEqual({
+      ok: false,
+      error: "Reusable step data not found for stepId: transform",
+    });
+  });
 });

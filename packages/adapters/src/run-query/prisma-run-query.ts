@@ -3,6 +3,7 @@ import type { RunQueryPort } from "@lcase/ports";
 import type {
   FlowRecord,
   FlowVersionRecord,
+  ReusableRunStepData,
   Result,
   RunDetail,
   RunListItem,
@@ -267,6 +268,59 @@ export class PrismaRunQuery implements RunQueryPort {
       return {
         ok: false,
         error: `Unable to read run detail: ${String(error)}`,
+      };
+    }
+  }
+
+  async getReusableStepData(
+    parentRunId: string,
+    stepIds: string[],
+  ): Promise<Result<Record<string, ReusableRunStepData>, string>> {
+    try {
+      const run = await this.db.run.findUnique({
+        where: { id: parentRunId },
+        select: { id: true },
+      });
+      if (!run) {
+        return { ok: false, error: `Run not found: ${parentRunId}` };
+      }
+
+      const uniqueStepIds = [...new Set(stepIds)];
+      const steps = await this.db.runStepProjection.findMany({
+        where: {
+          runId: parentRunId,
+          stepId: { in: uniqueStepIds },
+        },
+        orderBy: [{ stepId: "asc" }],
+      });
+
+      if (steps.length !== uniqueStepIds.length) {
+        const foundStepIds = new Set(steps.map((step) => step.stepId));
+        const missingStepId = uniqueStepIds.find((stepId) => !foundStepIds.has(stepId));
+        return {
+          ok: false,
+          error: `Reusable step data not found for stepId: ${missingStepId ?? "unknown"}`,
+        };
+      }
+
+      return {
+        ok: true,
+        value: Object.fromEntries(
+          steps.map((step) => [
+            step.stepId,
+            {
+              stepId: step.stepId,
+              status: step.status ?? undefined,
+              outputHash: step.outputHash ?? undefined,
+              exportHashes: parseExportHashes(step.exportHashes),
+            } satisfies ReusableRunStepData,
+          ]),
+        ),
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Unable to read reusable step data: ${String(error)}`,
       };
     }
   }

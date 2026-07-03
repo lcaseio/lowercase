@@ -13,11 +13,11 @@ export const runStartedNewState: EngineState = {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 

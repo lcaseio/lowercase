@@ -2,7 +2,7 @@ import type { RunContext } from "@lcase/types";
 import type { EngineState } from "../../src/engine.types.js";
 import { flowDef } from "./flow-definition.js";
 
-export const runIndexResultOkState: EngineState = {
+export const reusableStepDataResultOkState: EngineState = {
   runs: {
     ["test-runid"]: {
       flowId: "test-flowdefhash",
@@ -12,11 +12,11 @@ export const runIndexResultOkState: EngineState = {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 
@@ -53,7 +53,7 @@ export const runIndexResultOkState: EngineState = {
   },
 };
 
-export const runIndexResultNotOkState: EngineState = {
+export const reusableStepDataResultNotOkState: EngineState = {
   runs: {
     ["test-runid"]: {
       flowId: "test-flowdefhash",
@@ -63,7 +63,7 @@ export const runIndexResultNotOkState: EngineState = {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      // runIndex - missing run index
+      // reusableStepData - missing lookup result
 
       runId: "test-runid",
       traceId: "test-traceid",
