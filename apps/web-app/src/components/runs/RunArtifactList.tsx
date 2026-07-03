@@ -1,28 +1,28 @@
-import { useGetRunIndexQuery } from "@/redux/api/runs-api";
+import { useGetRunDetailQuery } from "@/redux/api/runs-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { RunArtifactListItem } from "./RunArtifactListItem";
 
 export function RunArtifactList({ runId }: { runId: string | null }) {
-  const { data } = useGetRunIndexQuery(runId ? { runId } : skipToken);
+  const { data } = useGetRunDetailQuery(runId ? { runId } : skipToken);
 
   if (!data) return <div>No artifacts found yet</div>;
-  if (!data?.ok) return <div>Error getting run index: {data.error}</div>;
+  if (!data.ok) return <div>Error getting run detail: {data.error}</div>;
 
   return (
     <div>
-      {data.index.flowDefHash ? (
+      {data.value.run.flowDefHash ? (
         <RunArtifactListItem
           item="Flow Definition Hash"
-          hash={data.index.flowDefHash}
+          hash={data.value.run.flowDefHash}
         />
       ) : null}
-      {Object.entries(data.index.steps).map(([stepName, details]) => {
-        if (!details.outputHash) return null;
+      {data.value.steps.map((step) => {
+        if (!step.outputHash) return null;
         return (
           <RunArtifactListItem
-            item={"Step: " + stepName}
-            hash={details.outputHash}
-            key={details.outputHash}
+            item={"Step: " + step.stepId}
+            hash={step.outputHash}
+            key={`${step.stepId}:${step.outputHash}`}
           />
         );
       })}

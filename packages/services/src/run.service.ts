@@ -1,30 +1,26 @@
 import {
   EmitterFactoryPort,
-  IndexStorePort,
   RunRequest,
+  RunQueryPort,
   RunServicePort,
 } from "@lcase/ports";
 import { createRunId, runFlow } from "@lcase/run-flow";
-import { listAllRuns } from "@lcase/run-history";
-import { FlowIndex, Result, RunIndex } from "@lcase/types";
+import { Result, RunDetail, RunListItem } from "@lcase/types";
 
 type RunServiceDeps = {
   ef: EmitterFactoryPort;
-  runStore: IndexStorePort<RunIndex>;
-  flowStore: IndexStorePort<FlowIndex>;
+  runQuery: RunQueryPort;
   // runParamsStore: RunParamsIndexStorePort;
 };
 
 export class RunService implements RunServicePort {
   private readonly ef: EmitterFactoryPort;
-  private readonly runStore: IndexStorePort<RunIndex>;
-  private readonly flowStore: IndexStorePort<FlowIndex>;
+  private readonly runQuery: RunQueryPort;
   // private readonly runParamsStore: RunParamsIndexStorePort;
 
   constructor(deps: RunServiceDeps) {
     this.ef = deps.ef;
-    this.runStore = deps.runStore;
-    this.flowStore = deps.flowStore;
+    this.runQuery = deps.runQuery;
     // this.runParamsStore = deps.runParamsStore;
   }
 
@@ -36,15 +32,12 @@ export class RunService implements RunServicePort {
     return createRunId();
   }
 
-  async listAllRuns() {
-    const runList = await listAllRuns(this.runStore, this.flowStore);
-    return runList;
+  async listAllRuns(): Promise<RunListItem[]> {
+    return this.runQuery.listRuns();
   }
 
-  async getRunIndex(runId: string): Promise<Result<RunIndex, string>> {
-    const runIndex = await this.runStore.get(runId);
-    if (!runIndex) return { ok: false, error: "No run index found" };
-    return { ok: true, value: runIndex };
+  async getRunDetail(runId: string): Promise<Result<RunDetail, string>> {
+    return this.runQuery.getRunDetail(runId);
   }
 
   // async getRunParamsIndex(runId: string): Promise<Result<RunParams, string>> {

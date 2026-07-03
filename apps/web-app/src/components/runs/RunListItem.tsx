@@ -52,7 +52,7 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
         </ItemContent>
         <ItemActions>
           <Link
-            to={`/runs/details/?runId=${runListItem.runId}&flowDefHash=${runListItem.flowDefHash}`}
+            to={`/runs/details/?runId=${runListItem.runId}`}
           >
             <Button variant="outline" size="sm" className="cursor-pointer">
               View

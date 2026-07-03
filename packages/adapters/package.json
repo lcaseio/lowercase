@@ -28,6 +28,10 @@
       "types": "./dist/run-step-projection-repository/index.d.ts",
       "import": "./dist/run-step-projection-repository/index.js"
     },
+    "./run-query": {
+      "types": "./dist/run-query/index.d.ts",
+      "import": "./dist/run-query/index.js"
+    },
     "./mcp-manager": {
       "types": "./dist/mcp-manager/index.d.ts",
       "import": "./dist/mcp-manager/index.js"

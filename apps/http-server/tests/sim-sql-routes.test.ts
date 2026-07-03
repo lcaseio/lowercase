@@ -15,7 +15,7 @@ import { EmitterFactory } from "@lcase/events";
 import type { IndexStorePort } from "@lcase/ports";
 import { SimService } from "@lcase/services";
 import type { RunIndex } from "@lcase/types";
-import { getSimSpec } from "../src/routes/sims/get-sim-spec.js";
+import { getSimSpecRoute } from "../src/routes/sims/get-sim-spec.js";
 import { simsListRoute } from "../src/routes/sims/list.js";
 import { postSimsRoute } from "../src/routes/sims/post.js";
 
@@ -128,7 +128,7 @@ describe("sim sql routes", () => {
 
     await app.register(simsListRoute, { prefix: "/api/sims" });
     await app.register(postSimsRoute, { prefix: "/api/sims" });
-    await app.register(getSimSpec, { prefix: "/api/sims" });
+    await app.register(getSimSpecRoute, { prefix: "/api/sims" });
 
     const createResponse = await app.inject({
       method: "POST",
@@ -160,7 +160,9 @@ describe("sim sql routes", () => {
     expect(simRows[0]?.id).toBe(createBody.value.id);
     expect(simRows[0]?.forkSpecHash).toBe(createBody.value.forkSpecHash);
 
-    const storedForkSpec = await artifacts.getJson(createBody.value.forkSpecHash);
+    const storedForkSpec = await artifacts.getJson(
+      createBody.value.forkSpecHash,
+    );
     expect(storedForkSpec).toEqual({
       ok: true,
       value: {
