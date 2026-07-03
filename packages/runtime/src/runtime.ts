@@ -16,7 +16,6 @@ import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import type {
   ArtifactsPort,
   EventBusPort,
-  IndexStorePort,
   JobParserPort,
   RunQueryPort,
   StreamRegistryPort,
@@ -35,7 +34,6 @@ import {
   ConsoleSink,
   ObservabilityTap,
   ReplaySink,
-  RunIndexSink,
   SqlRunProjectionSink,
   WebSocketServerSink,
 } from "@lcase/observability";
@@ -54,9 +52,6 @@ import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
-import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
-import { FsJsonIndexStore } from "../../adapters/dist/index-store/fs-json-index-store.js";
-import { RunIndex } from "@lcase/types";
 import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
@@ -127,15 +122,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const runIndexStoreOld = new FsRunIndexStore(
-    path.resolve(process.cwd(), "lcase-db/runs/index"),
-  );
-
-  const runIndexStore = new FsJsonIndexStore<RunIndex>({
-    dir: path.resolve(process.cwd(), "lcase-db/runs/index"),
-    extension: ".index.json",
-  });
-
   const artifacts = createArtifacts(
     config.artifacts,
     new PrismaArtifactRepository(prisma),
@@ -184,7 +170,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     replay,
     limiter,
     artifacts,
-    runIndexStore,
   };
 }
 
@@ -194,11 +179,6 @@ export function createObservability(
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
-  tap.attachSink(
-    new RunIndexSink(
-      new FsRunIndexStore(path.resolve(process.cwd(), "lcase-db/runs/index")),
-    ),
-  );
   tap.attachSink(
     new SqlRunProjectionSink(
       new PrismaRunRepository(prisma),
