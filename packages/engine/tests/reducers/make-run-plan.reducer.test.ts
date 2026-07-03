@@ -3,9 +3,9 @@ import { makeRunPlanReducer } from "../../src/reducers/make-run-plan.reducer.js"
 import type { MakeRunPlanMsg } from "../../src/types/message.types.js";
 
 import {
-  runIndexResultNotOkState,
-  runIndexResultOkState,
-} from "../fixtures/run-index-result.state.js";
+  reusableStepDataResultNotOkState,
+  reusableStepDataResultOkState,
+} from "../fixtures/reusable-step-data-result.state.js";
 import {
   makeRunPlanNewState,
   makeRunPlanNewStateFAProblems,
@@ -13,16 +13,16 @@ import {
 import { flowDefWithProblems } from "../fixtures/flow-definition.js";
 
 describe("makeRunPlanReducer()", () => {
-  it("makes a run plan when FlowAnalysis + ForkSpec + RunIndex are valid", () => {
+  it("makes a run plan when FlowAnalysis + ForkSpec + reusable step data are valid", () => {
     const message: MakeRunPlanMsg = {
       type: "MakeRunPlan",
       runId: "test-runid",
     };
-    const state = makeRunPlanReducer(runIndexResultOkState, message);
+    const state = makeRunPlanReducer(reusableStepDataResultOkState, message);
     expect(state).toEqual(makeRunPlanNewState);
   });
   it("does not make a run plan when flow analysis has problems", () => {
-    const flowDefWithProblemsState = structuredClone(runIndexResultOkState);
+    const flowDefWithProblemsState = structuredClone(reusableStepDataResultOkState);
     flowDefWithProblemsState.flows["test-flowdefhash"].definition =
       flowDefWithProblems;
     const message: MakeRunPlanMsg = {
@@ -33,7 +33,7 @@ describe("makeRunPlanReducer()", () => {
     expect(state).toEqual(makeRunPlanNewStateFAProblems);
   });
   it("fails the run when a required param is missing", () => {
-    const stateWithParams = structuredClone(runIndexResultOkState);
+    const stateWithParams = structuredClone(reusableStepDataResultOkState);
     stateWithParams.flows["test-flowdefhash"].definition.params = {
       payload: { type: "application/json" },
     };
@@ -47,7 +47,7 @@ describe("makeRunPlanReducer()", () => {
     expect(state.runs["test-runid"].steps).toEqual({});
   });
   it("fails the run when an undeclared param is supplied", () => {
-    const stateWithParams = structuredClone(runIndexResultOkState);
+    const stateWithParams = structuredClone(reusableStepDataResultOkState);
     stateWithParams.runs["test-runid"].params = {
       payload: "payload-hash",
     };

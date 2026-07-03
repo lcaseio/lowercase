@@ -13,9 +13,7 @@ import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
 import type { RunQueryPort } from "@lcase/ports";
-import type { IndexStorePort } from "@lcase/ports";
 import { SimService } from "@lcase/services";
-import type { RunIndex } from "@lcase/types";
 import { getSimSpecRoute } from "../src/routes/sims/get-sim-spec.js";
 import { simsListRoute } from "../src/routes/sims/list.js";
 import { postSimsRoute } from "../src/routes/sims/post.js";
@@ -51,24 +49,6 @@ async function applyMigrations(
   for (const filePath of migrationFiles) {
     await applySqlFile(prisma, filePath);
   }
-}
-
-function makeRunIndexStore(): IndexStorePort<RunIndex> {
-  return {
-    async init() {},
-    async put() {
-      return { ok: false, error: "unused" };
-    },
-    async get() {
-      return undefined;
-    },
-    async getIdList() {
-      return [];
-    },
-    async getAll() {
-      return [];
-    },
-  };
 }
 
 describe("sim sql routes", () => {
@@ -117,10 +97,13 @@ describe("sim sql routes", () => {
     const simService = new SimService(
       artifacts,
       new EmitterFactory(new InMemoryEventBus()),
-      makeRunIndexStore(),
       {
         listRuns: async () => [],
         getRunDetail: async () => ({
+          ok: false,
+          error: "unused",
+        }),
+        getReusableStepData: async () => ({
           ok: false,
           error: "unused",
         }),

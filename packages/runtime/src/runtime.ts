@@ -18,6 +18,7 @@ import type {
   EventBusPort,
   IndexStorePort,
   JobParserPort,
+  RunQueryPort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
@@ -77,7 +78,6 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const simService = new SimService(
     ctx.artifacts,
     ctx.ef,
-    ctx.runIndexStore,
     runQuery,
     new PrismaSimRepository(prisma),
     flowRepository,
@@ -140,11 +140,12 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     config.artifacts,
     new PrismaArtifactRepository(prisma),
   );
+  const runQuery = new PrismaRunQuery(prisma);
   const engine = createInProcessEngine(
     bus,
     ef,
     jobParser,
-    runIndexStore,
+    runQuery,
     artifacts,
   );
 
@@ -251,14 +252,14 @@ export function createInProcessEngine(
   bus: EventBusPort,
   ef: EmitterFactory,
   jobParser: JobParserPort,
-  runIndexStore: IndexStorePort<RunIndex>,
+  runQuery: RunQueryPort,
   artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({
     bus,
     ef,
     jobParser,
-    runIndexStore,
+    runQuery,
     artifacts,
   });
 

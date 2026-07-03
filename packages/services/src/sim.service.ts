@@ -2,7 +2,6 @@ import type {
   ArtifactsPort,
   EmitterFactoryPort,
   FlowRepositoryPort,
-  IndexStorePort,
   RunQueryPort,
   SimRepositoryPort,
   SimServicePort,
@@ -11,7 +10,6 @@ import type {
   CreateSimRecordInput,
   ForkSpec,
   Result,
-  RunIndex,
   SimDefinition,
   SimListItem,
   SimRecord,
@@ -22,7 +20,6 @@ export class SimService implements SimServicePort {
   constructor(
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
-    private readonly runIndexStore: IndexStorePort<RunIndex>,
     private readonly runQuery: RunQueryPort,
     private readonly simRepository: SimRepositoryPort,
     private readonly flowRepository: FlowRepositoryPort,

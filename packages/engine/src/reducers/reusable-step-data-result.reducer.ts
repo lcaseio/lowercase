@@ -1,10 +1,10 @@
 import { produce } from "immer";
 import type { EngineState, Reducer } from "../engine.types.js";
-import type { RunIndexResultMsg } from "../types/message.types.js";
+import type { ReusableStepDataResultMsg } from "../types/message.types.js";
 
-export const runIndexResultReducer: Reducer<RunIndexResultMsg> = (
+export const reusableStepDataResultReducer: Reducer<ReusableStepDataResultMsg> = (
   state: EngineState,
-  message: RunIndexResultMsg,
+  message: ReusableStepDataResultMsg,
 ) => {
   return produce(state, (draft) => {
     const { runId } = message;
@@ -16,6 +16,6 @@ export const runIndexResultReducer: Reducer<RunIndexResultMsg> = (
       return;
     }
 
-    run.runIndex = message.runIndex;
+    run.reusableStepData = message.reusableStepData;
   });
 };

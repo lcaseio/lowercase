@@ -8,11 +8,11 @@ import {
 } from "../fixtures/fork-spec-result.state.js";
 import {
   EmitRunDeniedFx,
-  GetRunIndexFx,
+  GetReusableStepDataFx,
 } from "../../src/types/effect.types.js";
 
 describe("forkSpecResultPlanner()", () => {
-  it("makes a GetRunIndexFx effect when a forkSpec with parentRunId is in new state", () => {
+  it("makes a GetReusableStepDataFx effect when a forkSpec with parentRunId is in new state", () => {
     const message: ForkSpecResultMsg = {
       ok: true,
       type: "ForkSpecResult",
@@ -29,10 +29,11 @@ describe("forkSpecResultPlanner()", () => {
       message,
     );
 
-    const expectedEffect: GetRunIndexFx[] = [
+    const expectedEffect: GetReusableStepDataFx[] = [
       {
-        type: "GetRunIndex",
+        type: "GetReusableStepData",
         parentRunId: "test-parentrunid",
+        stepIds: ["b"],
         runId: "test-runid",
       },
     ];

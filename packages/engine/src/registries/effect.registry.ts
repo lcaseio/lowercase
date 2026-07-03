@@ -14,7 +14,7 @@ import { emitStepReusedFx } from "../effects/emit-step-reused.effect.js";
 import { emitStepStartedFx } from "../effects/emit-step-started.effect.js";
 import { getFlowDefFx } from "../effects/get-flow-def.effect.js";
 import { getForkSpec } from "../effects/get-fork-spec.effect.js";
-import { getRunIndexFx } from "../effects/get-run-index.effect.js";
+import { getReusableStepDataFx } from "../effects/get-reusable-step-data.effect.js";
 import { makeRunPlanFx } from "../effects/make-run-plan.effect.js";
 import { writeContextToDiskFx } from "../effects/write-context-to-disk.effect.js";
 import type {
@@ -39,7 +39,7 @@ import {
   EmitStepReusedFx,
   GetFlowDefFx,
   GetForkSpecFx,
-  GetRunIndexFx,
+  GetReusableStepDataFx,
   MakeRunPlanFx,
 } from "../types/effect.types.js";
 
@@ -93,7 +93,8 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
     // CAS + store lookups
     GetFlowDef: async (effect: GetFlowDefFx) => getFlowDefFx(effect, deps),
     GetForkSpec: async (effect: GetForkSpecFx) => getForkSpec(effect, deps),
-    GetRunIndex: async (effect: GetRunIndexFx) => getRunIndexFx(effect, deps),
+    GetReusableStepData: async (effect: GetReusableStepDataFx) =>
+      getReusableStepDataFx(effect, deps),
     MakeRunPlan: async (effect: MakeRunPlanFx) => makeRunPlanFx(effect, deps),
   } satisfies EffectHandlerRegistry;
 }

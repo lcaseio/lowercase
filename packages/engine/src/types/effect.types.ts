@@ -17,9 +17,10 @@ export type GetForkSpecFx = {
   runId: string;
 };
 
-export type GetRunIndexFx = {
-  type: "GetRunIndex";
+export type GetReusableStepDataFx = {
+  type: "GetReusableStepData";
   parentRunId: string;
+  stepIds: string[];
   runId: string;
 };
 

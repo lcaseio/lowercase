@@ -1,7 +1,7 @@
 import type { FlowAnalysis } from "../flow-analysis/types.js";
 import type { ForkSpec } from "./fork-spec.type.js";
-import type { RunIndex } from "./run-index.js";
 import { RunPlan } from "./run-plan.type.js";
+import type { ReusableRunStepData } from "../db-sql/run-record.js";
 
 type StepId = string;
 
@@ -12,7 +12,7 @@ export type RunContext = {
   forkSpecHash?: string;
   forkSpec?: ForkSpec;
   parentRunId?: string;
-  runIndex?: RunIndex;
+  reusableStepData?: Record<string, ReusableRunStepData>;
   runPlan: RunPlan;
 
   runId: string;
