@@ -8,15 +8,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { FsArtifactIndexStore } from "@lcase/adapters/artifact-index-store";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
-import { InMemoryEventBus } from "@lcase/adapters/event-bus";
-import { FlowStoreFs } from "@lcase/adapters/flow-store";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
-import { EmitterFactory } from "@lcase/events";
 import { FlowService } from "@lcase/services";
-import type { IndexStorePort } from "@lcase/ports";
-import type { FlowDefinition, FlowIndex } from "@lcase/types";
+import type { FlowDefinition } from "@lcase/types";
 import { postFlowsRoute } from "../src/routes/flows/post.js";
 import { postFlowsFilesRoute } from "../src/routes/flows/files/post.js";
 import { getFlowDefRoute } from "../src/routes/flows/get-flow-def.js";
@@ -62,13 +58,11 @@ async function applyMigrations(
 describe("flow routes", () => {
   let tmpDir: string;
   let artifactDir: string;
-  let flowIndexDir: string;
   let prisma: PrismaClient;
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-flow-sql-route-"));
     artifactDir = path.join(tmpDir, "artifacts");
-    flowIndexDir = path.join(tmpDir, "flows", "index");
 
     const dbPath = path.join(tmpDir, "flow-route.sqlite");
     const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
@@ -93,31 +87,7 @@ describe("flow routes", () => {
       new FsArtifactStore(artifactDir),
       artifactIndexStore,
     );
-    const bus = new InMemoryEventBus();
-    const ef = new EmitterFactory(bus);
-    const flowIndexStore: IndexStorePort<FlowIndex> = {
-      async init() {},
-      async put() {
-        return {
-          ok: true,
-          value: path.join(flowIndexDir, "unused.index.json"),
-        };
-      },
-      async get() {
-        return undefined;
-      },
-      async getIdList() {
-        return [];
-      },
-      async getAll() {
-        return [];
-      },
-    };
-
     const flowService = new FlowService(
-      bus,
-      ef,
-      new FlowStoreFs(),
       artifacts,
       new PrismaFlowRepository(prisma),
     );

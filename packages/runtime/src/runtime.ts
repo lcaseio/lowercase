@@ -9,7 +9,6 @@ import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
-import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
@@ -57,12 +56,7 @@ import { prisma } from "../../db-prisma/dist/client.js";
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
 
-  const ef = new EmitterFactory(ctx.bus);
-
   const flowService = new FlowService(
-    ctx.bus,
-    ctx.ef,
-    new FlowStoreFs(),
     ctx.artifacts,
     new PrismaFlowRepository(prisma),
   );
@@ -118,7 +112,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const ef = new EmitterFactory(bus);
   const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
-  const flowStore = new FlowStore();
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
@@ -163,7 +156,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     router,
     engine,
     worker,
-    flowStore,
     tap,
     sinks,
     ef,

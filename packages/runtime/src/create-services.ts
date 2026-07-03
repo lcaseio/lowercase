@@ -9,7 +9,6 @@ import {
 } from "@lcase/services";
 import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
-import { FlowStoreFs } from "@lcase/adapters/flow-store";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
@@ -24,13 +23,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const runQuery = new PrismaRunQuery(prisma);
   const simRepository = new PrismaSimRepository(prisma);
 
-  const flow = new FlowService(
-    ctx.bus,
-    ctx.ef,
-    new FlowStoreFs(),
-    ctx.artifacts,
-    flowRepository,
-  );
+  const flow = new FlowService(ctx.artifacts, flowRepository);
 
   const replay = new ReplayService(ctx.replay);
   const sim = new SimService(

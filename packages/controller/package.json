@@ -17,9 +17,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@lcase/runtime": "workspace:*",
-    "@lcase/run-flow": "workspace:*",
-    "@lcase/run-history": "workspace:*"
+    "@lcase/runtime": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

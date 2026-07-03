@@ -1,4 +1,4 @@
-import { ClientControllerPort, FlowList, RuntimeStatus } from "@lcase/ports";
+import { ClientControllerPort, RuntimeStatus } from "@lcase/ports";
 
 // TODO: implement type mapping on API invoke channels
 export class ElectronController implements ClientControllerPort {
@@ -7,12 +7,6 @@ export class ElectronController implements ClientControllerPort {
       throw new Error("[electron-controller-client] no electronAPI on window");
     }
     return window.electronAPI;
-  }
-  async startFlow(args: {
-    absoluteFilePath?: string;
-  }): Promise<string | undefined> {
-    this.api.invoke("controller:startFlow", args);
-    return;
   }
   async startRuntime(): Promise<RuntimeStatus> {
     console.log("[electron-controller-client] startRuntime() invoked");
@@ -26,18 +20,6 @@ export class ElectronController implements ClientControllerPort {
 
     if (result === "stopped") return "stopped";
     return "running";
-  }
-  async listFlows(args: { absoluteDirPath?: string }): Promise<FlowList> {
-    console.log("[electron-controller] listFlows() args:", args);
-    const result = await this.api.invoke("controller:listFlows", args);
-    return result as FlowList;
-  }
-  async getFlowDir(): Promise<string> {
-    const result = (await this.api.invoke(
-      "controller:pickFlowDir",
-      undefined
-    )) as string[];
-    return result[0];
   }
 
   // returns unsubscribe function
