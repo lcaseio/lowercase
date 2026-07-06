@@ -1,4 +1,5 @@
 import {
+  ArtifactRepositoryPort,
   ArtifactsPort,
   EmitterFactoryPort,
   RunRequest,
@@ -6,15 +7,22 @@ import {
   RunQueryPort,
   RunServicePort,
 } from "@lcase/ports";
+import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
 import { createRunId, runFlow } from "@lcase/run-flow";
 import {
+  ArtifactIndex,
+  FlowDefinition,
+  FlowParamContentType,
+  Ref,
   Result,
   RunDetail,
   RunListItem,
   RunParamManifest,
 } from "@lcase/types";
+import { FlowSchema } from "@lcase/specs";
 
 type RunServiceDeps = {
+  artifactRepository: ArtifactRepositoryPort;
   artifacts: ArtifactsPort;
   ef: EmitterFactoryPort;
   runRepository: RunRepositoryPort;
@@ -23,6 +31,7 @@ type RunServiceDeps = {
 };
 
 export class RunService implements RunServicePort {
+  private readonly artifactRepository: ArtifactRepositoryPort;
   private readonly artifacts: ArtifactsPort;
   private readonly ef: EmitterFactoryPort;
   private readonly runRepository: RunRepositoryPort;
@@ -30,6 +39,7 @@ export class RunService implements RunServicePort {
   // private readonly runParamsStore: RunParamsIndexStorePort;
 
   constructor(deps: RunServiceDeps) {
+    this.artifactRepository = deps.artifactRepository;
     this.artifacts = deps.artifacts;
     this.ef = deps.ef;
     this.runRepository = deps.runRepository;
@@ -38,6 +48,8 @@ export class RunService implements RunServicePort {
   }
 
   async requestRun(request: RunRequest) {
+    await this.#validateRunRequest(request);
+
     const runId = request.runId ?? createRunId();
     const traceId = this.ef.generateTraceId();
     const runParamsHash = await this.#persistRunParamsManifest(request, runId);
@@ -113,9 +125,83 @@ export class RunService implements RunServicePort {
     return result.value;
   }
 
+  async #validateRunRequest(request: RunRequest): Promise<void> {
+    const flow = await this.#getFlowDefinition(request.flowDefHash);
+    this.#validateStringParamRefs(flow);
+
+    if (!request.params || Object.keys(request.params).length === 0) return;
+
+    for (const [paramName, artifactHash] of Object.entries(request.params)) {
+      const declaration = flow.params?.[paramName];
+      if (!declaration) {
+        throw new Error(`Undeclared run param: ${paramName}`);
+      }
+
+      const artifact = await this.artifactRepository.getArtifact(artifactHash);
+      if (!artifact) {
+        throw new Error(`Run param artifact not found: ${artifactHash}`);
+      }
+
+      if (!isArtifactCompatible(artifact, declaration.type)) {
+        throw new Error(
+          `Run param ${paramName} requires ${declaration.type}, received ${artifact.contentType ?? artifact.format ?? "unknown"}`,
+        );
+      }
+    }
+  }
+
+  async #getFlowDefinition(flowDefHash: string): Promise<FlowDefinition> {
+    const result = await this.artifacts.getJson(flowDefHash);
+    if (!result.ok) {
+      throw new Error(`Unable to load flow definition: ${result.error.message}`);
+    }
+
+    const parsed = FlowSchema.safeParse(result.value);
+    if (!parsed.success) {
+      throw new Error("Invalid flow definition");
+    }
+
+    return parsed.data;
+  }
+
+  #validateStringParamRefs(flow: FlowDefinition): void {
+    const analysis = analyzeFlow(flow);
+    analyzeRefs(flow, analysis);
+
+    for (const ref of analysis.refs) {
+      if (ref.scope !== "params") continue;
+      const paramName = ref.valuePath[1];
+      if (typeof paramName !== "string") continue;
+
+      const declaration = flow.params?.[paramName];
+      if (!declaration || declaration.type === "application/json") continue;
+      if (ref.valuePath.length > 2) {
+        throw new Error(
+          `String-backed run param refs must target the whole value: ${ref.string}`,
+        );
+      }
+    }
+  }
+
   // async getRunParamsIndex(runId: string): Promise<Result<RunParams, string>> {
   //   const runParams = await this.runParamsStore.getRunParams(runId);
   //   if (!runParams) return { ok: false, error: "Error getting run params" };
   //   return { ok: true, value: runParams };
   // }
+}
+
+function isArtifactCompatible(
+  artifact: ArtifactIndex,
+  type: FlowParamContentType,
+): boolean {
+  if (artifact.contentType === type) return true;
+
+  switch (type) {
+    case "application/json":
+      return artifact.format === "json";
+    case "text/plain":
+      return artifact.format === "text";
+    case "text/markdown":
+      return artifact.format === "markdown";
+  }
 }

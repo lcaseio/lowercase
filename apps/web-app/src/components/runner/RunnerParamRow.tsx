@@ -26,6 +26,12 @@ export function RunnerParamRow({
   onChange,
 }: Props) {
   const isOptional = definition.optional === true;
+  const compatibleArtifacts = artifacts.filter((artifact) =>
+    isArtifactCompatible(artifact, definition.type),
+  );
+  const hasSelectedArtifactInList =
+    selectedHash === undefined ||
+    compatibleArtifacts.some((artifact) => artifact.hash === selectedHash);
 
   return (
     <div className="grid gap-2 lg:grid-cols-[220px_1fr] lg:items-center">
@@ -51,7 +57,12 @@ export function RunnerParamRow({
             <SelectItem value={UNSET_VALUE}>
               {isOptional ? "No artifact selected" : "Select an artifact"}
             </SelectItem>
-            {artifacts.map((artifact) => (
+            {!hasSelectedArtifactInList && selectedHash ? (
+              <SelectItem value={selectedHash}>
+                {`Selected artifact unavailable or incompatible: ${selectedHash}`}
+              </SelectItem>
+            ) : null}
+            {compatibleArtifacts.map((artifact) => (
               <SelectItem key={artifact.hash} value={artifact.hash}>
                 {artifactLabel(artifact)}
               </SelectItem>
@@ -65,4 +76,20 @@ export function RunnerParamRow({
 
 function artifactLabel(artifact: ArtifactIndex): string {
   return artifact.label || artifact.filename || artifact.hash;
+}
+
+function isArtifactCompatible(
+  artifact: ArtifactIndex,
+  type: FlowParamDefinition["type"],
+): boolean {
+  if (artifact.contentType === type) return true;
+
+  switch (type) {
+    case "application/json":
+      return artifact.format === "json";
+    case "text/plain":
+      return artifact.format === "text";
+    case "text/markdown":
+      return artifact.format === "markdown";
+  }
 }

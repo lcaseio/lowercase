@@ -88,4 +88,40 @@ describe("run request route", () => {
 
     await app.close();
   });
+
+  it("returns a clear error when the run service rejects params", async () => {
+    const app = Fastify();
+    app.decorate("services", {
+      run: {
+        requestRun: vi.fn().mockRejectedValue(new Error("Invalid run params")),
+        makeRunId: vi.fn().mockReturnValue("run-123"),
+      },
+      ws: {
+        monitorRun: vi.fn(),
+      },
+    });
+
+    await app.register(requestRunsRoute, { prefix: "/api/runs" });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/runs",
+      payload: {
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
+        flowDefHash: "a".repeat(64),
+        params: {
+          payload: "artifact-hash",
+        },
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      ok: false,
+      error: "Invalid run params",
+    });
+
+    await app.close();
+  });
 });

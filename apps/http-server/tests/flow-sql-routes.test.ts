@@ -109,6 +109,15 @@ describe("flow routes", () => {
       name: "Prompt Flow",
       version: "v1",
       description: "Reusable flow",
+      params: {
+        prompt: {
+          type: "text/markdown",
+        },
+        payload: {
+          type: "application/json",
+          optional: true,
+        },
+      },
       start: "fetch",
       steps: {
         fetch: {

@@ -1,11 +1,11 @@
 {
-  "name": "llm-weather-json-params-17",
+  "name": "llm-weather-markdown-param",
   "version": "0.1.0-alpha.11",
   "start": "llmweather",
-  "description": "17: How hot is it params - 0.7?",
+  "description": "20: How hot is it markdown params?",
   "params": {
-    "city": {
-      "type": "application/json"
+    "location": {
+      "type": "text/markdown"
     }
   },
   "steps": {
@@ -26,7 +26,7 @@
           },
           {
             "role": "user",
-            "content": "Extract a WeatherIntent from this input.\n\nAllowed intent values: current_weather, weather_forecast, weather_alerts.\nAllowed units values: imperial, metric, unknown.\n\nReturn exactly these keys: intent, location, date, time_of_day, units, fields, needs_clarification, clarification_question.\n\nInput:\n{\n  \"current_date\": \"2026-06-16\",\n  \"user_request\": \"How hot is it in {{params.city.location}}?\"\n}"
+            "content": "Extract a WeatherIntent from this input.\n\nAllowed intent values: current_weather, weather_forecast, weather_alerts.\nAllowed units values: imperial, metric, unknown.\n\nReturn exactly these keys: intent, location, date, time_of_day, units, fields, needs_clarification, clarification_question.\n\nInput:\n{\n  \"current_date\": \"2026-06-16\",\n  \"user_request\": \"How hot is it in {{params.location}}?\"\n}"
           }
         ],
         "temperature": 0,
@@ -71,7 +71,7 @@
           },
           {
             "role": "user",
-            "content": "{{steps.llmweather.exports.data.location}} latitude: {{steps.getlocation.output.body.results[0].latitude}}. \n{{steps.llmweather.exports.data.location}} longitude: {{steps.getlocation.output.body.results[0].longitude}}.  \n\n Current weather data for this location\n\n{{steps.getforecast.output.body}} \n\n Users Question: \"How hot is it in Paris?\"\n}"
+            "content": "{{steps.llmweather.exports.data.location}} latitude: {{steps.getlocation.output.body.results[0].latitude}}. \n{{steps.llmweather.exports.data.location}} longitude: {{steps.getlocation.output.body.results[0].longitude}}.  \n\n Current weather data for this location\n\n{{steps.getforecast.output.body}} \n\n Users Question: \"How hot is it in {{params.location}}?\"\n}"
           }
         ],
         "temperature": 0.7,

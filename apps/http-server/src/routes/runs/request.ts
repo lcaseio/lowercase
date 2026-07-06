@@ -29,17 +29,24 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
         app.services.ws.monitorRun(runId, s as unknown as WebSocket);
         console.log("monitoring run");
       }
-      await app.services.run.requestRun({
-        flowId,
-        flowVersionId,
-        flowDefHash: validFlowDefHash,
-        source: "lowercase://http-server",
-        runId,
-        ...(simId ? { simId } : {}),
-        forkSpecHash,
-        params,
-      });
-      return { ok: true, runId };
+      try {
+        await app.services.run.requestRun({
+          flowId,
+          flowVersionId,
+          flowDefHash: validFlowDefHash,
+          source: "lowercase://http-server",
+          runId,
+          ...(simId ? { simId } : {}),
+          forkSpecHash,
+          params,
+        });
+        return { ok: true, runId };
+      } catch (error) {
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
     },
   );
 };

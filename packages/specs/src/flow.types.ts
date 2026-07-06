@@ -96,7 +96,7 @@ export const StepSchema = z.discriminatedUnion("type", [
 
 export const FlowParamDefinitionSchema = z
   .object({
-    type: z.literal("application/json"),
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
     optional: z.literal(true).optional(),
   })
   .strict() satisfies z.ZodType<FlowParamDefinition>;

@@ -39,6 +39,9 @@ export const RefSchema = z
     hash: z.union([z.string(), z.null()]),
     scope: z.enum(["steps", "input", "env", "params"]),
     json: z.literal(true).optional(),
+    paramType: z
+      .enum(["application/json", "text/plain", "text/markdown"])
+      .optional(),
   })
   .strict() satisfies z.ZodType<Ref>;
 
