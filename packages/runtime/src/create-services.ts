@@ -11,6 +11,7 @@ import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { ServicesPort } from "@lcase/ports";
@@ -20,7 +21,8 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const ctx = makeRuntimeContext(config);
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const flowRepository = new PrismaFlowRepository(prisma);
-  const runQuery = new PrismaRunQuery(prisma);
+  const runRepository = new PrismaRunRepository(prisma);
+  const runQuery = new PrismaRunQuery(prisma, ctx.artifacts, artifactRepository);
   const simRepository = new PrismaSimRepository(prisma);
 
   const flow = new FlowService(ctx.artifacts, flowRepository);
@@ -36,7 +38,9 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   // runParamsIndexStore.init();
   const ws = new WsService(ctx.bus);
   const run = new RunService({
+    artifacts: ctx.artifacts,
     ef: ctx.ef,
+    runRepository,
     runQuery,
     // runParamsStore: runParamsIndexStore,
   });

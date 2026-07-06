@@ -6,10 +6,12 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
+import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
+import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
-import type { ReplayServicePort } from "@lcase/ports";
+import type { ArtifactsPort, ReplayServicePort } from "@lcase/ports";
 import { RunService } from "@lcase/services";
 import type { AnyEvent } from "@lcase/types";
 import { getRunDetailRoute } from "../src/routes/runs/get-run-detail.js";
@@ -100,10 +102,21 @@ describe("run sql routes", () => {
         flowId: "flow-1",
         flowVersionId: "flow-version-1",
         flowDefHash: "a".repeat(64),
+        runParamsHash: "manifest-hash",
         forkSpecHash: "b".repeat(64),
         startTime: new Date("2026-07-02T10:00:01.000Z"),
         endTime: new Date("2026-07-02T10:00:04.000Z"),
         duration: 3,
+      },
+    });
+
+    await prisma.artifact.create({
+      data: {
+        hash: "artifact-hash",
+        time: createdAt,
+        filename: "payload.json",
+        contentType: "application/json",
+        format: "json",
       },
     });
 
@@ -116,9 +129,27 @@ describe("run sql routes", () => {
       },
     });
 
+    const artifacts = {
+      async getJson(hash: string) {
+        expect(hash).toBe("manifest-hash");
+        return {
+          ok: true as const,
+          value: {
+            payload: "artifact-hash",
+          },
+        };
+      },
+    } satisfies Pick<ArtifactsPort, "getJson">;
+
     const runService = new RunService({
+      artifacts: artifacts as ArtifactsPort,
       ef: new EmitterFactory(new InMemoryEventBus()),
-      runQuery: new PrismaRunQuery(prisma),
+      runRepository: new PrismaRunRepository(prisma),
+      runQuery: new PrismaRunQuery(
+        prisma,
+        artifacts as ArtifactsPort,
+        new PrismaArtifactRepository(prisma),
+      ),
     });
     const replayEvents: AnyEvent[] = [
       {
@@ -193,7 +224,19 @@ describe("run sql routes", () => {
           id: "run-1",
           flowDefHash: "a".repeat(64),
           status: "completed",
+          runParamsHash: "manifest-hash",
         }),
+        params: [
+          {
+            name: "payload",
+            artifactHash: "artifact-hash",
+            artifact: expect.objectContaining({
+              hash: "artifact-hash",
+              filename: "payload.json",
+              format: "json",
+            }),
+          },
+        ],
         steps: [
           {
             runId: "run-1",

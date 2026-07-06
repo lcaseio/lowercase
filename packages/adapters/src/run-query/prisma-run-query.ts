@@ -1,5 +1,9 @@
 import type { PrismaClient } from "@lcase/db-prisma";
-import type { RunQueryPort } from "@lcase/ports";
+import type {
+  ArtifactRepositoryPort,
+  ArtifactsPort,
+  RunQueryPort,
+} from "@lcase/ports";
 import type {
   FlowRecord,
   FlowVersionRecord,
@@ -7,6 +11,8 @@ import type {
   Result,
   RunDetail,
   RunListItem,
+  RunParamManifest,
+  RunParamSelection,
   RunRecord,
   RunStatus,
   RunStepProjectionRecord,
@@ -185,7 +191,11 @@ function toRunListItem(
 }
 
 export class PrismaRunQuery implements RunQueryPort {
-  constructor(private readonly db: PrismaRunQueryDb) {}
+  constructor(
+    private readonly db: PrismaRunQueryDb,
+    private readonly artifacts: ArtifactsPort,
+    private readonly artifactRepository: ArtifactRepositoryPort,
+  ) {}
 
   async listRuns(): Promise<RunListItem[]> {
     const runs = await this.db.run.findMany({
@@ -252,12 +262,14 @@ export class PrismaRunQuery implements RunQueryPort {
             include: { flow: true },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           });
+      const params = await this.#getRunParams(run.runParamsHash);
 
       return {
         ok: true,
         value: {
           run: toRunRecord(run),
           steps: steps.map(toRunStepProjectionRecord),
+          params,
           flow: flowVersion ? toFlowRecord(flowVersion.flow) : undefined,
           flowVersion: flowVersion
             ? toFlowVersionRecord(flowVersion)
@@ -324,4 +336,39 @@ export class PrismaRunQuery implements RunQueryPort {
       };
     }
   }
+
+  async #getRunParams(
+    runParamsHash: string | null,
+  ): Promise<RunParamSelection[] | undefined> {
+    if (!runParamsHash) return undefined;
+
+    const manifestResult = await this.artifacts.getJson(runParamsHash);
+    if (!manifestResult.ok) return undefined;
+
+    const manifest = toRunParamManifest(manifestResult.value);
+    if (!manifest) return undefined;
+
+    const params = await Promise.all(
+      Object.entries(manifest).map(async ([name, artifactHash]) => ({
+        name,
+        artifactHash,
+        artifact: await this.artifactRepository.getArtifact(artifactHash),
+      })),
+    );
+
+    return params.sort((a, b) => a.name.localeCompare(b.name));
+  }
+}
+
+function toRunParamManifest(value: unknown): RunParamManifest | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([name, artifactHash]) =>
+        name.length > 0 && typeof artifactHash === "string",
+    ),
+  );
 }
