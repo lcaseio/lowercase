@@ -28,12 +28,12 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
     scope: OtelContext & FlowScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid } = scope;
+    const { flowid, flowversionid, runid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#flowScope = { flowid, runid };
+    this.#flowScope = { flowid, flowversionid, runid };
     this.flowOtelAttributes = flowOtelAttributes;
     this.bus = bus;
   }

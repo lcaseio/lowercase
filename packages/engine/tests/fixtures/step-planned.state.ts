@@ -7,7 +7,8 @@ import { flowDef } from "./flow-definition";
 export const stepPlannedNewState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
@@ -66,7 +67,7 @@ export const stepPlannedNewState: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },

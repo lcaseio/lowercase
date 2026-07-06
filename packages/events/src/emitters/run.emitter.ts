@@ -28,12 +28,12 @@ export class RunEmitter extends BaseEmitter {
     scope: OtelContext & RunScope & CloudScope
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid } = scope;
+    const { flowid, flowversionid, runid } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
 
     this.otel = { traceId, spanId, traceParent };
-    this.#runScope = { flowid, runid };
+    this.#runScope = { flowid, flowversionid, runid };
     this.runOtelAttributesMap = runOtelAttributesMap;
     this.bus = bus;
   }

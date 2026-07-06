@@ -7,7 +7,8 @@ import { flowAnalysisB, flowAnalysisBWithProblem } from "./flow-analysis.state";
 export const makeRunPlanNewState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
@@ -67,7 +68,7 @@ export const makeRunPlanNewState: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },
@@ -77,7 +78,8 @@ export const makeRunPlanNewState: EngineState = {
 export const makeRunPlanNewStateFAProblems: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
@@ -115,7 +117,7 @@ export const makeRunPlanNewStateFAProblems: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDefWithProblems,
       runIds: { "test-runid": true },
     },

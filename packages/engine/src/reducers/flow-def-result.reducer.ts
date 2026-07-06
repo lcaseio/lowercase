@@ -16,11 +16,10 @@ export const flowDefResultReducer: Reducer<FlowDefResultMsg> = (
       return;
     }
 
-    // store flow definition in memory by hash (flowId)
-    draft.flows[run.flowDefHash] ??= {
+    draft.flows[run.flowVersionId] ??= {
       definition: message.def,
       runIds: {},
     };
-    draft.flows[run.flowDefHash].runIds[runId] = true;
+    draft.flows[run.flowVersionId].runIds[runId] = true;
   });
 };

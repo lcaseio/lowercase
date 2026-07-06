@@ -16,11 +16,11 @@ export const runFinishedPlanner: Planner<RunFinishedMsg> = (
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
 
-  const flowId = newState.runs[runId].flowId;
-  const flow = newState.flows[flowId];
-
   const newRunState = newState.runs[runId];
-  if (!newRunState || !flow) return effects;
+  if (!newRunState) return effects;
+  const flowId = newRunState.flowId;
+  const flow = newState.flows[newRunState.flowVersionId];
+  if (!flow) return effects;
 
   if (newRunState.status === "completed") {
     const effect = {
@@ -36,6 +36,7 @@ export const runFinishedPlanner: Planner<RunFinishedMsg> = (
       },
       scope: {
         flowid: flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },
@@ -56,6 +57,7 @@ export const runFinishedPlanner: Planner<RunFinishedMsg> = (
       },
       scope: {
         flowid: flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },

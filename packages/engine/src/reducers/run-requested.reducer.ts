@@ -10,6 +10,7 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
   return produce(state, (draft) => {
     const runId = message.event.runid;
     const flowId = message.event.flowid;
+    const flowVersionId = message.event.flowversionid;
     const traceId = message.event.traceid;
     const flowDefHash = message.event.data.flowDefHash;
     const forkSpecHash = message.event.data.forkSpecHash;
@@ -19,6 +20,7 @@ export const runRequestedReducer: Reducer<RunRequestedMsg> = (
 
     const runCtx = {
       flowId,
+      flowVersionId,
       flowDefHash,
       ...(forkSpecHash ? { forkSpecHash } : {}),
       runId,

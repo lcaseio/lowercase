@@ -7,6 +7,7 @@ type StepId = string;
 
 export type RunContext = {
   flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
 
   forkSpecHash?: string;

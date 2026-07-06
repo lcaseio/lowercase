@@ -13,7 +13,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     const run = draft.runs[runId];
 
     if (!run) return;
-    const flow = draft.flows[run.flowDefHash];
+    const flow = draft.flows[run.flowVersionId];
 
     if (!flow) return;
 

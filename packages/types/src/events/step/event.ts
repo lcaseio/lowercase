@@ -3,6 +3,7 @@ import type { StepEventType } from "./map.js";
 
 export type StepScope = {
   flowid: string;
+  flowversionid: string;
   runid: string;
   stepid: string;
   steptype: string;

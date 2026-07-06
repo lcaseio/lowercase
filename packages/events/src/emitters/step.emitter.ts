@@ -28,11 +28,11 @@ export class StepEmitter extends BaseEmitter {
     scope: CloudScope & StepScope & OtelContext
   ) {
     const { traceId, spanId, traceParent, source } = scope;
-    const { flowid, runid, stepid, steptype } = scope;
+    const { flowid, flowversionid, runid, stepid, steptype } = scope;
 
     super({ traceId, spanId, traceParent }, { source });
     this.otel = { traceId, spanId, traceParent };
-    this.#stepScope = { flowid, runid, stepid, steptype };
+    this.#stepScope = { flowid, flowversionid, runid, stepid, steptype };
     this.stepOtelAttributes = stepOtelAttributes;
     this.bus = bus;
   }

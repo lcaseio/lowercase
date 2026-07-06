@@ -39,7 +39,7 @@ describe("runStartedReducer", () => {
     // state the flowSubmittedReducer produced
     const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
-    delete oldState.flows["test-flowdefhash"];
+    delete oldState.flows["test-flowversionid"];
     const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);
@@ -54,7 +54,7 @@ describe("runStartedReducer", () => {
     // state the flowSubmittedReducer produced
     const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
-    oldState.flows["test-flowdefhash"].definition.start = "";
+    oldState.flows["test-flowversionid"].definition.start = "";
     const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);

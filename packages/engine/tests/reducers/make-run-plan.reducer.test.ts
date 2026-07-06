@@ -23,7 +23,7 @@ describe("makeRunPlanReducer()", () => {
   });
   it("does not make a run plan when flow analysis has problems", () => {
     const flowDefWithProblemsState = structuredClone(reusableStepDataResultOkState);
-    flowDefWithProblemsState.flows["test-flowdefhash"].definition =
+    flowDefWithProblemsState.flows["test-flowversionid"].definition =
       flowDefWithProblems;
     const message: MakeRunPlanMsg = {
       type: "MakeRunPlan",
@@ -34,7 +34,7 @@ describe("makeRunPlanReducer()", () => {
   });
   it("fails the run when a required param is missing", () => {
     const stateWithParams = structuredClone(reusableStepDataResultOkState);
-    stateWithParams.flows["test-flowdefhash"].definition.params = {
+    stateWithParams.flows["test-flowversionid"].definition.params = {
       payload: { type: "application/json" },
     };
 

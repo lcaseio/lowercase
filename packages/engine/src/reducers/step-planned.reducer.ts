@@ -9,11 +9,10 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;
-    const flowId = message.event.flowid;
     const stepId = message.event.stepid;
 
     const run = draft.runs[runId];
-    const flow = draft.flows[flowId];
+    const flow = run ? draft.flows[run.flowVersionId] : undefined;
 
     if (!run) return;
     if (!flow) return;

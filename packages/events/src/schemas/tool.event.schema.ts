@@ -11,6 +11,7 @@ import { CapIdSchema } from "./job/job.data.schema.js";
 export const ToolContextSchema = z
   .object({
     flowid: z.string(),
+    flowversionid: z.string(),
     runid: z.string(),
     stepid: z.string(),
     jobid: z.string(),

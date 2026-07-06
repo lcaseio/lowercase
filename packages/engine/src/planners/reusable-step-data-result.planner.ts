@@ -20,7 +20,8 @@ export const reusableStepDataResultPlanner: Planner<ReusableStepDataResultMsg> =
         error: message.error,
       },
       scope: {
-        flowid: newRunState.flowDefHash,
+        flowid: newRunState.flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },

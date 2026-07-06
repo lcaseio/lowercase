@@ -9,7 +9,8 @@ export const runRequestedOldState: EngineState = {
 export const runRequestedNewState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
 
       runId: "test-runid",

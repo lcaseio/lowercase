@@ -19,7 +19,8 @@ export async function runFlow(runDetails: RunDetails) {
   const runid = runId ?? createRunId();
   const emitter = ef.newRunEmitterNewTrace({
     source,
-    flowid: flowDefHash,
+    flowid: flowId,
+    flowversionid: flowVersionId,
     runid,
   });
   await emitter.emit("run.requested", {

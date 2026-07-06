@@ -12,6 +12,7 @@ import {
 export const StepContextSchema = z
   .object({
     flowid: z.string(),
+    flowversionid: z.string(),
     runid: z.string(),
     stepid: z.string(),
     steptype: z.string(),
