@@ -7,13 +7,15 @@ import {
   RunQueryPort,
   RunServicePort,
 } from "@lcase/ports";
-import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
+import {
+  analyzeFlow,
+  analyzeRefs,
+  isArtifactCompatible,
+} from "@lcase/flow-analysis";
 import { createRunId, runFlow } from "@lcase/run-flow";
 import {
-  ArtifactIndex,
+  FlowAnalysis,
   FlowDefinition,
-  FlowParamContentType,
-  Ref,
   Result,
   RunDetail,
   RunListItem,
@@ -127,7 +129,11 @@ export class RunService implements RunServicePort {
 
   async #validateRunRequest(request: RunRequest): Promise<void> {
     const flow = await this.#getFlowDefinition(request.flowDefHash);
-    this.#validateStringParamRefs(flow);
+    const analysis = analyzeFlow(flow);
+    analyzeRefs(flow, analysis);
+
+    this.#validateStringParamRefs(flow, analysis);
+    this.#validateExportRefProblems(analysis);
 
     if (!request.params || Object.keys(request.params).length === 0) return;
 
@@ -164,10 +170,7 @@ export class RunService implements RunServicePort {
     return parsed.data;
   }
 
-  #validateStringParamRefs(flow: FlowDefinition): void {
-    const analysis = analyzeFlow(flow);
-    analyzeRefs(flow, analysis);
-
+  #validateStringParamRefs(flow: FlowDefinition, analysis: FlowAnalysis): void {
     for (const ref of analysis.refs) {
       if (ref.scope !== "params") continue;
       const paramName = ref.valuePath[1];
@@ -183,25 +186,22 @@ export class RunService implements RunServicePort {
     }
   }
 
+  #validateExportRefProblems(analysis: FlowAnalysis): void {
+    const problems = analysis.problems.filter(
+      (problem) =>
+        problem.type === "InvalidExportRef" ||
+        problem.type === "InvalidExportRefPath",
+    );
+    if (problems.length > 0) {
+      throw new Error(
+        `Invalid step export reference(s): ${JSON.stringify(problems)}`,
+      );
+    }
+  }
+
   // async getRunParamsIndex(runId: string): Promise<Result<RunParams, string>> {
   //   const runParams = await this.runParamsStore.getRunParams(runId);
   //   if (!runParams) return { ok: false, error: "Error getting run params" };
   //   return { ok: true, value: runParams };
   // }
-}
-
-function isArtifactCompatible(
-  artifact: ArtifactIndex,
-  type: FlowParamContentType,
-): boolean {
-  if (artifact.contentType === type) return true;
-
-  switch (type) {
-    case "application/json":
-      return artifact.format === "json";
-    case "text/plain":
-      return artifact.format === "text";
-    case "text/markdown":
-      return artifact.format === "markdown";
-  }
 }

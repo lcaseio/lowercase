@@ -61,6 +61,12 @@ export type InvalidExportRefProblem = {
   exportName: string;
   exportValue: string;
 };
+export type InvalidExportRefPathProblem = {
+  type: "InvalidExportRefPath";
+  ref: Ref;
+  exportName: string;
+  sourceStepId: StepId;
+};
 export type InvalidRefStepIdProblem = {
   type: "InvalidRefStepId";
   ref: Ref;
@@ -78,6 +84,7 @@ export type FlowProblem =
   | SelfReferencedProblem
   | InvalidRefParamNameProblem
   | InvalidExportRefProblem
+  | InvalidExportRefPathProblem
   | InvalidRefStepIdProblem
   | UnreachableRefProblem
   | InvalidRefScopeProblem;
@@ -96,6 +103,7 @@ export type Ref = {
   // later more robust tranforms should be implemented
   json?: true; // whether to parse this as json, simple transform flag
   paramType?: "application/json" | "text/plain" | "text/markdown";
+  exportType?: "application/json" | "text/plain" | "text/markdown";
 };
 
 export type ExportRef = {
@@ -103,5 +111,5 @@ export type ExportRef = {
   valuePath: Path;
   scope: "output";
   string: string;
-  json?: true;
+  type: "application/json" | "text/plain" | "text/markdown";
 };

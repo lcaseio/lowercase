@@ -34,7 +34,10 @@
         "response_format": { "type": "json_object" }
       },
       "exports": {
-        "data": "{{output.body.choices[0].message.content | json}}"
+        "data": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "application/json"
+        }
       },
       "on": {
         "success": "getlocation"

@@ -42,6 +42,9 @@ export const RefSchema = z
     paramType: z
       .enum(["application/json", "text/plain", "text/markdown"])
       .optional(),
+    exportType: z
+      .enum(["application/json", "text/plain", "text/markdown"])
+      .optional(),
   })
   .strict() satisfies z.ZodType<Ref>;
 
@@ -51,7 +54,7 @@ export const ExportRefSchema = z
     valuePath: z.array(z.union([z.string(), z.number()])),
     scope: z.literal("output"),
     string: z.string(),
-    json: z.literal(true).optional(),
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
   })
   .strict() satisfies z.ZodType<ExportRef>;
 

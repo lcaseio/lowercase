@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  ExportDeclaration,
   FlowParamDefinition,
   StepHttpJson,
   StepMcp,
@@ -75,6 +76,13 @@ export const StepMcpSchema = StepCapBaseSchema.extend({
   }),
 }).strict() satisfies z.ZodType<StepMcp>;
 
+export const ExportDeclarationSchema = z
+  .object({
+    ref: z.string(),
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
+  })
+  .strict() satisfies z.ZodType<ExportDeclaration>;
+
 export const StepHttpJsonSchema = StepCapBaseSchema.extend({
   type: z.literal("httpjson"),
   url: z.string(),
@@ -84,7 +92,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
 
   headers: z.record(z.string(), z.string()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
-  exports: z.record(z.string(), z.string()).optional(),
+  exports: z.record(z.string(), ExportDeclarationSchema).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 
 export const StepSchema = z.discriminatedUnion("type", [

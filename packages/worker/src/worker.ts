@@ -396,6 +396,28 @@ export class Worker implements WorkerPort {
     );
   }
 
+  async storeTextArtifact(value: string): Promise<string | undefined> {
+    const result = await this.artifacts.putText(value);
+    if (result.ok) return result.value;
+
+    console.log(
+      "Error storing text artifact",
+      result.error.code,
+      result.error.message,
+    );
+  }
+
+  async storeMarkdownArtifact(value: string): Promise<string | undefined> {
+    const result = await this.artifacts.putMarkdown(value);
+    if (result.ok) return result.value;
+
+    console.log(
+      "Error storing markdown artifact",
+      result.error.code,
+      result.error.message,
+    );
+  }
+
   async getJsonArtifact(hash: string): Promise<JsonValue | undefined> {
     const result = await this.artifacts.getJson(hash);
     if (result.ok) return result.value;
@@ -424,6 +446,18 @@ export class Worker implements WorkerPort {
         continue;
       }
       if (ref.scope === "params" && ref.paramType === "text/markdown") {
+        const markdown = await this.getMarkdownArtifact(ref.hash);
+        if (markdown === undefined) continue;
+        bindReference(ref, data, markdown);
+        continue;
+      }
+      if (ref.scope === "steps" && ref.exportType === "text/plain") {
+        const text = await this.getTextArtifact(ref.hash);
+        if (text === undefined) continue;
+        bindReference(ref, data, text);
+        continue;
+      }
+      if (ref.scope === "steps" && ref.exportType === "text/markdown") {
         const markdown = await this.getMarkdownArtifact(ref.hash);
         if (markdown === undefined) continue;
         bindReference(ref, data, markdown);
@@ -464,19 +498,33 @@ export class Worker implements WorkerPort {
         };
       }
 
-      let artifactValue = selected;
-      if (ref.json && typeof selected === "string") {
-        try {
-          artifactValue = JSON.parse(selected);
-        } catch (error) {
+      let hash: string | undefined;
+      if (ref.type === "application/json") {
+        let artifactValue = selected;
+        if (typeof selected === "string") {
+          try {
+            artifactValue = JSON.parse(selected);
+          } catch (error) {
+            return {
+              ok: false,
+              message: `Could not parse export ${ref.exportName} as json: ${String(error)}`,
+            };
+          }
+        }
+        hash = await this.storeJsonArtifact(artifactValue as JsonValue);
+      } else {
+        if (typeof selected !== "string") {
           return {
             ok: false,
-            message: `Could not parse export ${ref.exportName} as json: ${String(error)}`,
+            message: `Export ${ref.exportName} declared ${ref.type} but resolved value is not a string`,
           };
         }
+        hash =
+          ref.type === "text/plain"
+            ? await this.storeTextArtifact(selected)
+            : await this.storeMarkdownArtifact(selected);
       }
 
-      const hash = await this.storeJsonArtifact(artifactValue as JsonValue);
       if (!hash) {
         return {
           ok: false,

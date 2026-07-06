@@ -39,7 +39,10 @@ describe("getRegStrings()", () => {
   it("parses output export refs correctly", () => {
     const problems: FlowProblem[] = [];
     const ref = parseExportRef(
-      "{{output.choices[0].message.content | json}}",
+      {
+        ref: "{{output.choices[0].message.content}}",
+        type: "application/json",
+      },
       "stepId",
       "parsed",
       problems,
@@ -50,7 +53,7 @@ describe("getRegStrings()", () => {
       valuePath: ["output", "choices", 0, "message", "content"],
       scope: "output",
       string: "output.choices[0].message.content",
-      json: true,
+      type: "application/json",
     });
     expect(problems).toEqual([]);
   });
