@@ -1,5 +1,4 @@
-import type { Ref } from "@lcase/types";
-import type { RunContext } from "@lcase/types";
+import type { FlowDefinition, Ref, RunContext } from "@lcase/types";
 
 /**
  * Makes an array of value ref objects for a list of references.
@@ -18,6 +17,7 @@ export function makeStepRefs(
   allRefs: Ref[],
   stepContext: RunContext["steps"],
   params: RunContext["params"],
+  paramDefinitions?: FlowDefinition["params"],
 ): Ref[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
@@ -36,6 +36,11 @@ export function makeStepRefs(
       ...ref,
       valuePath,
       hash: getRefHash(ref, stepContext, params),
+      ...(ref.scope === "params"
+        ? {
+            paramType: getParamType(ref, paramDefinitions),
+          }
+        : {}),
     };
     jobRefs.push(jobRef);
   }
@@ -86,4 +91,13 @@ export function getRefHash(
 export function getStepRefs(refs: Ref[], stepId: string) {
   const stepRefs = refs.filter((ref) => ref.stepId === stepId);
   return stepRefs;
+}
+
+function getParamType(
+  ref: Ref,
+  paramDefinitions?: FlowDefinition["params"],
+): NonNullable<FlowDefinition["params"]>[string]["type"] | undefined {
+  const paramName = ref.valuePath[1];
+  if (typeof paramName !== "string" || !paramDefinitions) return undefined;
+  return paramDefinitions[paramName]?.type;
 }

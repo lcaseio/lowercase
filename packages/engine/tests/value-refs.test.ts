@@ -78,11 +78,20 @@ describe("value refs", () => {
     };
 
     expect(getRefHash(ref, {}, { payload: "param-hash" })).toBe("param-hash");
-    expect(makeStepRefs("bar", [ref], {}, { payload: "param-hash" })).toEqual([
+    expect(
+      makeStepRefs(
+        "bar",
+        [ref],
+        {},
+        { payload: "param-hash" },
+        { payload: { type: "application/json" } },
+      ),
+    ).toEqual([
       {
         ...ref,
         valuePath: ["answer"],
         hash: "param-hash",
+        paramType: "application/json",
       },
     ]);
   });

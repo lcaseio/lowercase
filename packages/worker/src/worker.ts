@@ -211,7 +211,11 @@ export class Worker implements WorkerPort {
     );
 
     if (!this.enableSideEffects) return;
-    const { refs, exportRefs: _exportRefs, ...data } = event.data as {
+    const {
+      refs,
+      exportRefs: _exportRefs,
+      ...data
+    } = event.data as {
       refs: Ref[];
       exportRefs?: Record<string, ExportRef>;
     } & Record<string, unknown>;
@@ -398,14 +402,37 @@ export class Worker implements WorkerPort {
     return;
   }
 
+  async getTextArtifact(hash: string): Promise<string | undefined> {
+    const result = await this.artifacts.getText(hash);
+    if (result.ok) return result.value;
+    return;
+  }
+
+  async getMarkdownArtifact(hash: string): Promise<string | undefined> {
+    const result = await this.artifacts.getMarkdown(hash);
+    if (result.ok) return result.value;
+    return;
+  }
+
   async bindValueRefs(refs: Ref[], data: Record<string, unknown>) {
     for (const ref of refs) {
       if (ref.hash === null) continue;
+      if (ref.scope === "params" && ref.paramType === "text/plain") {
+        const text = await this.getTextArtifact(ref.hash);
+        if (text === undefined) continue;
+        bindReference(ref, data, text);
+        continue;
+      }
+      if (ref.scope === "params" && ref.paramType === "text/markdown") {
+        const markdown = await this.getMarkdownArtifact(ref.hash);
+        if (markdown === undefined) continue;
+        bindReference(ref, data, markdown);
+        continue;
+      }
 
       const json = await this.getJsonArtifact(ref.hash);
       if (json === undefined) continue;
       const value = resolveJsonPath(ref.valuePath, json);
-
       bindReference(ref, data, value);
     }
   }
@@ -421,7 +448,10 @@ export class Worker implements WorkerPort {
       return { ok: true };
     }
     if (output === undefined) {
-      return { ok: false, message: "Could not resolve step exports: output missing" };
+      return {
+        ok: false,
+        message: "Could not resolve step exports: output missing",
+      };
     }
 
     const hashes: Record<string, string> = {};

@@ -38,6 +38,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   // runParamsIndexStore.init();
   const ws = new WsService(ctx.bus);
   const run = new RunService({
+    artifactRepository,
     artifacts: ctx.artifacts,
     ef: ctx.ef,
     runRepository,

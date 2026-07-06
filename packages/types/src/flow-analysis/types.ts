@@ -95,6 +95,7 @@ export type Ref = {
   hash: string | null;
   // later more robust tranforms should be implemented
   json?: true; // whether to parse this as json, simple transform flag
+  paramType?: "application/json" | "text/plain" | "text/markdown";
 };
 
 export type ExportRef = {
