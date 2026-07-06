@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaArtifactRepository } from "../../src/artifact-repository/prisma-artifact-repository.js";
 import { PrismaRunQuery } from "../../src/run-query/prisma-run-query.js";
+import type { ArtifactsPort } from "@lcase/ports";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../../..");
@@ -44,6 +46,7 @@ describe("PrismaRunQuery", () => {
   let tmpDir: string;
   let prisma: PrismaClient;
   let query: PrismaRunQuery;
+  let artifacts: Pick<ArtifactsPort, "getJson">;
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-run-query-"));
@@ -56,7 +59,32 @@ describe("PrismaRunQuery", () => {
       path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
     );
 
-    query = new PrismaRunQuery(prisma);
+    artifacts = {
+      async getJson(hash: string) {
+        if (hash === "manifest-hash") {
+          return {
+            ok: true as const,
+            value: {
+              prompt: "artifact-prompt",
+              context: "artifact-context",
+            },
+          };
+        }
+        return {
+          ok: false as const,
+          error: {
+            code: "STORE_GET_FAILED" as const,
+            message: `Unknown hash: ${hash}`,
+          },
+        };
+      },
+    };
+
+    query = new PrismaRunQuery(
+      prisma,
+      artifacts as ArtifactsPort,
+      new PrismaArtifactRepository(prisma),
+    );
   });
 
   afterEach(async () => {
@@ -148,10 +176,30 @@ describe("PrismaRunQuery", () => {
         flowId: "flow-2",
         flowVersionId: "flow-version-2",
         flowDefHash: "c".repeat(64),
+        runParamsHash: "manifest-hash",
         startTime: new Date("2026-07-02T10:00:01.000Z"),
         endTime: new Date("2026-07-02T10:00:03.000Z"),
         duration: 2,
       },
+    });
+
+    await prisma.artifact.createMany({
+      data: [
+        {
+          hash: "artifact-prompt",
+          time: createdAt,
+          label: "Prompt Artifact",
+          contentType: "application/json",
+          format: "json",
+        },
+        {
+          hash: "artifact-context",
+          time: createdAt,
+          filename: "context.json",
+          contentType: "application/json",
+          format: "json",
+        },
+      ],
     });
 
     await prisma.runStepProjection.create({
@@ -173,7 +221,28 @@ describe("PrismaRunQuery", () => {
           id: "run-2",
           flowDefHash: "c".repeat(64),
           status: "completed",
+          runParamsHash: "manifest-hash",
         }),
+        params: [
+          {
+            name: "context",
+            artifactHash: "artifact-context",
+            artifact: expect.objectContaining({
+              hash: "artifact-context",
+              filename: "context.json",
+              format: "json",
+            }),
+          },
+          {
+            name: "prompt",
+            artifactHash: "artifact-prompt",
+            artifact: expect.objectContaining({
+              hash: "artifact-prompt",
+              label: "Prompt Artifact",
+              format: "json",
+            }),
+          },
+        ],
         steps: [
           {
             runId: "run-2",
@@ -223,6 +292,45 @@ describe("PrismaRunQuery", () => {
           id: "run-3",
           flowDefHash: "f".repeat(64),
         }),
+        params: undefined,
+        steps: [],
+        flow: undefined,
+        flowVersion: undefined,
+      },
+    });
+  });
+
+  it("returns params even when artifact metadata is missing", async () => {
+    await prisma.run.create({
+      data: {
+        id: "run-params-missing-metadata",
+        traceId: "trace-params",
+        status: "completed",
+        source: "lowercase://params",
+        flowDefHash: "m".repeat(64),
+        runParamsHash: "manifest-hash",
+      },
+    });
+
+    await expect(query.getRunDetail("run-params-missing-metadata")).resolves.toEqual({
+      ok: true,
+      value: {
+        run: expect.objectContaining({
+          id: "run-params-missing-metadata",
+          runParamsHash: "manifest-hash",
+        }),
+        params: [
+          {
+            name: "context",
+            artifactHash: "artifact-context",
+            artifact: undefined,
+          },
+          {
+            name: "prompt",
+            artifactHash: "artifact-prompt",
+            artifact: undefined,
+          },
+        ],
         steps: [],
         flow: undefined,
         flowVersion: undefined,

@@ -1,4 +1,5 @@
 import type { FlowRecord, FlowVersionRecord } from "./flow-record.js";
+import type { ArtifactIndex } from "../artifacts/artifact-index.js";
 
 export type RunStatus = "requested" | "started" | "completed" | "failed";
 
@@ -80,6 +81,15 @@ export type ReusableRunStepData = {
 export type RunDetail = {
   run: RunRecord;
   steps: RunStepProjectionRecord[];
+  params?: RunParamSelection[];
   flow?: FlowRecord;
   flowVersion?: FlowVersionRecord;
+};
+
+export type RunParamManifest = Record<string, string>;
+
+export type RunParamSelection = {
+  name: string;
+  artifactHash: string;
+  artifact?: ArtifactIndex;
 };

@@ -11,7 +11,7 @@ import {
   useGetFlowVersionDefQuery,
 } from "@/redux/api/flows-api";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type {
   RunDetailsController,
   Tab,
@@ -20,9 +20,10 @@ import {
   getEventGraphRunId,
   getRunnerActiveTab,
   getRunnerFlowSelectedId,
+  getRunnerSelectedParamHashes,
   getRunnerSelectedEventId,
   setRunnerActiveTab,
-  setRunnerSimSelectedId,
+  setRunnerParamHash,
   setRunnerSelectedEventId,
 } from "@/redux/slices/runner-slice";
 import { RunDetailsControllerProvider } from "@/components/runs/RunDetailsControllerProvider";
@@ -35,12 +36,10 @@ export function Runner() {
   const activeTab = useAppSelector(getRunnerActiveTab);
   const runId = useAppSelector(getEventGraphRunId);
   const flowSelectedId = useAppSelector(getRunnerFlowSelectedId);
+  const selectedParams = useAppSelector(getRunnerSelectedParamHashes);
   const simSelectedId = useAppSelector((state) => state.runner.simSelectedId);
   const { data: flowsData } = useGetFlowsQuery();
   const { data: simsData } = useListAllSimsQuery();
-  const [selectedParams, setSelectedParams] = useState<Record<string, string>>(
-    {},
-  );
 
   const selectedFlow = useMemo(() => {
     if (flowsData?.ok !== true || !flowSelectedId) return null;
@@ -78,11 +77,6 @@ export function Runner() {
   const selectedFlowId = selectedSim?.flow.id ?? selectedFlow?.flow.id ?? null;
   const selectedFlowVersionId =
     selectedSim?.flowVersion.id ?? selectedFlow?.latestVersion.id ?? null;
-
-  useEffect(() => {
-    setSelectedParams({});
-    dispatch(setRunnerSimSelectedId(null));
-  }, [flowSelectedId, dispatch]);
 
   const requiredParamNames = useMemo(() => {
     if (!flowParams) return [];
@@ -145,13 +139,7 @@ export function Runner() {
             params={flowParams}
             selectedParams={selectedParams}
             onChange={(name, hash) => {
-              setSelectedParams((current) => {
-                if (!hash) {
-                  const { [name]: _removed, ...rest } = current;
-                  return rest;
-                }
-                return { ...current, [name]: hash };
-              });
+              dispatch(setRunnerParamHash({ name, hash }));
             }}
           />
           {flowSelectedId &&

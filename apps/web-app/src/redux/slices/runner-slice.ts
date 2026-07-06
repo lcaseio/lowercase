@@ -10,6 +10,7 @@ type RunnerState = {
   forkSpec?: ForkSpec | null;
   simSelectedId: string | null;
   flowSelectedId: string | null;
+  selectedParamHashes: Record<string, string>;
   eventGraphRunId: string | null;
   enableSim: boolean;
   selectedEventId: string | null;
@@ -23,6 +24,7 @@ const initialState: RunnerState = {
 
   flowSelectedId: null,
   simSelectedId: null,
+  selectedParamHashes: {},
   eventGraphRunId: null,
   enableSim: false,
   selectedEventId: null,
@@ -43,6 +45,8 @@ export const runnerSlice = createSlice({
     },
     setRunnerFlowSelectedId: (state, action: PayloadAction<string | null>) => {
       state.flowSelectedId = action.payload;
+      state.simSelectedId = null;
+      state.selectedParamHashes = {};
     },
     setEventGraphRunId: (state, action: PayloadAction<string>) => {
       state.eventGraphRunId = action.payload;
@@ -59,6 +63,29 @@ export const runnerSlice = createSlice({
     setRunnerActiveTab: (state, action: PayloadAction<Tab>) => {
       state.activeTab = action.payload;
     },
+    setRunnerParamHash: (
+      state,
+      action: PayloadAction<{ name: string; hash?: string }>,
+    ) => {
+      const { name, hash } = action.payload;
+      if (!hash) {
+        const { [name]: _removed, ...rest } = state.selectedParamHashes;
+        state.selectedParamHashes = rest;
+        return;
+      }
+      state.selectedParamHashes[name] = hash;
+    },
+    hydrateRunnerFromRun: (
+      state,
+      action: PayloadAction<{
+        flowSelectedId: string;
+        selectedParamHashes: Record<string, string>;
+      }>,
+    ) => {
+      state.flowSelectedId = action.payload.flowSelectedId;
+      state.simSelectedId = null;
+      state.selectedParamHashes = action.payload.selectedParamHashes;
+    },
   },
 });
 
@@ -70,6 +97,8 @@ export const {
   setRunnerSimSelectedId,
   setRunnerSelectedEventId,
   setRunnerActiveTab,
+  setRunnerParamHash,
+  hydrateRunnerFromRun,
 } = runnerSlice.actions;
 export const selectFlowHash = (state: RootState) => {
   return state.runner.flowHash;
@@ -91,4 +120,7 @@ export const getEventGraphRunId = (state: RootState) => {
 
 export const getRunnerFlowSelectedId = (state: RootState) => {
   return state.runner.flowSelectedId;
+};
+export const getRunnerSelectedParamHashes = (state: RootState) => {
+  return state.runner.selectedParamHashes;
 };

@@ -12,6 +12,7 @@ import type {
   Result,
   RunDetail,
   RunListItem,
+  RunParamManifest,
   SimDefinition,
   SimListItem,
   SimRecord,
@@ -88,6 +89,7 @@ export interface RunServicePort {
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
   getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
+  getRunParams(runId: string): Promise<Result<RunParamManifest, string>>;
   // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
 }
 
