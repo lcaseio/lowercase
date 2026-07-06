@@ -17,13 +17,14 @@ describe("runStartedPlanner", () => {
       event: runStartedEvent,
     };
 
-    const stepId = newState.flows["test-flowdefhash"].definition.start;
+    const stepId = newState.flows["test-flowversionid"].definition.start;
     const stepType =
-      newState.flows["test-flowdefhash"].definition.steps[stepId].type;
+      newState.flows["test-flowversionid"].definition.steps[stepId].type;
     const expectedEffects = {
       type: "EmitStepPlanned",
       scope: {
         flowid: message.event.flowid,
+        flowversionid: message.event.flowversionid,
         runid: message.event.runid,
         source: "lowercase://engine",
         stepid: stepId,
@@ -51,7 +52,7 @@ describe("runStartedPlanner", () => {
       type: "RunStarted",
       event: runStartedEvent,
     };
-    const stepId = newState.flows["test-flowdefhash"].definition.start;
+    const stepId = newState.flows["test-flowversionid"].definition.start;
     newState.runs["test-runid"].steps[stepId].status = "initialized";
 
     const effects = runStartedPlanner(oldState, newState, message);

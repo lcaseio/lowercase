@@ -3,6 +3,7 @@ import type { CloudEvent } from "../shared/cloud-event.js";
 
 export type RunScope = {
   flowid: string;
+  flowversionid: string;
   runid: string;
 };
 

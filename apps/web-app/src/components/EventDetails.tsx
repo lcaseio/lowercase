@@ -25,10 +25,11 @@ const fieldColors = {
   parentspanid: "",
   capid: "",
   engineid: "",
-  flowid: "",
+  flowid: "text-neutral-600 dark:text-neutral-400",
+  flowversionid: "text-neutral-600 dark:text-neutral-400",
   jobid: "",
   limiterid: "",
-  runid: "",
+  runid: "text-neutral-600 dark:text-neutral-400",
   schedulerid: "",
   stepid: "",
   steptype: "",
@@ -39,6 +40,7 @@ const fieldColors = {
 const fieldOrder = [
   "id",
   "flowid",
+  "flowversionid",
   "runid",
   "stepid",
   "jobid",
@@ -84,7 +86,7 @@ export function EventDetails({
         if (!Object.hasOwn(event, key)) return;
         return (
           <div className={getFieldColor(key) + " flex justify-start"}>
-            <div className="w-[8rem]">[{key}]</div>
+            <div className="w-[10rem]">[{key}]</div>
             <div>{String(event[key as keyof AnyEvent])}</div>
           </div>
         );

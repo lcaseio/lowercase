@@ -19,16 +19,14 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const effects: EngineEffect[] = [];
 
   const runId = message.event.runid;
-  const flowId = message.event.flowid;
   const stepId = message.event.stepid;
   const stepType = message.event.steptype;
 
   const newRun = newState.runs[runId];
-  const flow = newState.flows[flowId];
-  const step = flow.definition.steps[stepId];
-
   if (!newRun) return effects;
+  const flow = newState.flows[newRun.flowVersionId];
   if (!flow) return effects;
+  const step = flow.definition.steps[stepId];
   if (!step) return effects;
 
   // emit step.reused instead of step.started if reused by run plan
@@ -39,6 +37,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       type: "EmitStepReused",
       scope: {
         flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         stepid: stepId,
         steptype: stepType,
@@ -62,7 +61,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const emitStepStarted: EmitStepStartedFx = {
     type: "EmitStepStarted",
     scope: {
-      flowid: flowId,
+      flowid: newRun.flowId,
+      flowversionid: newRun.flowVersionId,
       runid: runId,
       stepid: stepId,
       steptype: stepType,
@@ -94,7 +94,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
       scope: {
-        flowid: flowId,
+        flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         stepid: stepId,
         capid: "httpjson",
@@ -127,7 +128,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     const emitJob: EmitJobMcpSubmittedFx = {
       type: "EmitJobMcpSubmitted",
       scope: {
-        flowid: flowId,
+        flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         capid: "mcp",
         runid: runId,
         stepid: stepId,

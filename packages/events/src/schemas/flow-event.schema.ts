@@ -13,6 +13,7 @@ import { CloudEventContextSchema } from "./cloud-context.schema.js";
 export const FlowContextSchema = z
   .object({
     flowid: z.string(),
+    flowversionid: z.string(),
     runid: z.string(),
     domain: z.literal("flow"),
   })

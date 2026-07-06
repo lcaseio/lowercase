@@ -5,7 +5,8 @@ import { flowDef } from "./flow-definition.js";
 export const forkSpecOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
@@ -39,7 +40,7 @@ export const forkSpecOkState: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },
@@ -48,7 +49,8 @@ export const forkSpecOkState: EngineState = {
 export const forkSpecNotOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       //forkSpec?: doesn't save fork spec to state
@@ -79,7 +81,7 @@ export const forkSpecNotOkState: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },

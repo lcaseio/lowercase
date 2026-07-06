@@ -27,7 +27,8 @@ describe("makeRunPlanPlanner()", () => {
         type: "EmitRunStarted",
         data: null,
         scope: {
-          flowid: "test-flowdefhash",
+          flowid: "test-flowid",
+          flowversionid: "test-flowversionid",
           runid: "test-runid",
           source: "lowercase://engine",
         },
@@ -55,7 +56,8 @@ describe("makeRunPlanPlanner()", () => {
           error: "Error making run plan.",
         },
         scope: {
-          flowid: "test-flowdefhash",
+          flowid: "test-flowid",
+          flowversionid: "test-flowversionid",
           runid: "test-runid",
           source: "lowercase://engine",
         },

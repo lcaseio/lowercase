@@ -84,7 +84,8 @@ describe("flowDefResultPlanner()", () => {
           error: "test-error",
         },
         scope: {
-          flowid: "test-flowdefhash",
+          flowid: "test-flowid",
+          flowversionid: "test-flowversionid",
           runid: "test-runid",
           source: "lowercase://engine",
         },

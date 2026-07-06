@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { AnyEvent } from "@lcase/types";
-import { ObsEventDetails } from "./EventDetails";
+import { EventDetails } from "./EventDetails";
 
 export type EventDomainColors = {
   [k in string]: string;
@@ -59,7 +59,7 @@ export function EventBar({ event }: { event: AnyEvent }) {
       >
         {event.type}
       </div>
-      {isExpanded && <ObsEventDetails event={event} />}
+      {isExpanded && <EventDetails event={event} />}
 
       {event.type === "system.logged" && isExpanded === false ? (
         <div className="system-log font-mono text-xs pl-2 pr-2">{log}</div>

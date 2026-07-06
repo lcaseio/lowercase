@@ -18,16 +18,15 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
   const stepId = message.event.stepid;
-  const flowId = message.event.flowid;
 
   const newRunState = newState.runs[runId];
 
   if (!newRunState) return effects;
 
-  const flow = newState.flows[flowId];
+  const flow = newState.flows[newRunState.flowVersionId];
+  if (!flow) return effects;
   const step = flow.definition.steps[stepId];
-
-  if (!flow || !step) return effects;
+  if (!step) return effects;
   const stepCtx = newRunState.steps[stepId];
 
   if (stepCtx.status === "completed") {
@@ -35,6 +34,7 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
       type: "EmitStepCompleted",
       scope: {
         flowid: newState.runs[runId].flowId,
+        flowversionid: newState.runs[runId].flowVersionId,
         runid: runId,
         source: "lowercase://engine",
         stepid: stepId,
@@ -64,6 +64,7 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
       type: "EmitStepFailed",
       scope: {
         flowid: newState.runs[runId].flowId,
+        flowversionid: newState.runs[runId].flowVersionId,
         runid: runId,
         source: "lowercase://engine",
         stepid: stepId,

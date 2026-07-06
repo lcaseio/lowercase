@@ -12,6 +12,7 @@ export const runStartedEvent = {
   traceparent: "test-traceparent",
   traceid: "test-traceid",
   spanid: "test-spanid",
-  flowid: "test-flowdefhash",
+  flowid: "test-flowid",
+  flowversionid: "test-flowversionid",
   runid: "test-runid",
 } satisfies AnyEvent<"run.started">;

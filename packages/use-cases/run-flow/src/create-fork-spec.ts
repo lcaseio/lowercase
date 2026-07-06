@@ -36,7 +36,8 @@ export async function startForkedSim(
 
   const emitter = deps.ef.newRunEmitterNewTrace({
     source,
-    flowid: flow.flowDefHash,
+    flowid: flow.flowId,
+    flowversionid: flow.flowVersionId,
     runid: runId,
   });
 

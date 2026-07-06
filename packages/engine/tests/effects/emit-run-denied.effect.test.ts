@@ -15,7 +15,8 @@ describe("emitRunDeniedFx()", () => {
         error: "Run id already exists in engine.",
       },
       scope: {
-        flowid: "test-flowdefhash",
+        flowid: "test-flowid",
+        flowversionid: "test-flowversionid",
         runid: "test-runid",
         source: "lowercase://engine",
       },

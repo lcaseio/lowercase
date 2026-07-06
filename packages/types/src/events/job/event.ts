@@ -4,6 +4,7 @@ import { JobEventType } from "./map.js";
 
 export type JobScope = {
   flowid: string;
+  flowversionid: string;
   runid: string;
   stepid: string;
   jobid: string;

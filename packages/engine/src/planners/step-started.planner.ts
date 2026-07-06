@@ -15,7 +15,6 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
 ) => {
   const effects: EngineEffect[] = [];
   const runId = message.event.runid;
-  const flowId = message.event.flowid;
   const stepId = message.event.stepid;
   const stepType = message.event.steptype;
 
@@ -23,7 +22,7 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
   const newRunState = newState.runs[runId];
 
   if (!newRunState || !oldRunState) return effects;
-  const flowDef = newState.flows[flowId];
+  const flowDef = newState.flows[newRunState.flowVersionId];
   if (!flowDef) return effects;
 
   const fa = newRunState.flowAnalysis;
@@ -39,7 +38,8 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
       const emitStepPlanned: EmitStepPlannedFx = {
         type: "EmitStepPlanned",
         scope: {
-          flowid: flowId,
+          flowid: newRunState.flowId,
+          flowversionid: newRunState.flowVersionId,
           runid: runId,
           source: "lowercase://engine",
           stepid: edge.endStepId,
@@ -68,6 +68,7 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
       type: "EmitStepCompleted",
       scope: {
         flowid: newRunState.flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
         stepid: completedStepId,

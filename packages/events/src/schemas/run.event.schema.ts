@@ -12,6 +12,7 @@ import {
 export const RunContextSchema = z
   .object({
     flowid: z.string(),
+    flowversionid: z.string(),
     runid: z.string(),
     domain: z.literal("run"),
   })

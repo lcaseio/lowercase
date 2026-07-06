@@ -23,7 +23,8 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
         error: message.error,
       },
       scope: {
-        flowid: newRunState.flowDefHash,
+        flowid: newRunState.flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },

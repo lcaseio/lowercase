@@ -20,6 +20,7 @@ export const stepStartedEvent = {
   traceid: "test-traceid",
   spanid: "test-spanid",
   flowid: "test-flowid",
+  flowversionid: "test-flowversionid",
   runid: "test-runid",
   stepid: "test-stepid",
   steptype: "httpjson",
