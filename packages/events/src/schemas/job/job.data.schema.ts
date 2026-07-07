@@ -55,6 +55,7 @@ export const ExportRefSchema = z
     scope: z.literal("output"),
     string: z.string(),
     type: z.enum(["application/json", "text/plain", "text/markdown"]),
+    schema: z.record(z.string(), z.unknown()).optional(),
   })
   .strict() satisfies z.ZodType<ExportRef>;
 

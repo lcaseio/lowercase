@@ -165,6 +165,68 @@ describe("worker exports", () => {
     expect(putMarkdown).toHaveBeenCalledWith("# Heading");
   });
 
+  it("stores a json export that satisfies its declared schema", async () => {
+    const putJson = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, value: "valid-hash" });
+    const worker = makeWorker({ putJson } as unknown as ArtifactsPort);
+
+    const exportRefs: Record<string, ExportRef> = {
+      data: {
+        exportName: "data",
+        valuePath: ["output", "data"],
+        scope: "output",
+        string: "output.data",
+        type: "application/json",
+        schema: {
+          type: "object",
+          properties: { location: { type: "string" } },
+          required: ["location"],
+        },
+      },
+    };
+
+    const result = await worker.storeExportArtifacts(
+      { data: { location: "Seattle" } },
+      exportRefs,
+    );
+
+    expect(result).toEqual({ ok: true, hashes: { data: "valid-hash" } });
+    expect(putJson).toHaveBeenCalledWith({ location: "Seattle" });
+  });
+
+  it("fails when a json export does not satisfy its declared schema", async () => {
+    const putJson = vi.fn();
+    const worker = makeWorker({ putJson } as unknown as ArtifactsPort);
+
+    const exportRefs: Record<string, ExportRef> = {
+      data: {
+        exportName: "data",
+        valuePath: ["output", "data"],
+        scope: "output",
+        string: "output.data",
+        type: "application/json",
+        schema: {
+          type: "object",
+          properties: { location: { type: "string" } },
+          required: ["location"],
+        },
+      },
+    };
+
+    const result = await worker.storeExportArtifacts(
+      { data: { intent: "weather" } },
+      exportRefs,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toContain("data");
+      expect(result.message).toContain("schema validation");
+    }
+    expect(putJson).not.toHaveBeenCalled();
+  });
+
   it("fails when a text/markdown export resolves to a non-string value", async () => {
     const putMarkdown = vi.fn();
     const worker = makeWorker({ putMarkdown } as unknown as ArtifactsPort);

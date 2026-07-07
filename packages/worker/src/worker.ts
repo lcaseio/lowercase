@@ -26,6 +26,7 @@ import type {
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
 import { bindReference, resolveJsonPath } from "@lcase/json-ref-binder";
+import { validateExportSchema } from "./export-validation.js";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -508,6 +509,15 @@ export class Worker implements WorkerPort {
             return {
               ok: false,
               message: `Could not parse export ${ref.exportName} as json: ${String(error)}`,
+            };
+          }
+        }
+        if (ref.schema) {
+          const validation = validateExportSchema(ref.schema, artifactValue);
+          if (!validation.ok) {
+            return {
+              ok: false,
+              message: `Export ${ref.exportName} failed schema validation: ${validation.message}`,
             };
           }
         }

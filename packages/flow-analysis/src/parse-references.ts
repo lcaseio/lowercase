@@ -129,6 +129,7 @@ export function parseExportRef(
     scope: "output",
     string: match[1],
     type: declaration.type,
+    ...(declaration.schema ? { schema: declaration.schema } : {}),
   };
 }
 

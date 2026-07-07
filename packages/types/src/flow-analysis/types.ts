@@ -112,4 +112,5 @@ export type ExportRef = {
   scope: "output";
   string: string;
   type: "application/json" | "text/plain" | "text/markdown";
+  schema?: Record<string, unknown>;
 };
