@@ -64,7 +64,7 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const replayService = new ReplayService(ctx.replay);
   const flowRepository = new PrismaFlowRepository(prisma);
   const artifactRepository = new PrismaArtifactRepository(prisma);
-  const runQuery = new PrismaRunQuery(prisma, ctx.artifacts, artifactRepository);
+  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const simService = new SimService(
     ctx.artifacts,
     ctx.ef,
@@ -121,7 +121,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     new PrismaArtifactRepository(prisma),
   );
   const artifactRepository = new PrismaArtifactRepository(prisma);
-  const runQuery = new PrismaRunQuery(prisma, artifacts, artifactRepository);
+  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const engine = createInProcessEngine(
     bus,
     ef,

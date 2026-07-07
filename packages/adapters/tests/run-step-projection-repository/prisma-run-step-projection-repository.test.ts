@@ -94,7 +94,7 @@ describe("PrismaRunStepProjectionRepository", () => {
       status: "started",
       startTime: "2026-07-02T10:00:00.000Z",
       outputHash: "b".repeat(64),
-      exportHashes: { body: "c".repeat(64) },
+      exports: [{ name: "body", artifactHash: "c".repeat(64) }],
     });
 
     await expect(
@@ -107,7 +107,7 @@ describe("PrismaRunStepProjectionRepository", () => {
         status: "started",
         startTime: "2026-07-02T10:00:00.000Z",
         outputHash: "b".repeat(64),
-        exportHashes: { body: "c".repeat(64) },
+        exports: [{ name: "body", artifactHash: "c".repeat(64) }],
       },
     });
   });
@@ -141,7 +141,7 @@ describe("PrismaRunStepProjectionRepository", () => {
         duration: 3,
         wasReused: true,
         reusedTime: "2026-07-02T10:00:02.000Z",
-        exportHashes: { body: "d".repeat(64) },
+        exports: [{ name: "body", artifactHash: "d".repeat(64) }],
       }),
     });
   });

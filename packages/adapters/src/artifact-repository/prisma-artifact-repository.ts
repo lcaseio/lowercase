@@ -44,6 +44,14 @@ export class PrismaArtifactRepository
     return this.get(hash);
   }
 
+  async getArtifacts(hashes: string[]): Promise<ArtifactIndex[]> {
+    if (hashes.length === 0) return [];
+    const artifacts = await this.db.artifact.findMany({
+      where: { hash: { in: hashes } },
+    });
+    return artifacts.map(toArtifactIndex);
+  }
+
   async listArtifactHashes(): Promise<string[]> {
     return this.getIndexList();
   }

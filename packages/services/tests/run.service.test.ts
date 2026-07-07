@@ -53,7 +53,6 @@ function makeRunService(options?: {
         error: { code: "STORE_GET_FAILED" as const, message: "missing" },
       };
     }),
-    putJson: vi.fn().mockResolvedValue({ ok: true, value: "manifest-hash" }),
   } as unknown as ArtifactsPort;
 
   const artifactRepository = {
@@ -118,6 +117,9 @@ describe("RunService", () => {
     ).resolves.toBeUndefined();
 
     expect(runRepository.createRun).toHaveBeenCalledOnce();
+    expect(runRepository.createRun).toHaveBeenCalledWith(
+      expect.objectContaining({ params: { prompt: "artifact-hash" } }),
+    );
   });
 
   it("rejects incompatible param artifact formats", async () => {

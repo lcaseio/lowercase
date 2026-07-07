@@ -96,7 +96,6 @@ model Run {
   simId         String?
   parentRunId   String?
   forkSpecHash  String?
-  runParamsHash String?
   startTime     DateTime?
   endTime       DateTime?
   duration      Float?
@@ -107,6 +106,7 @@ model Run {
   flowVersion     FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   sim             Sim?                 @relation(fields: [simId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   stepProjections RunStepProjection[]
+  params          RunParam[]
 
   @@index([createdAt])
   @@index([flowId])
@@ -115,22 +115,44 @@ model Run {
   @@index([parentRunId])
 }
 
-model RunStepProjection {
+model RunParam {
   runId        String
-  stepId       String
-  status       String?
-  startTime    DateTime?
-  endTime      DateTime?
-  duration     Float?
-  reusedTime   DateTime?
-  wasReused    Boolean?
-  outputHash   String?
-  argsHash     String?
-  exportHashes String?
+  name         String
+  artifactHash String
 
   run Run @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([runId, name])
+  @@index([artifactHash])
+}
+
+model RunStepProjection {
+  runId      String
+  stepId     String
+  status     String?
+  startTime  DateTime?
+  endTime    DateTime?
+  duration   Float?
+  reusedTime DateTime?
+  wasReused  Boolean?
+  outputHash String?
+
+  run     Run             @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  exports RunStepExport[]
 
   @@id([runId, stepId])
   @@index([runId])
   @@index([status])
+}
+
+model RunStepExport {
+  runId        String
+  stepId       String
+  name         String
+  artifactHash String
+
+  step RunStepProjection @relation(fields: [runId, stepId], references: [runId, stepId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([runId, stepId, name])
+  @@index([artifactHash])
 }

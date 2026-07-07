@@ -14,7 +14,6 @@ export type RunRecord = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
-  runParamsHash?: string;
   startTime?: string;
   endTime?: string;
   duration?: number;
@@ -33,7 +32,7 @@ export type CreateRunRecordInput = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
-  runParamsHash?: string;
+  params?: Record<string, string>;
   startTime?: string;
   endTime?: string;
   duration?: number;
@@ -49,10 +48,15 @@ export type UpdateRunRecordInput = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
-  runParamsHash?: string;
   startTime?: string;
   endTime?: string;
   duration?: number;
+};
+
+export type RunStepExportRecord = {
+  name: string;
+  artifactHash: string;
+  artifact?: ArtifactIndex;
 };
 
 export type RunStepProjectionRecord = {
@@ -65,11 +69,21 @@ export type RunStepProjectionRecord = {
   reusedTime?: string;
   wasReused?: boolean;
   outputHash?: string;
-  argsHash?: string;
-  exportHashes?: Record<string, string>;
+  exports?: RunStepExportRecord[];
 };
 
-export type UpsertRunStepProjectionInput = RunStepProjectionRecord;
+export type UpsertRunStepProjectionInput = {
+  runId: string;
+  stepId: string;
+  status?: string;
+  startTime?: string;
+  endTime?: string;
+  duration?: number;
+  reusedTime?: string;
+  wasReused?: boolean;
+  outputHash?: string;
+  exportHashes?: Record<string, string>;
+};
 
 export type ReusableRunStepData = {
   stepId: string;

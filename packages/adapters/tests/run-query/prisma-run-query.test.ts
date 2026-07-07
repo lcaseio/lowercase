@@ -7,7 +7,6 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@lcase/db-prisma";
 import { PrismaArtifactRepository } from "../../src/artifact-repository/prisma-artifact-repository.js";
 import { PrismaRunQuery } from "../../src/run-query/prisma-run-query.js";
-import type { ArtifactsPort } from "@lcase/ports";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../../..");
@@ -46,7 +45,6 @@ describe("PrismaRunQuery", () => {
   let tmpDir: string;
   let prisma: PrismaClient;
   let query: PrismaRunQuery;
-  let artifacts: Pick<ArtifactsPort, "getJson">;
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-run-query-"));
@@ -59,32 +57,7 @@ describe("PrismaRunQuery", () => {
       path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
     );
 
-    artifacts = {
-      async getJson(hash: string) {
-        if (hash === "manifest-hash") {
-          return {
-            ok: true as const,
-            value: {
-              prompt: "artifact-prompt",
-              context: "artifact-context",
-            },
-          };
-        }
-        return {
-          ok: false as const,
-          error: {
-            code: "STORE_GET_FAILED" as const,
-            message: `Unknown hash: ${hash}`,
-          },
-        };
-      },
-    };
-
-    query = new PrismaRunQuery(
-      prisma,
-      artifacts as ArtifactsPort,
-      new PrismaArtifactRepository(prisma),
-    );
+    query = new PrismaRunQuery(prisma, new PrismaArtifactRepository(prisma));
   });
 
   afterEach(async () => {
@@ -176,7 +149,6 @@ describe("PrismaRunQuery", () => {
         flowId: "flow-2",
         flowVersionId: "flow-version-2",
         flowDefHash: "c".repeat(64),
-        runParamsHash: "manifest-hash",
         startTime: new Date("2026-07-02T10:00:01.000Z"),
         endTime: new Date("2026-07-02T10:00:03.000Z"),
         duration: 2,
@@ -199,6 +171,19 @@ describe("PrismaRunQuery", () => {
           contentType: "application/json",
           format: "json",
         },
+        {
+          hash: "e".repeat(64),
+          time: createdAt,
+          contentType: "text/plain",
+          format: "text",
+        },
+      ],
+    });
+
+    await prisma.runParam.createMany({
+      data: [
+        { runId: "run-2", name: "prompt", artifactHash: "artifact-prompt" },
+        { runId: "run-2", name: "context", artifactHash: "artifact-context" },
       ],
     });
 
@@ -208,7 +193,15 @@ describe("PrismaRunQuery", () => {
         stepId: "fetch",
         status: "completed",
         outputHash: "d".repeat(64),
-        exportHashes: JSON.stringify({ body: "e".repeat(64) }),
+      },
+    });
+
+    await prisma.runStepExport.create({
+      data: {
+        runId: "run-2",
+        stepId: "fetch",
+        name: "body",
+        artifactHash: "e".repeat(64),
       },
     });
 
@@ -221,7 +214,6 @@ describe("PrismaRunQuery", () => {
           id: "run-2",
           flowDefHash: "c".repeat(64),
           status: "completed",
-          runParamsHash: "manifest-hash",
         }),
         params: [
           {
@@ -249,7 +241,16 @@ describe("PrismaRunQuery", () => {
             stepId: "fetch",
             status: "completed",
             outputHash: "d".repeat(64),
-            exportHashes: { body: "e".repeat(64) },
+            exports: [
+              {
+                name: "body",
+                artifactHash: "e".repeat(64),
+                artifact: expect.objectContaining({
+                  hash: "e".repeat(64),
+                  format: "text",
+                }),
+              },
+            ],
           },
         ],
         flow: expect.objectContaining({
@@ -308,8 +309,22 @@ describe("PrismaRunQuery", () => {
         status: "completed",
         source: "lowercase://params",
         flowDefHash: "m".repeat(64),
-        runParamsHash: "manifest-hash",
       },
+    });
+
+    await prisma.runParam.createMany({
+      data: [
+        {
+          runId: "run-params-missing-metadata",
+          name: "prompt",
+          artifactHash: "artifact-prompt",
+        },
+        {
+          runId: "run-params-missing-metadata",
+          name: "context",
+          artifactHash: "artifact-context",
+        },
+      ],
     });
 
     await expect(query.getRunDetail("run-params-missing-metadata")).resolves.toEqual({
@@ -317,7 +332,6 @@ describe("PrismaRunQuery", () => {
       value: {
         run: expect.objectContaining({
           id: "run-params-missing-metadata",
-          runParamsHash: "manifest-hash",
         }),
         params: [
           {
@@ -356,7 +370,6 @@ describe("PrismaRunQuery", () => {
           stepId: "fetch",
           status: "completed",
           outputHash: "h".repeat(64),
-          exportHashes: JSON.stringify({ body: "i".repeat(64) }),
         },
         {
           runId: "run-4",
@@ -365,6 +378,15 @@ describe("PrismaRunQuery", () => {
           outputHash: "j".repeat(64),
         },
       ],
+    });
+
+    await prisma.runStepExport.create({
+      data: {
+        runId: "run-4",
+        stepId: "fetch",
+        name: "body",
+        artifactHash: "i".repeat(64),
+      },
     });
 
     await expect(
