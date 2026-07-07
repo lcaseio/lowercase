@@ -1,9 +1,5 @@
 import type { PrismaClient } from "@lcase/db-prisma";
-import type {
-  ArtifactRepositoryPort,
-  ArtifactsPort,
-  RunQueryPort,
-} from "@lcase/ports";
+import type { ArtifactRepositoryPort, RunQueryPort } from "@lcase/ports";
 import type {
   FlowRecord,
   FlowVersionRecord,
@@ -11,16 +7,16 @@ import type {
   Result,
   RunDetail,
   RunListItem,
-  RunParamManifest,
   RunParamSelection,
   RunRecord,
   RunStatus,
+  RunStepExportRecord,
   RunStepProjectionRecord,
 } from "@lcase/types";
 
 type PrismaRunQueryDb = Pick<
   PrismaClient,
-  "run" | "runStepProjection" | "flowVersion"
+  "run" | "runStepProjection" | "flowVersion" | "runParam" | "runStepExport"
 >;
 
 function toRunStatus(status: string): RunStatus {
@@ -46,7 +42,6 @@ function toRunRecord(run: {
   simId: string | null;
   parentRunId: string | null;
   forkSpecHash: string | null;
-  runParamsHash: string | null;
   startTime: Date | null;
   endTime: Date | null;
   duration: number | null;
@@ -64,7 +59,6 @@ function toRunRecord(run: {
     simId: run.simId ?? undefined,
     parentRunId: run.parentRunId ?? undefined,
     forkSpecHash: run.forkSpecHash ?? undefined,
-    runParamsHash: run.runParamsHash ?? undefined,
     startTime: run.startTime?.toISOString(),
     endTime: run.endTime?.toISOString(),
     duration: run.duration ?? undefined,
@@ -109,38 +103,20 @@ function toFlowVersionRecord(version: {
   };
 }
 
-function parseExportHashes(
-  value: string | null,
-): Record<string, string> | undefined {
-  if (!value) return undefined;
-
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return undefined;
-    }
-
-    return Object.fromEntries(
-      Object.entries(parsed).filter(([, hash]) => typeof hash === "string"),
-    ) as Record<string, string>;
-  } catch {
-    return undefined;
-  }
-}
-
-function toRunStepProjectionRecord(step: {
-  runId: string;
-  stepId: string;
-  status: string | null;
-  startTime: Date | null;
-  endTime: Date | null;
-  duration: number | null;
-  reusedTime: Date | null;
-  wasReused: boolean | null;
-  outputHash: string | null;
-  argsHash: string | null;
-  exportHashes: string | null;
-}): RunStepProjectionRecord {
+function toRunStepProjectionRecord(
+  step: {
+    runId: string;
+    stepId: string;
+    status: string | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    duration: number | null;
+    reusedTime: Date | null;
+    wasReused: boolean | null;
+    outputHash: string | null;
+  },
+  exports: RunStepExportRecord[],
+): RunStepProjectionRecord {
   return {
     runId: step.runId,
     stepId: step.stepId,
@@ -151,8 +127,7 @@ function toRunStepProjectionRecord(step: {
     reusedTime: step.reusedTime?.toISOString(),
     wasReused: step.wasReused ?? undefined,
     outputHash: step.outputHash ?? undefined,
-    argsHash: step.argsHash ?? undefined,
-    exportHashes: parseExportHashes(step.exportHashes),
+    exports: exports.length > 0 ? exports : undefined,
   };
 }
 
@@ -193,7 +168,6 @@ function toRunListItem(
 export class PrismaRunQuery implements RunQueryPort {
   constructor(
     private readonly db: PrismaRunQueryDb,
-    private readonly artifacts: ArtifactsPort,
     private readonly artifactRepository: ArtifactRepositoryPort,
   ) {}
 
@@ -262,14 +236,53 @@ export class PrismaRunQuery implements RunQueryPort {
             include: { flow: true },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           });
-      const params = await this.#getRunParams(run.runParamsHash);
+
+      const [paramRows, exportRows] = await Promise.all([
+        this.db.runParam.findMany({ where: { runId } }),
+        this.db.runStepExport.findMany({ where: { runId } }),
+      ]);
+
+      const allHashes = [
+        ...new Set([
+          ...paramRows.map((row) => row.artifactHash),
+          ...exportRows.map((row) => row.artifactHash),
+        ]),
+      ];
+      const artifacts = await this.artifactRepository.getArtifacts(allHashes);
+      const artifactByHash = new Map(
+        artifacts.map((artifact) => [artifact.hash, artifact] as const),
+      );
+
+      const params: RunParamSelection[] = paramRows
+        .map((row) => ({
+          name: row.name,
+          artifactHash: row.artifactHash,
+          artifact: artifactByHash.get(row.artifactHash),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      const exportsByStepId = new Map<string, RunStepExportRecord[]>();
+      for (const row of exportRows) {
+        const list = exportsByStepId.get(row.stepId) ?? [];
+        list.push({
+          name: row.name,
+          artifactHash: row.artifactHash,
+          artifact: artifactByHash.get(row.artifactHash),
+        });
+        exportsByStepId.set(row.stepId, list);
+      }
+      for (const list of exportsByStepId.values()) {
+        list.sort((a, b) => a.name.localeCompare(b.name));
+      }
 
       return {
         ok: true,
         value: {
           run: toRunRecord(run),
-          steps: steps.map(toRunStepProjectionRecord),
-          params,
+          steps: steps.map((step) =>
+            toRunStepProjectionRecord(step, exportsByStepId.get(step.stepId) ?? []),
+          ),
+          params: params.length > 0 ? params : undefined,
           flow: flowVersion ? toFlowRecord(flowVersion.flow) : undefined,
           flowVersion: flowVersion
             ? toFlowVersionRecord(flowVersion)
@@ -315,6 +328,16 @@ export class PrismaRunQuery implements RunQueryPort {
         };
       }
 
+      const exportRows = await this.db.runStepExport.findMany({
+        where: { runId: parentRunId, stepId: { in: uniqueStepIds } },
+      });
+      const exportHashesByStepId = new Map<string, Record<string, string>>();
+      for (const row of exportRows) {
+        const map = exportHashesByStepId.get(row.stepId) ?? {};
+        map[row.name] = row.artifactHash;
+        exportHashesByStepId.set(row.stepId, map);
+      }
+
       return {
         ok: true,
         value: Object.fromEntries(
@@ -324,7 +347,7 @@ export class PrismaRunQuery implements RunQueryPort {
               stepId: step.stepId,
               status: step.status ?? undefined,
               outputHash: step.outputHash ?? undefined,
-              exportHashes: parseExportHashes(step.exportHashes),
+              exportHashes: exportHashesByStepId.get(step.stepId),
             } satisfies ReusableRunStepData,
           ]),
         ),
@@ -336,39 +359,4 @@ export class PrismaRunQuery implements RunQueryPort {
       };
     }
   }
-
-  async #getRunParams(
-    runParamsHash: string | null,
-  ): Promise<RunParamSelection[] | undefined> {
-    if (!runParamsHash) return undefined;
-
-    const manifestResult = await this.artifacts.getJson(runParamsHash);
-    if (!manifestResult.ok) return undefined;
-
-    const manifest = toRunParamManifest(manifestResult.value);
-    if (!manifest) return undefined;
-
-    const params = await Promise.all(
-      Object.entries(manifest).map(async ([name, artifactHash]) => ({
-        name,
-        artifactHash,
-        artifact: await this.artifactRepository.getArtifact(artifactHash),
-      })),
-    );
-
-    return params.sort((a, b) => a.name.localeCompare(b.name));
-  }
-}
-
-function toRunParamManifest(value: unknown): RunParamManifest | undefined {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      ([name, artifactHash]) =>
-        name.length > 0 && typeof artifactHash === "string",
-    ),
-  );
 }

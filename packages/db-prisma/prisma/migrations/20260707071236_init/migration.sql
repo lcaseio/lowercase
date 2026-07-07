@@ -56,7 +56,6 @@ CREATE TABLE "Run" (
     "simId" TEXT,
     "parentRunId" TEXT,
     "forkSpecHash" TEXT,
-    "runParamsHash" TEXT,
     "startTime" DATETIME,
     "endTime" DATETIME,
     "duration" REAL,
@@ -65,6 +64,16 @@ CREATE TABLE "Run" (
     CONSTRAINT "Run_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Run_flowVersionId_fkey" FOREIGN KEY ("flowVersionId") REFERENCES "FlowVersion" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Run_simId_fkey" FOREIGN KEY ("simId") REFERENCES "Sim" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "RunParam" (
+    "runId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "artifactHash" TEXT NOT NULL,
+
+    PRIMARY KEY ("runId", "name"),
+    CONSTRAINT "RunParam_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -78,11 +87,20 @@ CREATE TABLE "RunStepProjection" (
     "reusedTime" DATETIME,
     "wasReused" BOOLEAN,
     "outputHash" TEXT,
-    "argsHash" TEXT,
-    "exportHashes" TEXT,
 
     PRIMARY KEY ("runId", "stepId"),
     CONSTRAINT "RunStepProjection_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "RunStepExport" (
+    "runId" TEXT NOT NULL,
+    "stepId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "artifactHash" TEXT NOT NULL,
+
+    PRIMARY KEY ("runId", "stepId", "name"),
+    CONSTRAINT "RunStepExport_runId_stepId_fkey" FOREIGN KEY ("runId", "stepId") REFERENCES "RunStepProjection" ("runId", "stepId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -119,7 +137,13 @@ CREATE INDEX "Run_simId_idx" ON "Run"("simId");
 CREATE INDEX "Run_parentRunId_idx" ON "Run"("parentRunId");
 
 -- CreateIndex
+CREATE INDEX "RunParam_artifactHash_idx" ON "RunParam"("artifactHash");
+
+-- CreateIndex
 CREATE INDEX "RunStepProjection_runId_idx" ON "RunStepProjection"("runId");
 
 -- CreateIndex
 CREATE INDEX "RunStepProjection_status_idx" ON "RunStepProjection"("status");
+
+-- CreateIndex
+CREATE INDEX "RunStepExport_artifactHash_idx" ON "RunStepExport"("artifactHash");

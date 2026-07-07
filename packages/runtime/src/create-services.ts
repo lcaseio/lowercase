@@ -22,7 +22,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const flowRepository = new PrismaFlowRepository(prisma);
   const runRepository = new PrismaRunRepository(prisma);
-  const runQuery = new PrismaRunQuery(prisma, ctx.artifacts, artifactRepository);
+  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const simRepository = new PrismaSimRepository(prisma);
 
   const flow = new FlowService(ctx.artifacts, flowRepository);

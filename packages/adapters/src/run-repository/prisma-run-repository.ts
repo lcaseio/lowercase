@@ -8,7 +8,10 @@ import type {
 } from "@lcase/types";
 import type { RunRepositoryPort } from "@lcase/ports";
 
-type PrismaRunRepositoryDb = Pick<PrismaClient, "run">;
+type PrismaRunRepositoryDb = Pick<
+  PrismaClient,
+  "run" | "runParam" | "$transaction"
+>;
 
 function toRunStatus(status: string): RunStatus {
   switch (status) {
@@ -33,7 +36,6 @@ function toRunRecord(run: {
   simId: string | null;
   parentRunId: string | null;
   forkSpecHash: string | null;
-  runParamsHash: string | null;
   startTime: Date | null;
   endTime: Date | null;
   duration: number | null;
@@ -51,7 +53,6 @@ function toRunRecord(run: {
     simId: run.simId ?? undefined,
     parentRunId: run.parentRunId ?? undefined,
     forkSpecHash: run.forkSpecHash ?? undefined,
-    runParamsHash: run.runParamsHash ?? undefined,
     startTime: run.startTime?.toISOString(),
     endTime: run.endTime?.toISOString(),
     duration: run.duration ?? undefined,
@@ -75,39 +76,55 @@ export class PrismaRunRepository implements RunRepositoryPort {
 
   async createRun(input: CreateRunRecordInput): Promise<Result<RunRecord, string>> {
     try {
-      const created = await this.db.run.upsert({
-        where: { id: input.id },
-        update: definedFields({
-          traceId: input.traceId,
-          status: input.status,
-          source: input.source,
-          flowId: input.flowId,
-          flowVersionId: input.flowVersionId,
-          flowDefHash: input.flowDefHash,
-          simId: input.simId,
-          parentRunId: input.parentRunId,
-          forkSpecHash: input.forkSpecHash,
-          runParamsHash: input.runParamsHash,
-          startTime: toOptionalDate(input.startTime),
-          endTime: toOptionalDate(input.endTime),
-          duration: input.duration,
-        }),
-        create: {
-          id: input.id,
-          traceId: input.traceId,
-          status: input.status,
-          source: input.source,
-          flowId: input.flowId,
-          flowVersionId: input.flowVersionId,
-          flowDefHash: input.flowDefHash,
-          simId: input.simId,
-          parentRunId: input.parentRunId,
-          forkSpecHash: input.forkSpecHash,
-          runParamsHash: input.runParamsHash,
-          startTime: toOptionalDate(input.startTime),
-          endTime: toOptionalDate(input.endTime),
-          duration: input.duration,
-        },
+      const created = await this.db.$transaction(async (tx) => {
+        const run = await tx.run.upsert({
+          where: { id: input.id },
+          update: definedFields({
+            traceId: input.traceId,
+            status: input.status,
+            source: input.source,
+            flowId: input.flowId,
+            flowVersionId: input.flowVersionId,
+            flowDefHash: input.flowDefHash,
+            simId: input.simId,
+            parentRunId: input.parentRunId,
+            forkSpecHash: input.forkSpecHash,
+            startTime: toOptionalDate(input.startTime),
+            endTime: toOptionalDate(input.endTime),
+            duration: input.duration,
+          }),
+          create: {
+            id: input.id,
+            traceId: input.traceId,
+            status: input.status,
+            source: input.source,
+            flowId: input.flowId,
+            flowVersionId: input.flowVersionId,
+            flowDefHash: input.flowDefHash,
+            simId: input.simId,
+            parentRunId: input.parentRunId,
+            forkSpecHash: input.forkSpecHash,
+            startTime: toOptionalDate(input.startTime),
+            endTime: toOptionalDate(input.endTime),
+            duration: input.duration,
+          },
+        });
+
+        if (input.params !== undefined) {
+          await tx.runParam.deleteMany({ where: { runId: input.id } });
+          const entries = Object.entries(input.params);
+          if (entries.length > 0) {
+            await tx.runParam.createMany({
+              data: entries.map(([name, artifactHash]) => ({
+                runId: input.id,
+                name,
+                artifactHash,
+              })),
+            });
+          }
+        }
+
+        return run;
       });
 
       return { ok: true, value: toRunRecord(created) };
@@ -132,7 +149,6 @@ export class PrismaRunRepository implements RunRepositoryPort {
           simId: input.simId,
           parentRunId: input.parentRunId,
           forkSpecHash: input.forkSpecHash,
-          runParamsHash: input.runParamsHash,
           startTime: toOptionalDate(input.startTime),
           endTime: toOptionalDate(input.endTime),
           duration: input.duration,

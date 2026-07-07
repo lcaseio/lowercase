@@ -54,7 +54,6 @@ export class RunService implements RunServicePort {
 
     const runId = request.runId ?? createRunId();
     const traceId = this.ef.generateTraceId();
-    const runParamsHash = await this.#persistRunParamsManifest(request, runId);
     const result = await this.runRepository.createRun({
       id: runId,
       traceId,
@@ -65,7 +64,7 @@ export class RunService implements RunServicePort {
       flowDefHash: request.flowDefHash,
       simId: request.simId,
       forkSpecHash: request.forkSpecHash,
-      runParamsHash,
+      params: request.params,
     });
     if (!result.ok) {
       throw new Error(result.error);
@@ -104,27 +103,6 @@ export class RunService implements RunServicePort {
         params.map((param) => [param.name, param.artifactHash]),
       ),
     };
-  }
-
-  async #persistRunParamsManifest(
-    request: RunRequest,
-    runId: string,
-  ): Promise<string | undefined> {
-    if (!request.params || Object.keys(request.params).length === 0) {
-      return undefined;
-    }
-
-    const result = await this.artifacts.putJson(request.params, {
-      label: `Run Params ${runId}`,
-      filename: `${runId}-params.json`,
-      contentType: "application/json",
-    });
-
-    if (!result.ok) {
-      throw new Error(result.error.message);
-    }
-
-    return result.value;
   }
 
   async #validateRunRequest(request: RunRequest): Promise<void> {

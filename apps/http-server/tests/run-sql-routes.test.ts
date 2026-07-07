@@ -102,7 +102,6 @@ describe("run sql routes", () => {
         flowId: "flow-1",
         flowVersionId: "flow-version-1",
         flowDefHash: "a".repeat(64),
-        runParamsHash: "manifest-hash",
         forkSpecHash: "b".repeat(64),
         startTime: new Date("2026-07-02T10:00:01.000Z"),
         endTime: new Date("2026-07-02T10:00:04.000Z"),
@@ -120,6 +119,14 @@ describe("run sql routes", () => {
       },
     });
 
+    await prisma.runParam.create({
+      data: {
+        runId: "run-1",
+        name: "payload",
+        artifactHash: "artifact-hash",
+      },
+    });
+
     await prisma.runStepProjection.create({
       data: {
         runId: "run-1",
@@ -131,25 +138,19 @@ describe("run sql routes", () => {
 
     const artifacts = {
       async getJson(hash: string) {
-        expect(hash).toBe("manifest-hash");
         return {
-          ok: true as const,
-          value: {
-            payload: "artifact-hash",
-          },
+          ok: false as const,
+          error: { code: "STORE_GET_FAILED" as const, message: `Unknown hash: ${hash}` },
         };
       },
     } satisfies Pick<ArtifactsPort, "getJson">;
 
     const runService = new RunService({
       artifacts: artifacts as ArtifactsPort,
+      artifactRepository: new PrismaArtifactRepository(prisma),
       ef: new EmitterFactory(new InMemoryEventBus()),
       runRepository: new PrismaRunRepository(prisma),
-      runQuery: new PrismaRunQuery(
-        prisma,
-        artifacts as ArtifactsPort,
-        new PrismaArtifactRepository(prisma),
-      ),
+      runQuery: new PrismaRunQuery(prisma, new PrismaArtifactRepository(prisma)),
     });
     const replayEvents: AnyEvent[] = [
       {
@@ -224,7 +225,6 @@ describe("run sql routes", () => {
           id: "run-1",
           flowDefHash: "a".repeat(64),
           status: "completed",
-          runParamsHash: "manifest-hash",
         }),
         params: [
           {

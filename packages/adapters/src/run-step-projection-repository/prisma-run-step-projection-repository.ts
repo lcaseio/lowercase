@@ -1,49 +1,31 @@
 import type { PrismaClient } from "@lcase/db-prisma";
 import type {
   Result,
+  RunStepExportRecord,
   RunStepProjectionRecord,
   UpsertRunStepProjectionInput,
 } from "@lcase/types";
 import type { RunStepProjectionRepositoryPort } from "@lcase/ports";
 
-type PrismaRunStepProjectionRepositoryDb = Pick<PrismaClient, "runStepProjection">;
+type PrismaRunStepProjectionRepositoryDb = Pick<
+  PrismaClient,
+  "runStepProjection" | "runStepExport" | "$transaction"
+>;
 
-function parseExportHashes(
-  value: string | null,
-): Record<string, string> | undefined {
-  if (!value) return undefined;
-
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return undefined;
-    return Object.fromEntries(
-      Object.entries(parsed).filter(([, hash]) => typeof hash === "string"),
-    ) as Record<string, string>;
-  } catch {
-    return undefined;
-  }
-}
-
-function serializeExportHashes(
-  value: Record<string, string> | undefined,
-): string | undefined {
-  if (!value || Object.keys(value).length === 0) return undefined;
-  return JSON.stringify(value);
-}
-
-function toRunStepProjectionRecord(step: {
-  runId: string;
-  stepId: string;
-  status: string | null;
-  startTime: Date | null;
-  endTime: Date | null;
-  duration: number | null;
-  reusedTime: Date | null;
-  wasReused: boolean | null;
-  outputHash: string | null;
-  argsHash: string | null;
-  exportHashes: string | null;
-}): RunStepProjectionRecord {
+function toRunStepProjectionRecord(
+  step: {
+    runId: string;
+    stepId: string;
+    status: string | null;
+    startTime: Date | null;
+    endTime: Date | null;
+    duration: number | null;
+    reusedTime: Date | null;
+    wasReused: boolean | null;
+    outputHash: string | null;
+  },
+  exports: RunStepExportRecord[],
+): RunStepProjectionRecord {
   return {
     runId: step.runId,
     stepId: step.stepId,
@@ -54,9 +36,15 @@ function toRunStepProjectionRecord(step: {
     reusedTime: step.reusedTime?.toISOString(),
     wasReused: step.wasReused ?? undefined,
     outputHash: step.outputHash ?? undefined,
-    argsHash: step.argsHash ?? undefined,
-    exportHashes: parseExportHashes(step.exportHashes),
+    exports: exports.length > 0 ? exports : undefined,
   };
+}
+
+function toRunStepExportRecord(row: {
+  name: string;
+  artifactHash: string;
+}): RunStepExportRecord {
+  return { name: row.name, artifactHash: row.artifactHash };
 }
 
 function toOptionalDate(value: string | undefined): Date | undefined {
@@ -78,40 +66,67 @@ export class PrismaRunStepProjectionRepository
     input: UpsertRunStepProjectionInput,
   ): Promise<Result<RunStepProjectionRecord, string>> {
     try {
-      const saved = await this.db.runStepProjection.upsert({
-        where: {
-          runId_stepId: {
+      const saved = await this.db.$transaction(async (tx) => {
+        const step = await tx.runStepProjection.upsert({
+          where: {
+            runId_stepId: {
+              runId: input.runId,
+              stepId: input.stepId,
+            },
+          },
+          update: definedFields({
+            status: input.status,
+            startTime: toOptionalDate(input.startTime),
+            endTime: toOptionalDate(input.endTime),
+            duration: input.duration,
+            reusedTime: toOptionalDate(input.reusedTime),
+            wasReused: input.wasReused,
+            outputHash: input.outputHash,
+          }),
+          create: {
             runId: input.runId,
             stepId: input.stepId,
+            status: input.status,
+            startTime: toOptionalDate(input.startTime),
+            endTime: toOptionalDate(input.endTime),
+            duration: input.duration,
+            reusedTime: toOptionalDate(input.reusedTime),
+            wasReused: input.wasReused,
+            outputHash: input.outputHash,
           },
-        },
-        update: definedFields({
-          status: input.status,
-          startTime: toOptionalDate(input.startTime),
-          endTime: toOptionalDate(input.endTime),
-          duration: input.duration,
-          reusedTime: toOptionalDate(input.reusedTime),
-          wasReused: input.wasReused,
-          outputHash: input.outputHash,
-          argsHash: input.argsHash,
-          exportHashes: serializeExportHashes(input.exportHashes),
-        }),
-        create: {
-          runId: input.runId,
-          stepId: input.stepId,
-          status: input.status,
-          startTime: toOptionalDate(input.startTime),
-          endTime: toOptionalDate(input.endTime),
-          duration: input.duration,
-          reusedTime: toOptionalDate(input.reusedTime),
-          wasReused: input.wasReused,
-          outputHash: input.outputHash,
-          argsHash: input.argsHash,
-          exportHashes: serializeExportHashes(input.exportHashes),
-        },
+        });
+
+        if (input.exportHashes !== undefined) {
+          await tx.runStepExport.deleteMany({
+            where: { runId: input.runId, stepId: input.stepId },
+          });
+          const entries = Object.entries(input.exportHashes);
+          if (entries.length > 0) {
+            await tx.runStepExport.createMany({
+              data: entries.map(([name, artifactHash]) => ({
+                runId: input.runId,
+                stepId: input.stepId,
+                name,
+                artifactHash,
+              })),
+            });
+          }
+        }
+
+        const exports = await tx.runStepExport.findMany({
+          where: { runId: input.runId, stepId: input.stepId },
+        });
+
+        return { step, exports };
       });
 
-      return { ok: true, value: toRunStepProjectionRecord(saved) };
+      return {
+        ok: true,
+        value: toRunStepProjectionRecord(
+          saved.step,
+          saved.exports.map(toRunStepExportRecord),
+        ),
+      };
     } catch (error) {
       return {
         ok: false,
@@ -134,7 +149,13 @@ export class PrismaRunStepProjectionRepository
           error: `Run step projection not found: ${runId}/${stepId}`,
         };
       }
-      return { ok: true, value: toRunStepProjectionRecord(step) };
+      const exports = await this.db.runStepExport.findMany({
+        where: { runId, stepId },
+      });
+      return {
+        ok: true,
+        value: toRunStepProjectionRecord(step, exports.map(toRunStepExportRecord)),
+      };
     } catch (error) {
       return {
         ok: false,
@@ -148,6 +169,15 @@ export class PrismaRunStepProjectionRepository
       where: { runId },
       orderBy: [{ stepId: "asc" }],
     });
-    return steps.map(toRunStepProjectionRecord);
+    const exports = await this.db.runStepExport.findMany({ where: { runId } });
+    const exportsByStepId = new Map<string, RunStepExportRecord[]>();
+    for (const exportRow of exports) {
+      const list = exportsByStepId.get(exportRow.stepId) ?? [];
+      list.push(toRunStepExportRecord(exportRow));
+      exportsByStepId.set(exportRow.stepId, list);
+    }
+    return steps.map((step) =>
+      toRunStepProjectionRecord(step, exportsByStepId.get(step.stepId) ?? []),
+    );
   }
 }
