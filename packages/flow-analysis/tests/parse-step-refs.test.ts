@@ -48,4 +48,57 @@ describe("parseStepRefs()", () => {
     };
     expect(r).toEqual(expectedOutput);
   });
+
+  it("threads schema from an export declaration onto the export ref", () => {
+    const httpStep: StepHttpJson = {
+      type: "httpjson",
+      url: "test",
+      exports: {
+        data: {
+          ref: "{{output.body}}",
+          type: "application/json",
+          schema: {
+            type: "object",
+            properties: { location: { type: "string" } },
+            required: ["location"],
+          },
+        },
+      },
+    };
+
+    const r = parseStepRefs(httpStep, "stepId");
+
+    expect(r.exportRefs).toEqual({
+      data: {
+        exportName: "data",
+        valuePath: ["output", "body"],
+        scope: "output",
+        string: "output.body",
+        type: "application/json",
+        schema: {
+          type: "object",
+          properties: { location: { type: "string" } },
+          required: ["location"],
+        },
+      },
+    });
+    expect(r.problems).toEqual([]);
+  });
+
+  it("omits schema on the export ref when not declared", () => {
+    const httpStep: StepHttpJson = {
+      type: "httpjson",
+      url: "test",
+      exports: {
+        data: {
+          ref: "{{output.body}}",
+          type: "application/json",
+        },
+      },
+    };
+
+    const r = parseStepRefs(httpStep, "stepId");
+
+    expect(r.exportRefs.data).not.toHaveProperty("schema");
+  });
 });

@@ -19,7 +19,8 @@
   "dependencies": {
     "@lcase/events": "workspace:*",
     "@lcase/tools": "workspace:*",
-    "@lcase/json-ref-binder": "workspace:*"
+    "@lcase/json-ref-binder": "workspace:*",
+    "ajv": "^8.17.1"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

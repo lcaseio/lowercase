@@ -80,6 +80,7 @@ export const ExportDeclarationSchema = z
   .object({
     ref: z.string(),
     type: z.enum(["application/json", "text/plain", "text/markdown"]),
+    schema: z.record(z.string(), z.unknown()).optional(),
   })
   .strict() satisfies z.ZodType<ExportDeclaration>;
 
