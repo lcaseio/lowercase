@@ -78,3 +78,19 @@ export function RunnerParamRow({
 function artifactLabel(artifact: ArtifactIndex): string {
   return artifact.label || artifact.filename || artifact.hash;
 }
+
+function isArtifactCompatible(
+  artifact: ArtifactIndex,
+  type: FlowParamDefinition["type"],
+): boolean {
+  if (artifact.contentType === type) return true;
+
+  switch (type) {
+    case "application/json":
+      return artifact.format === "json";
+    case "text/plain":
+      return artifact.format === "text";
+    case "text/markdown":
+      return artifact.format === "markdown";
+  }
+}

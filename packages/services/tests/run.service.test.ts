@@ -21,7 +21,10 @@ function makeEmitterFactory() {
 
 function makeRunService(options?: {
   flow?: FlowDefinition;
-  artifact?: { contentType?: string; format?: "json" | "text" | "markdown" | "bytes" };
+  artifact?: {
+    contentType?: string;
+    format?: "json" | "text" | "markdown" | "bytes";
+  };
 }) {
   const flow =
     options?.flow ??

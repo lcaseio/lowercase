@@ -159,7 +159,9 @@ export class RunService implements RunServicePort {
   async #getFlowDefinition(flowDefHash: string): Promise<FlowDefinition> {
     const result = await this.artifacts.getJson(flowDefHash);
     if (!result.ok) {
-      throw new Error(`Unable to load flow definition: ${result.error.message}`);
+      throw new Error(
+        `Unable to load flow definition: ${result.error.message}`,
+      );
     }
 
     const parsed = FlowSchema.safeParse(result.value);
