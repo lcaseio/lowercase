@@ -53,6 +53,7 @@ CREATE TABLE "Run" (
     "flowId" TEXT,
     "flowVersionId" TEXT,
     "flowDefHash" TEXT NOT NULL,
+    "simId" TEXT,
     "parentRunId" TEXT,
     "forkSpecHash" TEXT,
     "runParamsHash" TEXT,
@@ -62,7 +63,8 @@ CREATE TABLE "Run" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Run_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Run_flowVersionId_fkey" FOREIGN KEY ("flowVersionId") REFERENCES "FlowVersion" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Run_flowVersionId_fkey" FOREIGN KEY ("flowVersionId") REFERENCES "FlowVersion" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Run_simId_fkey" FOREIGN KEY ("simId") REFERENCES "Sim" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -109,6 +111,9 @@ CREATE INDEX "Run_flowId_idx" ON "Run"("flowId");
 
 -- CreateIndex
 CREATE INDEX "Run_flowVersionId_idx" ON "Run"("flowVersionId");
+
+-- CreateIndex
+CREATE INDEX "Run_simId_idx" ON "Run"("simId");
 
 -- CreateIndex
 CREATE INDEX "Run_parentRunId_idx" ON "Run"("parentRunId");
