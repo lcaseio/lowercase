@@ -21,7 +21,10 @@ function makeEmitterFactory() {
 
 function makeRunService(options?: {
   flow?: FlowDefinition;
-  artifact?: { contentType?: string; format?: "json" | "text" | "markdown" | "bytes" };
+  artifact?: {
+    contentType?: string;
+    format?: "json" | "text" | "markdown" | "bytes";
+  };
 }) {
   const flow =
     options?.flow ??
@@ -177,5 +180,63 @@ describe("RunService", () => {
     ).rejects.toThrow(
       "String-backed run param refs must target the whole value: params.prompt.answer",
     );
+  });
+
+  it("rejects a nested ref into a string-backed step export", async () => {
+    const { service } = makeRunService({
+      flow: {
+        name: "Export Flow",
+        version: "v1",
+        start: "upstream",
+        steps: {
+          upstream: {
+            type: "httpjson",
+            url: "url",
+            exports: {
+              summary: { ref: "{{output.message}}", type: "text/plain" },
+            },
+            on: { success: "downstream" },
+          },
+          downstream: {
+            type: "httpjson",
+            url: "{{steps.upstream.exports.summary.nested}}",
+          },
+        },
+      },
+    });
+
+    await expect(
+      service.requestRun({
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
+        flowDefHash: "flow-hash",
+        source: "lowercase://test",
+        runId: "run-1",
+      }),
+    ).rejects.toThrow(/Invalid step export reference\(s\)/);
+  });
+
+  it("still accepts a compatible flow after the export-validation addition", async () => {
+    const { service, runRepository } = makeRunService({
+      artifact: {
+        contentType: "text/markdown",
+        format: "markdown",
+      },
+    });
+
+    await expect(
+      service.requestRun({
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
+        flowDefHash: "flow-hash",
+        source: "lowercase://test",
+        runId: "run-1",
+        params: {
+          prompt: "artifact-hash",
+        },
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(runRepository.createRun).toHaveBeenCalledOnce();
   });
 });

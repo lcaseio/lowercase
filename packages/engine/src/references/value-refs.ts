@@ -18,6 +18,7 @@ export function makeStepRefs(
   stepContext: RunContext["steps"],
   params: RunContext["params"],
   paramDefinitions?: FlowDefinition["params"],
+  stepDefinitions?: FlowDefinition["steps"],
 ): Ref[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
@@ -40,7 +41,11 @@ export function makeStepRefs(
         ? {
             paramType: getParamType(ref, paramDefinitions),
           }
-        : {}),
+        : ref.scope === "steps" && ref.valuePath[2] === "exports"
+          ? {
+              exportType: getExportType(ref, stepDefinitions),
+            }
+          : {}),
     };
     jobRefs.push(jobRef);
   }
@@ -100,4 +105,22 @@ function getParamType(
   const paramName = ref.valuePath[1];
   if (typeof paramName !== "string" || !paramDefinitions) return undefined;
   return paramDefinitions[paramName]?.type;
+}
+
+function getExportType(
+  ref: Ref,
+  stepDefinitions?: FlowDefinition["steps"],
+): Ref["exportType"] {
+  const sourceStepId = ref.valuePath[1];
+  const exportName = ref.valuePath[3];
+  if (
+    typeof sourceStepId !== "string" ||
+    typeof exportName !== "string" ||
+    !stepDefinitions
+  ) {
+    return undefined;
+  }
+  const sourceStep = stepDefinitions[sourceStepId];
+  if (!sourceStep || sourceStep.type !== "httpjson") return undefined;
+  return sourceStep.exports?.[exportName]?.type;
 }

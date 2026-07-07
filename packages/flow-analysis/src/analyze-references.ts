@@ -27,7 +27,9 @@ export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
 
   for (const ref of fa.refs) {
     const problem =
-      validateRefTargetStep(ref, fd, fa) ?? validateRefTargetParam(ref, fd);
+      validateRefTargetStep(ref, fd, fa) ??
+      validateRefTargetParam(ref, fd) ??
+      validateExportRefPath(ref, fd);
     if (problem) fa.problems.push(problem);
   }
   return fa;
@@ -103,6 +105,39 @@ export function validateRefTargetParam(
       type: "InvalidRefParamName",
       ref,
       paramName: typeof paramName === "string" ? paramName : "",
+    };
+  }
+}
+
+/**
+ * Checks that a downstream reference into another step's export doesn't
+ * traverse a nested path when that export is declared as a string-backed
+ * type (text/plain or text/markdown) -- string-backed exports only support
+ * binding the whole value, mirroring the same rule enforced for run params.
+ */
+export function validateExportRefPath(
+  ref: Ref,
+  fd: FlowDefinition,
+): FlowProblem | undefined {
+  if (ref.scope !== "steps" || ref.valuePath[2] !== "exports") return;
+  const sourceStepId = ref.valuePath[1];
+  const exportName = ref.valuePath[3];
+  if (typeof sourceStepId !== "string" || typeof exportName !== "string") {
+    return;
+  }
+
+  const sourceStep = fd.steps[sourceStepId];
+  if (!sourceStep || sourceStep.type !== "httpjson") return;
+
+  const declaration = sourceStep.exports?.[exportName];
+  if (!declaration || declaration.type === "application/json") return;
+
+  if (ref.valuePath.length > 4) {
+    return {
+      type: "InvalidExportRefPath",
+      ref,
+      exportName,
+      sourceStepId,
     };
   }
 }

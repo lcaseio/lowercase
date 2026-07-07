@@ -115,4 +115,64 @@ describe("findAndParseRefs()", () => {
       },
     ]);
   });
+
+  it("records a problem for a nested ref into a string-backed export", () => {
+    const flowDef = {
+      steps: {
+        upstream: {
+          type: "httpjson",
+          url: "url",
+          exports: {
+            summary: {
+              ref: "{{output.message}}",
+              type: "text/plain",
+            },
+          },
+          on: { success: "bar" },
+        },
+        bar: {
+          type: "httpjson",
+          url: "{{steps.upstream.exports.summary.nested}}",
+        },
+      },
+      start: "upstream",
+    } as unknown as FlowDefinition;
+
+    const flowAnalysis: FlowAnalysis = {
+      nodes: ["upstream", "bar"],
+      inEdges: {},
+      outEdges: {
+        upstream: [
+          {
+            endStepId: "bar",
+            startStepId: "upstream",
+            gate: "onSuccess",
+            type: "control",
+          },
+        ],
+      },
+      joinDeps: {},
+      refs: [],
+      exportRefsByStep: {},
+      problems: [],
+    };
+
+    const fa = analyzeRefs(flowDef, flowAnalysis);
+    expect(fa.problems).toEqual([
+      {
+        type: "InvalidExportRefPath",
+        ref: {
+          valuePath: ["steps", "upstream", "exports", "summary", "nested"],
+          scope: "steps",
+          bindPath: ["url"],
+          stepId: "bar",
+          string: "steps.upstream.exports.summary.nested",
+          interpolated: false,
+          hash: null,
+        },
+        exportName: "summary",
+        sourceStepId: "upstream",
+      },
+    ]);
+  });
 });

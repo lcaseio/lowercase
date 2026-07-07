@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Ref, RunContext } from "@lcase/types";
+import type { FlowDefinition, Ref, RunContext } from "@lcase/types";
 import { getRefHash, makeStepRefs } from "../src/references/value-refs.js";
 
 describe("value refs", () => {
@@ -25,13 +25,25 @@ describe("value refs", () => {
         resolved: {},
       },
     } satisfies RunContext["steps"];
+    const stepDefinitions: FlowDefinition["steps"] = {
+      foo: {
+        type: "httpjson",
+        url: "url",
+        exports: {
+          parsed: { ref: "{{output.value}}", type: "text/markdown" },
+        },
+      },
+    };
 
     expect(getRefHash(ref, steps, {})).toBe("parsed-hash");
-    expect(makeStepRefs("bar", [ref], steps, {})).toEqual([
+    expect(
+      makeStepRefs("bar", [ref], steps, {}, undefined, stepDefinitions),
+    ).toEqual([
       {
         ...ref,
         valuePath: [],
         hash: "parsed-hash",
+        exportType: "text/markdown",
       },
     ]);
   });

@@ -1,4 +1,5 @@
 import type {
+  ExportDeclaration,
   ExportRef,
   FlowProblem,
   Path,
@@ -35,8 +36,8 @@ export function parseStepRefs<D extends StepDefinition>(
     const httpStep = step as StepHttpJson;
     if (!httpStep.exports) return { refs, exportRefs, problems };
 
-    for (const [exportName, exportValue] of Object.entries(httpStep.exports)) {
-      const ref = parseExportRef(exportValue, stepId, exportName, problems);
+    for (const [exportName, declaration] of Object.entries(httpStep.exports)) {
+      const ref = parseExportRef(declaration, stepId, exportName, problems);
       if (!ref) continue;
       exportRefs[exportName] = ref;
     }
@@ -105,21 +106,19 @@ export function getRefStrings(value: string): RegExpExecArray[] {
 }
 
 export function parseExportRef(
-  value: string,
+  declaration: ExportDeclaration,
   stepId: string,
   exportName: string,
   problems: FlowProblem[],
 ): ExportRef | undefined {
-  const match = value.match(
-    /^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)(?:\s+\|\s+?(json))?}}$/,
-  );
+  const match = declaration.ref.match(/^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)}}$/);
 
   if (!match) {
     problems.push({
       type: "InvalidExportRef",
       stepId,
       exportName,
-      exportValue: value,
+      exportValue: declaration.ref,
     });
     return;
   }
@@ -129,7 +128,7 @@ export function parseExportRef(
     valuePath: makePath(match[1]),
     scope: "output",
     string: match[1],
-    ...(match[3] ? { json: true } : {}),
+    type: declaration.type,
   };
 }
 

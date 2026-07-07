@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { validateRefTargetStep } from "../src/analyze-references";
+import {
+  validateExportRefPath,
+  validateRefTargetStep,
+} from "../src/analyze-references";
 import {
   FlowAnalysis,
   FlowDefinition,
@@ -109,5 +112,77 @@ describe("validateRefTargetStep()", () => {
     };
     const problem = validateRefTargetStep(ref, flowDef, flowAnalysis);
     expect(problem).toEqual(expectedProblem);
+  });
+});
+
+describe("validateExportRefPath()", () => {
+  function makeFlowDef(exportType: "text/plain" | "application/json"): FlowDefinition {
+    return {
+      steps: {
+        upstream: {
+          type: "httpjson",
+          url: "url",
+          exports: {
+            summary: {
+              ref: "{{output.message}}",
+              type: exportType,
+            },
+          },
+        },
+      },
+    } as unknown as FlowDefinition;
+  }
+
+  it("rejects a nested path into a text/plain export", () => {
+    const ref: Ref = {
+      valuePath: ["steps", "upstream", "exports", "summary", "nested"],
+      scope: "steps",
+      stepId: "bar",
+      bindPath: ["url"],
+      string: "steps.upstream.exports.summary.nested",
+      hash: null,
+      interpolated: false,
+    };
+
+    const problem = validateExportRefPath(ref, makeFlowDef("text/plain"));
+
+    expect(problem).toEqual({
+      type: "InvalidExportRefPath",
+      ref,
+      exportName: "summary",
+      sourceStepId: "upstream",
+    });
+  });
+
+  it("allows the whole-value path into a text/plain export", () => {
+    const ref: Ref = {
+      valuePath: ["steps", "upstream", "exports", "summary"],
+      scope: "steps",
+      stepId: "bar",
+      bindPath: ["url"],
+      string: "steps.upstream.exports.summary",
+      hash: null,
+      interpolated: false,
+    };
+
+    const problem = validateExportRefPath(ref, makeFlowDef("text/plain"));
+
+    expect(problem).toBeUndefined();
+  });
+
+  it("allows arbitrary depth into an application/json export", () => {
+    const ref: Ref = {
+      valuePath: ["steps", "upstream", "exports", "summary", "nested"],
+      scope: "steps",
+      stepId: "bar",
+      bindPath: ["url"],
+      string: "steps.upstream.exports.summary.nested",
+      hash: null,
+      interpolated: false,
+    };
+
+    const problem = validateExportRefPath(ref, makeFlowDef("application/json"));
+
+    expect(problem).toBeUndefined();
   });
 });

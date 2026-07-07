@@ -432,9 +432,6 @@ importers:
       '@lcase/run-flow':
         specifier: workspace:*
         version: link:../use-cases/run-flow
-      '@lcase/run-history':
-        specifier: workspace:*
-        version: link:../use-cases/run-history
       '@lcase/runtime':
         specifier: workspace:*
         version: link:../runtime
@@ -673,6 +670,9 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
 
   packages/specs:
     dependencies:

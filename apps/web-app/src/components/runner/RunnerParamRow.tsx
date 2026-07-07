@@ -1,4 +1,5 @@
 import type { ArtifactIndex, FlowParamDefinition } from "@lcase/types";
+import { isArtifactCompatible } from "@lcase/flow-analysis";
 import {
   Select,
   SelectContent,

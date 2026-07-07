@@ -12,6 +12,11 @@ export type StepOnField = {
   };
 };
 
+export type ExportDeclaration = {
+  ref: string;
+  type: "application/json" | "text/plain" | "text/markdown";
+};
+
 export type StepExportsField = {
-  exports?: Record<string, string>;
+  exports?: Record<string, ExportDeclaration>;
 };
