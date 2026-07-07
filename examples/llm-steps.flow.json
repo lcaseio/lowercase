@@ -1,8 +1,8 @@
 {
-  "name": "llm-weather-markdown-param",
+  "name": "llm-weather-markdown-param exports",
   "version": "0.1.0-alpha.11",
   "start": "llmweather",
-  "description": "20: How hot is it markdown params?",
+  "description": "23: How hot is it markdown params?",
   "params": {
     "location": {
       "type": "text/markdown"
@@ -37,6 +37,10 @@
         "data": {
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "application/json"
+        },
+        "data-markdown": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
         }
       },
       "on": {
@@ -79,6 +83,12 @@
         ],
         "temperature": 0.7,
         "max_tokens": 500
+      },
+      "exports": {
+        "llm-forecast": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
+        }
       }
     }
   }

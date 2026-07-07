@@ -10,8 +10,10 @@
     }
   },
   "scripts": {
-    "build": "tsc --incremental false",
-    "typecheck": "tsc --noEmit --incremental false",
+    "generate": "prisma generate",
+    "build": "pnpm run generate && tsc --incremental false",
+    "typecheck": "pnpm run generate && tsc --noEmit --incremental false",
+    "migrate": "mkdir -p ../../lcase-db/sqlite && prisma migrate deploy",
     "test": "echo test",
     "lint": "echo lint"
   },
