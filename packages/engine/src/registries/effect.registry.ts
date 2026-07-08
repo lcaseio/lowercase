@@ -16,6 +16,7 @@ import { getFlowDefFx } from "../effects/get-flow-def.effect.js";
 import { getForkSpec } from "../effects/get-fork-spec.effect.js";
 import { getReusableStepDataFx } from "../effects/get-reusable-step-data.effect.js";
 import { makeRunPlanFx } from "../effects/make-run-plan.effect.js";
+import { resolveBranchValueFx } from "../effects/resolve-branch-value.effect.js";
 import { writeContextToDiskFx } from "../effects/write-context-to-disk.effect.js";
 import type {
   EffectHandlerDeps,
@@ -41,6 +42,7 @@ import {
   GetForkSpecFx,
   GetReusableStepDataFx,
   MakeRunPlanFx,
+  ResolveBranchValueFx,
 } from "../types/effect.types.js";
 
 /**
@@ -96,5 +98,7 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
     GetReusableStepData: async (effect: GetReusableStepDataFx) =>
       getReusableStepDataFx(effect, deps),
     MakeRunPlan: async (effect: MakeRunPlanFx) => makeRunPlanFx(effect, deps),
+    ResolveBranchValue: async (effect: ResolveBranchValueFx) =>
+      resolveBranchValueFx(effect, deps),
   } satisfies EffectHandlerRegistry;
 }

@@ -28,6 +28,7 @@ import type {
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types";
 import type {
+  BranchValueResolvedMsg,
   FlowDefResultMsg,
   ForkSpecResultMsg,
   MakeRunPlanMsg,
@@ -44,6 +45,7 @@ import type {
   GetForkSpecFx,
   GetReusableStepDataFx,
   MakeRunPlanFx,
+  ResolveBranchValueFx,
 } from "./types/effect.types.js";
 
 type FlowId = string;
@@ -143,7 +145,8 @@ export type EngineMessage =
   | StepPlannedMsg
   | StepStartedMsg
   | StepFinishedMsg
-  | JobFinishedMsg;
+  | JobFinishedMsg
+  | BranchValueResolvedMsg;
 
 export type MessageType = EngineMessage["type"];
 
@@ -264,7 +267,8 @@ export type EngineEffect =
   | GetFlowDefFx
   | GetForkSpecFx
   | GetReusableStepDataFx
-  | MakeRunPlanFx;
+  | MakeRunPlanFx
+  | ResolveBranchValueFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (

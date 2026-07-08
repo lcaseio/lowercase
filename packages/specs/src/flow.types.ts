@@ -11,6 +11,7 @@ import type {
 } from "@lcase/types";
 import { StepParallelSchema } from "./parallel.schema.js";
 import { StepJoinSchema } from "./join.schema.js";
+import { StepBranchSchema } from "./branch.schema.js";
 
 export const StepOnSchema = z
   .object({
@@ -101,6 +102,7 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepMcpSchema,
   StepParallelSchema,
   StepJoinSchema,
+  StepBranchSchema,
 ]);
 
 export const FlowParamDefinitionSchema = z

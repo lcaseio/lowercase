@@ -1,10 +1,19 @@
 import {
   CloudScope,
+  Ref,
   RunDeniedData,
   RunScope,
   StepReusedData,
   StepScope,
 } from "@lcase/types";
+
+export type ResolveBranchValueFx = {
+  type: "ResolveBranchValue";
+  runId: string;
+  stepId: string;
+  ref: Ref;
+  cases: Record<string, string>;
+};
 
 export type GetFlowDefFx = {
   type: "GetFlowDef";

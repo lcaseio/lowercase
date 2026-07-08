@@ -9,7 +9,7 @@ import type {
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
-import { EmitStepReusedFx } from "../types/effect.types.js";
+import { EmitStepReusedFx, ResolveBranchValueFx } from "../types/effect.types.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
@@ -149,6 +149,26 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
+  } else if (stepType === "branch" && step.type === "branch") {
+    const jobRefs = makeStepRefs(
+      stepId,
+      newRun.flowAnalysis.refs,
+      newRun.steps,
+      newRun.params,
+      flow.definition.params,
+      flow.definition.steps,
+    );
+    const valueRef = jobRefs.find((ref) => ref.bindPath[0] === "value");
+    if (valueRef) {
+      const resolveBranchValue: ResolveBranchValueFx = {
+        type: "ResolveBranchValue",
+        runId,
+        stepId,
+        ref: valueRef,
+        cases: step.cases,
+      };
+      effects.push(resolveBranchValue);
+    }
   }
 
   return effects;

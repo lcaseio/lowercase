@@ -61,3 +61,19 @@ export type MakeRunPlanMsg = {
   type: "MakeRunPlan";
   runId: string;
 };
+
+export type BranchValueResolvedMsg =
+  | {
+      type: "BranchValueResolved";
+      runId: string;
+      stepId: string;
+      ok: true;
+      matchedCase: string | null;
+    }
+  | {
+      type: "BranchValueResolved";
+      runId: string;
+      stepId: string;
+      ok: false;
+      error: string;
+    };

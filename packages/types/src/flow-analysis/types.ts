@@ -1,6 +1,6 @@
 type StepId = string;
 
-export type EdgeType = "control" | "join" | "parallel";
+export type EdgeType = "control" | "join" | "parallel" | "branch";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
 
 export type Edge = {
@@ -8,6 +8,10 @@ export type Edge = {
   endStepId: StepId;
   type: EdgeType;
   gate: EdgeGate;
+  // only set on "branch" edges: the case key this edge routes on,
+  // or isDefault for the mandatory fallback edge
+  caseValue?: string;
+  isDefault?: true;
 };
 
 export type OutEdges = Record<StepId, Edge[]>;
