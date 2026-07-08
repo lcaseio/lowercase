@@ -49,6 +49,9 @@ export type StepContext = {
   outputHash: string | null;
   exportHashes: Record<string, string>;
   resolved: Record<StepId, unknown>;
+  // only set on "branch" steps: the resolved routing decision,
+  // null meaning it fell through to the mandatory default case
+  matchedCase?: string | null;
 };
 
 export type FlowContext = {

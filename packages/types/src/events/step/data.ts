@@ -17,6 +17,9 @@ export type StepCompletedData = StepDescriptor & {
   status: "success";
   outputHash?: string;
   exportHashes?: Record<string, string>;
+  // only set on "branch" steps: the resolved routing decision,
+  // null meaning it fell through to the mandatory default case
+  matchedCase?: string | null;
 };
 
 export type StepFailedData = StepDescriptor & {

@@ -1,4 +1,5 @@
 import type { PlannerRegistry } from "../engine.types.js";
+import { branchValueResolvedPlanner } from "../planners/branch-value-resolved.planner.js";
 import { flowDefResultPlanner } from "../planners/flow-def-result.planner.js";
 import { forkSpecResultPlanner } from "../planners/fork-spec-result.planner.js";
 import { jobFinishedPlanner } from "../planners/job-finished.planner.js";
@@ -27,4 +28,5 @@ export const planners: PlannerRegistry = {
   StepStarted: stepStartedPlanner,
   StepFinished: stepFinishedPlanner,
   JobFinished: jobFinishedPlanner,
+  BranchValueResolved: branchValueResolvedPlanner,
 };

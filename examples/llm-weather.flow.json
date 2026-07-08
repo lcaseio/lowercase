@@ -1,10 +1,10 @@
 {
-  "name": "llm-weather",
-  "version": "0.1.0-alpha.11",
-  "start": "llmweather",
-  "description": "How hot is it markdown?",
+  "name": "llm-weather-router",
+  "version": "0.1.0-alpha.11-05",
+  "start": "llmWeatherParser",
+  "description": "Current Forecast + Air Quality Branch 05",
   "params": {
-    "location": {
+    "userWeatherQuery": {
       "type": "text/markdown"
     },
     "systemParser": {
@@ -18,7 +18,7 @@
     }
   },
   "steps": {
-    "llmweather": {
+    "llmWeatherParser": {
       "type": "httpjson",
       "url": "http://192.168.1.75:8000/v1/chat/completions",
       "method": "POST",
@@ -35,7 +35,7 @@
           },
           {
             "role": "user",
-            "content": "{{params.userParser}} \"How hot is it in {{params.location}}?\"\n}"
+            "content": "{{params.userParser}} \"{{params.userWeatherQuery}}\"\n"
           }
         ],
         "temperature": 0,
@@ -43,41 +43,77 @@
         "response_format": { "type": "json_object" }
       },
       "exports": {
-        "data": {
+        "json": {
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "application/json",
           "schema": {
             "type": "object",
             "properties": {
-              "location": { "type": "string" }
+              "location": { "type": "string" },
+              "intent": {
+                "type": "string",
+                "enum": ["forecast", "airquality", "unrelated"]
+              }
             },
-            "required": ["location"]
+            "required": ["intent"],
+            "if": {
+              "properties": { "intent": { "enum": ["forecast", "airquality"] } }
+            },
+            "then": {
+              "required": ["location"]
+            }
           }
         },
-        "data-markdown": {
+        "json-markdown": {
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "text/markdown"
         }
       },
       "on": {
-        "success": "getlocation"
+        "success": "routeRelated"
       }
     },
-    "getlocation": {
+    "routeRelated": {
+      "type": "branch",
+      "value": "{{steps.llmWeatherParser.exports.json.intent}}",
+      "cases": {
+        "unrelated": "unknownIntent",
+        "forecast": "getLocation",
+        "airquality": "getLocation"
+      },
+      "default": "unknownIntent"
+    },
+    "getLocation": {
       "type": "httpjson",
-      "url": "https://geocoding-api.open-meteo.com/v1/search?name={{steps.llmweather.exports.data.location}}&count=1&language=en&format=json",
+      "url": "https://geocoding-api.open-meteo.com/v1/search?name={{steps.llmWeatherParser.exports.json.location}}&count=1&language=en&format=json",
       "on": {
-        "success": "getforecast"
+        "success": "routeByEndpoint"
       }
     },
-    "getforecast": {
+    "routeByEndpoint": {
+      "type": "branch",
+      "value": "{{steps.llmWeatherParser.exports.json.intent}}",
+      "cases": {
+        "forecast": "getForecast",
+        "airquality": "getAirQuality"
+      },
+      "default": "unknownIntent"
+    },
+    "getForecast": {
       "type": "httpjson",
-      "url": "https://api.open-meteo.com/v1/forecast?latitude={{steps.getlocation.output.body.results[0].latitude}}&longitude={{steps.getlocation.output.body.results[0].longitude}}&current=temperature_2m&forecast_days=1",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={{steps.getLocation.output.body.results[0].latitude}}&longitude={{steps.getLocation.output.body.results[0].longitude}}&current=temperature_2m&forecast_days=1",
       "on": {
-        "success": "report"
+        "success": "reportForecast"
       }
     },
-    "report": {
+    "getAirQuality": {
+      "type": "httpjson",
+      "url": "https://air-quality-api.open-meteo.com/v1/air-quality?latitude={{steps.getLocation.output.body.results[0].latitude}}&longitude={{steps.getLocation.output.body.results[0].longitude}}&current=pm10,pm2_5,us_aqi",
+      "on": {
+        "success": "reportAirQuality"
+      }
+    },
+    "reportForecast": {
       "type": "httpjson",
       "url": "http://192.168.1.75:8000/v1/chat/completions",
       "method": "POST",
@@ -94,7 +130,7 @@
           },
           {
             "role": "user",
-            "content": "{{steps.llmweather.exports.data.location}} latitude: {{steps.getlocation.output.body.results[0].latitude}}. \n{{steps.llmweather.exports.data.location}} longitude: {{steps.getlocation.output.body.results[0].longitude}}.  \n\n Current weather data for this location\n\n{{steps.getforecast.output.body}} \n\n Users Question: \"How hot is it in {{params.location}}?\"\n}"
+            "content": "Weather context as JSON:\n{\n  \"location\": \"{{steps.llmWeatherParser.exports.json.location}}\",\n  \"currentWeather\": {{steps.getForecast.output.body}}\n}\n\nUsers Question: \"{{params.userWeatherQuery}}\""
           }
         ],
         "temperature": 0.7,
@@ -102,6 +138,66 @@
       },
       "exports": {
         "llm-forecast": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
+        }
+      }
+    },
+    "reportAirQuality": {
+      "type": "httpjson",
+      "url": "http://192.168.1.75:8000/v1/chat/completions",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer local-key"
+      },
+      "body": {
+        "model": "local-mistral",
+        "messages": [
+          {
+            "role": "system",
+            "content": "{{params.systemReport}}"
+          },
+          {
+            "role": "user",
+            "content": "Air quality context as JSON:\n{\n  \"location\": \"{{steps.llmWeatherParser.exports.json.location}}\",\n  \"currentAirQuality\": {{steps.getAirQuality.output.body}}\n}\n\nUsers Question: \"{{params.userWeatherQuery}}\""
+          }
+        ],
+        "temperature": 0.7,
+        "max_tokens": 500
+      },
+      "exports": {
+        "llm-airquality": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
+        }
+      }
+    },
+    "unknownIntent": {
+      "type": "httpjson",
+      "url": "http://192.168.1.75:8000/v1/chat/completions",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer local-key"
+      },
+      "body": {
+        "model": "local-mistral",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You could not determine whether the user wanted a weather forecast or an air quality report. Ask them to clarify their original question."
+          },
+          {
+            "role": "user",
+            "content": "\"{{params.userWeatherQuery}}\"\n"
+          }
+        ],
+        "temperature": 0.7,
+        "max_tokens": 200
+      },
+      "exports": {
+        "llm-fallback": {
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "text/markdown"
         }

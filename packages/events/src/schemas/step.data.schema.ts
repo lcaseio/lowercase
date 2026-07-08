@@ -27,6 +27,7 @@ export const StepCompletedDataSchema = RunDescriptorSchema.merge(
     status: z.literal("success"),
     outputHash: z.string().optional(),
     exportHashes: z.record(z.string(), z.string()).optional(),
+    matchedCase: z.string().nullable().optional(),
   }),
 ).strict() satisfies z.ZodType<StepCompletedData>;
 

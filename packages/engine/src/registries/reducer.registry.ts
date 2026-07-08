@@ -1,4 +1,5 @@
 import type { ReducerRegistry } from "../engine.types.js";
+import { branchValueResolvedReducer } from "../reducers/branch-value-resolved.reducer.js";
 import { flowDefResultReducer } from "../reducers/flow-def-result.reducer.js";
 import { forkSpecResultReducer } from "../reducers/fork-spec-result.reducer.js";
 import { jobFinishedReducer } from "../reducers/job-finished.reducer.js";
@@ -28,4 +29,5 @@ export const reducers: ReducerRegistry = {
   StepStarted: stepStartedReducer,
   StepFinished: stepFinishedReducer,
   JobFinished: jobFinishedReducer,
+  BranchValueResolved: branchValueResolvedReducer,
 };
