@@ -16,10 +16,9 @@ export const runStartedReducer: Reducer<RunStartedMsg> = (
 ): EngineState => {
   return produce(state, (draft) => {
     const runId = message.event.runid;
-    const flowId = message.event.flowid;
 
     const run = draft.runs[runId];
-    const flow = draft.flows[flowId];
+    const flow = run ? draft.flows[run.flowVersionId] : undefined;
 
     if (!run) return;
     if (!flow) return;

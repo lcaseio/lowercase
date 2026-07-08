@@ -1,16 +1,25 @@
 import type {
+  ArtifactIndex,
+  ArtifactPutInput,
   AnyEvent,
+  CreateSimRecordInput,
+  GetFlowsRes,
+  GetFlowVersionRes,
+  GetFlowVersionsRes,
   FlowDefinition,
-  FlowIndex,
+  CreateFlowRecordResult,
   ForkSpec,
-  ForkSpecIndex,
   Result,
-  RunIndex,
+  RunDetail,
   RunListItem,
+  RunParamManifest,
+  SimDefinition,
+  SimListItem,
+  SimRecord,
 } from "@lcase/types";
+import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
-import type { FlowList } from "../flow/list.type.js";
 import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
@@ -23,12 +32,6 @@ export interface ServicesPort {
   artifact: ArtifactServicePort;
 }
 
-export type ForkSpecDetails = {
-  name: string;
-  forkSpec: ForkSpec;
-  flowDefHash: string;
-  description?: string;
-};
 export interface SimServicePort {
   startForkedRunSim(
     parentRunId: string,
@@ -36,23 +39,27 @@ export interface SimServicePort {
     source: string,
   ): Promise<void>;
 
-  getAllForkSpecIndexes(): Promise<ForkSpecIndex[]>;
-  getForkSpec(hash: string): Promise<Result<JsonValue, string>>;
-  saveForkSpec(
-    forkSpecDetails: ForkSpecDetails,
-  ): Promise<Result<string, string>>;
+  getAllSims(): Promise<SimListItem[]>;
+  getSim(simId: string): Promise<Result<SimDefinition, string>>;
+  saveSim(
+    simDetails: Omit<CreateSimRecordInput, "forkSpecHash"> & {
+      forkSpec: ForkSpec;
+    },
+  ): Promise<Result<SimRecord, string>>;
 }
 
 export interface FlowServicePort {
-  startFlow(args: { absoluteFilePath?: string }): Promise<void>;
-  listFlows(args: { absoluteDirPath?: string }): Promise<FlowList>;
   validateJsonFlow(
     flow: string | Record<string, unknown>,
   ): FlowDefinition | string;
   storeFlowInCas(path: string): Promise<void>;
-  addFlow(flow: string | FlowDefinition): Promise<Result<FlowIndex, string>>;
-  getAllFlowIndexes(): Promise<Result<FlowIndex[], string>>;
-  getFlowDef(hash: string): Promise<Result<FlowDefinition, string>>;
+  addFlow(
+    flow: string | FlowDefinition,
+  ): Promise<Result<CreateFlowRecordResult, string>>;
+  getAllFlows(): Promise<GetFlowsRes>;
+  getFlowVersions(flowId: string): Promise<GetFlowVersionsRes>;
+  getFlowVersionDef(flowVersionId: string): Promise<GetFlowVersionRes>;
+  getFlowDef(flowIdOrHash: string): Promise<Result<FlowDefinition, string>>;
 }
 export interface ReplayServicePort {
   replayRun(runId: string): Promise<void>;
@@ -68,16 +75,22 @@ export interface SystemServicePort {
 }
 
 export type RunRequest = {
+  flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
   source: string;
   runId?: string;
+  simId?: string;
   forkSpecHash?: string;
+  params?: Record<string, string>;
 };
 export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
-  getRunIndex(runId: string): Promise<Result<RunIndex, string>>;
+  getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
+  getRunParams(runId: string): Promise<Result<RunParamManifest, string>>;
+  // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
 }
 
 export interface WsServicePort {
@@ -87,5 +100,7 @@ export interface WsServicePort {
 }
 
 export interface ArtifactServicePort {
-  getArtifact(hash: string): Promise<Result<JsonValue, string>>;
+  getArtifact(hash: string): Promise<AutoGetResult>;
+  listArtifacts(): Promise<ArtifactIndex[]>;
+  putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
 }

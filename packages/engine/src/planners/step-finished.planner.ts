@@ -17,14 +17,13 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   const effects: EngineEffect[] = [];
 
   const runId = message.event.runid;
-  const flowId = message.event.flowid;
   const stepId = message.event.stepid;
 
   const oldRun = oldState.runs[runId];
   const newRun = newState.runs[runId];
-  const flow = newState.flows[flowId];
 
   if (!newRun || !oldRun) return effects;
+  const flow = newState.flows[newRun.flowVersionId];
   if (!flow) return effects;
 
   const newPlannedStepIds = Object.keys(newRun.plannedSteps).filter(
@@ -40,6 +39,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
       type: "EmitStepPlanned",
       scope: {
         flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
         stepid: plannedStepId,
@@ -62,6 +62,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
       type: "EmitRunCompleted",
       scope: {
         flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },
@@ -74,6 +75,7 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
       type: "EmitRunFailed",
       scope: {
         flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },

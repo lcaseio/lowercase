@@ -1,13 +1,17 @@
 import { z } from "zod";
 import type {
+  ExportDeclaration,
+  FlowParamDefinition,
   StepHttpJson,
   StepMcp,
   StepCapCommonFields,
   StepOnField,
   FlowDefinition,
+  RunParams,
 } from "@lcase/types";
 import { StepParallelSchema } from "./parallel.schema.js";
 import { StepJoinSchema } from "./join.schema.js";
+import { StepBranchSchema } from "./branch.schema.js";
 
 export const StepOnSchema = z
   .object({
@@ -53,7 +57,7 @@ export const StepBaseSchema = z
   })
   .merge(StepOnSchema);
 export const StepCapBaseSchema = StepCapCommonFieldsSchema.extend(
-  StepOnSchema.shape
+  StepOnSchema.shape,
 );
 
 export const StepMcpSchema = StepCapBaseSchema.extend({
@@ -73,6 +77,14 @@ export const StepMcpSchema = StepCapBaseSchema.extend({
   }),
 }).strict() satisfies z.ZodType<StepMcp>;
 
+export const ExportDeclarationSchema = z
+  .object({
+    ref: z.string(),
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
+    schema: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict() satisfies z.ZodType<ExportDeclaration>;
+
 export const StepHttpJsonSchema = StepCapBaseSchema.extend({
   type: z.literal("httpjson"),
   url: z.string(),
@@ -82,6 +94,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
 
   headers: z.record(z.string(), z.string()).optional(),
   body: z.record(z.string(), z.unknown()).optional(),
+  exports: z.record(z.string(), ExportDeclarationSchema).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 
 export const StepSchema = z.discriminatedUnion("type", [
@@ -89,14 +102,22 @@ export const StepSchema = z.discriminatedUnion("type", [
   StepMcpSchema,
   StepParallelSchema,
   StepJoinSchema,
+  StepBranchSchema,
 ]);
+
+export const FlowParamDefinitionSchema = z
+  .object({
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
+    optional: z.literal(true).optional(),
+  })
+  .strict() satisfies z.ZodType<FlowParamDefinition>;
 
 export const FlowSchema = z
   .object({
     name: z.string().min(1),
     version: z.string(),
     description: z.string().optional(),
-    inputs: z.record(z.string(), z.unknown()).optional(),
+    params: z.record(z.string(), FlowParamDefinitionSchema).optional(),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),
     steps: z.record(z.string(), StepSchema),

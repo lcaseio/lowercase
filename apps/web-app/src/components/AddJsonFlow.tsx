@@ -1,13 +1,13 @@
 import { useAddJsonFlowMutation } from "../redux/api/flows-api";
 import { parseFlow } from "@lcase/specs";
-import type { PostJsonFlowRes } from "@lcase/types";
+import type { PostFlowRes } from "@lcase/types";
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useState } from "react";
 
 type Response =
   | {
-      data: PostJsonFlowRes;
+      data: PostFlowRes;
       error?: undefined;
     }
   | {
@@ -66,7 +66,7 @@ export function AddJsonFlow() {
         Response:{" "}
         <span className="font-mono text-sm text-green-300">
           {response?.data?.ok
-            ? ` Saved as hash ${response.data.value.hash}`
+            ? ` Created flow ${response.data.value.flow.id} at version hash ${response.data.value.version.definitionHash}`
             : ""}
         </span>
       </p>

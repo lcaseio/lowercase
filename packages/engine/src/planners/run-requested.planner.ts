@@ -22,6 +22,7 @@ export const runRequestedPlanner: Planner<RunRequestedMsg> = (
       },
       scope: {
         flowid: message.event.flowid,
+        flowversionid: message.event.flowversionid,
         runid: runId,
         source: "lowercase://engine",
       },

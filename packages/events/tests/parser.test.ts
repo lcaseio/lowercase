@@ -15,6 +15,15 @@ describe("parser", () => {
       data: {
         url: "",
         refs: [],
+        exportRefs: {
+          parsed: {
+            exportName: "parsed",
+            valuePath: ["output", "foo"],
+            scope: "output",
+            string: "output.foo",
+            type: "application/json",
+          },
+        },
       },
       domain: "job",
       action: "submitted",
@@ -23,6 +32,7 @@ describe("parser", () => {
       traceid: "",
       spanid: "",
       flowid: "",
+      flowversionid: "",
       runid: "",
       stepid: "",
       jobid: "",
@@ -45,6 +55,15 @@ describe("parser", () => {
       data: {
         url: "",
         refs: [],
+        exportRefs: {
+          parsed: {
+            exportName: "parsed",
+            valuePath: ["output", "foo"],
+            scope: "output",
+            string: "output.foo",
+            type: "application/json",
+          },
+        },
       },
       domain: "job",
       action: "submitted",
@@ -53,6 +72,7 @@ describe("parser", () => {
       traceid: "",
       spanid: "",
       flowid: "",
+      flowversionid: "",
       runid: "",
       stepid: "",
       jobid: "",

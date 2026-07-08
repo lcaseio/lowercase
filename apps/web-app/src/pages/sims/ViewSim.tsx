@@ -10,8 +10,8 @@ import {
 
 import { Header } from "@/layout/Header";
 import { Main } from "@/layout/Main";
-import { useGetFlowDefQuery } from "@/redux/api/flows-api";
-import { useGetSimSpecQuery } from "@/redux/api/sims-api";
+import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
+import { useGetSimQuery } from "@/redux/api/sims-api";
 import { setReusedStepIds } from "@/redux/slices/sims-slice";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
@@ -20,26 +20,23 @@ import { Link } from "react-router-dom";
 
 export function ViewSim() {
   const dispatch = useAppDispatch();
-  const selectedFlowId = useAppSelector((state) => state.sims.flowSelectedId);
-  const simSpecHash = useAppSelector((state) => state.sims.viewedSimSpecHash);
-  const flowDef = useGetFlowDefQuery(selectedFlowId ?? skipToken);
-  const simSpec = useGetSimSpecQuery(
-    simSpecHash ? { hash: simSpecHash } : skipToken,
+  const viewedSimId = useAppSelector((state) => state.sims.viewedSimId);
+  const simQuery = useGetSimQuery(
+    viewedSimId ? { simId: viewedSimId } : skipToken,
+  );
+  const flowDef = useGetFlowVersionDefQuery(
+    simQuery.data?.ok === true ? simQuery.data.value.sim.flowVersionId : skipToken,
   );
 
   useEffect(() => {
-    console.log("dispatching reused steps");
-    if (!simSpec.data?.ok) return;
-    console.log("sim spec data no error");
-    if (!selectedFlowId) return;
-    console.log("flowId no error");
+    if (!simQuery.data?.ok) return;
     dispatch(
       setReusedStepIds({
-        flowId: selectedFlowId,
-        reused: simSpec.data.spec.reuse,
+        flowId: simQuery.data.value.sim.flowId,
+        reused: simQuery.data.value.spec.reuse,
       }),
     );
-  }, [simSpec, selectedFlowId, dispatch]);
+  }, [simQuery, dispatch]);
 
   return (
     <div id="page-wrapper">
@@ -59,7 +56,9 @@ export function ViewSim() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <SimsFlowView flowDef={flowDef.data?.ok ? flowDef.data.value : null} />
+        <SimsFlowView
+          flowDef={flowDef.data?.ok ? flowDef.data.value.definition : null}
+        />
       </Main>
     </div>
   );

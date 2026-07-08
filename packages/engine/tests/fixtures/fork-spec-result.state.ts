@@ -5,7 +5,8 @@ import { flowDef } from "./flow-definition.js";
 export const forkSpecOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
@@ -15,6 +16,7 @@ export const forkSpecOkState: EngineState = {
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -33,11 +35,12 @@ export const forkSpecOkState: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },
@@ -46,13 +49,15 @@ export const forkSpecOkState: EngineState = {
 export const forkSpecNotOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       //forkSpec?: doesn't save fork spec to state
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -71,11 +76,12 @@ export const forkSpecNotOkState: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },

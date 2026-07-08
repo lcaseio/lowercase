@@ -1,11 +1,23 @@
-import { RunIndexEvent } from "@lcase/ports";
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
+
+type RunIndexEventType =
+  | "run.requested"
+  | "run.started"
+  | "run.completed"
+  | "run.failed"
+  | "step.reused"
+  | "step.started"
+  | "step.completed"
+  | "step.failed";
+
+export type RunIndexEvent = AnyEvent<RunIndexEventType>;
 
 const eventTypes = new Set([
   "run.requested",
   "run.started",
   "run.completed",
   "run.failed",
+  "step.reused",
   "step.started",
   "step.completed",
   "step.failed",

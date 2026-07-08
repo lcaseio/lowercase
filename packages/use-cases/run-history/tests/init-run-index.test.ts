@@ -11,6 +11,8 @@ describe("run-history initRunIndex()", () => {
       time: "test-time",
       type: "run.requested",
       data: {
+        flowId: "flow-rel-id",
+        flowVersionId: "flow-version-id",
         flowDefHash: "test-flowdefhash",
         forkSpecHash: undefined,
       },

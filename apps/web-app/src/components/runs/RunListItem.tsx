@@ -11,6 +11,7 @@ import {
 } from "../ui/item";
 import { useAppDispatch } from "@/redux/typed-hooks";
 import {
+  setSimsFlowHash,
   setSimsFlowSelectedId,
   setSimsRunSelectedId,
 } from "@/redux/slices/sims-slice";
@@ -20,7 +21,8 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const handleFork = () => {
-    dispatch(setSimsFlowSelectedId(runListItem.flowDefHash));
+    dispatch(setSimsFlowHash(runListItem.flowDefHash));
+    dispatch(setSimsFlowSelectedId(null));
     dispatch(setSimsRunSelectedId(runListItem.runId));
     navigate("/sims/create");
   };
@@ -50,7 +52,7 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
         </ItemContent>
         <ItemActions>
           <Link
-            to={`/runs/details/?runId=${runListItem.runId}&flowDefHash=${runListItem.flowDefHash}`}
+            to={`/runs/details/?runId=${runListItem.runId}`}
           >
             <Button variant="outline" size="sm" className="cursor-pointer">
               View

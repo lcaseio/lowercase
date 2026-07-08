@@ -3,6 +3,7 @@ import { FlowEventType } from "./map.js";
 
 export type FlowScope = {
   flowid: string;
+  flowversionid: string;
   runid: string;
 };
 

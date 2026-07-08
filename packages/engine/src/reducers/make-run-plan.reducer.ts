@@ -2,7 +2,7 @@ import { produce } from "immer";
 import { EngineState, Reducer } from "../engine.types.js";
 import { MakeRunPlanMsg } from "../types/message.types.js";
 import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
-import { StepContext } from "@lcase/types";
+import { FlowParamDefinition, StepContext } from "@lcase/types";
 
 export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
   state: EngineState,
@@ -13,7 +13,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     const run = draft.runs[runId];
 
     if (!run) return;
-    const flow = draft.flows[run.flowDefHash];
+    const flow = draft.flows[run.flowVersionId];
 
     if (!flow) return;
 
@@ -21,6 +21,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     run.flowAnalysis = flowAnalysis;
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("1", flowAnalysis.problems);
       run.status = "failed";
       return;
     }
@@ -28,6 +29,13 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     analyzeRefs(flow.definition, flowAnalysis);
 
     if (flowAnalysis.problems.length !== 0) {
+      console.log("2", flowAnalysis.problems);
+      run.status = "failed";
+      return;
+    }
+
+    const paramValidationError = validateRunParams(run.params, flow.definition.params);
+    if (paramValidationError) {
       run.status = "failed";
       return;
     }
@@ -35,11 +43,17 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     // try to build run plan inline for now.
     // assumes steps not reused are rerun
 
-    if (run.forkSpec && run.runIndex) {
+    if (run.forkSpec && run.reusableStepData) {
       for (const stepId of run.forkSpec.reuse) {
+        const reusableStep = run.reusableStepData[stepId];
+        if (!reusableStep) {
+          run.status = "failed";
+          return;
+        }
         run.runPlan.reuse[stepId] = {
-          status: run.runIndex.steps[stepId].status!,
-          outputHash: run.runIndex.steps[stepId].outputHash,
+          status: reusableStep.status!,
+          outputHash: reusableStep.outputHash,
+          exportHashes: reusableStep.exportHashes,
         };
       }
     }
@@ -53,6 +67,7 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
         attempt: 0,
         output: {},
         outputHash: null,
+        exportHashes: {},
         resolved: {},
       };
 
@@ -62,3 +77,22 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
     run.status = "started";
   });
 };
+
+function validateRunParams(
+  params: Record<string, string>,
+  declarations?: Record<string, FlowParamDefinition>,
+): string | undefined {
+  if (!declarations) {
+    return Object.keys(params).length > 0 ? "undeclared params supplied" : undefined;
+  }
+
+  for (const supplied of Object.keys(params)) {
+    if (declarations[supplied] === undefined) return `undeclared param:${supplied}`;
+  }
+
+  for (const [name, declaration] of Object.entries(declarations)) {
+    if (!declaration.optional && params[name] === undefined) {
+      return `missing required param:${name}`;
+    }
+  }
+}

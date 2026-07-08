@@ -9,11 +9,10 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;
-    const flowId = message.event.flowid;
     const stepId = message.event.stepid;
 
     const run = draft.runs[runId];
-    const flow = draft.flows[flowId];
+    const flow = run ? draft.flows[run.flowVersionId] : undefined;
 
     if (!run) return;
     if (!flow) return;
@@ -31,6 +30,7 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
         run.runPlan.reuse[stepId].status === "success" ? "completed" : "failed";
       delete run.plannedSteps[stepId];
       stepContext.outputHash = run.runPlan.reuse[stepId].outputHash ?? null;
+      stepContext.exportHashes = run.runPlan.reuse[stepId].exportHashes ?? {};
       return;
     }
 
@@ -44,6 +44,7 @@ export const stepPlannedReducer: Reducer<StepPlannedMsg> = (
     for (const ref of refs) {
       const value = resolvePath(ref.valuePath, {
         steps: run.steps,
+        params: run.params,
         input: run.input,
       });
       run.steps[stepId].resolved[ref.string] = value;

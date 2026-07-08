@@ -1,6 +1,6 @@
 type StepId = string;
 
-export type EdgeType = "control" | "join" | "parallel";
+export type EdgeType = "control" | "join" | "parallel" | "branch";
 export type EdgeGate = "always" | "onSuccess" | "onFailure";
 
 export type Edge = {
@@ -8,6 +8,10 @@ export type Edge = {
   endStepId: StepId;
   type: EdgeType;
   gate: EdgeGate;
+  // only set on "branch" edges: the case key this edge routes on,
+  // or isDefault for the mandatory fallback edge
+  caseValue?: string;
+  isDefault?: true;
 };
 
 export type OutEdges = Record<StepId, Edge[]>;
@@ -24,6 +28,7 @@ export type FlowAnalysis = {
 
   problems: FlowProblem[];
   refs: Ref[];
+  exportRefsByStep?: Record<StepId, Record<string, ExportRef>>;
 };
 
 /*-- problem types for flow analysis to surface in UI/validation --*/
@@ -49,6 +54,23 @@ export type InvalidRefScopeProblem = {
   bindPath: Path;
   refString: string;
 };
+export type InvalidRefParamNameProblem = {
+  type: "InvalidRefParamName";
+  ref: Ref;
+  paramName: string;
+};
+export type InvalidExportRefProblem = {
+  type: "InvalidExportRef";
+  stepId: StepId;
+  exportName: string;
+  exportValue: string;
+};
+export type InvalidExportRefPathProblem = {
+  type: "InvalidExportRefPath";
+  ref: Ref;
+  exportName: string;
+  sourceStepId: StepId;
+};
 export type InvalidRefStepIdProblem = {
   type: "InvalidRefStepId";
   ref: Ref;
@@ -64,6 +86,9 @@ export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
   | SelfReferencedProblem
+  | InvalidRefParamNameProblem
+  | InvalidExportRefProblem
+  | InvalidExportRefPathProblem
   | InvalidRefStepIdProblem
   | UnreachableRefProblem
   | InvalidRefScopeProblem;
@@ -73,10 +98,23 @@ export type ProblemType = FlowProblem["type"];
 export type Path = Array<string | number>;
 export type Ref = {
   valuePath: Path; // path to the value inside the json object
-  scope: "steps" | "input" | "env"; // type of reference
+  scope: "steps" | "input" | "env" | "params"; // type of reference
   stepId: StepId; // step id this reference is found in
   bindPath: Path; // path inside the step for where the reference is found
   string: string; // the actual string reference without {{}} characters
   interpolated: boolean; // whether it should be interpolated as a string or not
   hash: string | null;
+  // later more robust tranforms should be implemented
+  json?: true; // whether to parse this as json, simple transform flag
+  paramType?: "application/json" | "text/plain" | "text/markdown";
+  exportType?: "application/json" | "text/plain" | "text/markdown";
+};
+
+export type ExportRef = {
+  exportName: string;
+  valuePath: Path;
+  scope: "output";
+  string: string;
+  type: "application/json" | "text/plain" | "text/markdown";
+  schema?: Record<string, unknown>;
 };

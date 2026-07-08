@@ -21,6 +21,9 @@ export function Nav() {
           <Link to="/runs">runs</Link>
         </li>
         <li className="hover:text-cyan-700 hover:dark:text-cyan-500">
+          <Link to="/artifacts">artifacts</Link>
+        </li>
+        <li className="hover:text-cyan-700 hover:dark:text-cyan-500">
           <Link to="/system">system</Link>
         </li>
       </ul>

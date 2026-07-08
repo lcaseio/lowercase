@@ -2,7 +2,7 @@ import type {
   AnyEvent,
   FlowDefinition,
   ForkSpec,
-  RunIndex,
+  ReusableRunStepData,
 } from "@lcase/types";
 
 export type StepPlannedMsg = {
@@ -43,16 +43,37 @@ export type ForkSpecResultMsg =
     }
   | { type: "ForkSpecResult"; runId: string; ok: false; error: string };
 
-export type RunIndexResultMsg =
+export type ReusableStepDataResultMsg =
   | {
-      type: "RunIndexResult";
+      type: "ReusableStepDataResult";
       runId: string;
       ok: true;
-      runIndex: RunIndex;
+      reusableStepData: Record<string, ReusableRunStepData>;
     }
-  | { type: "RunIndexResult"; runId: string; ok: false; error: string };
+  | {
+      type: "ReusableStepDataResult";
+      runId: string;
+      ok: false;
+      error: string;
+    };
 
 export type MakeRunPlanMsg = {
   type: "MakeRunPlan";
   runId: string;
 };
+
+export type BranchValueResolvedMsg =
+  | {
+      type: "BranchValueResolved";
+      runId: string;
+      stepId: string;
+      ok: true;
+      matchedCase: string | null;
+    }
+  | {
+      type: "BranchValueResolved";
+      runId: string;
+      stepId: string;
+      ok: false;
+      error: string;
+    };

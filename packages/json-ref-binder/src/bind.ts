@@ -81,11 +81,13 @@ export function bindReference(
  * @returns unknown value
  */
 export function interpolateRef(field: unknown, value: unknown, ref: Ref) {
+  console.log("called interpolate:", ref.string);
   if (ref.interpolated && typeof field === "string") {
     const stringified =
       typeof value === "object" || Array.isArray(value)
         ? util.inspect(value, false, null)
         : String(value);
+
     return field.replaceAll(`{{${ref.string}}}`, stringified);
   } else return value;
 }

@@ -9,8 +9,23 @@ export const getArtifactRoute = async (app: FastifyInstance) => {
       const { hash } = req.params;
       if (!isHash(hash)) return { ok: false, error: "Invalid hash" };
       const artifact = await app.services.artifact.getArtifact(hash);
-      if (!artifact.ok) return artifact;
-      return { ok: true, jsonValue: artifact.value };
+      if (!artifact.ok) return { ok: false, error: artifact.error.message };
+      switch (artifact.format) {
+        case "json":
+          return { ok: true, format: "json", value: artifact.value };
+        case "text":
+          return { ok: true, format: "text", value: artifact.value };
+        case "markdown":
+          return { ok: true, format: "markdown", value: artifact.value };
+        case "bytes":
+          return {
+            ok: true,
+            format: "bytes",
+            byteLength: artifact.value.byteLength,
+          };
+      }
+
+      return { ok: false, error: "Unsupported artifact format" };
     },
   );
 };

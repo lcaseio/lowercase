@@ -3,14 +3,45 @@ import { createRunId } from "./create-fork-spec.js";
 
 export type RunDetails = {
   ef: EmitterFactoryPort;
+  traceId?: string;
 } & RunRequest;
 export async function runFlow(runDetails: RunDetails) {
-  const { runId, ef, source, flowDefHash, forkSpecHash } = runDetails;
-  const runid = runId ?? createRunId();
-  const emitter = ef.newRunEmitterNewTrace({
+  const {
+    runId,
+    ef,
+    traceId,
     source,
-    flowid: flowDefHash,
-    runid,
+    flowId,
+    flowVersionId,
+    flowDefHash,
+    simId,
+    forkSpecHash,
+    params,
+  } = runDetails;
+  const runid = runId ?? createRunId();
+  const spanId = traceId ? ef.generateSpanId() : undefined;
+  const emitter = traceId
+    ? ef.newRunEmitter({
+        source,
+        flowid: flowId,
+        flowversionid: flowVersionId,
+        runid,
+        traceId,
+        spanId: spanId!,
+        traceParent: ef.makeTraceParent(traceId, spanId!),
+      })
+    : ef.newRunEmitterNewTrace({
+        source,
+        flowid: flowId,
+        flowversionid: flowVersionId,
+        runid,
+      });
+  await emitter.emit("run.requested", {
+    flowId,
+    flowVersionId,
+    flowDefHash,
+    ...(simId ? { simId } : {}),
+    ...(forkSpecHash ? { forkSpecHash } : {}),
+    ...(params ? { params } : {}),
   });
-  await emitter.emit("run.requested", { flowDefHash, forkSpecHash });
 }

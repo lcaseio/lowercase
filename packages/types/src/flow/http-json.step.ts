@@ -1,4 +1,8 @@
-import { StepCapCommonFields, StepOnField } from "./common-fields.js";
+import {
+  ExportDeclaration,
+  StepCapCommonFields,
+  StepOnField,
+} from "./common-fields.js";
 
 export type StepHttpJson = StepCapCommonFields &
   StepOnField & {
@@ -7,4 +11,5 @@ export type StepHttpJson = StepCapCommonFields &
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
     headers?: Record<string, string>;
     body?: unknown;
+    exports?: Record<string, ExportDeclaration>;
   };

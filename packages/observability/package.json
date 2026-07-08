@@ -1,6 +1,6 @@
 {
   "name": "@lcase/observability",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "echo test",
+    "test": "vitest",
     "lint": "echo lint",
     "clean-dist": "rm -rf ./dist",
     "clean-node-modules": "rm -rf ./node_modules"

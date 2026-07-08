@@ -1,17 +1,22 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/adapters/router";
+import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
+import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaRunQuery } from "@lcase/adapters/run-query";
+import { PrismaRunRepository } from "@lcase/adapters/run-repository";
+import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
+import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
-import { FlowStore, FlowStoreFs } from "@lcase/adapters/flow-store";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
-import {
+import type {
   ArtifactsPort,
   EventBusPort,
   JobParserPort,
-  RunIndexStorePort,
+  RunQueryPort,
   StreamRegistryPort,
 } from "@lcase/ports";
 import {
@@ -28,7 +33,7 @@ import {
   ConsoleSink,
   ObservabilityTap,
   ReplaySink,
-  RunIndexSink,
+  SqlRunProjectionSink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
@@ -46,32 +51,26 @@ import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
-import { FsRunIndexStore } from "@lcase/adapters/run-index-store";
-import { FsFlowIndexStore } from "@lcase/adapters/flow-index-store";
-import { FsForkSpecIndexStore } from "@lcase/adapters/fork-spec-index-store";
+import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
   const ctx = makeRuntimeContext(config);
 
-  const ef = new EmitterFactory(ctx.bus);
-
   const flowService = new FlowService(
-    ctx.bus,
-    ctx.ef,
-    new FlowStoreFs(),
     ctx.artifacts,
-    new FsFlowIndexStore(path.join(process.cwd(), "lcase-db/flows/index")),
+    new PrismaFlowRepository(prisma),
   );
 
-  const forkSpecIndexStore = new FsForkSpecIndexStore(
-    path.join(process.cwd(), "lcase-db/sims/index"),
-  );
   const replayService = new ReplayService(ctx.replay);
+  const flowRepository = new PrismaFlowRepository(prisma);
+  const artifactRepository = new PrismaArtifactRepository(prisma);
+  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const simService = new SimService(
     ctx.artifacts,
     ctx.ef,
-    ctx.runIndexStore,
-    forkSpecIndexStore,
+    runQuery,
+    new PrismaSimRepository(prisma),
+    flowRepository,
   );
   const wsService = new WsService(ctx.bus);
 
@@ -114,20 +113,20 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const ef = new EmitterFactory(bus);
   const router = new NodeRouter(bus, queue, ef);
   const streamRegistry = new InMemoryStreamRegistry();
-  const flowStore = new FlowStore();
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const runIndexStore = new FsRunIndexStore(
-    path.resolve(process.cwd(), "lcase-db/runs/index"),
+  const artifacts = createArtifacts(
+    config.artifacts,
+    new PrismaArtifactRepository(prisma),
   );
-
-  const artifacts = createArtifacts(config.artifacts);
+  const artifactRepository = new PrismaArtifactRepository(prisma);
+  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const engine = createInProcessEngine(
     bus,
     ef,
     jobParser,
-    runIndexStore,
+    runQuery,
     artifacts,
   );
 
@@ -159,14 +158,12 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     router,
     engine,
     worker,
-    flowStore,
     tap,
     sinks,
     ef,
     replay,
     limiter,
     artifacts,
-    runIndexStore,
   };
 }
 
@@ -177,8 +174,9 @@ export function createObservability(
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
   tap.attachSink(
-    new RunIndexSink(
-      new FsRunIndexStore(path.resolve(process.cwd(), "lcase-db/runs/index")),
+    new SqlRunProjectionSink(
+      new PrismaRunRepository(prisma),
+      new PrismaRunStepProjectionRepository(prisma),
     ),
   );
   if (config.sinks) {
@@ -228,14 +226,14 @@ export function createInProcessEngine(
   bus: EventBusPort,
   ef: EmitterFactory,
   jobParser: JobParserPort,
-  runIndexStore: RunIndexStorePort,
+  runQuery: RunQueryPort,
   artifacts: ArtifactsPort,
 ): Engine {
   const engine = new Engine({
     bus,
     ef,
     jobParser,
-    runIndexStore,
+    runQuery,
     artifacts,
   });
 

@@ -33,6 +33,7 @@ describe("findAndParseRefs()", () => {
       },
       joinDeps: {},
       refs: [],
+      exportRefsByStep: {},
       problems: [],
     };
 
@@ -61,6 +62,10 @@ describe("findAndParseRefs()", () => {
           hash: null,
         },
       ],
+      exportRefsByStep: {
+        foo: {},
+        bar: {},
+      },
       problems: [],
     };
     const fd = {
@@ -69,5 +74,105 @@ describe("findAndParseRefs()", () => {
 
     const fa = analyzeRefs(flowDef, flowAnalysis);
     expect(fa).toEqual(expectedFlowAnalysis);
+  });
+  it("records a problem for undeclared params refs", () => {
+    const httpStep: StepHttpJson = {
+      type: "httpjson",
+      url: "{{params.payload.answer}}",
+    };
+    const flowDef = {
+      params: {},
+      steps: {
+        bar: httpStep,
+      },
+      start: "bar",
+    } as unknown as FlowDefinition;
+
+    const flowAnalysis: FlowAnalysis = {
+      nodes: ["bar"],
+      inEdges: {},
+      outEdges: {},
+      joinDeps: {},
+      refs: [],
+      exportRefsByStep: {},
+      problems: [],
+    };
+
+    const fa = analyzeRefs(flowDef, flowAnalysis);
+    expect(fa.problems).toEqual([
+      {
+        type: "InvalidRefParamName",
+        ref: {
+          valuePath: ["params", "payload", "answer"],
+          scope: "params",
+          bindPath: ["url"],
+          stepId: "bar",
+          string: "params.payload.answer",
+          interpolated: false,
+          hash: null,
+        },
+        paramName: "payload",
+      },
+    ]);
+  });
+
+  it("records a problem for a nested ref into a string-backed export", () => {
+    const flowDef = {
+      steps: {
+        upstream: {
+          type: "httpjson",
+          url: "url",
+          exports: {
+            summary: {
+              ref: "{{output.message}}",
+              type: "text/plain",
+            },
+          },
+          on: { success: "bar" },
+        },
+        bar: {
+          type: "httpjson",
+          url: "{{steps.upstream.exports.summary.nested}}",
+        },
+      },
+      start: "upstream",
+    } as unknown as FlowDefinition;
+
+    const flowAnalysis: FlowAnalysis = {
+      nodes: ["upstream", "bar"],
+      inEdges: {},
+      outEdges: {
+        upstream: [
+          {
+            endStepId: "bar",
+            startStepId: "upstream",
+            gate: "onSuccess",
+            type: "control",
+          },
+        ],
+      },
+      joinDeps: {},
+      refs: [],
+      exportRefsByStep: {},
+      problems: [],
+    };
+
+    const fa = analyzeRefs(flowDef, flowAnalysis);
+    expect(fa.problems).toEqual([
+      {
+        type: "InvalidExportRefPath",
+        ref: {
+          valuePath: ["steps", "upstream", "exports", "summary", "nested"],
+          scope: "steps",
+          bindPath: ["url"],
+          stepId: "bar",
+          string: "steps.upstream.exports.summary.nested",
+          interpolated: false,
+          hash: null,
+        },
+        exportName: "summary",
+        sourceStepId: "upstream",
+      },
+    ]);
   });
 });

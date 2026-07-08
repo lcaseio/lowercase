@@ -9,6 +9,8 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 
+const artifactFileExtensions = [".json", ".txt", ".md", ".bin"] as const;
+
 export class FsArtifactStore implements ArtifactStorePort {
   baseDir: string;
   rootPath: string;
@@ -18,10 +20,11 @@ export class FsArtifactStore implements ArtifactStorePort {
   }
   async putBytes(
     hash: string,
-    bytes: Uint8Array
+    bytes: Uint8Array,
+    extension: string,
   ): Promise<ArtifactStorePutResult> {
-    const absoluteTempFilePath = this.getAbsoluteFilePath(hash, true);
-    const absoluteFilePath = this.getAbsoluteFilePath(hash);
+    const absoluteTempFilePath = this.getAbsoluteFilePath(hash, extension, true);
+    const absoluteFilePath = this.getAbsoluteFilePath(hash, extension);
 
     try {
       // idempotent writes
@@ -51,9 +54,8 @@ export class FsArtifactStore implements ArtifactStorePort {
     return { ok: true, path: absoluteFilePath };
   }
   async getBytes(hash: string): Promise<Uint8Array | null> {
-    const absoluteDirPath = this.getAbsoluteDirPath(hash);
-    const fileName = this.getFileName(hash);
-    const absoluteFilePath = path.join(absoluteDirPath, fileName);
+    const absoluteFilePath = await this.findAbsoluteFilePath(hash);
+    if (!absoluteFilePath) return null;
     try {
       const buffer = await readFile(absoluteFilePath);
       return buffer;
@@ -62,16 +64,19 @@ export class FsArtifactStore implements ArtifactStorePort {
     }
   }
 
-  getAbsoluteFilePath(hash: string, tmp: boolean = false): string {
+  getAbsoluteFilePath(
+    hash: string,
+    extension: string,
+    tmp: boolean = false,
+  ): string {
     return path.join(
       this.getAbsoluteDirPath(hash),
-      this.getFileName(hash, tmp)
+      this.getFileName(hash, extension, tmp),
     );
   }
 
-  getFileName(hash: string, tmp: boolean = false): string {
-    const extension = ".json" + (tmp ? ".tmp" : "");
-    return hash.slice(4) + extension;
+  getFileName(hash: string, extension: string, tmp: boolean = false): string {
+    return hash.slice(4) + extension + (tmp ? ".tmp" : "");
   }
 
   getAbsoluteDirPath(hash: string) {
@@ -87,5 +92,14 @@ export class FsArtifactStore implements ArtifactStorePort {
     } catch {
       return false;
     }
+  }
+
+  async findAbsoluteFilePath(hash: string): Promise<string | null> {
+    for (const extension of Object.values(artifactFileExtensions)) {
+      const absoluteFilePath = this.getAbsoluteFilePath(hash, extension);
+      if (await this.exists(absoluteFilePath)) return absoluteFilePath;
+    }
+
+    return null;
   }
 }

@@ -1,23 +1,28 @@
-import {
+import type {
   ArtifactsPort,
   EmitterFactoryPort,
-  ForkSpecDetails,
-  ForkSpecIndexStorePort,
-  JsonValue,
-  RunIndexStorePort,
+  FlowRepositoryPort,
+  RunQueryPort,
+  SimRepositoryPort,
   SimServicePort,
 } from "@lcase/ports";
-
-import { getRunFlowHash } from "@lcase/run-history";
+import type {
+  CreateSimRecordInput,
+  ForkSpec,
+  Result,
+  SimDefinition,
+  SimListItem,
+  SimRecord,
+} from "@lcase/types";
 import { startForkedSim } from "@lcase/run-flow";
-import { ForkSpec, ForkSpecIndex, Result } from "@lcase/types";
 
 export class SimService implements SimServicePort {
   constructor(
     private readonly artifacts: ArtifactsPort,
     private readonly ef: EmitterFactoryPort,
-    private readonly runIndexStore: RunIndexStorePort,
-    private readonly forkSpecIndexStore: ForkSpecIndexStorePort,
+    private readonly runQuery: RunQueryPort,
+    private readonly simRepository: SimRepositoryPort,
+    private readonly flowRepository: FlowRepositoryPort,
   ) {}
 
   async startForkedRunSim(
@@ -25,42 +30,80 @@ export class SimService implements SimServicePort {
     reuseSteps: string[],
     source: string,
   ) {
-    const flowDefHash = await getRunFlowHash(parentRunId, this.runIndexStore);
-    if (!flowDefHash) {
-      console.log("error getting flow def hash from run index");
+    const parentRun = await this.runQuery.getRunDetail(parentRunId);
+    if (!parentRun.ok) {
+      console.log("error getting parent run detail from sql");
       return;
     }
-    await startForkedSim(flowDefHash, parentRunId, reuseSteps, source, {
-      ef: this.ef,
-      artifacts: this.artifacts,
-    });
+
+    const { run } = parentRun.value;
+    if (!run.flowId || !run.flowVersionId) {
+      console.log("error getting relational flow metadata from parent run");
+      return;
+    }
+    await startForkedSim(
+      {
+        flowId: run.flowId,
+        flowVersionId: run.flowVersionId,
+        flowDefHash: run.flowDefHash,
+      },
+      parentRunId,
+      reuseSteps,
+      source,
+      {
+        ef: this.ef,
+        artifacts: this.artifacts,
+      },
+    );
   }
 
-  async getAllForkSpecIndexes() {
-    const forkSpecIndexes = await this.forkSpecIndexStore.getAll();
-    return forkSpecIndexes;
+  async getAllSims(): Promise<SimListItem[]> {
+    return this.simRepository.listSimsWithFlowVersion();
   }
 
-  async getForkSpec(hash: string): Promise<Result<JsonValue, string>> {
-    const forkSpec = await this.artifacts.getJson(hash);
-    if (forkSpec.ok) return forkSpec;
-    return { ok: false, error: forkSpec.error.message };
+  async getSim(simId: string): Promise<Result<SimDefinition, string>> {
+    const simResult = await this.simRepository.getSim(simId);
+    if (!simResult.ok) return simResult;
+
+    const specResult = await this.artifacts.getJson(simResult.value.forkSpecHash);
+    if (!specResult.ok) {
+      return { ok: false, error: specResult.error.message };
+    }
+
+    return {
+      ok: true,
+      value: {
+        sim: simResult.value,
+        spec: specResult.value as ForkSpec,
+      },
+    };
   }
 
-  async saveForkSpec(
-    details: ForkSpecDetails,
-  ): Promise<Result<string, string>> {
+  async saveSim(
+    details: Omit<CreateSimRecordInput, "forkSpecHash"> & {
+      forkSpec: ForkSpec;
+    },
+  ): Promise<Result<SimRecord, string>> {
+    const versionResult = await this.flowRepository.getFlowVersion(
+      details.flowVersionId,
+    );
+    if (!versionResult.ok) return versionResult;
+    if (versionResult.value.flowId !== details.flowId) {
+      return {
+        ok: false,
+        error: "Flow version does not belong to the supplied flow",
+      };
+    }
+
     const result = await this.artifacts.putJson(details.forkSpec);
     if (!result.ok) return { ok: false, error: result.error.message };
 
-    const forkSpecIndex: ForkSpecIndex = {
-      flowDefHash: details.flowDefHash,
+    return this.simRepository.createSim({
       name: details.name,
       forkSpecHash: result.value,
-      ...(details.description ? { description: details.description } : {}),
-    };
-    const indexResult = await this.forkSpecIndexStore.put(forkSpecIndex);
-    if (!indexResult.ok) return { ok: false, error: indexResult.error };
-    return { ok: true, value: result.value };
+      flowId: details.flowId,
+      flowVersionId: details.flowVersionId,
+      description: details.description,
+    });
   }
 }

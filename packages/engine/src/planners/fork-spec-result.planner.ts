@@ -1,5 +1,8 @@
 import { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { EmitRunDeniedFx, GetRunIndexFx } from "../types/effect.types.js";
+import {
+  EmitRunDeniedFx,
+  GetReusableStepDataFx,
+} from "../types/effect.types.js";
 import { ForkSpecResultMsg } from "../types/message.types.js";
 
 export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
@@ -20,7 +23,8 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
         error: message.error,
       },
       scope: {
-        flowid: newRunState.flowDefHash,
+        flowid: newRunState.flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },
@@ -31,9 +35,10 @@ export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
   }
 
   if (newRunState.forkSpec?.parentRunId) {
-    const fx: GetRunIndexFx = {
-      type: "GetRunIndex",
+    const fx: GetReusableStepDataFx = {
+      type: "GetReusableStepData",
       parentRunId: newRunState.forkSpec.parentRunId,
+      stepIds: newRunState.forkSpec.reuse,
       runId,
     };
     effects.push(fx);

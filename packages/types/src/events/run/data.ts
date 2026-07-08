@@ -1,3 +1,5 @@
+import type { RunParams } from "../../engine/run-params.js";
+
 type RunDescriptor = {
   run: {
     id: string;
@@ -8,8 +10,12 @@ type RunDescriptor = {
   };
 };
 export type RunRequestedData = {
+  flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
+  simId?: string;
   forkSpecHash?: string;
+  params?: Record<string, string>;
 };
 export type RunStartedData = null;
 export type RunCompletedData = null;

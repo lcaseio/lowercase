@@ -190,6 +190,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     return this.newRunEmitter({
       source,
       flowid: event.flowid,
+      flowversionid: event.flowversionid,
       runid: event.runid,
       traceId: event.traceid,
       spanId,
@@ -218,6 +219,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     return this.newStepEmitter({
       source,
       flowid: event.flowid,
+      flowversionid: event.flowversionid,
       runid: event.runid,
       stepid: event.stepid,
       steptype: event.capid,
@@ -242,6 +244,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     return this.newJobEmitter({
       source,
       flowid: event.flowid,
+      flowversionid: event.flowversionid,
       runid: event.runid,
       stepid: event.stepid,
       jobid: event.jobid,
@@ -269,6 +272,7 @@ export class EmitterFactory implements EmitterFactoryPort {
     return this.newToolEmitter({
       source,
       flowid: event.flowid,
+      flowversionid: event.flowversionid,
       runid: event.runid,
       stepid: event.stepid,
       jobid: event.jobid,

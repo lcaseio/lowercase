@@ -1,23 +1,25 @@
 import type { FlowAnalysis } from "../flow-analysis/types.js";
 import type { ForkSpec } from "./fork-spec.type.js";
-import type { RunIndex } from "./run-index.js";
 import { RunPlan } from "./run-plan.type.js";
+import type { ReusableRunStepData } from "../db-sql/run-record.js";
 
 type StepId = string;
 
 export type RunContext = {
   flowId: string;
+  flowVersionId: string;
   flowDefHash: string;
 
   forkSpecHash?: string;
   forkSpec?: ForkSpec;
   parentRunId?: string;
-  runIndex?: RunIndex;
+  reusableStepData?: Record<string, ReusableRunStepData>;
   runPlan: RunPlan;
 
   runId: string;
   traceId: string;
 
+  params: Record<string, string>;
   input: Record<string, unknown>;
   // global: Record<string, unknown>;  add later
 
@@ -45,7 +47,11 @@ export type StepContext = {
   attempt: number;
   output: Record<StepId, unknown> | null;
   outputHash: string | null;
+  exportHashes: Record<string, string>;
   resolved: Record<StepId, unknown>;
+  // only set on "branch" steps: the resolved routing decision,
+  // null meaning it fell through to the mandatory default case
+  matchedCase?: string | null;
 };
 
 export type FlowContext = {

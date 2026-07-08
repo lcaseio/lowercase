@@ -1,9 +1,8 @@
 import type {
   ArtifactsPort,
-  FlowIndexStorePort,
   JsonValue,
 } from "@lcase/ports";
-import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
+import type { FlowDefinition } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";
 
@@ -35,12 +34,4 @@ export function readFlowFile(absoluteFilePath: string): JsonValue {
   } catch (e) {
     throw new Error(`Error adding file to CAS: ${e}`);
   }
-}
-
-export async function addFlowIndex(
-  index: FlowIndex,
-  store: FlowIndexStorePort,
-): Promise<Result<string, string>> {
-  const result = await store.putFlowIndex(index);
-  return result;
 }

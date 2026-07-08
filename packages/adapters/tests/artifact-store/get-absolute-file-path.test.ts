@@ -10,7 +10,7 @@ describe("FsArtifactStore getAbsoluteFilePath()", () => {
   it("generates a valid absolute path for non tmp files", () => {
     const testHash = "1234567890";
     const store = new FsArtifactStore(testPath);
-    const absoluteFilePath = store.getAbsoluteFilePath(testHash);
+    const absoluteFilePath = store.getAbsoluteFilePath(testHash, ".json");
     const expectedPath = path.join(testPath, "12", "34", "567890.json");
 
     expect(absoluteFilePath).toBe(expectedPath);
@@ -18,7 +18,7 @@ describe("FsArtifactStore getAbsoluteFilePath()", () => {
   it("generates a valid absolute path for tmp files", () => {
     const testHash = "1234567890";
     const store = new FsArtifactStore(testPath);
-    const absoluteFilePath = store.getAbsoluteFilePath(testHash, true);
+    const absoluteFilePath = store.getAbsoluteFilePath(testHash, ".json", true);
     const expectedPath = path.join(testPath, "12", "34", "567890.json.tmp");
 
     expect(absoluteFilePath).toBe(expectedPath);

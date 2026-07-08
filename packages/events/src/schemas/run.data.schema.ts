@@ -20,8 +20,12 @@ const RunDescriptorSchema = z.object({
 
 export const RunRequestedDataSchema = z
   .object({
+    flowId: z.string(),
+    flowVersionId: z.string(),
     flowDefHash: z.string(),
+    simId: z.string().optional(),
     forkSpecHash: z.string().optional(),
+    params: z.record(z.string(), z.string()).optional(),
   })
   .strict() satisfies z.ZodType<RunRequestedData>;
 

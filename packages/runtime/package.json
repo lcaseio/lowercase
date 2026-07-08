@@ -1,6 +1,6 @@
 {
   "name": "@lcase/runtime",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "exports": {
@@ -28,7 +28,8 @@
     "@lcase/services": "workspace:*",
     "@lcase/replay": "workspace:*",
     "@lcase/limiter": "workspace:*",
-    "@lcase/artifacts": "workspace:*"
+    "@lcase/artifacts": "workspace:*",
+    "@lcase/db-prisma": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

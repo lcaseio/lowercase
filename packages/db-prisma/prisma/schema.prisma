@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ArtifactFormat {
+  json
+  text
+  markdown
+  bytes
+}
+
+enum RunStatus {
+  requested
+  started
+  completed
+  failed
+}
+
+model Flow {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  versions    FlowVersion[]
+  sims        Sim[]
+  runs        Run[]
+}
+
+model FlowVersion {
+  id             String   @id @default(cuid())
+  flowId         String
+  sequence       Int
+  definitionHash String
+  versionLabel   String?
+  description    String?
+  createdAt      DateTime @default(now())
+
+  flow Flow @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sims Sim[]
+  runs Run[]
+
+  @@unique([flowId, sequence])
+  @@index([flowId])
+}
+
+model Artifact {
+  hash        String         @id
+  time        DateTime       @default(now())
+  label       String?
+  filename    String?
+  contentType String?
+  size        Int?
+  format      ArtifactFormat?
+
+  @@index([time])
+}
+
+model Sim {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  flowId        String
+  flowVersionId String
+  forkSpecHash  String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  flow        Flow        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion FlowVersion @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  runs        Run[]
+
+  @@index([createdAt])
+  @@index([flowId])
+  @@index([flowVersionId])
+}
+
+model Run {
+  id            String      @id
+  traceId       String
+  status        RunStatus
+  source        String
+  flowId        String?
+  flowVersionId String?
+  flowDefHash   String
+  simId         String?
+  parentRunId   String?
+  forkSpecHash  String?
+  startTime     DateTime?
+  endTime       DateTime?
+  duration      Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  flow            Flow?                @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion     FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sim             Sim?                 @relation(fields: [simId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  stepProjections RunStepProjection[]
+  params          RunParam[]
+
+  @@index([createdAt])
+  @@index([flowId])
+  @@index([flowVersionId])
+  @@index([simId])
+  @@index([parentRunId])
+}
+
+model RunParam {
+  runId        String
+  name         String
+  artifactHash String
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([runId, name])
+  @@index([artifactHash])
+}
+
+model RunStepProjection {
+  runId      String
+  stepId     String
+  status     String?
+  startTime  DateTime?
+  endTime    DateTime?
+  duration   Float?
+  reusedTime DateTime?
+  wasReused  Boolean?
+  outputHash String?
+
+  run     Run             @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  exports RunStepExport[]
+
+  @@id([runId, stepId])
+  @@index([runId])
+  @@index([status])
+}
+
+model RunStepExport {
+  runId        String
+  stepId       String
+  name         String
+  artifactHash String
+
+  step RunStepProjection @relation(fields: [runId, stepId], references: [runId, stepId], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([runId, stepId, name])
+  @@index([artifactHash])
+}

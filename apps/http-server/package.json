@@ -1,12 +1,12 @@
 {
   "name": "@lcase/http-server",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "test": "echo test",
+    "build": "tsc --incremental false",
+    "typecheck": "tsc --noEmit --incremental false",
+    "test": "vitest",
     "lint": "echo lint",
     "start": "node ./dist/main.js",
     "dev": "npx tsx ./src/main.ts"
@@ -20,7 +20,13 @@
     "fastify": "^5.7.2"
   },
   "devDependencies": {
+    "@lcase/adapters": "workspace:*",
+    "@lcase/artifacts": "workspace:*",
+    "@lcase/db-prisma": "workspace:*",
+    "@lcase/events": "workspace:*",
     "@lcase/ports": "workspace:*",
+    "@lcase/services": "workspace:*",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@lcase/types": "workspace:*",
     "@types/ws": "^8.18.1",
     "vitest": "^3.2.4"

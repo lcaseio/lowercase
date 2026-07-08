@@ -1,7 +1,7 @@
 import type {
   ArtifactsPort,
   EmitterFactoryPort,
-  RunIndexStorePort,
+  RunQueryPort,
 } from "@lcase/ports";
 import type {
   AnyEvent,
@@ -28,10 +28,11 @@ import type {
 } from "@lcase/types";
 import type { RunContext } from "@lcase/types";
 import type {
+  BranchValueResolvedMsg,
   FlowDefResultMsg,
   ForkSpecResultMsg,
   MakeRunPlanMsg,
-  RunIndexResultMsg,
+  ReusableStepDataResultMsg,
   RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,
@@ -42,8 +43,9 @@ import type {
   EmitStepReusedFx,
   GetFlowDefFx,
   GetForkSpecFx,
-  GetRunIndexFx,
+  GetReusableStepDataFx,
   MakeRunPlanFx,
+  ResolveBranchValueFx,
 } from "./types/effect.types.js";
 
 type FlowId = string;
@@ -135,7 +137,7 @@ export type UpdateJoinMsg = {
 export type EngineMessage =
   | FlowDefResultMsg
   | ForkSpecResultMsg
-  | RunIndexResultMsg
+  | ReusableStepDataResultMsg
   | MakeRunPlanMsg
   | RunRequestedMsg
   | RunStartedMsg
@@ -143,7 +145,8 @@ export type EngineMessage =
   | StepPlannedMsg
   | StepStartedMsg
   | StepFinishedMsg
-  | JobFinishedMsg;
+  | JobFinishedMsg
+  | BranchValueResolvedMsg;
 
 export type MessageType = EngineMessage["type"];
 
@@ -263,8 +266,9 @@ export type EngineEffect =
   | WriteContextToDiskFx
   | GetFlowDefFx
   | GetForkSpecFx
-  | GetRunIndexFx
-  | MakeRunPlanFx;
+  | GetReusableStepDataFx
+  | MakeRunPlanFx
+  | ResolveBranchValueFx;
 
 // reducers
 export type Reducer<M extends EngineMessage = EngineMessage> = (
@@ -302,7 +306,7 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
-  runIndexStore: RunIndexStorePort;
+  runQuery: RunQueryPort;
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactsPort;

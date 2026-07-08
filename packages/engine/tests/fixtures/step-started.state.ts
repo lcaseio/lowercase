@@ -22,6 +22,7 @@ const runCtx = {
   flowDefHash: "test-flow-hash",
   runId: message.event.runid,
   traceId: message.event.traceid,
+  params: {},
 
   plannedSteps: {}, // remove step to object for set like lookup
   startedSteps: { parallel: true },
@@ -43,6 +44,7 @@ const runCtx = {
       output: {},
       resolved: {},
       outputHash: null,
+      exportHashes: {},
     },
     [stepId]: {
       status: "initialized",
@@ -50,6 +52,7 @@ const runCtx = {
       output: {},
       resolved: {},
       outputHash: null,
+      exportHashes: {},
     },
   },
   flowAnalysis: flowAnalysis,

@@ -1,102 +1,25 @@
 import type {
-  EventBusPort,
-  FlowStorePort,
-  FlowList,
   FlowServicePort,
   ArtifactsPort,
-  FlowIndexStorePort,
+  FlowRepositoryPort,
 } from "@lcase/ports";
-import type { FlowDefinition, FlowIndex, Result } from "@lcase/types";
-import { EmitterFactory } from "@lcase/events";
+import type {
+  CreateFlowRecordResult,
+  FlowDefinition,
+  GetFlowsRes,
+  GetFlowVersionRes,
+  GetFlowVersionsRes,
+  Result,
+} from "@lcase/types";
 import { FlowSchema, parseFlow } from "@lcase/specs";
-import { createHash } from "crypto";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
-import { addFlowIndex, addFlowToCas, readFlowFile } from "@lcase/run-flow";
+import { addFlowToCas, readFlowFile } from "@lcase/run-flow";
 import { analyzeFlow } from "@lcase/flow-analysis";
 
 export class FlowService implements FlowServicePort {
   constructor(
-    private readonly bus: EventBusPort,
-    private readonly ef: EmitterFactory,
-    private readonly flowStore: FlowStorePort,
     private readonly artifacts: ArtifactsPort,
-    private readonly flowIndexStore: FlowIndexStorePort,
+    private readonly flowRepository?: FlowRepositoryPort,
   ) {}
-
-  async startFlow(args: { absoluteFilePath?: string }): Promise<void> {
-    if (!args.absoluteFilePath) {
-      throw new Error("[flow-service] startFlow() must supply filepath");
-    }
-
-    const flow = this.flowStore.readFlow({ filePath: args.absoluteFilePath });
-
-    if (!flow) return;
-
-    const validatedFlow = this.validateJsonFlow(flow);
-
-    if (typeof validatedFlow === "string") return;
-
-    const traceId = this.ef.generateTraceId();
-    const spanId = this.ef.generateSpanId();
-    const traceParent = this.ef.makeTraceParent(traceId, spanId);
-
-    const flowId = this.makeId(
-      validatedFlow.name,
-      validatedFlow.version,
-      args.absoluteFilePath,
-    );
-    const runId = `run-${String(randomUUID())}`;
-    const flowEmitter = this.ef.newFlowEmitter({
-      source: "lowercase://flow-service/start-flow",
-      flowid: flowId,
-      runid: runId,
-      traceId,
-      spanId,
-      traceParent,
-    });
-    await flowEmitter.emit("flow.submitted", {
-      flow: {
-        id: flowId,
-        name: validatedFlow.name,
-        version: validatedFlow.version,
-      },
-      run: { id: runId },
-      inputs: {},
-      definition: validatedFlow,
-    });
-  }
-
-  async listFlows(args: { absoluteDirPath?: string }): Promise<FlowList> {
-    const flows = this.flowStore.readFlows({ dir: args.absoluteDirPath });
-
-    const flowList: FlowList = {
-      validFlows: {},
-      invalidFlows: {},
-    };
-
-    for (const [absolutePath, blob] of flows.entries()) {
-      const flow = this.validateJsonFlow(blob as string);
-      if (typeof flow === "string") {
-        flowList.invalidFlows[absolutePath] = { errorMessage: flow };
-      } else {
-        flowList.validFlows[
-          this.makeId(flow.name, flow.version, absolutePath)
-        ] = {
-          ...(flow.description ? { description: flow.description } : {}),
-          filename: path.basename(absolutePath),
-          name: flow.name,
-          version: flow.version,
-          absolutePath,
-        };
-      }
-    }
-    return flowList;
-  }
-
-  async getAllFlowIndexes(): Promise<Result<FlowIndex[], string>> {
-    return await this.flowIndexStore.getAllFlowIndexes();
-  }
 
   validateJsonFlow(
     flow: string | Record<string, unknown>,
@@ -142,7 +65,31 @@ export class FlowService implements FlowServicePort {
     }
   }
 
-  async getFlowDef(hash: string): Promise<Result<FlowDefinition, string>> {
+  async getFlowDef(
+    flowIdOrHash: string,
+  ): Promise<Result<FlowDefinition, string>> {
+    if (this.flowRepository) {
+      const flowResult = await this.flowRepository.getFlow(flowIdOrHash);
+      if (flowResult.ok) {
+        const versions =
+          await this.flowRepository.listFlowVersions(flowIdOrHash);
+        const latestVersion = versions.at(-1);
+        if (!latestVersion) {
+          return {
+            ok: false,
+            error: `No flow versions found for flow: ${flowIdOrHash}`,
+          };
+        }
+        return this.getFlowDefByHash(latestVersion.definitionHash);
+      }
+    }
+
+    return this.getFlowDefByHash(flowIdOrHash);
+  }
+
+  private async getFlowDefByHash(
+    hash: string,
+  ): Promise<Result<FlowDefinition, string>> {
     const result = await this.artifacts.getJson(hash);
     if (!result.ok) return { ok: result.ok, error: result.error.message };
 
@@ -152,8 +99,10 @@ export class FlowService implements FlowServicePort {
 
   async addFlow(
     flow: string | Record<string, unknown>,
-  ): Promise<Result<FlowIndex, string>> {
-    // const parseResult = parseFlow(json);
+  ): Promise<Result<CreateFlowRecordResult, string>> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
 
     const validateResult = this.validateJsonFlow(flow);
     if (typeof validateResult === "string") {
@@ -163,21 +112,56 @@ export class FlowService implements FlowServicePort {
     const hash = await addFlowToCas(validateResult, this.artifacts);
     if (!hash) return { ok: false, error: "Error adding flow to CAS" };
 
-    const flowIndex: FlowIndex = {
+    return this.flowRepository.createFlow({
       name: validateResult.name,
-      version: validateResult.version,
-      hash,
       description: validateResult.description,
-    };
-    const flowIndexResult = await addFlowIndex(flowIndex, this.flowIndexStore);
-
-    if (!flowIndexResult.ok) return { ...flowIndexResult };
-    return { ok: true, value: flowIndex };
+      definitionHash: hash,
+      versionLabel: validateResult.version,
+      versionDescription: validateResult.description,
+    });
   }
 
-  makeId(name: string, version: string, path?: string, p0?: {}): string {
-    const hash = createHash("md5");
-    hash.update(name + version + path);
-    return hash.digest("hex");
+  async getAllFlows(): Promise<GetFlowsRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const flows = await this.flowRepository.listFlowsWithLatestVersion();
+    return { ok: true, value: flows };
+  }
+
+  async getFlowVersions(flowId: string): Promise<GetFlowVersionsRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const flowResult = await this.flowRepository.getFlow(flowId);
+    if (!flowResult.ok) return flowResult;
+
+    const versions = await this.flowRepository.listFlowVersions(flowId);
+    return { ok: true, value: versions };
+  }
+
+  async getFlowVersionDef(flowVersionId: string): Promise<GetFlowVersionRes> {
+    if (!this.flowRepository) {
+      return { ok: false, error: "Flow repository not configured" };
+    }
+
+    const versionResult =
+      await this.flowRepository.getFlowVersion(flowVersionId);
+    if (!versionResult.ok) return versionResult;
+
+    const definitionResult = await this.getFlowDefByHash(
+      versionResult.value.definitionHash,
+    );
+    if (!definitionResult.ok) return definitionResult;
+
+    return {
+      ok: true,
+      value: {
+        version: versionResult.value,
+        definition: definitionResult.value,
+      },
+    };
   }
 }

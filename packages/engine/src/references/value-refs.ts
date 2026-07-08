@@ -1,5 +1,4 @@
-import type { Ref } from "@lcase/types";
-import type { RunContext } from "@lcase/types";
+import type { FlowDefinition, Ref, RunContext } from "@lcase/types";
 
 /**
  * Makes an array of value ref objects for a list of references.
@@ -17,17 +16,36 @@ export function makeStepRefs(
   stepId: string,
   allRefs: Ref[],
   stepContext: RunContext["steps"],
+  params: RunContext["params"],
+  paramDefinitions?: FlowDefinition["params"],
+  stepDefinitions?: FlowDefinition["steps"],
 ): Ref[] {
   const stepRefs = getStepRefs(allRefs, stepId);
 
   const jobRefs: Ref[] = [];
   for (const ref of stepRefs) {
-    // if reference is not a {{steps.x.output}} format, skip.
-    if (ref.scope !== "steps") continue;
+    if (ref.scope !== "steps" && ref.scope !== "params") continue;
+    const valuePath =
+      ref.scope === "params"
+        ? ref.valuePath.slice(2)
+        : ref.valuePath[2] === "exports"
+          ? ref.valuePath.slice(4)
+          : ref.valuePath[2] === "output"
+            ? ref.valuePath.slice(3)
+            : ref.valuePath.slice(2);
     const jobRef: Ref = {
       ...ref,
-      valuePath: ref.valuePath.slice(3), // remove "steps.stepId.output" from path
-      hash: getStepRefHash(ref, stepContext),
+      valuePath,
+      hash: getRefHash(ref, stepContext, params),
+      ...(ref.scope === "params"
+        ? {
+            paramType: getParamType(ref, paramDefinitions),
+          }
+        : ref.scope === "steps" && ref.valuePath[2] === "exports"
+          ? {
+              exportType: getExportType(ref, stepDefinitions),
+            }
+          : {}),
     };
     jobRefs.push(jobRef);
   }
@@ -45,13 +63,28 @@ export function makeStepRefs(
  * @param runContext
  * @returns string of the hash or null if reference is empty
  */
-export function getStepRefHash(
+export function getRefHash(
   ref: Ref,
   stepContext: RunContext["steps"],
+  params: RunContext["params"],
 ): string | null {
-  if (ref.scope === "steps" && stepContext[ref.valuePath[1]] !== undefined) {
-    return stepContext[ref.valuePath[1]].outputHash;
-  } else return null;
+  if (ref.scope === "params") {
+    const paramName = ref.valuePath[1];
+    if (typeof paramName !== "string") return null;
+    return params[paramName] ?? null;
+  }
+  if (ref.scope !== "steps") return null;
+
+  const step = stepContext[ref.valuePath[1]];
+  if (step === undefined) return null;
+
+  if (ref.valuePath[2] === "exports") {
+    const exportName = ref.valuePath[3];
+    if (typeof exportName !== "string") return null;
+    return step.exportHashes[exportName] ?? null;
+  }
+
+  return step.outputHash;
 }
 
 /**
@@ -63,4 +96,31 @@ export function getStepRefHash(
 export function getStepRefs(refs: Ref[], stepId: string) {
   const stepRefs = refs.filter((ref) => ref.stepId === stepId);
   return stepRefs;
+}
+
+function getParamType(
+  ref: Ref,
+  paramDefinitions?: FlowDefinition["params"],
+): NonNullable<FlowDefinition["params"]>[string]["type"] | undefined {
+  const paramName = ref.valuePath[1];
+  if (typeof paramName !== "string" || !paramDefinitions) return undefined;
+  return paramDefinitions[paramName]?.type;
+}
+
+function getExportType(
+  ref: Ref,
+  stepDefinitions?: FlowDefinition["steps"],
+): Ref["exportType"] {
+  const sourceStepId = ref.valuePath[1];
+  const exportName = ref.valuePath[3];
+  if (
+    typeof sourceStepId !== "string" ||
+    typeof exportName !== "string" ||
+    !stepDefinitions
+  ) {
+    return undefined;
+  }
+  const sourceStep = stepDefinitions[sourceStepId];
+  if (!sourceStep || sourceStep.type !== "httpjson") return undefined;
+  return sourceStep.exports?.[exportName]?.type;
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  ExportRef,
   JobCompletedData,
   JobDelayedData,
   JobDescriptor,
@@ -36,9 +37,27 @@ export const RefSchema = z
     string: z.string(),
     stepId: z.string(),
     hash: z.union([z.string(), z.null()]),
-    scope: z.enum(["steps", "input", "env"]),
+    scope: z.enum(["steps", "input", "env", "params"]),
+    json: z.literal(true).optional(),
+    paramType: z
+      .enum(["application/json", "text/plain", "text/markdown"])
+      .optional(),
+    exportType: z
+      .enum(["application/json", "text/plain", "text/markdown"])
+      .optional(),
   })
   .strict() satisfies z.ZodType<Ref>;
+
+export const ExportRefSchema = z
+  .object({
+    exportName: z.string(),
+    valuePath: z.array(z.union([z.string(), z.number()])),
+    scope: z.literal("output"),
+    string: z.string(),
+    type: z.enum(["application/json", "text/plain", "text/markdown"]),
+    schema: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict() satisfies z.ZodType<ExportRef>;
 
 const PipeDataSchema = z
   .object({
@@ -105,6 +124,7 @@ export const JobHttpJsonSubmittedDataSchema = z
   .object({
     ...JobHttpJsonDataSchema.shape,
     refs: z.array(RefSchema),
+    exportRefs: z.record(z.string(), ExportRefSchema).optional(),
   })
   .strict() satisfies z.ZodType<JobHttpJsonSubmittedData>;
 
@@ -123,6 +143,7 @@ export const JobCompletedDataSchema = z
   .object({
     status: z.literal("success"),
     output: z.string().nullable(),
+    exportHashes: z.record(z.string(), z.string()).optional(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobCompletedData>;
@@ -131,6 +152,7 @@ export const JobFailedDataSchema = z
   .object({
     status: z.literal("failure"),
     output: z.string().nullable(),
+    exportHashes: z.record(z.string(), z.string()).optional(),
     message: z.string().optional(),
   })
   .strict() satisfies z.ZodType<JobFailedData>;

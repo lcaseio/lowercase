@@ -1,5 +1,8 @@
 import type { AnyEvent, RunIndex } from "@lcase/types";
-import { isRunIndexEvent } from "./utils/is-run-index-event.js";
+import {
+  isRunIndexEvent,
+  type RunIndexEvent,
+} from "./utils/is-run-index-event.js";
 
 /**
  * Inits a RunIndex object based on the supplied event, if it is a
@@ -10,6 +13,10 @@ import { isRunIndexEvent } from "./utils/is-run-index-event.js";
  */
 export function initRunIndex(event: AnyEvent): RunIndex | undefined {
   if (!isRunIndexEvent(event)) return;
+  return makeRunIndex(event);
+}
+
+function makeRunIndex(event: RunIndexEvent): RunIndex {
   const index: RunIndex = {
     flowId: event.flowid,
     steps: {},

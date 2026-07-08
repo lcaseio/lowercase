@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { makeRunPlanPlanner } from "../../src/planners/make-run-plan.planner.js";
 import type { MakeRunPlanMsg } from "../../src/types/message.types.js";
 import { EmitRunDeniedFx } from "../../src/types/effect.types.js";
-import { runIndexResultOkState } from "../fixtures/run-index-result.state.js";
+import { reusableStepDataResultOkState } from "../fixtures/reusable-step-data-result.state.js";
 import {
   makeRunPlanNewState,
   makeRunPlanNewStateFAProblems,
@@ -17,7 +17,7 @@ describe("makeRunPlanPlanner()", () => {
     };
 
     const effects = makeRunPlanPlanner(
-      runIndexResultOkState,
+      reusableStepDataResultOkState,
       makeRunPlanNewState,
       message,
     );
@@ -27,7 +27,8 @@ describe("makeRunPlanPlanner()", () => {
         type: "EmitRunStarted",
         data: null,
         scope: {
-          flowid: "test-flowdefhash",
+          flowid: "test-flowid",
+          flowversionid: "test-flowversionid",
           runid: "test-runid",
           source: "lowercase://engine",
         },
@@ -43,7 +44,7 @@ describe("makeRunPlanPlanner()", () => {
     };
 
     const effects = makeRunPlanPlanner(
-      runIndexResultOkState,
+      reusableStepDataResultOkState,
       makeRunPlanNewStateFAProblems,
       message,
     );
@@ -55,11 +56,12 @@ describe("makeRunPlanPlanner()", () => {
           error: "Error making run plan.",
         },
         scope: {
-          flowid: "test-flowdefhash",
+          flowid: "test-flowid",
+          flowversionid: "test-flowversionid",
           runid: "test-runid",
           source: "lowercase://engine",
         },
-        traceId: runIndexResultOkState.runs["test-runid"].traceId,
+        traceId: reusableStepDataResultOkState.runs["test-runid"].traceId,
       },
     ];
 

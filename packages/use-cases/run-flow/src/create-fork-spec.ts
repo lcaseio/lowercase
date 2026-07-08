@@ -18,8 +18,14 @@ type RunForkedSimDeps = {
   ef: EmitterFactoryPort;
   artifacts: ArtifactsPort;
 };
+
+type ForkedRunFlowMeta = {
+  flowId: string;
+  flowVersionId: string;
+  flowDefHash: string;
+};
 export async function startForkedSim(
-  flowDefHash: string,
+  flow: ForkedRunFlowMeta,
   parentRunId: string,
   reuseSteps: string[],
   source: string,
@@ -30,7 +36,8 @@ export async function startForkedSim(
 
   const emitter = deps.ef.newRunEmitterNewTrace({
     source,
-    flowid: flowDefHash,
+    flowid: flow.flowId,
+    flowversionid: flow.flowVersionId,
     runid: runId,
   });
 
@@ -41,8 +48,10 @@ export async function startForkedSim(
     return;
   }
 
-  const event = await emitter.emit("run.requested", {
-    flowDefHash,
+  await emitter.emit("run.requested", {
+    flowId: flow.flowId,
+    flowVersionId: flow.flowVersionId,
+    flowDefHash: flow.flowDefHash,
     forkSpecHash: forkSpecResult.value,
   });
 }

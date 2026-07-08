@@ -3,6 +3,7 @@ import type { EngineState, Reducer } from "../engine.types.js";
 import type { StepFinishedMsg } from "../types/message.types.js";
 import { planControlEdge } from "./utils/plan-control-edge.reducer.js";
 import { planJoinEdge } from "./utils/plan-join-edge.reducer.js";
+import { planBranchEdge } from "./utils/plan-branch-edge.reducer.js";
 import { setRunStatus } from "./utils/set-run-status.reducer.js";
 
 /**
@@ -39,6 +40,10 @@ export const stepFinishedReducer: Reducer<StepFinishedMsg> = (
             planControlEdge(edge, run, "onSuccess");
           } else if (message.event.data.status === "failure") {
             planControlEdge(edge, run, "onFailure");
+          }
+        } else if (edge.type === "branch") {
+          if (message.event.type === "step.completed") {
+            planBranchEdge(edge, run, message.event.data.matchedCase ?? null);
           }
         }
       }

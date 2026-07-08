@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { bootstrap } from "./bootstrap.js";
 
 // import { createRequire } from "node:module";
@@ -69,23 +69,8 @@ function createWindow() {
 ipcMain.handle("controller:startRuntime", async (): Promise<string> => {
   return await controller.startRuntime();
 });
-ipcMain.handle("controller:startFlow", async (_event, args) => {
-  await controller.startFlow(args);
-});
 ipcMain.handle("controller:stopRuntime", async () => {
   return await controller.stopRuntime();
-});
-ipcMain.handle(
-  "controller:listFlows",
-  async (_event, args: { absoluteDirPath?: string }) => {
-    // dialog.showOpenDialog({properties: ["openDirectory"]})
-    return await controller.listFlows(args);
-  }
-);
-ipcMain.handle("controller:pickFlowDir", async () => {
-  const path = await dialog.showOpenDialog({ properties: ["openDirectory"] });
-  console.log(path);
-  return path.filePaths;
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

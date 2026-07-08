@@ -5,11 +5,13 @@ import { flowDef } from "./flow-definition.js";
 export const flowDefResultOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -28,12 +30,13 @@ export const flowDefResultOkState: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },
   flows: {
     // add flow to flows if its not there,
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true }, // and add run id to it
     },
@@ -43,12 +46,14 @@ export const flowDefResultOkState: EngineState = {
 export const flowDefResultOkStateForkSpecHash: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -67,12 +72,13 @@ export const flowDefResultOkStateForkSpecHash: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },
   flows: {
     // add flow to flows if its not there,
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true }, // and add run id to it
     },
@@ -82,11 +88,13 @@ export const flowDefResultOkStateForkSpecHash: EngineState = {
 export const flowDefResultNotOkState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
       runPlan: {
         reuse: {},
       },
@@ -105,6 +113,7 @@ export const flowDefResultNotOkState: EngineState = {
         joinDeps: {},
         problems: [],
         refs: [],
+        exportRefsByStep: {},
       },
     } satisfies RunContext,
   },

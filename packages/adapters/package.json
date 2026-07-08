@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "exports": {
@@ -8,9 +8,25 @@
       "types": "./dist/event-bus/index.d.ts",
       "import": "./dist/event-bus/index.js"
     },
-    "./flow-store": {
-      "types": "./dist/flow-store/index.d.ts",
-      "import": "./dist/flow-store/index.js"
+    "./flow-repository": {
+      "types": "./dist/flow-repository/index.d.ts",
+      "import": "./dist/flow-repository/index.js"
+    },
+    "./sim-repository": {
+      "types": "./dist/sim-repository/index.d.ts",
+      "import": "./dist/sim-repository/index.js"
+    },
+    "./run-repository": {
+      "types": "./dist/run-repository/index.d.ts",
+      "import": "./dist/run-repository/index.js"
+    },
+    "./run-step-projection-repository": {
+      "types": "./dist/run-step-projection-repository/index.d.ts",
+      "import": "./dist/run-step-projection-repository/index.js"
+    },
+    "./run-query": {
+      "types": "./dist/run-query/index.d.ts",
+      "import": "./dist/run-query/index.js"
     },
     "./mcp-manager": {
       "types": "./dist/mcp-manager/index.d.ts",
@@ -36,17 +52,13 @@
       "types": "./dist/artifact-store/index.d.ts",
       "import": "./dist/artifact-store/index.js"
     },
-    "./run-index-store": {
-      "types": "./dist/run-index-store/index.d.ts",
-      "import": "./dist/run-index-store/index.js"
+    "./artifact-index-store": {
+      "types": "./dist/artifact-index-store/index.d.ts",
+      "import": "./dist/artifact-index-store/index.js"
     },
-    "./flow-index-store": {
-      "types": "./dist/flow-index-store/index.d.ts",
-      "import": "./dist/flow-index-store/index.js"
-    },
-    "./fork-spec-index-store": {
-      "types": "./dist/fork-spec-index-store/index.d.ts",
-      "import": "./dist/fork-spec-index-store/index.js"
+    "./artifact-repository": {
+      "types": "./dist/artifact-repository/index.d.ts",
+      "import": "./dist/artifact-repository/index.js"
     }
   },
   "scripts": {
@@ -57,14 +69,17 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.19.1",
-    "@lcase/specs": "workspace:*",
     "@lcase/events": "workspace:*",
+    "@lcase/specs": "workspace:*",
+    "@lcase/db-prisma": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "dotenv": "^17.4.2",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "vitest": "^3.2.4",
+    "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
-    "@lcase/ports": "workspace:*"
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "vitest": "^3.2.4"
   }
 }

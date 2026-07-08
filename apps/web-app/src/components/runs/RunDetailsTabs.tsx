@@ -10,7 +10,10 @@ import {
 import { useAppSelector } from "@/redux/typed-hooks";
 import { useGetFlowDefQuery } from "@/redux/api/flows-api";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
+import {
+  useGetAllRunEventsQuery,
+  useGetRunDetailQuery,
+} from "@/redux/api/runs-api";
 import { useRef } from "react";
 import {
   makeSelectRunEvents,
@@ -36,7 +39,17 @@ export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
     shallowEqual,
   );
 
-  const flowDefQuery = useGetFlowDefQuery(flowDefHash ?? skipToken);
+  const runDetailQuery = useGetRunDetailQuery(
+    view === "historical" && runId ? { runId } : skipToken,
+  );
+  const resolvedFlowDefHash =
+    view === "historical"
+      ? runDetailQuery.data?.ok === true
+        ? runDetailQuery.data.value.run.flowDefHash
+        : null
+      : flowDefHash;
+
+  const flowDefQuery = useGetFlowDefQuery(resolvedFlowDefHash ?? skipToken);
   const flowDef = flowDefQuery?.data?.ok ? flowDefQuery.data.value : null;
 
   useGetAllRunEventsQuery(runId ? { runId } : skipToken);

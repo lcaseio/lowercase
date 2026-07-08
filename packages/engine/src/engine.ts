@@ -57,7 +57,7 @@ export class Engine {
 
     this.handlers = wireEffectHandlers({
       ef: this.ef,
-      runIndexStore: deps.runIndexStore,
+      runQuery: deps.runQuery,
       enqueue: this.enqueue.bind(this),
       processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,

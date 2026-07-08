@@ -17,6 +17,7 @@ import { parseStepRefs } from "./parse-references.js";
  * @returns FlowAnalysis
  */
 export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
+  fa.exportRefsByStep ??= {};
   for (const stepId of Object.keys(fd.steps)) {
     const stepType = fd.steps[stepId].type;
     // skip control flow step types for now
@@ -25,7 +26,10 @@ export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
   }
 
   for (const ref of fa.refs) {
-    const problem = validateRefTargetStep(ref, fd, fa);
+    const problem =
+      validateRefTargetStep(ref, fd, fa) ??
+      validateRefTargetParam(ref, fd) ??
+      validateExportRefPath(ref, fd);
     if (problem) fa.problems.push(problem);
   }
   return fa;
@@ -43,8 +47,10 @@ export function findAndParseRefs(
   fd: FlowDefinition,
   fa: FlowAnalysis
 ) {
-  const { refs, problems } = parseStepRefs(fd.steps[stepId], stepId);
+  const { refs, exportRefs, problems } = parseStepRefs(fd.steps[stepId], stepId);
   fa.refs = fa.refs.concat(refs);
+  fa.exportRefsByStep ??= {};
+  fa.exportRefsByStep[stepId] = exportRefs;
   fa.problems = fa.problems.concat(problems);
 }
 
@@ -80,6 +86,58 @@ export function validateRefTargetStep(
       type: "UnreachableRef",
       ref,
       targetStepId,
+    };
+  }
+}
+
+export function validateRefTargetParam(
+  ref: Ref,
+  fd: FlowDefinition,
+): FlowProblem | undefined {
+  if (ref.scope !== "params") return;
+  const paramName = ref.valuePath[1];
+  if (
+    typeof paramName !== "string" ||
+    fd.params === undefined ||
+    fd.params[paramName] === undefined
+  ) {
+    return {
+      type: "InvalidRefParamName",
+      ref,
+      paramName: typeof paramName === "string" ? paramName : "",
+    };
+  }
+}
+
+/**
+ * Checks that a downstream reference into another step's export doesn't
+ * traverse a nested path when that export is declared as a string-backed
+ * type (text/plain or text/markdown) -- string-backed exports only support
+ * binding the whole value, mirroring the same rule enforced for run params.
+ */
+export function validateExportRefPath(
+  ref: Ref,
+  fd: FlowDefinition,
+): FlowProblem | undefined {
+  if (ref.scope !== "steps" || ref.valuePath[2] !== "exports") return;
+  const sourceStepId = ref.valuePath[1];
+  const exportName = ref.valuePath[3];
+  if (typeof sourceStepId !== "string" || typeof exportName !== "string") {
+    return;
+  }
+
+  const sourceStep = fd.steps[sourceStepId];
+  if (!sourceStep || sourceStep.type !== "httpjson") return;
+
+  const declaration = sourceStep.exports?.[exportName];
+  if (!declaration || declaration.type === "application/json") return;
+
+  if (ref.valuePath.length > 4) {
+    return {
+      type: "InvalidExportRefPath",
+      ref,
+      exportName,
+      sourceStepId,
     };
   }
 }

@@ -11,3 +11,14 @@ export type StepOnField = {
     failure?: string;
   };
 };
+
+export type ExportDeclaration = {
+  ref: string;
+  type: "application/json" | "text/plain" | "text/markdown";
+  // JSON Schema, validated only when type is application/json
+  schema?: Record<string, unknown>;
+};
+
+export type StepExportsField = {
+  exports?: Record<string, ExportDeclaration>;
+};

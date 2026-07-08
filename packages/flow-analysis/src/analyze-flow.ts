@@ -5,6 +5,7 @@ import type {
   StepMcp,
   StepParallel,
   StepJoin,
+  StepBranch,
   Edge,
   FlowAnalysis,
   FlowProblem,
@@ -64,6 +65,10 @@ export function analyzeFlow(flow: FlowDefinition): FlowAnalysis {
     }
     if (step.type === "join") {
       addJoinEdges(stepId, step, fa, flow);
+      continue;
+    }
+    if (step.type === "branch") {
+      addBranchEdges(stepId, step, fa, flow);
       continue;
     }
     if (step.type === "httpjson" || step.type === "mcp") {
@@ -134,6 +139,46 @@ export function addJoinEdges(
     endStepId: step.next,
     type: "control",
     gate: "onSuccess",
+  });
+}
+
+export function addBranchEdges(
+  stepId: string,
+  step: StepBranch,
+  fa: FlowAnalysis,
+  flow: FlowDefinition,
+) {
+  for (const [caseValue, endStepId] of Object.entries(step.cases)) {
+    const hasProblems = checkAndAddProblems(
+      flow.steps[endStepId],
+      fa.problems,
+      stepId,
+      endStepId,
+    );
+    if (hasProblems) continue;
+
+    addEdge(fa.inEdges, fa.outEdges, {
+      startStepId: stepId,
+      endStepId,
+      type: "branch",
+      gate: "always",
+      caseValue,
+    });
+  }
+
+  const hasDefaultProblems = checkAndAddProblems(
+    flow.steps[step.default],
+    fa.problems,
+    stepId,
+    step.default,
+  );
+  if (hasDefaultProblems) return;
+  addEdge(fa.inEdges, fa.outEdges, {
+    startStepId: stepId,
+    endStepId: step.default,
+    type: "branch",
+    gate: "always",
+    isDefault: true,
   });
 }
 

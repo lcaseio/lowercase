@@ -1,6 +1,6 @@
 {
   "name": "@lcase/worker",
-  "version": "0.1.0-alpha.10",
+  "version": "0.1.0-alpha.11",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,7 +19,8 @@
   "dependencies": {
     "@lcase/events": "workspace:*",
     "@lcase/tools": "workspace:*",
-    "@lcase/json-ref-binder": "workspace:*"
+    "@lcase/json-ref-binder": "workspace:*",
+    "ajv": "^8.17.1"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",

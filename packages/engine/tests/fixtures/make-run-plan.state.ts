@@ -7,23 +7,25 @@ import { flowAnalysisB, flowAnalysisBWithProblem } from "./flow-analysis.state";
 export const makeRunPlanNewState: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
 
       // create run plan
       runPlan: {
@@ -49,6 +51,7 @@ export const makeRunPlanNewState: EngineState = {
           attempt: 0,
           output: {},
           outputHash: null,
+          exportHashes: {},
           resolved: {},
         },
         parallel: {
@@ -56,6 +59,7 @@ export const makeRunPlanNewState: EngineState = {
           attempt: 0,
           output: {},
           outputHash: null,
+          exportHashes: {},
           resolved: {},
         },
       },
@@ -64,7 +68,7 @@ export const makeRunPlanNewState: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDef,
       runIds: { "test-runid": true },
     },
@@ -74,23 +78,25 @@ export const makeRunPlanNewState: EngineState = {
 export const makeRunPlanNewStateFAProblems: EngineState = {
   runs: {
     ["test-runid"]: {
-      flowId: "test-flowdefhash",
+      flowId: "test-flowid",
+      flowVersionId: "test-flowversionid",
       flowDefHash: "test-flowdefhash",
       forkSpecHash: "test-forkspechash",
       forkSpec: {
         parentRunId: "test-parentrunid",
         reuse: ["b"],
       },
-      runIndex: {
-        flowId: "test-flowdefhash",
-        traceId: "test-traceid",
-        steps: {
-          b: { outputHash: "test-outputhash", status: "success" },
+      reusableStepData: {
+        b: {
+          stepId: "b",
+          outputHash: "test-outputhash",
+          status: "success",
         },
       },
 
       runId: "test-runid",
       traceId: "test-traceid",
+      params: {},
 
       // run plan is empty
       runPlan: {
@@ -111,7 +117,7 @@ export const makeRunPlanNewStateFAProblems: EngineState = {
     } satisfies RunContext,
   },
   flows: {
-    "test-flowdefhash": {
+    "test-flowversionid": {
       definition: flowDefWithProblems,
       runIds: { "test-runid": true },
     },

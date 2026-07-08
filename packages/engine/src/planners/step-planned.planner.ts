@@ -9,7 +9,7 @@ import type {
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
-import { EmitStepReusedFx } from "../types/effect.types.js";
+import { EmitStepReusedFx, ResolveBranchValueFx } from "../types/effect.types.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,
@@ -19,17 +19,14 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const effects: EngineEffect[] = [];
 
   const runId = message.event.runid;
-  const flowId = message.event.flowid;
   const stepId = message.event.stepid;
   const stepType = message.event.steptype;
 
   const newRun = newState.runs[runId];
-  const flow = newState.flows[flowId];
-  const step = flow.definition.steps[stepId];
-  const refs = newRun.flowAnalysis.refs.filter((ref) => ref.stepId === stepId);
-
   if (!newRun) return effects;
+  const flow = newState.flows[newRun.flowVersionId];
   if (!flow) return effects;
+  const step = flow.definition.steps[stepId];
   if (!step) return effects;
 
   // emit step.reused instead of step.started if reused by run plan
@@ -40,6 +37,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       type: "EmitStepReused",
       scope: {
         flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         stepid: stepId,
         steptype: stepType,
@@ -48,6 +46,10 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       data: {
         status,
         outputHash: newRun.steps[stepId].outputHash ?? undefined,
+        exportHashes:
+          Object.keys(newRun.steps[stepId].exportHashes).length > 0
+            ? newRun.steps[stepId].exportHashes
+            : undefined,
         sourceRunId: newRun.forkSpec?.parentRunId ?? "",
       },
       traceId: message.event.traceid,
@@ -59,7 +61,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   const emitStepStarted: EmitStepStartedFx = {
     type: "EmitStepStarted",
     scope: {
-      flowid: flowId,
+      flowid: newRun.flowId,
+      flowversionid: newRun.flowVersionId,
       runid: runId,
       stepid: stepId,
       steptype: stepType,
@@ -81,21 +84,20 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
    * no longer materialize steps here, worker resolves json to values using CAS.
    */
   if (stepType === "httpjson" && step.type === "httpjson") {
-    // const materializedStep = bindStepRefs(
-    //   refs,
-    //   newRun.steps[stepId].resolved,
-    //   step as StepHttpJson
-    // );
-
     const jobRefs = makeStepRefs(
       stepId,
       newRun.flowAnalysis.refs,
       newRun.steps,
+      newRun.params,
+      flow.definition.params,
+      flow.definition.steps,
     );
+    const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
       scope: {
-        flowid: flowId,
+        flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         runid: runId,
         stepid: stepId,
         capid: "httpjson",
@@ -108,6 +110,7 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         ...(step.method ? { method: step.method } : {}),
         ...(step.args ? { args: step.args } : {}),
         refs: jobRefs,
+        ...(Object.keys(exportRefs).length > 0 ? { exportRefs } : {}),
       },
       traceId: newRun.traceId,
     };
@@ -122,11 +125,15 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       stepId,
       newRun.flowAnalysis.refs,
       newRun.steps,
+      newRun.params,
+      flow.definition.params,
+      flow.definition.steps,
     );
     const emitJob: EmitJobMcpSubmittedFx = {
       type: "EmitJobMcpSubmitted",
       scope: {
-        flowid: flowId,
+        flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
         capid: "mcp",
         runid: runId,
         stepid: stepId,
@@ -142,6 +149,26 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
+  } else if (stepType === "branch" && step.type === "branch") {
+    const jobRefs = makeStepRefs(
+      stepId,
+      newRun.flowAnalysis.refs,
+      newRun.steps,
+      newRun.params,
+      flow.definition.params,
+      flow.definition.steps,
+    );
+    const valueRef = jobRefs.find((ref) => ref.bindPath[0] === "value");
+    if (valueRef) {
+      const resolveBranchValue: ResolveBranchValueFx = {
+        type: "ResolveBranchValue",
+        runId,
+        stepId,
+        ref: valueRef,
+        cases: step.cases,
+      };
+      effects.push(resolveBranchValue);
+    }
   }
 
   return effects;

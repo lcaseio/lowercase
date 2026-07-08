@@ -11,6 +11,7 @@ import type {
 } from "@lcase/ports";
 import type {
   AnyEvent,
+  ExportRef,
   WorkerMetadata,
   ToolId,
   PipeData,
@@ -19,10 +20,13 @@ import type {
   JobQueuedEvent,
   Ref,
   JobStartedEvent,
+  JobHttpJsonData,
+  JobMcpData,
 } from "@lcase/types";
 import { ToolRegistry } from "@lcase/tools";
 import type { JobContext } from "./types.js";
 import { bindReference, resolveJsonPath } from "@lcase/json-ref-binder";
+import { validateExportSchema } from "./export-validation.js";
 
 export type ToolWaitersCtx = {
   maxConcurrency: number;
@@ -208,10 +212,17 @@ export class Worker implements WorkerPort {
     );
 
     if (!this.enableSideEffects) return;
-    const { refs, ...data } = event.data;
+    const {
+      refs,
+      exportRefs: _exportRefs,
+      ...data
+    } = event.data as {
+      refs: Ref[];
+      exportRefs?: Record<string, ExportRef>;
+    } & Record<string, unknown>;
 
     await this.bindValueRefs(event.data.refs, data);
-    return await jobEmitter.emit(type, data);
+    return await jobEmitter.emit(type, data as JobHttpJsonData | JobMcpData);
   }
 
   async handleNewJob(event: JobQueuedEvent): Promise<void> {
@@ -233,9 +244,17 @@ export class Worker implements WorkerPort {
     if (!startedEvent) return;
 
     toolEvent = await tool.invoke(startedEvent);
+
     const storeHash = await this.storeJsonArtifact(
       toolEvent.data.payload as JsonValue,
     );
+    const exportResult =
+      toolEvent.type === "tool.completed" && e.capid === "httpjson"
+        ? await this.storeExportArtifacts(
+            toolEvent.data.payload as JsonValue | undefined,
+            (e.data as { exportRefs?: Record<string, ExportRef> }).exportRefs,
+          )
+        : { ok: true as const, hashes: undefined };
 
     const workerEmitter = this.#emitterFactory.newWorkerEmitterNewSpan(
       {
@@ -255,7 +274,19 @@ export class Worker implements WorkerPort {
       `lowercase://worker/${this.#ctx.workerId}`,
     );
 
-    if (toolEvent.type === "tool.completed") {
+    if (!exportResult.ok) {
+      const manualType = `job.${job.capId}.failed`;
+      const type = this.#jobParser.parseJobFailedType(manualType);
+      if (!type) {
+        throw new Error(`[worker] invalid type; could not parse ${manualType}`);
+      }
+
+      await jobEmitter.emit(type, {
+        status: "failure",
+        output: storeHash ? storeHash : null,
+        message: exportResult.message,
+      });
+    } else if (toolEvent.type === "tool.completed") {
       const manualType = `job.${job.capId}.completed`;
       const type = this.#jobParser.parseJobCompletedType(manualType);
       if (!type) {
@@ -265,6 +296,7 @@ export class Worker implements WorkerPort {
       await jobEmitter.emit(type, {
         status: "success",
         output: storeHash ? storeHash : null,
+        ...(exportResult.hashes ? { exportHashes: exportResult.hashes } : {}),
       });
     } else if (toolEvent.type === "tool.failed") {
       const manualType = `job.${job.capId}.failed`;
@@ -275,6 +307,7 @@ export class Worker implements WorkerPort {
       await jobEmitter.emit(type, {
         status: "failure",
         output: storeHash ? storeHash : null,
+        ...(exportResult.hashes ? { exportHashes: exportResult.hashes } : {}),
         message: toolEvent.data.reason,
       });
     }
@@ -364,8 +397,42 @@ export class Worker implements WorkerPort {
     );
   }
 
+  async storeTextArtifact(value: string): Promise<string | undefined> {
+    const result = await this.artifacts.putText(value);
+    if (result.ok) return result.value;
+
+    console.log(
+      "Error storing text artifact",
+      result.error.code,
+      result.error.message,
+    );
+  }
+
+  async storeMarkdownArtifact(value: string): Promise<string | undefined> {
+    const result = await this.artifacts.putMarkdown(value);
+    if (result.ok) return result.value;
+
+    console.log(
+      "Error storing markdown artifact",
+      result.error.code,
+      result.error.message,
+    );
+  }
+
   async getJsonArtifact(hash: string): Promise<JsonValue | undefined> {
     const result = await this.artifacts.getJson(hash);
+    if (result.ok) return result.value;
+    return;
+  }
+
+  async getTextArtifact(hash: string): Promise<string | undefined> {
+    const result = await this.artifacts.getText(hash);
+    if (result.ok) return result.value;
+    return;
+  }
+
+  async getMarkdownArtifact(hash: string): Promise<string | undefined> {
+    const result = await this.artifacts.getMarkdown(hash);
     if (result.ok) return result.value;
     return;
   }
@@ -373,11 +440,111 @@ export class Worker implements WorkerPort {
   async bindValueRefs(refs: Ref[], data: Record<string, unknown>) {
     for (const ref of refs) {
       if (ref.hash === null) continue;
+      if (ref.scope === "params" && ref.paramType === "text/plain") {
+        const text = await this.getTextArtifact(ref.hash);
+        if (text === undefined) continue;
+        bindReference(ref, data, text);
+        continue;
+      }
+      if (ref.scope === "params" && ref.paramType === "text/markdown") {
+        const markdown = await this.getMarkdownArtifact(ref.hash);
+        if (markdown === undefined) continue;
+        bindReference(ref, data, markdown);
+        continue;
+      }
+      if (ref.scope === "steps" && ref.exportType === "text/plain") {
+        const text = await this.getTextArtifact(ref.hash);
+        if (text === undefined) continue;
+        bindReference(ref, data, text);
+        continue;
+      }
+      if (ref.scope === "steps" && ref.exportType === "text/markdown") {
+        const markdown = await this.getMarkdownArtifact(ref.hash);
+        if (markdown === undefined) continue;
+        bindReference(ref, data, markdown);
+        continue;
+      }
+
       const json = await this.getJsonArtifact(ref.hash);
       if (json === undefined) continue;
       const value = resolveJsonPath(ref.valuePath, json);
       bindReference(ref, data, value);
     }
+  }
+
+  async storeExportArtifacts(
+    output: JsonValue | undefined,
+    exportRefs?: Record<string, ExportRef>,
+  ): Promise<
+    | { ok: true; hashes?: Record<string, string> }
+    | { ok: false; message: string }
+  > {
+    if (!exportRefs || Object.keys(exportRefs).length === 0) {
+      return { ok: true };
+    }
+    if (output === undefined) {
+      return {
+        ok: false,
+        message: "Could not resolve step exports: output missing",
+      };
+    }
+
+    const hashes: Record<string, string> = {};
+    for (const ref of Object.values(exportRefs)) {
+      const selected = resolveJsonPath(ref.valuePath.slice(1), output);
+      if (selected === undefined) {
+        return {
+          ok: false,
+          message: `Could not resolve export ${ref.exportName} from ${ref.string}`,
+        };
+      }
+
+      let hash: string | undefined;
+      if (ref.type === "application/json") {
+        let artifactValue = selected;
+        if (typeof selected === "string") {
+          try {
+            artifactValue = JSON.parse(selected);
+          } catch (error) {
+            return {
+              ok: false,
+              message: `Could not parse export ${ref.exportName} as json: ${String(error)}`,
+            };
+          }
+        }
+        if (ref.schema) {
+          const validation = validateExportSchema(ref.schema, artifactValue);
+          if (!validation.ok) {
+            return {
+              ok: false,
+              message: `Export ${ref.exportName} failed schema validation: ${validation.message}`,
+            };
+          }
+        }
+        hash = await this.storeJsonArtifact(artifactValue as JsonValue);
+      } else {
+        if (typeof selected !== "string") {
+          return {
+            ok: false,
+            message: `Export ${ref.exportName} declared ${ref.type} but resolved value is not a string`,
+          };
+        }
+        hash =
+          ref.type === "text/plain"
+            ? await this.storeTextArtifact(selected)
+            : await this.storeMarkdownArtifact(selected);
+      }
+
+      if (!hash) {
+        return {
+          ok: false,
+          message: `Could not store export ${ref.exportName} as artifact`,
+        };
+      }
+      hashes[ref.exportName] = hash;
+    }
+
+    return { ok: true, hashes };
   }
 
   /**

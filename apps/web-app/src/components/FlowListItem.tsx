@@ -1,11 +1,8 @@
-import type { FlowIndex } from "@lcase/types";
+import type { FlowListItem } from "@lcase/types";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useAppDispatch } from "@/redux/typed-hooks";
-import {
-  setRunnerFlowHash,
-  setRunnerFlowSelectedId,
-} from "@/redux/slices/runner-slice";
+import { setRunnerFlowSelectedId } from "@/redux/slices/runner-slice";
 import {
   Item,
   ItemActions,
@@ -14,22 +11,23 @@ import {
   ItemTitle,
 } from "./ui/item";
 
-export function FlowListItem({ index }: { index: FlowIndex }) {
+export function FlowListItem({ flowItem }: { flowItem: FlowListItem }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { flow, latestVersion } = flowItem;
 
   return (
     <Item variant="muted">
       <ItemContent>
-        <ItemTitle>{index.name}</ItemTitle>
+        <ItemTitle>{flow.name}</ItemTitle>
         <ItemDescription>
-          {index.version}
+          {latestVersion.versionLabel ?? `Version ${latestVersion.sequence}`}
           <br />
-          {index.description ? index.description : ""}
+          {flow.description ? flow.description : ""}
         </ItemDescription>
       </ItemContent>
       <ItemActions>
-        <Link to={`/flows/edit/${index.hash}`}>
+        <Link to={`/flows/edit/${flow.id}`}>
           <Button variant="outline" size="sm" className="cursor-pointer">
             Edit
           </Button>
@@ -40,8 +38,7 @@ export function FlowListItem({ index }: { index: FlowIndex }) {
           size="sm"
           className="cursor-pointer"
           onClick={() => {
-            dispatch(setRunnerFlowSelectedId(index.hash));
-            dispatch(setRunnerFlowHash(index.hash));
+            dispatch(setRunnerFlowSelectedId(flow.id));
             navigate(`/runner`);
           }}
         >

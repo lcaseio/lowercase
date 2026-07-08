@@ -1,10 +1,11 @@
 import type { PlannerRegistry } from "../engine.types.js";
+import { branchValueResolvedPlanner } from "../planners/branch-value-resolved.planner.js";
 import { flowDefResultPlanner } from "../planners/flow-def-result.planner.js";
 import { forkSpecResultPlanner } from "../planners/fork-spec-result.planner.js";
 import { jobFinishedPlanner } from "../planners/job-finished.planner.js";
 import { makeRunPlanPlanner } from "../planners/make-run-plan.planner.js";
 import { runFinishedPlanner } from "../planners/run-finished.planner.js";
-import { runIndexResultPlanner } from "../planners/run-index-result.planner.js";
+import { reusableStepDataResultPlanner } from "../planners/reusable-step-data-result.planner.js";
 import { runRequestedPlanner } from "../planners/run-requested.planner.js";
 import { runStartedPlanner } from "../planners/run-started.planner.js";
 import { stepFinishedPlanner } from "../planners/step-finished.planner.js";
@@ -19,7 +20,7 @@ export const planners: PlannerRegistry = {
   FlowDefResult: flowDefResultPlanner,
   ForkSpecResult: forkSpecResultPlanner,
   MakeRunPlan: makeRunPlanPlanner,
-  RunIndexResult: runIndexResultPlanner,
+  ReusableStepDataResult: reusableStepDataResultPlanner,
   RunRequested: runRequestedPlanner,
   RunStarted: runStartedPlanner,
   RunFinished: runFinishedPlanner,
@@ -27,4 +28,5 @@ export const planners: PlannerRegistry = {
   StepStarted: stepStartedPlanner,
   StepFinished: stepFinishedPlanner,
   JobFinished: jobFinishedPlanner,
+  BranchValueResolved: branchValueResolvedPlanner,
 };

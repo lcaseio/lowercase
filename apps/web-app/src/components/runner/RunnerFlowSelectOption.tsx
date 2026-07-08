@@ -1,10 +1,12 @@
-import type { FlowIndex } from "@lcase/types";
+import type { FlowListItem } from "@lcase/types";
 
-type Props = { flowIndex: FlowIndex };
-export function RunnerFlowSelectOption({ flowIndex }: Props) {
+type Props = { flowItem: FlowListItem };
+export function RunnerFlowSelectOption({ flowItem }: Props) {
   return (
-    <option value={flowIndex.hash}>
-      {flowIndex.name} - {flowIndex.version}
+    <option value={flowItem.flow.id}>
+      {flowItem.flow.name} -{" "}
+      {flowItem.latestVersion.versionLabel ??
+        `Version ${flowItem.latestVersion.sequence}`}
     </option>
   );
 }

@@ -25,7 +25,8 @@ export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
         error: "Error making run plan.",
       },
       scope: {
-        flowid: newRunState.flowDefHash,
+        flowid: newRunState.flowId,
+        flowversionid: newRunState.flowVersionId,
         runid: runId,
         source: "lowercase://engine",
       },
@@ -40,6 +41,7 @@ export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (
     type: "EmitRunStarted",
     scope: {
       flowid: newRunState.flowId,
+      flowversionid: newRunState.flowVersionId,
       runid: runId,
       source: "lowercase://engine",
     },
