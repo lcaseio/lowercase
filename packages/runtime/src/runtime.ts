@@ -6,6 +6,7 @@ import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
+import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
 import { Worker } from "@lcase/worker";
 import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
 import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
@@ -34,6 +35,7 @@ import {
   ObservabilityTap,
   ReplaySink,
   SqlRunProjectionSink,
+  EvalResultProjectionSink,
   WebSocketServerSink,
 } from "@lcase/observability";
 import { WorkflowRuntime } from "./workflow.runtime.js";
@@ -141,7 +143,12 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     config.worker,
   );
 
-  const { tap, sinks } = createObservability(config.observability, bus);
+  const { tap, sinks } = createObservability(
+    config.observability,
+    bus,
+    artifacts,
+    runQuery,
+  );
 
   const cl = new ConcurrencyLimiter(bus, ef);
   const limiter = createLimiter(config.limiter, { bus, ef, cl });
@@ -170,6 +177,8 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 export function createObservability(
   config: ObservabilityConfig,
   bus: EventBusPort,
+  artifacts: ArtifactsPort,
+  runQuery: RunQueryPort,
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
@@ -177,6 +186,13 @@ export function createObservability(
     new SqlRunProjectionSink(
       new PrismaRunRepository(prisma),
       new PrismaRunStepProjectionRepository(prisma),
+    ),
+  );
+  tap.attachSink(
+    new EvalResultProjectionSink(
+      new PrismaEvalResultRepository(prisma),
+      artifacts,
+      runQuery,
     ),
   );
   if (config.sinks) {

@@ -36,6 +36,10 @@ function toRunRecord(run: {
   simId: string | null;
   parentRunId: string | null;
   forkSpecHash: string | null;
+  experimentId: string | null;
+  targetRunId: string | null;
+  targetStepId: string | null;
+  targetExportName: string | null;
   startTime: Date | null;
   endTime: Date | null;
   duration: number | null;
@@ -53,6 +57,10 @@ function toRunRecord(run: {
     simId: run.simId ?? undefined,
     parentRunId: run.parentRunId ?? undefined,
     forkSpecHash: run.forkSpecHash ?? undefined,
+    experimentId: run.experimentId ?? undefined,
+    targetRunId: run.targetRunId ?? undefined,
+    targetStepId: run.targetStepId ?? undefined,
+    targetExportName: run.targetExportName ?? undefined,
     startTime: run.startTime?.toISOString(),
     endTime: run.endTime?.toISOString(),
     duration: run.duration ?? undefined,
@@ -89,6 +97,10 @@ export class PrismaRunRepository implements RunRepositoryPort {
             simId: input.simId,
             parentRunId: input.parentRunId,
             forkSpecHash: input.forkSpecHash,
+            experimentId: input.experimentId,
+            targetRunId: input.targetRunId,
+            targetStepId: input.targetStepId,
+            targetExportName: input.targetExportName,
             startTime: toOptionalDate(input.startTime),
             endTime: toOptionalDate(input.endTime),
             duration: input.duration,
@@ -104,6 +116,10 @@ export class PrismaRunRepository implements RunRepositoryPort {
             simId: input.simId,
             parentRunId: input.parentRunId,
             forkSpecHash: input.forkSpecHash,
+            experimentId: input.experimentId,
+            targetRunId: input.targetRunId,
+            targetStepId: input.targetStepId,
+            targetExportName: input.targetExportName,
             startTime: toOptionalDate(input.startTime),
             endTime: toOptionalDate(input.endTime),
             duration: input.duration,
@@ -149,6 +165,10 @@ export class PrismaRunRepository implements RunRepositoryPort {
           simId: input.simId,
           parentRunId: input.parentRunId,
           forkSpecHash: input.forkSpecHash,
+          experimentId: input.experimentId,
+          targetRunId: input.targetRunId,
+          targetStepId: input.targetStepId,
+          targetExportName: input.targetExportName,
           startTime: toOptionalDate(input.startTime),
           endTime: toOptionalDate(input.endTime),
           duration: input.duration,

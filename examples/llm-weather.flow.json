@@ -139,7 +139,11 @@
       "exports": {
         "llm-forecast": {
           "ref": "{{output.body.choices[0].message.content}}",
-          "type": "text/markdown"
+          "type": "text/markdown",
+          "evalContext": {
+            "originalQuestion": { "source": "param", "name": "userWeatherQuery" },
+            "groundingContext": { "source": "output", "stepId": "getForecast" }
+          }
         }
       }
     },
@@ -169,7 +173,11 @@
       "exports": {
         "llm-airquality": {
           "ref": "{{output.body.choices[0].message.content}}",
-          "type": "text/markdown"
+          "type": "text/markdown",
+          "evalContext": {
+            "originalQuestion": { "source": "param", "name": "userWeatherQuery" },
+            "groundingContext": { "source": "output", "stepId": "getAirQuality" }
+          }
         }
       }
     },

@@ -20,7 +20,8 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "ws": "^8.18.3",
-    "@lcase/run-history": "workspace:*"
+    "@lcase/run-history": "workspace:*",
+    "@lcase/specs": "workspace:*"
   },
   "devDependencies": {
     "@lcase/ports": "workspace:*",
