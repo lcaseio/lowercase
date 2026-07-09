@@ -64,6 +64,10 @@ export class RunService implements RunServicePort {
       flowDefHash: request.flowDefHash,
       simId: request.simId,
       forkSpecHash: request.forkSpecHash,
+      experimentId: request.experimentId,
+      targetRunId: request.targetRunId,
+      targetStepId: request.targetStepId,
+      targetExportName: request.targetExportName,
       params: request.params,
     });
     if (!result.ok) {

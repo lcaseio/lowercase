@@ -1,5 +1,6 @@
 import {
   ArtifactService,
+  EvalService,
   FlowService,
   ReplayService,
   RunService,
@@ -48,6 +49,13 @@ export function createServices(config: RuntimeConfig): ServicesPort {
 
   const artifact = new ArtifactService(ctx.artifacts, artifactRepository);
 
+  const evalService = new EvalService({
+    runService: run,
+    runQuery,
+    runRepository,
+    artifacts: ctx.artifacts,
+  });
+
   const system = new SystemService({
     bus: ctx.bus,
     ef: ctx.ef,
@@ -59,5 +67,5 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     worker: ctx.worker,
   });
 
-  return { flow, replay, sim, system, run, ws, artifact };
+  return { flow, replay, sim, system, run, ws, artifact, eval: evalService };
 }

@@ -15,6 +15,10 @@ type ShadowRunState = {
   flowDefHash?: string;
   simId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   status: RunStatus;
   dirty: boolean;
   flushing: boolean;
@@ -82,6 +86,10 @@ export class SqlRunProjectionSink implements EventSink {
       state.flowVersionId = requestedEvent.data.flowVersionId;
       state.simId = requestedEvent.data.simId;
       state.forkSpecHash = requestedEvent.data.forkSpecHash;
+      state.experimentId = requestedEvent.data.experimentId;
+      state.targetRunId = requestedEvent.data.targetRunId;
+      state.targetStepId = requestedEvent.data.targetStepId;
+      state.targetExportName = requestedEvent.data.targetExportName;
     } else if (event.type === "run.started") {
       state.status = "started";
     } else if (event.type === "run.completed") {
@@ -140,6 +148,12 @@ export class SqlRunProjectionSink implements EventSink {
       flowDefHash: state.flowDefHash,
       ...(state.simId ? { simId: state.simId } : {}),
       ...(state.forkSpecHash ? { forkSpecHash: state.forkSpecHash } : {}),
+      ...(state.experimentId ? { experimentId: state.experimentId } : {}),
+      ...(state.targetRunId ? { targetRunId: state.targetRunId } : {}),
+      ...(state.targetStepId ? { targetStepId: state.targetStepId } : {}),
+      ...(state.targetExportName
+        ? { targetExportName: state.targetExportName }
+        : {}),
       ...(state.index.startTime ? { startTime: state.index.startTime } : {}),
       ...(state.index.endTime ? { endTime: state.index.endTime } : {}),
       ...(state.index.duration !== undefined

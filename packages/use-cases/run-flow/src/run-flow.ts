@@ -16,6 +16,10 @@ export async function runFlow(runDetails: RunDetails) {
     flowDefHash,
     simId,
     forkSpecHash,
+    experimentId,
+    targetRunId,
+    targetStepId,
+    targetExportName,
     params,
   } = runDetails;
   const runid = runId ?? createRunId();
@@ -42,6 +46,10 @@ export async function runFlow(runDetails: RunDetails) {
     flowDefHash,
     ...(simId ? { simId } : {}),
     ...(forkSpecHash ? { forkSpecHash } : {}),
+    ...(experimentId ? { experimentId } : {}),
+    ...(targetRunId ? { targetRunId } : {}),
+    ...(targetStepId ? { targetStepId } : {}),
+    ...(targetExportName ? { targetExportName } : {}),
     ...(params ? { params } : {}),
   });
 }

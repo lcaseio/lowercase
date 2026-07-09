@@ -15,6 +15,10 @@ export type RunRequestedData = {
   flowDefHash: string;
   simId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   params?: Record<string, string>;
 };
 export type RunStartedData = null;

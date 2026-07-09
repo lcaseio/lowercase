@@ -15,6 +15,7 @@ import { putJsonArtifactRoute } from "./artifacts/put-json-artifact.js";
 import { postArtifactFileRoute } from "./artifacts/post-artifact-file.js";
 import { listArtifactsRoute } from "./artifacts/list-artifacts.js";
 import { getFlowVersionRoute } from "./flows/get-versions.js";
+import { requestEvalsRoute } from "./evals/request.js";
 
 export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   // api/flows
@@ -31,6 +32,9 @@ export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
   // api/runs/details
   await app.register(getRunsEventsListRoute, { prefix: "/api/runs/details" }); // get
+
+  // api/evals
+  await app.register(requestEvalsRoute, { prefix: "/api/evals" }); // post
 
   // api/sims
   await app.register(simsListRoute, { prefix: "/api/sims" });

@@ -14,6 +14,10 @@ export type RunRecord = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   startTime?: string;
   endTime?: string;
   duration?: number;
@@ -32,6 +36,10 @@ export type CreateRunRecordInput = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   params?: Record<string, string>;
   startTime?: string;
   endTime?: string;
@@ -48,6 +56,10 @@ export type UpdateRunRecordInput = {
   simId?: string;
   parentRunId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   startTime?: string;
   endTime?: string;
   duration?: number;
