@@ -117,6 +117,7 @@ export const FlowSchema = z
     name: z.string().min(1),
     version: z.string(),
     description: z.string().optional(),
+    kind: z.enum(["business", "eval"]).optional(),
     params: z.record(z.string(), FlowParamDefinitionSchema).optional(),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),

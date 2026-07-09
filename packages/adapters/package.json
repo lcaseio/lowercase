@@ -59,6 +59,10 @@
     "./artifact-repository": {
       "types": "./dist/artifact-repository/index.d.ts",
       "import": "./dist/artifact-repository/index.js"
+    },
+    "./eval-result-repository": {
+      "types": "./dist/eval-result-repository/index.d.ts",
+      "import": "./dist/eval-result-repository/index.js"
     }
   },
   "scripts": {

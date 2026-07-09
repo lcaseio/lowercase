@@ -115,6 +115,7 @@ export class FlowService implements FlowServicePort {
     return this.flowRepository.createFlow({
       name: validateResult.name,
       description: validateResult.description,
+      kind: validateResult.kind,
       definitionHash: hash,
       versionLabel: validateResult.version,
       versionDescription: validateResult.description,
