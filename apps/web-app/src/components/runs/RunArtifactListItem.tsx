@@ -15,8 +15,13 @@ import {
 type RunArtifactItemProps = {
   item: string;
   hash: string | null;
+  onEvaluate?: () => void;
 };
-export function RunArtifactListItem({ item, hash }: RunArtifactItemProps) {
+export function RunArtifactListItem({
+  item,
+  hash,
+  onEvaluate,
+}: RunArtifactItemProps) {
   const dispatch = useAppDispatch();
 
   const handleView = () => {
@@ -32,6 +37,15 @@ export function RunArtifactListItem({ item, hash }: RunArtifactItemProps) {
           <ItemDescription>Hash: {hash}</ItemDescription>
         </ItemContent>
         <ItemActions>
+          {onEvaluate ? (
+            <Button
+              variant="outline"
+              onClick={onEvaluate}
+              className="cursor-pointer"
+            >
+              Evaluate
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             onClick={handleView}

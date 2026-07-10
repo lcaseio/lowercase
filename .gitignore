@@ -4,7 +4,10 @@ dist/
 dist-ssr/
 dist-electron/
 .turbo/
+
+# local files
 *.local
+.local/
 
 # vscode + editor files
 .vscode/

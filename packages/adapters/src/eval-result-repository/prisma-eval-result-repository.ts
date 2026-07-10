@@ -22,12 +22,14 @@ function toEvalResultRecord(row: {
   passed: boolean;
   payload: string;
   createdAt: Date;
+  targetRun?: { flowVersionId: string | null } | null;
 }): EvalResultRecord {
   return {
     id: row.id,
     targetRunId: row.targetRunId,
     targetStepId: row.targetStepId ?? undefined,
     targetExportName: row.targetExportName ?? undefined,
+    targetFlowVersionId: row.targetRun?.flowVersionId ?? undefined,
     evalRunId: row.evalRunId,
     evalFlowId: row.evalFlowId ?? undefined,
     evalFlowVersionId: row.evalFlowVersionId ?? undefined,
@@ -82,6 +84,23 @@ export class PrismaEvalResultRepository implements EvalResultRepositoryPort {
   async listByTargetRunId(targetRunId: string): Promise<EvalResultRecord[]> {
     const rows = await this.db.evalResult.findMany({
       where: { targetRunId },
+      orderBy: { createdAt: "asc" },
+    });
+    return rows.map(toEvalResultRecord);
+  }
+
+  async listByTargetShape(shape: {
+    flowId: string;
+    stepId: string;
+    exportName: string;
+  }): Promise<EvalResultRecord[]> {
+    const rows = await this.db.evalResult.findMany({
+      where: {
+        targetStepId: shape.stepId,
+        targetExportName: shape.exportName,
+        targetRun: { flowId: shape.flowId },
+      },
+      include: { targetRun: { select: { flowVersionId: true } } },
       orderBy: { createdAt: "asc" },
     });
     return rows.map(toEvalResultRecord);

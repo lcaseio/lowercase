@@ -8,6 +8,7 @@ import type {
   GetFlowVersionsRes,
   FlowDefinition,
   CreateFlowRecordResult,
+  EvalResultRecord,
   ForkSpec,
   Result,
   RunDetail,
@@ -119,6 +120,12 @@ export interface EvalServicePort {
   startEvalRun(
     request: StartEvalRunRequest,
   ): Promise<Result<{ evalRunId: string }, string>>;
+  listByTargetShape(shape: {
+    flowId: string;
+    stepId: string;
+    exportName: string;
+  }): Promise<EvalResultRecord[]>;
+  listByExperimentId(experimentId: string): Promise<EvalResultRecord[]>;
 }
 
 export interface WsServicePort {

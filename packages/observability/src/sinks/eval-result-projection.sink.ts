@@ -4,11 +4,18 @@ import type {
   EvalResultRepositoryPort,
   RunQueryPort,
 } from "@lcase/ports";
-import type { AnyEvent } from "@lcase/types";
+import type { AnyEvent, RunStepExportRecord } from "@lcase/types";
 import { EvalScorePayloadSchema } from "@lcase/specs";
 
 const JUDGE_STEP_ID = "judge";
 const JUDGE_EXPORT_NAME = "score";
+
+// SqlRunProjectionSink reacts to the same run.completed event and flushes
+// its own projection to SQL fire-and-forget (it doesn't expose completion),
+// so this sink can read run detail before that write has landed. Retrying
+// briefly papers over the race rather than fixing the ordering at the
+// source -- see docs/todo.md.
+const DEFAULT_SCORE_EXPORT_RETRY_DELAYS_MS = [50, 100, 200, 400, 800];
 
 type ShadowEvalRunState = {
   targetRunId: string;
@@ -19,6 +26,10 @@ type ShadowEvalRunState = {
   experimentId?: string;
 };
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export class EvalResultProjectionSink implements EventSink {
   id = "eval-result-projection-sink";
   #enableSink = true;
@@ -28,6 +39,7 @@ export class EvalResultProjectionSink implements EventSink {
     private readonly evalResults: EvalResultRepositoryPort,
     private readonly artifacts: ArtifactsPort,
     private readonly runQuery: RunQueryPort,
+    private readonly scoreExportRetryDelaysMs: number[] = DEFAULT_SCORE_EXPORT_RETRY_DELAYS_MS,
   ) {}
 
   async start(): Promise<void> {
@@ -38,7 +50,7 @@ export class EvalResultProjectionSink implements EventSink {
     this.#enableSink = false;
   }
 
-  handle(event: AnyEvent): void {
+  handle(event: AnyEvent): void | Promise<void> {
     if (!this.#enableSink) return;
 
     if (event.type === "run.requested") {
@@ -47,7 +59,7 @@ export class EvalResultProjectionSink implements EventSink {
     }
 
     if (event.type === "run.completed") {
-      void this.#onRunCompleted(event as AnyEvent<"run.completed">);
+      return this.#onRunCompleted(event as AnyEvent<"run.completed">);
     }
   }
 
@@ -72,20 +84,7 @@ export class EvalResultProjectionSink implements EventSink {
     if (!state) return;
     this.#states.delete(evalRunId);
 
-    const detailResult = await this.runQuery.getRunDetail(evalRunId);
-    if (!detailResult.ok) {
-      console.error(
-        `[eval-result-projection-sink] unable to read eval run ${evalRunId}: ${detailResult.error}`,
-      );
-      return;
-    }
-
-    const judgeStep = detailResult.value.steps.find(
-      (step) => step.stepId === JUDGE_STEP_ID,
-    );
-    const scoreExport = judgeStep?.exports?.find(
-      (exp) => exp.name === JUDGE_EXPORT_NAME,
-    );
+    const scoreExport = await this.#findScoreExportWithRetry(evalRunId);
     if (!scoreExport) {
       console.error(
         `[eval-result-projection-sink] eval run ${evalRunId} has no "${JUDGE_STEP_ID}.${JUDGE_EXPORT_NAME}" export — nothing to store`,
@@ -125,6 +124,31 @@ export class EvalResultProjectionSink implements EventSink {
       console.error(
         `[eval-result-projection-sink] unable to store eval result for run ${evalRunId}: ${created.error}`,
       );
+    }
+  }
+
+  async #findScoreExportWithRetry(
+    evalRunId: string,
+  ): Promise<RunStepExportRecord | undefined> {
+    for (let attempt = 0; ; attempt++) {
+      const detailResult = await this.runQuery.getRunDetail(evalRunId);
+      if (!detailResult.ok) {
+        console.error(
+          `[eval-result-projection-sink] unable to read eval run ${evalRunId}: ${detailResult.error}`,
+        );
+        return undefined;
+      }
+
+      const judgeStep = detailResult.value.steps.find(
+        (step) => step.stepId === JUDGE_STEP_ID,
+      );
+      const scoreExport = judgeStep?.exports?.find(
+        (exp) => exp.name === JUDGE_EXPORT_NAME,
+      );
+      if (scoreExport) return scoreExport;
+
+      if (attempt >= this.scoreExportRetryDelaysMs.length) return undefined;
+      await sleep(this.scoreExportRetryDelaysMs[attempt]);
     }
   }
 }
