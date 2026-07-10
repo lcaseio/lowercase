@@ -10,4 +10,9 @@ export interface EvalResultRepositoryPort {
   ): Promise<Result<EvalResultRecord, string>>;
   listByExperimentId(experimentId: string): Promise<EvalResultRecord[]>;
   listByTargetRunId(targetRunId: string): Promise<EvalResultRecord[]>;
+  listByTargetShape(shape: {
+    flowId: string;
+    stepId: string;
+    exportName: string;
+  }): Promise<EvalResultRecord[]>;
 }

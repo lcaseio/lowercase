@@ -13,3 +13,4 @@ export * from "./artifacts/get-artifacts.js";
 export * from "./artifacts/post-artifact-file.js";
 export * from "./artifacts/post-json-artifact.js";
 export * from "./evals/post-eval.js";
+export * from "./evals/get-evals.js";

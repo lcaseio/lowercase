@@ -19,7 +19,14 @@ export function FlowListItem({ flowItem }: { flowItem: FlowListItem }) {
   return (
     <Item variant="muted">
       <ItemContent>
-        <ItemTitle>{flow.name}</ItemTitle>
+        <ItemTitle className="flex items-center gap-2">
+          {flow.name}
+          {flow.kind === "eval" ? (
+            <span className="text-xs font-normal rounded px-1.5 py-0.5 bg-cyan-900 text-cyan-100">
+              eval
+            </span>
+          ) : null}
+        </ItemTitle>
         <ItemDescription>
           {latestVersion.versionLabel ?? `Version ${latestVersion.sequence}`}
           <br />

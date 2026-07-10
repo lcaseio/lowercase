@@ -15,6 +15,7 @@ import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
+import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
 import { ServicesPort } from "@lcase/ports";
 import { prisma } from "../../db-prisma/dist/client.js";
 
@@ -25,6 +26,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
   const runRepository = new PrismaRunRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const simRepository = new PrismaSimRepository(prisma);
+  const evalResultRepository = new PrismaEvalResultRepository(prisma);
 
   const flow = new FlowService(ctx.artifacts, flowRepository);
 
@@ -54,6 +56,7 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     runQuery,
     runRepository,
     artifacts: ctx.artifacts,
+    evalResults: evalResultRepository,
   });
 
   const system = new SystemService({

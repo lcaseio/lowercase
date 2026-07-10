@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { EvalService } from "../src/eval.service.js";
 import type {
   ArtifactsPort,
+  EvalResultRepositoryPort,
   RunQueryPort,
   RunRepositoryPort,
   RunServicePort,
@@ -64,6 +65,15 @@ function makeRunRepository(): RunRepositoryPort {
   };
 }
 
+function makeEvalResults(): EvalResultRepositoryPort {
+  return {
+    createEvalResult: vi.fn(),
+    listByExperimentId: vi.fn(),
+    listByTargetRunId: vi.fn(),
+    listByTargetShape: vi.fn(),
+  };
+}
+
 function makeArtifacts(flowDef: unknown = undefined): ArtifactsPort {
   return {
     getJson: vi.fn().mockResolvedValue(
@@ -102,6 +112,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     const result = await service.startEvalRun(baseRequest);
@@ -160,6 +171,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     await service.startEvalRun(baseRequest);
@@ -199,6 +211,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     await service.startEvalRun(baseRequest);
@@ -223,6 +236,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     await service.startEvalRun(baseRequest);
@@ -248,6 +262,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     const result = await service.startEvalRun({
@@ -276,6 +291,7 @@ describe("EvalService", () => {
       runQuery,
       runRepository,
       artifacts,
+      evalResults: makeEvalResults(),
     });
 
     const result = await service.startEvalRun({
@@ -294,5 +310,59 @@ describe("EvalService", () => {
     expect(result.ok).toBe(false);
     expect(runQuery.getRunDetail).not.toHaveBeenCalled();
     expect(runService.requestRun).not.toHaveBeenCalled();
+  });
+
+  it("delegates listByTargetShape to the repository", async () => {
+    const runService = makeRunService();
+    const runQuery = makeRunQuery();
+    const runRepository = makeRunRepository();
+    const artifacts = makeArtifacts();
+    const evalResults = makeEvalResults();
+    (evalResults.listByTargetShape as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "eval-result-1" },
+    ]);
+    const service = new EvalService({
+      runService,
+      runQuery,
+      runRepository,
+      artifacts,
+      evalResults,
+    });
+
+    const result = await service.listByTargetShape({
+      flowId: "flow-1",
+      stepId: "reportForecast",
+      exportName: "answer",
+    });
+
+    expect(evalResults.listByTargetShape).toHaveBeenCalledWith({
+      flowId: "flow-1",
+      stepId: "reportForecast",
+      exportName: "answer",
+    });
+    expect(result).toEqual([{ id: "eval-result-1" }]);
+  });
+
+  it("delegates listByExperimentId to the repository", async () => {
+    const runService = makeRunService();
+    const runQuery = makeRunQuery();
+    const runRepository = makeRunRepository();
+    const artifacts = makeArtifacts();
+    const evalResults = makeEvalResults();
+    (evalResults.listByExperimentId as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "eval-result-2" },
+    ]);
+    const service = new EvalService({
+      runService,
+      runQuery,
+      runRepository,
+      artifacts,
+      evalResults,
+    });
+
+    const result = await service.listByExperimentId("exp-1");
+
+    expect(evalResults.listByExperimentId).toHaveBeenCalledWith("exp-1");
+    expect(result).toEqual([{ id: "eval-result-2" }]);
   });
 });

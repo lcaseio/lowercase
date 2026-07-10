@@ -146,7 +146,7 @@ describe("EvalResultProjectionSink", () => {
     expect(evalResults.createEvalResult).not.toHaveBeenCalled();
   });
 
-  it("does not store a result when the score export is missing", async () => {
+  it("does not store a result when the score export is still missing after retrying", async () => {
     const evalResults: EvalResultRepositoryPort = {
       createEvalResult: vi.fn(),
       listByExperimentId: vi.fn(),
@@ -155,13 +155,68 @@ describe("EvalResultProjectionSink", () => {
     const runQuery = makeRunQuery([]);
     const artifacts = makeArtifacts();
 
-    const sink = new EvalResultProjectionSink(evalResults, artifacts, runQuery);
+    const sink = new EvalResultProjectionSink(
+      evalResults,
+      artifacts,
+      runQuery,
+      [0, 0],
+    );
     sink.handle(makeEvalRunRequestedEvent());
-    sink.handle(makeRunCompletedEvent());
+    const handled = sink.handle(makeRunCompletedEvent());
 
-    await waitForMicrotasks();
+    await handled;
 
+    expect(runQuery.getRunDetail).toHaveBeenCalledTimes(3);
     expect(evalResults.createEvalResult).not.toHaveBeenCalled();
+  });
+
+  it("retries past a SqlRunProjectionSink race and stores the result once the export lands", async () => {
+    const evalResults: EvalResultRepositoryPort = {
+      createEvalResult: vi.fn().mockResolvedValue({ ok: true, value: {} }),
+      listByExperimentId: vi.fn(),
+      listByTargetRunId: vi.fn(),
+    };
+    const getRunDetail = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        value: { run: { id: "run-eval" }, steps: [] },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        value: { run: { id: "run-eval" }, steps: [] },
+      })
+      .mockResolvedValue({
+        ok: true,
+        value: {
+          run: { id: "run-eval" },
+          steps: [
+            {
+              runId: "run-eval",
+              stepId: "judge",
+              exports: [{ name: "score", artifactHash: "b".repeat(64) }],
+            },
+          ],
+        },
+      });
+    const runQuery = { getRunDetail } as unknown as RunQueryPort;
+    const artifacts = makeArtifacts();
+
+    const sink = new EvalResultProjectionSink(
+      evalResults,
+      artifacts,
+      runQuery,
+      [0, 0, 0],
+    );
+    sink.handle(makeEvalRunRequestedEvent());
+    const handled = sink.handle(makeRunCompletedEvent());
+
+    await handled;
+
+    expect(getRunDetail).toHaveBeenCalledTimes(3);
+    expect(evalResults.createEvalResult).toHaveBeenCalledWith(
+      expect.objectContaining({ evalRunId: "run-eval", overall: 0.9 }),
+    );
   });
 
   it("does not store a result when the score export fails schema validation", async () => {

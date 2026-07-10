@@ -1,12 +1,18 @@
 import type {
   ArtifactsPort,
+  EvalResultRepositoryPort,
   EvalServicePort,
   RunQueryPort,
   RunRepositoryPort,
   RunServicePort,
   StartEvalRunRequest,
 } from "@lcase/ports";
-import type { EvalContextSource, Result, RunDetail } from "@lcase/types";
+import type {
+  EvalContextSource,
+  EvalResultRecord,
+  Result,
+  RunDetail,
+} from "@lcase/types";
 import { FlowSchema } from "@lcase/specs";
 
 type EvalServiceDeps = {
@@ -14,6 +20,7 @@ type EvalServiceDeps = {
   runQuery: RunQueryPort;
   runRepository: RunRepositoryPort;
   artifacts: ArtifactsPort;
+  evalResults: EvalResultRepositoryPort;
 };
 
 function resolveContextSource(
@@ -100,6 +107,20 @@ export class EvalService implements EvalServicePort {
     }
 
     return { ok: true, value: { evalRunId } };
+  }
+
+  async listByTargetShape(shape: {
+    flowId: string;
+    stepId: string;
+    exportName: string;
+  }): Promise<EvalResultRecord[]> {
+    return this.deps.evalResults.listByTargetShape(shape);
+  }
+
+  async listByExperimentId(
+    experimentId: string,
+  ): Promise<EvalResultRecord[]> {
+    return this.deps.evalResults.listByExperimentId(experimentId);
   }
 
   // Best-effort: if the target's flow declares evalContext for this export,

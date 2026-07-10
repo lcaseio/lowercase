@@ -203,4 +203,46 @@ describe("PrismaEvalResultRepository", () => {
       [],
     );
   });
+
+  it("lists eval results by target flow/step/export shape, joining the target run's flow version", async () => {
+    await repository.createEvalResult({
+      targetRunId: "run-subject",
+      targetStepId: "reportForecast",
+      targetExportName: "answer",
+      evalRunId: "run-eval",
+      experimentId: "exp-1",
+      overall: 0.75,
+      passed: true,
+      payload: { overall: 0.75, passed: true, dimensions: {} },
+    });
+
+    const byShape = await repository.listByTargetShape({
+      flowId: "flow-1",
+      stepId: "reportForecast",
+      exportName: "answer",
+    });
+    expect(byShape).toHaveLength(1);
+    expect(byShape[0]).toEqual(
+      expect.objectContaining({
+        targetRunId: "run-subject",
+        targetFlowVersionId: "flow-version-1",
+      }),
+    );
+
+    await expect(
+      repository.listByTargetShape({
+        flowId: "flow-1",
+        stepId: "reportForecast",
+        exportName: "no-such-export",
+      }),
+    ).resolves.toEqual([]);
+
+    await expect(
+      repository.listByTargetShape({
+        flowId: "some-other-flow",
+        stepId: "reportForecast",
+        exportName: "answer",
+      }),
+    ).resolves.toEqual([]);
+  });
 });
