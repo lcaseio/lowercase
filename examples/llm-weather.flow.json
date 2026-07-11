@@ -141,7 +141,10 @@
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "text/markdown",
           "evalContext": {
-            "originalQuestion": { "source": "param", "name": "userWeatherQuery" },
+            "originalQuestion": {
+              "source": "param",
+              "name": "userWeatherQuery"
+            },
             "groundingContext": { "source": "output", "stepId": "getForecast" }
           }
         }
@@ -175,8 +178,14 @@
           "ref": "{{output.body.choices[0].message.content}}",
           "type": "text/markdown",
           "evalContext": {
-            "originalQuestion": { "source": "param", "name": "userWeatherQuery" },
-            "groundingContext": { "source": "output", "stepId": "getAirQuality" }
+            "originalQuestion": {
+              "source": "param",
+              "name": "userWeatherQuery"
+            },
+            "groundingContext": {
+              "source": "output",
+              "stepId": "getAirQuality"
+            }
           }
         }
       }

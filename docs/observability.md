@@ -1,6 +1,6 @@
 # Oservability Event Docs
 
-Updated for `v0.1.0-alpha.11`
+Updated for `v0.1.0-alpha.12`
 
 ## Status
 
@@ -99,8 +99,8 @@ Trace is a full flow run `flow.submitted` to `flow.completed` or `flow.failed`)
 
 Not yet implemented, but heres a picture of what the nested.
 
-- `flow` (root)
-- `root` (child of flow)
+- `flow` (root, mostly removed in favor of just a run scope)
+- `run` (child of flow)
 - `step` (child of flow)
 - `job` (child of step)
 - `tool` (child of job)
