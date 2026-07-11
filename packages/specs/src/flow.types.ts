@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type {
+  EvalContextSource,
   ExportDeclaration,
   FlowParamDefinition,
   StepHttpJson,
@@ -77,11 +78,24 @@ export const StepMcpSchema = StepCapBaseSchema.extend({
   }),
 }).strict() satisfies z.ZodType<StepMcp>;
 
+export const EvalContextSourceSchema = z.discriminatedUnion("source", [
+  z.object({ source: z.literal("param"), name: z.string() }).strict(),
+  z
+    .object({
+      source: z.literal("export"),
+      stepId: z.string(),
+      name: z.string(),
+    })
+    .strict(),
+  z.object({ source: z.literal("output"), stepId: z.string() }).strict(),
+]) satisfies z.ZodType<EvalContextSource>;
+
 export const ExportDeclarationSchema = z
   .object({
     ref: z.string(),
     type: z.enum(["application/json", "text/plain", "text/markdown"]),
     schema: z.record(z.string(), z.unknown()).optional(),
+    evalContext: z.record(z.string(), EvalContextSourceSchema).optional(),
   })
   .strict() satisfies z.ZodType<ExportDeclaration>;
 
@@ -117,6 +131,7 @@ export const FlowSchema = z
     name: z.string().min(1),
     version: z.string(),
     description: z.string().optional(),
+    kind: z.enum(["business", "eval"]).optional(),
     params: z.record(z.string(), FlowParamDefinitionSchema).optional(),
     outputs: z.record(z.string(), z.unknown()).optional(),
     start: z.string().min(1),

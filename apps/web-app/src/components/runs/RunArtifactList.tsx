@@ -1,9 +1,16 @@
+import { useState } from "react";
 import { useGetRunDetailQuery } from "@/redux/api/runs-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { RunArtifactListItem } from "./RunArtifactListItem";
+import {
+  EvaluateExportModal,
+  type EvaluateExportTarget,
+} from "../evals/EvaluateExportModal";
 
 export function RunArtifactList({ runId }: { runId: string | null }) {
   const { data } = useGetRunDetailQuery(runId ? { runId } : skipToken);
+  const [evaluateTarget, setEvaluateTarget] =
+    useState<EvaluateExportTarget | null>(null);
 
   if (!data) return <div>No artifacts found yet</div>;
   if (!data.ok) return <div>Error getting run detail: {data.error}</div>;
@@ -35,6 +42,16 @@ export function RunArtifactList({ runId }: { runId: string | null }) {
                   key={`${step.stepId}:${exp.name}:${exp.artifactHash}`}
                   item={buildExportLabel(step.stepId, exp.name, exp.artifact?.format)}
                   hash={exp.artifactHash}
+                  onEvaluate={
+                    runId
+                      ? () =>
+                          setEvaluateTarget({
+                            runId,
+                            stepId: step.stepId,
+                            exportName: exp.name,
+                          })
+                      : undefined
+                  }
                 />
               )),
             )}
@@ -59,6 +76,13 @@ export function RunArtifactList({ runId }: { runId: string | null }) {
           />
         );
       })}
+
+      {evaluateTarget ? (
+        <EvaluateExportModal
+          target={evaluateTarget}
+          onClose={() => setEvaluateTarget(null)}
+        />
+      ) : null}
     </div>
   );
 }

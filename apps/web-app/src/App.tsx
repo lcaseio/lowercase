@@ -11,6 +11,7 @@ import { Sims } from "./pages/sims/Sims";
 import { CreateSim } from "./pages/sims/CreateSim";
 import { ViewSim } from "./pages/sims/ViewSim";
 import { Artifacts } from "./pages/Artifacts";
+import { Evals } from "./pages/Evals";
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
       <Route path="/flows/edit/:flowId" element={<FlowsEdit />} />
       <Route path="/runner" element={<Runner />} />
       <Route path="/artifacts" element={<Artifacts />} />
+      <Route path="/evals" element={<Evals />} />
       <Route path="/system" element={<System />} />
       <Route path="/runs" element={<Runs />} />
       <Route path="/runs/details" element={<RunDetails />} />

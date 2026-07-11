@@ -2,6 +2,7 @@ export type FlowRecord = {
   id: string;
   name: string;
   description?: string;
+  kind: "business" | "eval";
   createdAt: string;
   updatedAt: string;
 };
@@ -19,6 +20,7 @@ export type FlowVersionRecord = {
 export type CreateFlowRecordInput = {
   name: string;
   description?: string;
+  kind?: "business" | "eval";
   definitionHash: string;
   versionLabel?: string;
   versionDescription?: string;

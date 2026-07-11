@@ -1,0 +1,78 @@
+{
+  "name": "eval-rubric-judge",
+  "version": "0.1.0-alpha.12-01",
+  "description": "Rubric-based LLM-as-judge: scores a subject run's export against named dimensions.",
+  "kind": "eval",
+  "start": "judge",
+  "params": {
+    "subjectAnswer": {
+      "type": "text/markdown"
+    },
+    "originalQuestion": {
+      "type": "text/markdown"
+    },
+    "groundingContext": {
+      "type": "application/json"
+    },
+    "judgeSystemPrompt": {
+      "type": "text/markdown"
+    }
+  },
+  "steps": {
+    "judge": {
+      "type": "httpjson",
+      "url": "http://192.168.1.75:8000/v1/chat/completions",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer local-key"
+      },
+      "body": {
+        "model": "local-mistral",
+        "messages": [
+          {
+            "role": "system",
+            "content": "{{params.judgeSystemPrompt}}"
+          },
+          {
+            "role": "user",
+            "content": "Evaluate the Answer section against the Question and Context sections below. Respond ONLY with the required JSON.\n\n### Question\n{{params.originalQuestion}}\n\n### Context\n{{params.groundingContext}}\n\n### Answer\n{{params.subjectAnswer}}"
+          }
+        ],
+        "temperature": 0,
+        "max_tokens": 800,
+        "response_format": { "type": "json_object" }
+      },
+      "exports": {
+        "score": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "overall": { "type": "number", "minimum": 0, "maximum": 1 },
+              "passed": { "type": "boolean" },
+              "dimensions": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "score": { "type": "number" },
+                    "rationale": { "type": "string" }
+                  },
+                  "required": ["score"]
+                }
+              },
+              "rationale": { "type": "string" }
+            },
+            "required": ["overall", "passed", "dimensions"]
+          }
+        },
+        "score-markdown": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
+        }
+      }
+    }
+  }
+}

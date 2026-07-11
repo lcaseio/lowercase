@@ -71,6 +71,7 @@ function toFlowRecord(flow: {
   id: string;
   name: string;
   description: string | null;
+  kind: string;
   createdAt: Date;
   updatedAt: Date;
 }): FlowRecord {
@@ -78,6 +79,7 @@ function toFlowRecord(flow: {
     id: flow.id,
     name: flow.name,
     description: flow.description ?? undefined,
+    kind: flow.kind === "eval" ? "eval" : "business",
     createdAt: flow.createdAt.toISOString(),
     updatedAt: flow.updatedAt.toISOString(),
   };

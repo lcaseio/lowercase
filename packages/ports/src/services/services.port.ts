@@ -8,6 +8,7 @@ import type {
   GetFlowVersionsRes,
   FlowDefinition,
   CreateFlowRecordResult,
+  EvalResultRecord,
   ForkSpec,
   Result,
   RunDetail,
@@ -30,6 +31,7 @@ export interface ServicesPort {
   run: RunServicePort;
   ws: WsServicePort;
   artifact: ArtifactServicePort;
+  eval: EvalServicePort;
 }
 
 export interface SimServicePort {
@@ -82,6 +84,10 @@ export type RunRequest = {
   runId?: string;
   simId?: string;
   forkSpecHash?: string;
+  experimentId?: string;
+  targetRunId?: string;
+  targetStepId?: string;
+  targetExportName?: string;
   params?: Record<string, string>;
 };
 export interface RunServicePort {
@@ -91,6 +97,35 @@ export interface RunServicePort {
   getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
   getRunParams(runId: string): Promise<Result<RunParamManifest, string>>;
   // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
+}
+
+export type EvalTargetRef = {
+  runId: string;
+  stepId: string;
+  exportName: string;
+  paramName: string;
+};
+
+export type StartEvalRunRequest = {
+  targets: EvalTargetRef[];
+  evalFlowId: string;
+  evalFlowVersionId: string;
+  evalFlowDefHash: string;
+  judgeSystemPromptHash: string;
+  experimentId?: string;
+  source: string;
+};
+
+export interface EvalServicePort {
+  startEvalRun(
+    request: StartEvalRunRequest,
+  ): Promise<Result<{ evalRunId: string }, string>>;
+  listByTargetShape(shape: {
+    flowId: string;
+    stepId: string;
+    exportName: string;
+  }): Promise<EvalResultRecord[]>;
+  listByExperimentId(experimentId: string): Promise<EvalResultRecord[]>;
 }
 
 export interface WsServicePort {

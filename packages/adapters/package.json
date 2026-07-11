@@ -1,6 +1,6 @@
 {
   "name": "@lcase/adapters",
-  "version": "0.1.0-alpha.11",
+  "version": "0.1.0-alpha.12",
   "private": true,
   "type": "module",
   "exports": {
@@ -59,6 +59,10 @@
     "./artifact-repository": {
       "types": "./dist/artifact-repository/index.d.ts",
       "import": "./dist/artifact-repository/index.js"
+    },
+    "./eval-result-repository": {
+      "types": "./dist/eval-result-repository/index.d.ts",
+      "import": "./dist/eval-result-repository/index.js"
     }
   },
   "scripts": {

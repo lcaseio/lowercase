@@ -26,10 +26,16 @@ enum RunStatus {
   failed
 }
 
+enum FlowKind {
+  business
+  eval
+}
+
 model Flow {
   id          String        @id @default(cuid())
   name        String
   description String?
+  kind        FlowKind      @default(business)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   versions    FlowVersion[]
@@ -86,33 +92,63 @@ model Sim {
 }
 
 model Run {
-  id            String      @id
-  traceId       String
-  status        RunStatus
-  source        String
-  flowId        String?
-  flowVersionId String?
-  flowDefHash   String
-  simId         String?
-  parentRunId   String?
-  forkSpecHash  String?
-  startTime     DateTime?
-  endTime       DateTime?
-  duration      Float?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id               String      @id
+  traceId          String
+  status           RunStatus
+  source           String
+  flowId           String?
+  flowVersionId    String?
+  flowDefHash      String
+  simId            String?
+  parentRunId      String?
+  forkSpecHash     String?
+  experimentId     String?
+  targetRunId      String?
+  targetStepId     String?
+  targetExportName String?
+  startTime        DateTime?
+  endTime          DateTime?
+  duration         Float?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  flow            Flow?                @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  flowVersion     FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  sim             Sim?                 @relation(fields: [simId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  stepProjections RunStepProjection[]
-  params          RunParam[]
+  flow                  Flow?                @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion           FlowVersion?         @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sim                   Sim?                 @relation(fields: [simId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  stepProjections       RunStepProjection[]
+  params                RunParam[]
+  evalResultsAsTarget   EvalResult[]         @relation("EvalResultTarget")
+  evalResultsAsEvalRun  EvalResult[]         @relation("EvalResultEvalRun")
 
   @@index([createdAt])
   @@index([flowId])
   @@index([flowVersionId])
   @@index([simId])
   @@index([parentRunId])
+  @@index([experimentId])
+}
+
+model EvalResult {
+  id                String   @id @default(cuid())
+  targetRunId       String
+  targetStepId      String?
+  targetExportName  String?
+  evalRunId         String
+  evalFlowId        String?
+  evalFlowVersionId String?
+  experimentId      String?
+  overall           Float
+  passed            Boolean
+  payload           String
+  createdAt         DateTime @default(now())
+
+  targetRun Run @relation("EvalResultTarget", fields: [targetRunId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  evalRun   Run @relation("EvalResultEvalRun", fields: [evalRunId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([targetRunId])
+  @@index([evalRunId])
+  @@index([experimentId])
+  @@index([createdAt])
 }
 
 model RunParam {

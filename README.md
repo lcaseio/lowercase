@@ -1,14 +1,16 @@
 # lowercase
 
-### ❗ Alpha Software (v0.1.0-alpha.11)
+### ❗ Alpha Software (v0.1.0-alpha.12)
 
 **lowercase** is in an early alpha stage and still taking shape. Some things work but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 
+`main` reflects the latest tagged alpha release (this README). Active development happens on `dev`, which is ahead of `main` and may be unstable.
+
 ## Overview
 
-**lowercase** is an event driven workflow engine built for testing AI pipelines. It's designed to run locally first, as a single process, but is built in a modular design.
+**lowercase** is an event-driven workflow engine for building and testing AI/LLM-driven pipelines: flows defined as JSON, executed step by step, with structured validation of model output and branching based on it. Today it runs locally, as a single process.
 
-Every component communicates through events. Infra is swappable, but not yet implemented in various forms, through ports/adapters — SQL owns metadata (flows, artifacts, sims, runs) and a separate content-addressed store owns immutable content (LLM outputs, API responses, exported values). The architecture is modular and extensible, with the goal of supporting everything from lightweight in-memory execution to distributed setups.
+Every component communicates through events, and business logic depends only on interfaces (hexagonal ports/adapters), not on specific infrastructure. Right now, every implementation behind those interfaces is local: SQL (SQLite) owns metadata (flows, artifacts, sims, runs, evals), a content-addressed filesystem store owns immutable content (LLM outputs, API responses, exported values), and the event bus and job queue are both in-memory. The ports/adapters boundary exists so other backends could be swapped in later without touching business logic — candidates include Redis Streams for the job queue and MinIO for CAS/blob storage — but that's a structural property, not a current capability: none of those adapters exist yet.
 
 ## Quickstart
 
@@ -93,16 +95,18 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 | **@lcase/observe-web**     | Vite web observability event viewer. (obsolete)                                                                                       |
 | **@lcase/examples**        | Example / demo flows and servers.                                                                                                     |
 
-## Alpha 11 Highlights
+## Alpha 12 Highlights
 
-- SQL owns metadata (flows, artifacts, sims, runs) with relational identity throughout; CAS remains separate for immutable content.
-- Run params and step exports are normalized, referenceable values (`{{params.x}}`, `{{steps.x.exports.y}}`) across `application/json`, `text/plain`, and `text/markdown`.
-- Step exports can declare a JSON Schema, validated with `ajv` before downstream steps trust the value — an LLM's structured output is checked, not assumed.
-- A new `branch` step type routes to different next-steps based on a resolved referenced values, with a mandatory default case — a pure control-flow node (same category as `join`/`parallel`), resolved via an engine effect reading CAS directly rather than a worker job.
-- A working end-to-end example ([examples/llm-weather.flow.json](examples/llm-weather.flow.json)): a local LLM parses a free-text weather question into validated structured intent + location, and the flow branches to different external API endpoints (forecast vs. air quality) based on that intent, with a graceful fallback for off-topic questions. The flow assumes connection to a local llm at a specific local IP address. Popular LLM tools accessable through api authentication is deferred for future update.
+- Eval/measurement vertical slice: proves the engine's experimentation loop end-to-end — run a flow, judge its output, store the score, compare results — as a first-class part of the system rather than something inferred from logs after the fact.
+- Evals are modeled as ordinary flows, no new engine primitives: a rubric-based LLM-as-judge flow ([examples/eval-judge.flow.json](examples/eval-judge.flow.json)) takes a subject run's export as a normal param and produces a structured, multi-metric score (overall + named dimensions + rationale).
+- A `kind` distinction on flows (`business` vs. `eval`) categorizes eval flows so they can be surfaced separately in the UI.
+- `evalContext`: a flow can declare, per export, which other refs from the same run (a param, another step's export, or a step's raw output) are useful context for judging that export — resolved automatically when an eval is triggered, no caller involvement required.
+- `EvalResult` storage: fixed columns for what every consumer needs (target run, evaluator identity, overall score, pass/fail) plus a flexible JSON payload for the per-dimension breakdown and rationale, validated at the application layer.
+- A minimal comparison UI in the web app: trigger an eval directly from a run's export, then browse/compare results by target flow + step + export identity (spanning every version of a flow, so a score shift between versions is visible) with a table and bar chart.
+- Verified live, end-to-end, against a real local LLM — including catching and fixing a real race condition between two observability sinks reacting to the same event (see `docs/todo.md`).
 
 ## Next
 
-The next planned milestone is a minimal eval/measurement vertical slice — evals modeled as normal flows, scoring a stable exported output from a subject run, with a minimal comparison UI.
+No scoped milestone yet — the current direction is a larger UI rework for `apps/web-app`, moving away from page navigation toward a desktop-style panel/toolbar model with real relational organization (grouping, comparison, drilling into one flow version's context). Still in the design/prototyping stage.
 
 MIT Open Source License: [LICENSE](LICENSE)
