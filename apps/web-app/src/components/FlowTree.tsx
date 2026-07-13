@@ -67,7 +67,7 @@ export function FlowTree({ flowDef }: { flowDef: FlowDefinition }) {
   );
 
   return (
-    <div className="w-[500px] h-[500px] rounded-xl bg-slate-800 text-slate-900">
+    <div className="h-full w-full min-h-12 rounded-xl bg-slate-800 text-slate-900">
       <h3>Flow Tree</h3>
       <button onClick={handleReload}>Reload</button>
       <ReactFlow

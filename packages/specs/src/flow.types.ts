@@ -13,6 +13,7 @@ import type {
 import { StepParallelSchema } from "./parallel.schema.js";
 import { StepJoinSchema } from "./join.schema.js";
 import { StepBranchSchema } from "./branch.schema.js";
+import { JsonValueSchema } from "./json-value.schema.js";
 
 export const StepOnSchema = z
   .object({
@@ -107,7 +108,7 @@ export const StepHttpJsonSchema = StepCapBaseSchema.extend({
     .optional(),
 
   headers: z.record(z.string(), z.string()).optional(),
-  body: z.record(z.string(), z.unknown()).optional(),
+  body: JsonValueSchema.optional(),
   exports: z.record(z.string(), ExportDeclarationSchema).optional(),
 }).strict() satisfies z.ZodType<StepHttpJson>;
 

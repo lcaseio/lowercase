@@ -3,8 +3,6 @@ import { SimsFlowSelector } from "@/components/sims/SimsFlowSelector";
 import { SimsFlowView } from "@/components/sims/SimsFlowView";
 import { SimsNewName } from "@/components/sims/SimsNewName";
 import { SimsRunSelector } from "@/components/sims/SimsRunSelector";
-import { Header } from "@/layout/Header";
-import { Main } from "@/layout/Main";
 import { useGetFlowDefQuery, useGetFlowsQuery } from "@/redux/api/flows-api";
 import {
   clearReusedSteps,
@@ -50,22 +48,19 @@ export function CreateSim() {
     }
   }, [dispatch, selectedFlow, selectedFlowId]);
   return (
-    <div id="page-wrapper">
-      <Header />
-      <Main>
-        <h2 className="text-xl font-bold mb-5">Sims</h2>
-        <SimsFlowSelector selectedFlowId={selectedFlowId} />
-        <SimsRunSelector flowDefHash={selectedFlowDefHash} />
-        <SimsNewName />
-        <SaveSimButton
-          flowId={selectedFlow?.flow.id ?? selectedFlowId}
-          flowVersionId={selectedFlowVersionId}
-        />
-        <SimsFlowView
-          flowDef={flowDef.data?.ok ? flowDef.data.value : null}
-          isEditable={true}
-        />
-      </Main>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-5">Sims</h2>
+      <SimsFlowSelector selectedFlowId={selectedFlowId} />
+      <SimsRunSelector flowDefHash={selectedFlowDefHash} />
+      <SimsNewName />
+      <SaveSimButton
+        flowId={selectedFlow?.flow.id ?? selectedFlowId}
+        flowVersionId={selectedFlowVersionId}
+      />
+      <SimsFlowView
+        flowDef={flowDef.data?.ok ? flowDef.data.value : null}
+        isEditable={true}
+      />
     </div>
   );
 }
