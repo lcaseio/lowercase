@@ -8,25 +8,16 @@ import { FlowGraph } from "@/components/FlowGraph";
 import type { FlowDefinition } from "@lcase/types";
 import {
   BotIcon,
-  BracketsIcon,
   CircleAlertIcon,
-  CodeIcon,
   CurlyBracesIcon,
   EditIcon,
   EyeIcon,
   FileTextIcon,
   Footprints,
-  FunctionSquareIcon,
-  InfoIcon,
   NetworkIcon,
-  Option,
-  ParenthesesIcon,
-  PlusIcon,
-  ReplyIcon,
   ScaleIcon,
   ScrollTextIcon,
   Settings2Icon,
-  SquareChevronRight,
   TerminalIcon,
   VariableIcon,
 } from "lucide-react";
@@ -44,6 +35,7 @@ import {
 import { useState } from "react";
 import type { Node } from "@xyflow/react";
 import { StepDetails } from "@/components/StepDetails";
+import { FlowSettings } from "@/components/FlowSettings";
 
 const defaultFlowDef = testFlowDef();
 export function Spike() {
@@ -137,15 +129,17 @@ export function Spike() {
                 </TabsList>
                 <TabsContent
                   value="settings"
-                  className="flex-1 min-h-0 dark:bg-neutral-900 mt-[-0.4rem]"
+                  className="flex-1 min-h-0 ml-3 mr-3"
                 >
-                  <h2>Flow Version Settings</h2>
-                  <label>Label:</label>
-                  <Input />
-                  <label>Version: </label>
-                  <Input />
-                  <label>Description:</label>
-                  <Input type="text" />
+                  {flowDef && (
+                    <FlowSettings
+                      name={flowDef.name}
+                      start={flowDef.start}
+                      version={flowDef.version}
+                      description={flowDef.description}
+                      kind={flowDef.kind}
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="details" className="ml-3 mr-3">
                   <h2 className="mt-3 text-lg">{selectedStepId}</h2>
@@ -227,6 +221,7 @@ function testFlowDef(): FlowDefinition | undefined {
   const testFlow = `{
   "name": "Parallel Flow Test",
   "version": "0.1.0-alpha.10",
+  "description": "A description of a flow",
   "start": "p",
   "steps": {
     "p": {
@@ -239,7 +234,8 @@ function testFlowDef(): FlowDefinition | undefined {
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
-      }
+      },
+      "on": { "success": "five", "failure": "five"}
     },
     "two": {
       "type": "httpjson",
@@ -272,8 +268,6 @@ function testFlowDef(): FlowDefinition | undefined {
       },
       "body": {
         "model": "local-mistral",
-        "things": ["0","1",2,3, null],
-        "other": "this breaks\\n stuff",
         "messages": [
           {
             "role": "system",
@@ -281,13 +275,47 @@ function testFlowDef(): FlowDefinition | undefined {
           },
           {
             "role": "user",
-            "content": "0"
+            "content": "{{params.userWeatherQuery}}\\n"
           }
         ],
         "temperature": 0,
         "max_tokens": 500,
         "response_format": { "type": "json_object" }
+      },
+            "exports": {
+        "json": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "location": { "type": "string" },
+              "intent": {
+                "type": "string",
+                "enum": ["forecast", "airquality", "unrelated"]
+              }
+            },
+            "required": ["intent"],
+            "if": {
+              "properties": { "intent": { "enum": ["forecast", "airquality"] } }
+            },
+            "then": {
+              "required": ["location"]
+            }
+          },
+                    "evalContext": {
+            "originalQuestion": {
+              "source": "param",
+              "name": "userWeatherQuery"
+            },
+            "groundingContext": { "source": "output", "stepId": "getForecast" }
+          }
+        },
+        "json-markdown": {
+          "ref": "{{output.body.choices[0].message.content}}",
+          "type": "text/markdown"
         }
+      }
     }
   }
 }

@@ -1,7 +1,8 @@
 import type { StepHttpJson } from "@lcase/types";
 import { InputField } from "./InputField";
-import { CodeEditor } from "./CodeEditor";
-import { Field, FieldLabel } from "./ui/field";
+import { HeadersField } from "./HeadersField";
+import { CodeEditorField } from "./CodeEditorField";
+import { ExportsField } from "./ExportsField";
 
 export function StepHttpJsonDetails({ step }: { step: StepHttpJson }) {
   return (
@@ -9,21 +10,11 @@ export function StepHttpJsonDetails({ step }: { step: StepHttpJson }) {
       <InputField label="Type" value={step.type} />
       <InputField label="URL" value={step.url} />
       <InputField label="Method" value={step.method} />
-      {step.body !== undefined && (
-        <Field
-          orientation="horizontal"
-          className="[&>[data-slot=field-label]]:flex-none"
-        >
-          <FieldLabel className="w-20 shrink-0">Body</FieldLabel>
-          <div className="flex-1 overflow-hidden rounded-md border dark:border-neutral-700 mr-3">
-            <CodeEditor
-              value={JSON.stringify(step.body, null, 2)}
-              language="json"
-              readOnly
-            />
-          </div>
-        </Field>
-      )}
+      <HeadersField label="Headers" value={step.headers} />
+      <InputField label="On Success" value={step.on?.success} />
+      <InputField label="On Failure" value={step.on?.failure} />
+      <CodeEditorField label="Body" value={step.body} />
+      <ExportsField label="Exports" value={step.exports} />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
-import { AutoFitView } from "./AutoFitView";
 
 // same graphLayout-based rendering as FlowEditPanel, but taking a flowDef
 // directly instead of fetching by route param -- FlowTree's replacement for
