@@ -3,7 +3,7 @@ import {
   StepCapCommonFields,
   StepOnField,
 } from "./common-fields.js";
-import { JsonValue } from "../json-value.js";
+import { ShallowJsonValue } from "../json-value.js";
 
 export type StepHttpJson = StepCapCommonFields &
   StepOnField & {
@@ -11,6 +11,6 @@ export type StepHttpJson = StepCapCommonFields &
     url: string;
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
     headers?: Record<string, string>;
-    body?: JsonValue;
+    body?: ShallowJsonValue;
     exports?: Record<string, ExportDeclaration>;
   };

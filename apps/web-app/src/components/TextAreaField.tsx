@@ -20,7 +20,12 @@ export function TextAreaField({ label, value, description, error }: Props) {
       </FieldLabel>
       {description && <FieldDescription>{description}</FieldDescription>}
       {error && <FieldError>{error}</FieldError>}
-      <Textarea id={label} value={value} readOnly className="flex-1 mr-3" />
+      <Textarea
+        id={label}
+        value={value}
+        readOnly
+        className="flex-1 mr-3 dark:bg-neutral-875 border-0"
+      />
     </Field>
   );
 }

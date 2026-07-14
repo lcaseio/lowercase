@@ -1,6 +1,6 @@
 import type { FlowDefinition } from "@lcase/types";
+import type { OutEdges } from "@lcase/types";
 import { useMemo } from "react";
-import { analyzeFlow, graphLayout, toposort } from "@lcase/flow-analysis";
 import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
@@ -18,16 +18,19 @@ function calcPosition(row: number, nodes: number, distance: number) {
 
 type Props = {
   flowDef: FlowDefinition;
+  layout: string[][] | null;
+  outEdges: OutEdges;
   onNodeClickHandler?: (node: Node) => void;
 };
-export function FlowGraph({ flowDef, onNodeClickHandler }: Props) {
+export function FlowGraph({
+  flowDef,
+  layout,
+  outEdges,
+  onNodeClickHandler,
+}: Props) {
   const { resolvedTheme } = useTheme();
 
   const result = useMemo(() => {
-    const fa = analyzeFlow(flowDef);
-    fa.toposort = toposort(fa);
-
-    const layout = graphLayout(fa);
     if (!layout) return { nodes: [], edges: [] };
 
     const newNodes: Node[] = [];
@@ -45,8 +48,8 @@ export function FlowGraph({ flowDef, onNodeClickHandler }: Props) {
         };
         newNodes.push(newNode);
 
-        if (fa.outEdges[node]) {
-          for (const edge of fa.outEdges[node]) {
+        if (outEdges[node]) {
+          for (const edge of outEdges[node]) {
             const newEdge: Edge = {
               id: `${edge.startStepId}-${edge.endStepId}`,
               source: edge.startStepId,
@@ -59,7 +62,7 @@ export function FlowGraph({ flowDef, onNodeClickHandler }: Props) {
       }
     }
     return { nodes: newNodes, edges: newEdges };
-  }, [flowDef]);
+  }, [flowDef, layout, outEdges]);
 
   return (
     <div className="h-full w-full rounded-xl">

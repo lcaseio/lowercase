@@ -23,7 +23,7 @@ export function ExportsField({ label, value }: Props) {
       <h4 className="text-sm font-semibold text-muted-foreground">{label}</h4>
       <Accordion
         type="multiple"
-        className="rounded-md border-0 border-b-neutral- px-3"
+        className="rounded-md border-0 px-3 dark:bg-neutral-825"
       >
         {entries.map(([name, exportDecl]) => (
           <AccordionItem key={name} value={name}>

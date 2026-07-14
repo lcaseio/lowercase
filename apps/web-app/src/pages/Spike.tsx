@@ -22,26 +22,22 @@ import {
   VariableIcon,
 } from "lucide-react";
 import { ToggleGroupItem, ToggleGroup } from "@/components/ui/toggle-group";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
 import type { Node } from "@xyflow/react";
 import { StepDetails } from "@/components/StepDetails";
 import { FlowSettings } from "@/components/FlowSettings";
+import { CodeEditor } from "@/components/CodeEditor";
+import { FlowParameters } from "@/components/FlowParameters";
+import { ProblemsList } from "@/components/ProblemsList";
+import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
+import { useState } from "react";
 
 const defaultFlowDef = testFlowDef();
 export function Spike() {
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [flowDef] = useState<FlowDefinition | null>(defaultFlowDef ?? null);
   const [activeDetailsTab, setActiveDetailsTab] = useState("settings");
+  const flowAnalysis = useFlowAnalysis(flowDef);
+  const problems = flowAnalysis?.flowAnalysis.problems ?? [];
 
   function handleNodeClick(node: Node) {
     setSelectedStepId(node.id);
@@ -84,10 +80,15 @@ export function Spike() {
                     JSON
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="list" className="flex-1 min-h-0">
+                <TabsContent
+                  value="list"
+                  className="flex-1 min-h-0 dark:bg-panel-subtle"
+                >
                   {flowDef ? (
                     <FlowGraph
                       flowDef={flowDef}
+                      layout={flowAnalysis?.layout ?? null}
+                      outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
                       onNodeClickHandler={handleNodeClick}
                     ></FlowGraph>
                   ) : (
@@ -95,7 +96,14 @@ export function Spike() {
                   )}
                 </TabsContent>
                 <TabsContent value="create">
-                  <p>create</p>
+                  {flowDef && (
+                    <CodeEditor
+                      language="json"
+                      value={JSON.stringify(flowDef, null, 2)}
+                      height="100%"
+                      readOnly
+                    />
+                  )}
                 </TabsContent>
               </Tabs>
             </ResizablePanel>
@@ -111,20 +119,23 @@ export function Spike() {
                     <Settings2Icon />
                     Settings
                   </TabsTrigger>
-                  <TabsTrigger value="details">
-                    <Footprints />
-                    Step Details
-                  </TabsTrigger>
                   <TabsTrigger value="params">
                     <VariableIcon />
                     Parameters
                   </TabsTrigger>
+                  <TabsTrigger value="details">
+                    <Footprints />
+                    Step Details
+                  </TabsTrigger>
+
                   <TabsTrigger value="problems">
                     <CircleAlertIcon />
                     Problems{" "}
-                    <span className="text-xs font-normal rounded px-1.5 py-0.5 bg-cyan-900 text-cyan-100">
-                      3
-                    </span>
+                    {problems.length >= 1 ? (
+                      <span className="text-xs font-normal rounded px-1.5 py-0.5 bg-cyan-900 text-cyan-100">
+                        {problems.length}
+                      </span>
+                    ) : null}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent
@@ -141,40 +152,17 @@ export function Spike() {
                     />
                   )}
                 </TabsContent>
+                <TabsContent value="params" className="ml-3 mr-3 flex flex-col">
+                  <FlowParameters label="Params" value={flowDef?.params} />
+                </TabsContent>
                 <TabsContent value="details" className="ml-3 mr-3">
                   <h2 className="mt-3 text-lg">{selectedStepId}</h2>
                   <StepDetails stepId={selectedStepId} flowDef={flowDef} />
                 </TabsContent>
-                <TabsContent value="params">
-                  <h2>Run Parameters</h2>
-                  <label>Name</label>
-                  <Input type="text"></Input>
-                  <label>Content-Type</label>
-                  <Select>
-                    <SelectTrigger className="min-w-[10rem]">
-                      <SelectValue placeholder="Select a Context-Type"></SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem key="placeholder1" value="application/json">
-                          application/json
-                        </SelectItem>
-                        <SelectItem key="placeholder2" value="text/plain">
-                          text/plain
-                        </SelectItem>
-                        <SelectItem key="placeholder3" value="text/markdown">
-                          text/markdown
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline">Add</Button>
-                </TabsContent>
-                <TabsContent value="problems">
-                  <h2>Flow Analysis Problems</h2>
-                  <p>
-                    A list of problems that should be fixed prior to publishing
-                  </p>
+
+                <TabsContent value="problems" className="ml-3 mr-3">
+                  <h2 className="mt-3 mb-3 text-lg">Flow Analysis Problems</h2>
+                  <ProblemsList problems={problems} />
                 </TabsContent>
               </Tabs>
             </ResizablePanel>
@@ -223,6 +211,21 @@ function testFlowDef(): FlowDefinition | undefined {
   "version": "0.1.0-alpha.10",
   "description": "A description of a flow",
   "start": "p",
+  "params": {
+    "userWeatherQuery": {
+      "type": "text/markdown"
+    },
+    "systemParser": {
+      "type": "text/markdown"
+    },
+    "userParser": {
+      "type": "text/markdown"
+    },
+    "systemReport": {
+      "type": "text/markdown",
+      "optional": "true"
+    }
+  },
   "steps": {
     "p": {
       "type": "parallel",
@@ -234,8 +237,7 @@ function testFlowDef(): FlowDefinition | undefined {
       "method": "GET",
       "headers": {
         "Content-Type": "application/json"
-      },
-      "on": { "success": "five", "failure": "five"}
+      }
     },
     "two": {
       "type": "httpjson",
@@ -266,6 +268,7 @@ function testFlowDef(): FlowDefinition | undefined {
       "headers": {
         "Content-Type": "application/json"
       },
+      "on": { "success": "one"},
       "body": {
         "model": "local-mistral",
         "messages": [
