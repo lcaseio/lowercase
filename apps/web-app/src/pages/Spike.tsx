@@ -27,9 +27,10 @@ import { StepDetails } from "@/components/StepDetails";
 import { FlowSettings } from "@/components/FlowSettings";
 import { CodeEditor } from "@/components/CodeEditor";
 import { FlowParameters } from "@/components/FlowParameters";
-import { ProblemsList } from "@/components/ProblemsList";
+import { FlowProblemsList } from "@/components/FlowProblemsList";
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useState } from "react";
+import { FlowVersionList } from "@/components/FlowVersionList";
 
 const defaultFlowDef = testFlowDef();
 export function Spike() {
@@ -57,18 +58,34 @@ export function Spike() {
             orientation="horizontal"
             className="flex-1 min-h-0 border dark:border-neutral-800"
           >
-            <ResizablePanel defaultSize="10%" className="pl-5">
-              <h3 className="mt-2 mb-2 text-lg font-bold">Steps</h3>
-              <h3 className="mt-2 text-lg font-bold">Capabilities</h3>
-              <p>httpjson</p>
-              <p>mcp</p>
-              <h3 className="mt-2 text-lg font-bold">Control Flow</h3>
-              <p>Parallel</p>
-              <p>Join</p>
-              <p>Branch</p>
+            <ResizablePanel
+              defaultSize="10%"
+              className="pl-5 dark:bg-neutral-875"
+            >
+              <FlowVersionList
+                flowName="Parallel Flow Test"
+                kind="business"
+                versions={[
+                  {
+                    id: "version id",
+                    flowId: "version flow id",
+                    sequence: 0,
+                    definitionHash: "definition hash",
+                    createdAt: "created At",
+                  },
+                  {
+                    id: "version id",
+                    flowId: "version flow id",
+                    sequence: 1,
+                    definitionHash: "definition hash",
+                    createdAt: "created At",
+                    versionLabel: "Green Frog",
+                  },
+                ]}
+              />
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize="50%">
+            <ResizablePanel defaultSize="60%">
               <Tabs defaultValue="list" className="h-full flex flex-col">
                 <TabsList variant="line">
                   <TabsTrigger value="list">
@@ -108,7 +125,7 @@ export function Spike() {
               </Tabs>
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize="40%" className="dark:bg-neutral-800">
+            <ResizablePanel defaultSize="30%" className="dark:bg-neutral-800">
               <Tabs
                 value={activeDetailsTab}
                 onValueChange={setActiveDetailsTab}
@@ -162,7 +179,7 @@ export function Spike() {
 
                 <TabsContent value="problems" className="ml-3 mr-3">
                   <h2 className="mt-3 mb-3 text-lg">Flow Analysis Problems</h2>
-                  <ProblemsList problems={problems} />
+                  <FlowProblemsList problems={problems} />
                 </TabsContent>
               </Tabs>
             </ResizablePanel>
@@ -268,7 +285,7 @@ function testFlowDef(): FlowDefinition | undefined {
       "headers": {
         "Content-Type": "application/json"
       },
-      "on": { "success": "one"},
+  
       "body": {
         "model": "local-mistral",
         "messages": [

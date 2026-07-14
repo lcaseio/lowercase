@@ -6,7 +6,7 @@ type Props = {
   problems: FlowProblem[];
 };
 
-export function ProblemsList({ problems }: Props) {
+export function FlowProblemsList({ problems }: Props) {
   if (problems.length === 0) {
     return <p className="text-sm text-muted-foreground">No problems found.</p>;
   }
