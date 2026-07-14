@@ -8,13 +8,21 @@ import {
 import { InputField } from "./InputField";
 import { CodeEditorField } from "./CodeEditorField";
 import { EvalContextField } from "./EvalContextField";
+import type { OpenInMainPanel } from "./MainPanelTypes";
 
 type Props = {
   label: string;
+  stepId: string;
   value?: Record<string, ExportDeclaration>;
+  onOpenInMainPanel: OpenInMainPanel;
 };
 
-export function ExportsField({ label, value }: Props) {
+export function ExportsField({
+  label,
+  stepId,
+  value,
+  onOpenInMainPanel,
+}: Props) {
   const entries = value ? Object.entries(value) : [];
   if (entries.length === 0) return null;
 
@@ -38,7 +46,17 @@ export function ExportsField({ label, value }: Props) {
             <AccordionContent className="flex flex-col gap-3">
               <InputField label="Ref" value={exportDecl.ref} />
               <InputField label="Type" value={exportDecl.type} />
-              <CodeEditorField label="Schema" value={exportDecl.schema} />
+              <CodeEditorField
+                label="Schema"
+                value={exportDecl.schema}
+                onOpen={(displayValue) =>
+                  onOpenInMainPanel(
+                    `Step "${stepId}" - export "${name}" - schema`,
+                    displayValue,
+                    "json",
+                  )
+                }
+              />
               <EvalContextField
                 label="Eval Context"
                 value={exportDecl.evalContext}

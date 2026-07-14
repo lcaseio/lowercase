@@ -31,12 +31,26 @@ import { FlowProblemsList } from "@/components/FlowProblemsList";
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useState } from "react";
 import { FlowVersionList } from "@/components/FlowVersionList";
+import type {
+  MainPanelLanguage,
+  OpenInMainPanel,
+} from "@/components/MainPanelTypes";
+
+type FocusedContent = {
+  title: string;
+  value: string;
+  language: MainPanelLanguage;
+};
 
 const defaultFlowDef = testFlowDef();
 export function Spike() {
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [flowDef] = useState<FlowDefinition | null>(defaultFlowDef ?? null);
   const [activeDetailsTab, setActiveDetailsTab] = useState("settings");
+  const [activeMainTab, setActiveMainTab] = useState("list");
+  const [focusedContent, setFocusedContent] = useState<FocusedContent | null>(
+    null,
+  );
   const flowAnalysis = useFlowAnalysis(flowDef);
   const problems = flowAnalysis?.flowAnalysis.problems ?? [];
 
@@ -44,6 +58,11 @@ export function Spike() {
     setSelectedStepId(node.id);
     setActiveDetailsTab("details");
   }
+
+  const openInMainPanel: OpenInMainPanel = (title, value, language) => {
+    setFocusedContent({ title, value, language });
+    setActiveMainTab("focused");
+  };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -86,7 +105,11 @@ export function Spike() {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize="60%">
-              <Tabs defaultValue="list" className="h-full flex flex-col">
+              <Tabs
+                value={activeMainTab}
+                onValueChange={setActiveMainTab}
+                className="h-full flex flex-col"
+              >
                 <TabsList variant="line">
                   <TabsTrigger value="list">
                     <NetworkIcon />
@@ -96,6 +119,11 @@ export function Spike() {
                     <CurlyBracesIcon />
                     JSON
                   </TabsTrigger>
+                  {focusedContent && (
+                    <TabsTrigger value="focused">
+                      {focusedContent.title}
+                    </TabsTrigger>
+                  )}
                 </TabsList>
                 <TabsContent
                   value="list"
@@ -122,6 +150,16 @@ export function Spike() {
                     />
                   )}
                 </TabsContent>
+                {focusedContent && (
+                  <TabsContent value="focused" className="flex-1 min-h-0">
+                    <CodeEditor
+                      language={focusedContent.language}
+                      value={focusedContent.value}
+                      height="100%"
+                      readOnly
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </ResizablePanel>
             <ResizableHandle withHandle />
@@ -174,7 +212,11 @@ export function Spike() {
                 </TabsContent>
                 <TabsContent value="details" className="ml-3 mr-3">
                   <h2 className="mt-3 text-lg">{selectedStepId}</h2>
-                  <StepDetails stepId={selectedStepId} flowDef={flowDef} />
+                  <StepDetails
+                    stepId={selectedStepId}
+                    flowDef={flowDef}
+                    onOpenInMainPanel={openInMainPanel}
+                  />
                 </TabsContent>
 
                 <TabsContent value="problems" className="ml-3 mr-3">
