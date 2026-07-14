@@ -1,0 +1,31 @@
+import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field";
+import { Textarea } from "./ui/textarea";
+
+type Props = {
+  label: string;
+  value?: string;
+  error?: string;
+  description?: string;
+};
+
+export function TextAreaField({ label, value, description, error }: Props) {
+  if (value === undefined || value === "undefined") return null;
+  return (
+    <Field
+      orientation="horizontal"
+      className="[&>[data-slot=field-label]]:flex-none"
+    >
+      <FieldLabel htmlFor={label} className="w-20 shrink-0">
+        {label}
+      </FieldLabel>
+      {description && <FieldDescription>{description}</FieldDescription>}
+      {error && <FieldError>{error}</FieldError>}
+      <Textarea
+        id={label}
+        value={value}
+        readOnly
+        className="flex-1 mr-3 dark:bg-neutral-875 border-0"
+      />
+    </Field>
+  );
+}

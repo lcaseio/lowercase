@@ -82,6 +82,12 @@ export type UnreachableRefProblem = {
   targetStepId: StepId;
 };
 
+// a cycle exists somewhere among the flow's steps; which steps make up the
+// cycle isn't determined yet, just that toposort couldn't fully order them
+export type CycleDetectedProblem = {
+  type: "CycleDetected";
+};
+
 export type FlowProblem =
   | UnknownStepReferenceProblem
   | DuplicateStepIdProblem
@@ -91,6 +97,7 @@ export type FlowProblem =
   | InvalidExportRefPathProblem
   | InvalidRefStepIdProblem
   | UnreachableRefProblem
+  | CycleDetectedProblem
   | InvalidRefScopeProblem;
 
 export type ProblemType = FlowProblem["type"];

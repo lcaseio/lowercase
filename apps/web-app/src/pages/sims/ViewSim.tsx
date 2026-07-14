@@ -8,8 +8,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-import { Header } from "@/layout/Header";
-import { Main } from "@/layout/Main";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useGetSimQuery } from "@/redux/api/sims-api";
 import { setReusedStepIds } from "@/redux/slices/sims-slice";
@@ -39,27 +37,24 @@ export function ViewSim() {
   }, [simQuery, dispatch]);
 
   return (
-    <div id="page-wrapper">
-      <Header />
-      <Main>
-        <h2 className="text-xl font-bold mb-5">Sims</h2>
-        <Breadcrumb className="pt-0">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/sims">Sims</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>View</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <SimsFlowView
-          flowDef={flowDef.data?.ok ? flowDef.data.value.definition : null}
-        />
-      </Main>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-5">Sims</h2>
+      <Breadcrumb className="pt-0">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/sims">Sims</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>View</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <SimsFlowView
+        flowDef={flowDef.data?.ok ? flowDef.data.value.definition : null}
+      />
     </div>
   );
 }
