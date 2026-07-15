@@ -1,6 +1,6 @@
 import type { ECElementEvent, EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
-import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
+// import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
 import type { AnyEvent } from "@lcase/types";
 
@@ -88,6 +88,9 @@ export function EventGraph({
       dimensions: ["time", "index", "label", "eventId"],
       source: dataObject,
     },
+    // ** disabling tooltips now in favor of side by side view the new ui allows
+    // maybe a simpler tooltip would be warranted
+    //
     // tooltip: {
     //   trigger: "item",
 
