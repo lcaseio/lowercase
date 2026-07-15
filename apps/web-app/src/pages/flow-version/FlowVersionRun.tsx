@@ -1,44 +1,68 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
+import { shallowEqual } from "react-redux";
+import { skipToken } from "@reduxjs/toolkit/query";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-
-import { FlowVersionGraphPanel } from "@/components/flow-version/FlowVersionGraphPanel";
-import { FlowVersionDetailsPanel } from "@/components/flow-version/FlowVersionDetailsPanel";
 import type { Node } from "@xyflow/react";
-import type {
-  MainPanelLanguage,
-  OpenInMainPanel,
-} from "@/components/MainPanelTypes";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
+import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
+import { makeSelectRunEvents, selectEventById } from "@/redux/slices/events-slice";
+import {
+  clearRun,
+  enterFlowVersionRunScope,
+  selectFlowVersionRunState,
+  setActiveDetailsTab,
+  setActiveMainTab,
+  setFocusedContent,
+  setParamHash,
+  setSelectedEventId,
+  setSelectedStepId,
+} from "@/redux/slices/flow-version-run-slice";
+import { FlowVersionRunParamsPanel } from "@/components/flow-version/FlowVersionRunParamsPanel";
+import { FlowVersionRunGraphPanel } from "@/components/flow-version/FlowVersionRunGraphPanel";
+import { FlowVersionRunDetailsPanel } from "@/components/flow-version/FlowVersionRunDetailsPanel";
 import { useFlowVersionOutletContext } from "./context";
 
-type FocusedContent = {
-  title: string;
-  value: string;
-  language: MainPanelLanguage;
-};
-
 export function FlowVersionRun() {
-  const { flowDef, flowAnalysis } = useFlowVersionOutletContext();
-  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
-  const [activeDetailsTab, setActiveDetailsTab] = useState("settings");
-  const [activeMainTab, setActiveMainTab] = useState("list");
-  const [focusedContent, setFocusedContent] = useState<FocusedContent | null>(
-    null,
+  const { flowDef, flowAnalysis, flowId, flowVersionId, flowVersionRecord } =
+    useFlowVersionOutletContext();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (flowVersionId && flowId) {
+      dispatch(enterFlowVersionRunScope({ flowVersionId, flowId }));
+    }
+  }, [dispatch, flowVersionId, flowId]);
+
+  const runState = useAppSelector((s) =>
+    selectFlowVersionRunState(s, flowVersionId),
   );
 
-  const problems = flowAnalysis?.flowAnalysis.problems ?? [];
+  const selectRunEventsRef = useRef(makeSelectRunEvents());
+  const events = useAppSelector(
+    (s) => selectRunEventsRef.current(s, runState.runId),
+    shallowEqual,
+  );
+  useGetAllRunEventsQuery(runState.runId ? { runId: runState.runId } : skipToken);
+
+  const selectedEvent = useAppSelector((s) =>
+    selectEventById(s, runState.selectedEventId),
+  );
 
   function handleNodeClick(node: Node) {
-    setSelectedStepId(node.id);
-    setActiveDetailsTab("details");
+    dispatch(setSelectedStepId(node.id));
+    dispatch(setActiveDetailsTab("stepOutput"));
   }
 
-  const openInMainPanel: OpenInMainPanel = (title, value, language) => {
-    setFocusedContent({ title, value, language });
-    setActiveMainTab("focused");
+  const openInMainPanel = (
+    title: string,
+    value: string,
+    language: "json" | "markdown" | "plaintext",
+  ) => {
+    dispatch(setFocusedContent({ title, value, language }));
   };
 
   return (
@@ -46,29 +70,46 @@ export function FlowVersionRun() {
       orientation="horizontal"
       className="h-full border dark:border-neutral-800"
     >
-      <ResizablePanel defaultSize="20%" className="pl-5 dark:bg-neutral-875">
-        <h2>Run Flow</h2>
+      <ResizablePanel defaultSize="20%" className="dark:bg-neutral-875">
+        <FlowVersionRunParamsPanel
+          flowId={flowId}
+          flowVersionId={flowVersionId}
+          flowDefHash={flowVersionRecord?.definitionHash ?? null}
+          flowDef={flowDef}
+          refs={flowAnalysis?.flowAnalysis.refs ?? []}
+          params={flowDef?.params}
+          selectedParamHashes={runState.selectedParamHashes}
+          runId={runState.runId}
+          runCreatedAt={runState.runCreatedAt}
+          onParamChange={(name, hash) => dispatch(setParamHash({ name, hash }))}
+          onClearRun={() => dispatch(clearRun())}
+          onOpenInMainPanel={openInMainPanel}
+        />
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize="50%">
-        <FlowVersionGraphPanel
+      <ResizablePanel defaultSize="50%" style={{ overflow: "hidden" }}>
+        <FlowVersionRunGraphPanel
           flowDef={flowDef}
           flowAnalysis={flowAnalysis}
-          activeMainTab={activeMainTab}
-          onActiveMainTabChange={setActiveMainTab}
-          focusedContent={focusedContent}
+          activeMainTab={runState.activeMainTab}
+          onActiveMainTabChange={(tab) => dispatch(setActiveMainTab(tab))}
           onNodeClick={handleNodeClick}
+          events={events}
+          selectedEventId={runState.selectedEventId}
+          onEventClick={(id) => {
+            dispatch(setSelectedEventId(id));
+            dispatch(setActiveDetailsTab("eventDetails"));
+          }}
+          focusedContent={runState.focusedContent}
         />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" className="dark:bg-neutral-800">
-        <FlowVersionDetailsPanel
-          flowDef={flowDef}
-          problems={problems}
-          activeDetailsTab={activeDetailsTab}
-          onActiveDetailsTabChange={setActiveDetailsTab}
-          selectedStepId={selectedStepId}
-          onOpenInMainPanel={openInMainPanel}
+        <FlowVersionRunDetailsPanel
+          activeDetailsTab={runState.activeDetailsTab}
+          onActiveDetailsTabChange={(tab) => dispatch(setActiveDetailsTab(tab))}
+          selectedEvent={selectedEvent}
+          selectedStepId={runState.selectedStepId}
         />
       </ResizablePanel>
     </ResizablePanelGroup>

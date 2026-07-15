@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { RunDetailsFlowViewer } from "./RunDetailsFlowViewer";
-import { RunDetailsEventGraph } from "./RunDetailsEventGraph";
+import { EventGraph } from "../EventGraph";
 import { EventDetails } from "../EventDetails";
 import {
   useRunDetailsController,
@@ -28,8 +28,14 @@ export type RunDetailsTabsProps = {
 };
 
 export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
-  const { activeTab, setActiveTab, selectedEventId, runId, flowDefHash } =
-    useRunDetailsController();
+  const {
+    activeTab,
+    setActiveTab,
+    selectedEventId,
+    setSelectedEventId,
+    runId,
+    flowDefHash,
+  } = useRunDetailsController();
   // const allEvents = useAppSelector((state) => state.events.events);
 
   // use ref
@@ -81,7 +87,14 @@ export function RunDetailsTabs({ view }: RunDetailsTabsProps) {
         <RunDetailsFlowViewer flowDef={flowDef} />
       </TabsContent>
       <TabsContent value="events">
-        <RunDetailsEventGraph events={events} />
+        <EventGraph
+          events={events}
+          selectedEventId={selectedEventId}
+          onEventClick={(id) => {
+            setSelectedEventId(id);
+            setActiveTab("details");
+          }}
+        />
       </TabsContent>
       <TabsContent value="details">
         <EventDetails event={selectedEvent} />

@@ -2,11 +2,12 @@ import type { ECElementEvent, EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
 import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
-import { useRunDetailsController } from "./use-run-details-controller";
 import type { AnyEvent } from "@lcase/types";
 
-export type RunDetailsEventGraphProps = {
+export type EventGraphProps = {
   events: AnyEvent[];
+  selectedEventId: string | null;
+  onEventClick: (eventId: string) => void;
 };
 
 type DataPoint = {
@@ -17,10 +18,11 @@ type DataPoint = {
 };
 type Dim = keyof DataPoint;
 
-export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
-  const { setSelectedEventId, setActiveTab, selectedEventId } =
-    useRunDetailsController();
-
+export function EventGraph({
+  events,
+  selectedEventId,
+  onEventClick,
+}: EventGraphProps) {
   /**
    * old way to create events array, no longer used, here for reference.
    */
@@ -324,9 +326,7 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
     const { eventId } = params.data;
     if (!eventId) return;
 
-    console.log(eventId);
-    setSelectedEventId(eventId);
-    setActiveTab("details");
+    onEventClick(eventId);
   };
 
   const visibleCount = useMemo(() => {
@@ -359,15 +359,12 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
                   ? 14
                   : 15;
   return (
-    <div className="w-12/12 h-[800px] mb-10 caret-blue-500 rounded-lg">
+    <div className="w-full h-full">
       <EChartsReact
         option={option}
         onEvents={{ datazoom: onDataZoom, click: onChartClick }}
-        style={{
-          height: "100%",
-          width: "100%",
-        }}
-        className="p-4 rounded-xl bg-neutral-800 dark:bg-neutral-800"
+        style={{ height: "100%", width: "100%" }}
+        className="p-4 bg-neutral-800 dark:bg-neutral-800"
       />
     </div>
   );

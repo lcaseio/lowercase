@@ -27,6 +27,7 @@ export function CodeEditor({
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
         fontSize: 13,
+        wordWrap: "on",
       }}
     />
   );

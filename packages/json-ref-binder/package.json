@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./resolve-path": {
+      "types": "./dist/resolve-path.d.ts",
+      "import": "./dist/resolve-path.js"
     }
   },
   "scripts": {

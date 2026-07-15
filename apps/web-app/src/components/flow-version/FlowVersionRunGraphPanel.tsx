@@ -1,26 +1,26 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlowGraph } from "@/components/FlowGraph";
+import { EventGraph } from "@/components/EventGraph";
 import { CodeEditor } from "@/components/CodeEditor";
-import { CurlyBracesIcon, NetworkIcon } from "lucide-react";
+import { ChartNoAxesGanttIcon, NetworkIcon } from "lucide-react";
 import type { Node } from "@xyflow/react";
-import type { FlowDefinition } from "@lcase/types";
+import type { AnyEvent, FlowDefinition } from "@lcase/types";
 import type { useFlowAnalysis } from "@/hooks/use-flow-analysis";
-import type { MainPanelLanguage } from "@/components/MainPanelTypes";
-import { RunDetailsEventGraph } from "../runs/RunDetailsEventGraph";
-
-type FocusedContent = {
-  title: string;
-  value: string;
-  language: MainPanelLanguage;
-};
+import type {
+  FlowVersionRunFocusedContent,
+  FlowVersionRunMainTab,
+} from "@/redux/slices/flow-version-run-slice";
 
 type Props = {
   flowDef: FlowDefinition | null;
   flowAnalysis: ReturnType<typeof useFlowAnalysis>;
-  activeMainTab: string;
-  onActiveMainTabChange: (tab: string) => void;
-  focusedContent: FocusedContent | null;
+  activeMainTab: FlowVersionRunMainTab;
+  onActiveMainTabChange: (tab: FlowVersionRunMainTab) => void;
   onNodeClick: (node: Node) => void;
+  events: AnyEvent[];
+  selectedEventId: string | null;
+  onEventClick: (eventId: string) => void;
+  focusedContent: FlowVersionRunFocusedContent | null;
 };
 
 export function FlowVersionRunGraphPanel({
@@ -28,29 +28,35 @@ export function FlowVersionRunGraphPanel({
   flowAnalysis,
   activeMainTab,
   onActiveMainTabChange,
-  focusedContent,
   onNodeClick,
+  events,
+  selectedEventId,
+  onEventClick,
+  focusedContent,
 }: Props) {
   return (
     <Tabs
       value={activeMainTab}
-      onValueChange={onActiveMainTabChange}
+      onValueChange={(v) => onActiveMainTabChange(v as FlowVersionRunMainTab)}
       className="h-full flex flex-col"
     >
       <TabsList variant="line">
-        <TabsTrigger value="list">
+        <TabsTrigger value="graph">
           <NetworkIcon />
-          Graph
+          Flow Chart
         </TabsTrigger>
-        <TabsTrigger value="create">
-          <CurlyBracesIcon />
-          JSON
+        <TabsTrigger value="events">
+          <ChartNoAxesGanttIcon />
+          Event Graph
         </TabsTrigger>
         {focusedContent && (
           <TabsTrigger value="focused">{focusedContent.title}</TabsTrigger>
         )}
       </TabsList>
-      <TabsContent value="list" className="flex-1 min-h-0 dark:bg-panel-subtle">
+      <TabsContent
+        value="graph"
+        className="flex-1 min-h-0 dark:bg-panel-subtle"
+      >
         {flowDef ? (
           <FlowGraph
             flowDef={flowDef}
@@ -62,8 +68,12 @@ export function FlowVersionRunGraphPanel({
           "invalid flow def"
         )}
       </TabsContent>
-      <TabsContent value="create">
-        {flowDef && <RunDetailsEventGraph events={[]} />}
+      <TabsContent value="events" className="flex-1 min-h-0">
+        <EventGraph
+          events={events}
+          selectedEventId={selectedEventId}
+          onEventClick={onEventClick}
+        />
       </TabsContent>
       {focusedContent && (
         <TabsContent value="focused" className="flex-1 min-h-0">

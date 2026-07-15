@@ -1,5 +1,6 @@
 import "./App.css";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { useGetFlowsQuery } from "./redux/api/flows-api";
 import { AppShell } from "./layout/AppShell";
 import { Dashboard } from "./pages/Dashboard";
 import { Flows } from "./pages/Flows";
@@ -19,15 +20,38 @@ import { FlowVersionModePlaceholder } from "./pages/flow-version/FlowVersionMode
 import { FlowVersionView } from "./pages/flow-version/FlowVersionView";
 import { FlowVersionRun } from "./pages/flow-version/FlowVersionRun";
 
+function SpikeIndexRedirect() {
+  const { data, isLoading } = useGetFlowsQuery();
+
+  if (isLoading) return <div className="p-4">Loading flows...</div>;
+
+  const first = data?.ok ? data.value[0] : null;
+  if (!first) {
+    return (
+      <div className="p-4">
+        No flows yet.{" "}
+        <Link to="/flows" className="underline">
+          Create one
+        </Link>
+        .
+      </div>
+    );
+  }
+
+  return (
+    <Navigate
+      to={`/spike/${first.flow.id}/${first.latestVersion.id}/edit`}
+      replace
+    />
+  );
+}
+
 export function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
         <Route path="/" element={<Dashboard />} />
-        <Route
-          path="/spike"
-          element={<Navigate to="/spike/demo-flow/v1" replace />}
-        />
+        <Route path="/spike" element={<SpikeIndexRedirect />} />
         <Route
           path="/spike/:flowId/:versionId"
           element={<FlowVersionWorkspace />}
