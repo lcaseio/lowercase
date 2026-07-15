@@ -83,7 +83,6 @@ export const flowVersionRunSlice = createSlice({
       state.selectedEventId = null;
       state.selectedStepId = null;
       state.activeDetailsTab = "eventDetails";
-      state.activeMainTab = "events";
     },
     setActiveMainTab: (state, action: PayloadAction<FlowVersionRunMainTab>) => {
       state.activeMainTab = action.payload;

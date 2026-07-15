@@ -24,6 +24,7 @@ import {
 import { FlowVersionRunParamsPanel } from "@/components/flow-version/FlowVersionRunParamsPanel";
 import { FlowVersionRunGraphPanel } from "@/components/flow-version/FlowVersionRunGraphPanel";
 import { FlowVersionRunDetailsPanel } from "@/components/flow-version/FlowVersionRunDetailsPanel";
+import { useStepStatuses } from "@/hooks/use-step-statuses";
 import { useFlowVersionOutletContext } from "./context";
 
 export function FlowVersionRun() {
@@ -51,6 +52,8 @@ export function FlowVersionRun() {
   const selectedEvent = useAppSelector((s) =>
     selectEventById(s, runState.selectedEventId),
   );
+
+  const stepStatuses = useStepStatuses(events, Object.keys(flowDef?.steps ?? {}));
 
   function handleNodeClick(node: Node) {
     dispatch(setSelectedStepId(node.id));
@@ -101,6 +104,7 @@ export function FlowVersionRun() {
             dispatch(setActiveDetailsTab("eventDetails"));
           }}
           focusedContent={runState.focusedContent}
+          stepStatuses={stepStatuses}
         />
       </ResizablePanel>
       <ResizableHandle withHandle />

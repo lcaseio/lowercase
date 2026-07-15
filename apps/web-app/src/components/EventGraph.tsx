@@ -88,31 +88,31 @@ export function EventGraph({
       dimensions: ["time", "index", "label", "eventId"],
       source: dataObject,
     },
-    tooltip: {
-      trigger: "item",
+    // tooltip: {
+    //   trigger: "item",
 
-      formatter: (params: TopLevelFormatterParams) => {
-        const p = Array.isArray(params) ? params[0] : params;
-        if (!isEventPoint(p.data)) return "";
-        const point = p.data;
-        const { time, index, label, eventId } = point;
-        const t = new Date(time).toLocaleString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
+    //   formatter: (params: TopLevelFormatterParams) => {
+    //     const p = Array.isArray(params) ? params[0] : params;
+    //     if (!isEventPoint(p.data)) return "";
+    //     const point = p.data;
+    //     const { time, index, label, eventId } = point;
+    //     const t = new Date(time).toLocaleString("en-US", {
+    //       hour: "2-digit",
+    //       minute: "2-digit",
+    //       second: "2-digit",
+    //     });
 
-        const eventDetails = `id: ${eventId}<br/>`;
-        const eventSource = `source: ${events[index].source}<br/>`;
-        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3 whitespace-pre-wrap wrap-break-word">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
-        return (
-          `#${index} - ${label}<br/>${t}<br/>` +
-          eventDetails +
-          eventSource +
-          eventData
-        );
-      },
-    },
+    //     const eventDetails = `id: ${eventId}<br/>`;
+    //     const eventSource = `source: ${events[index].source}<br/>`;
+    //     const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3 whitespace-pre-wrap wrap-break-word">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
+    //     return (
+    //       `#${index} - ${label}<br/>${t}<br/>` +
+    //       eventDetails +
+    //       eventSource +
+    //       eventData
+    //     );
+    //   },
+    // },
 
     grid: [
       { left: 50, right: 80, top: 20, bottom: 180 },

@@ -10,6 +10,7 @@ import type {
   FlowVersionRunFocusedContent,
   FlowVersionRunMainTab,
 } from "@/redux/slices/flow-version-run-slice";
+import type { StepStatus } from "@/hooks/use-step-statuses";
 
 type Props = {
   flowDef: FlowDefinition | null;
@@ -21,6 +22,7 @@ type Props = {
   selectedEventId: string | null;
   onEventClick: (eventId: string) => void;
   focusedContent: FlowVersionRunFocusedContent | null;
+  stepStatuses: Record<string, StepStatus>;
 };
 
 export function FlowVersionRunGraphPanel({
@@ -33,6 +35,7 @@ export function FlowVersionRunGraphPanel({
   selectedEventId,
   onEventClick,
   focusedContent,
+  stepStatuses,
 }: Props) {
   return (
     <Tabs
@@ -63,6 +66,7 @@ export function FlowVersionRunGraphPanel({
             layout={flowAnalysis?.layout ?? null}
             outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
             onNodeClickHandler={onNodeClick}
+            stepStatuses={stepStatuses}
           ></FlowGraph>
         ) : (
           "invalid flow def"
