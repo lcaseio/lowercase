@@ -4,11 +4,11 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "./ui/accordion";
+} from "../ui/accordion";
 import { InputField } from "./InputField";
 import { CodeEditorField } from "./CodeEditorField";
 import { EvalContextField } from "./EvalContextField";
-import type { OpenInMainPanel } from "./MainPanelTypes";
+import type { OpenInMainPanel } from "../MainPanelTypes";
 
 type Props = {
   label: string;

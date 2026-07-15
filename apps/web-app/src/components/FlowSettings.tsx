@@ -1,6 +1,6 @@
 import type { FlowDefinition } from "@lcase/types";
-import { InputField } from "./InputField";
-import { TextAreaField } from "./TextAreaField";
+import { InputField } from "./fields/InputField";
+import { TextAreaField } from "./fields/TextAreaField";
 
 type Props = Pick<
   FlowDefinition,

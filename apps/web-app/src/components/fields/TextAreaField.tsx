@@ -1,5 +1,5 @@
-import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field";
-import { Input } from "./ui/input";
+import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
+import { Textarea } from "../ui/textarea";
 
 type Props = {
   label: string;
@@ -8,8 +8,8 @@ type Props = {
   description?: string;
 };
 
-export function InputField({ label, value, description, error }: Props) {
-  if (value === undefined) return null;
+export function TextAreaField({ label, value, description, error }: Props) {
+  if (value === undefined || value === "undefined") return null;
   return (
     <Field
       orientation="horizontal"
@@ -20,12 +20,11 @@ export function InputField({ label, value, description, error }: Props) {
       </FieldLabel>
       {description && <FieldDescription>{description}</FieldDescription>}
       {error && <FieldError>{error}</FieldError>}
-      <Input
+      <Textarea
         id={label}
-        type="text"
         value={value}
         readOnly
-        className="flex-1 mr-3"
+        className="flex-1 mr-3 dark:bg-neutral-875 border-0"
       />
     </Field>
   );

@@ -2,7 +2,7 @@ import type { FlowDefinition } from "@lcase/types";
 import { StepHttpJsonDetails } from "./StepHttpJsonDetails";
 import { StepParallelDetails } from "./StepParallelDetails";
 import { StepJoinDetails } from "./StepJoinDetails";
-import type { OpenInMainPanel } from "./MainPanelTypes";
+import type { OpenInMainPanel } from "../MainPanelTypes";
 
 type Props = {
   flowDef: FlowDefinition | null;

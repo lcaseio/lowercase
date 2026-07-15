@@ -1,6 +1,6 @@
 import type { StepJoin } from "@lcase/types";
-import { InputField } from "./InputField";
-import { InputListField } from "./InputListField";
+import { InputField } from "../fields/InputField";
+import { InputListField } from "../fields/InputListField";
 
 export function StepJoinDetails({ step }: { step: StepJoin }) {
   return (

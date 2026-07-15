@@ -1,5 +1,5 @@
-import { Field, FieldLabel } from "./ui/field";
-import { Input } from "./ui/input";
+import { Field, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 
 type Props = {
   label: string;
