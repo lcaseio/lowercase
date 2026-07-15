@@ -1,6 +1,6 @@
-import { Field, FieldLabel } from "./ui/field";
-import { CodeEditor } from "./CodeEditor";
-import { Button } from "./ui/button";
+import { Field, FieldLabel } from "../ui/field";
+import { CodeEditor } from "../CodeEditor";
+import { Button } from "../ui/button";
 import { Maximize2Icon } from "lucide-react";
 
 type Props = {

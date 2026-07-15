@@ -57,6 +57,7 @@ export const artifactsApi = createApi({
 export const {
   useListArtifactsQuery,
   useGetArtifactQuery,
+  useLazyGetArtifactQuery,
   useAddJsonArtifactMutation,
   useUploadArtifactFileMutation,
 } = artifactsApi;

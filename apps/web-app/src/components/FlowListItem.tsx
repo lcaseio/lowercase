@@ -40,6 +40,12 @@ export function FlowListItem({ flowItem }: { flowItem: FlowListItem }) {
           </Button>
         </Link>
 
+        <Link to={`/spike/${flow.id}/${latestVersion.id}/edit`}>
+          <Button variant="outline" size="sm" className="cursor-pointer">
+            Open Workspace
+          </Button>
+        </Link>
+
         <Button
           variant="outline"
           size="sm"

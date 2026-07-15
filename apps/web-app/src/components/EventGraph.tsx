@@ -1,12 +1,13 @@
 import type { ECElementEvent, EChartsOption } from "echarts";
 import EChartsReact from "echarts-for-react";
-import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
+// import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
-import { useRunDetailsController } from "./use-run-details-controller";
 import type { AnyEvent } from "@lcase/types";
 
-export type RunDetailsEventGraphProps = {
+export type EventGraphProps = {
   events: AnyEvent[];
+  selectedEventId: string | null;
+  onEventClick: (eventId: string) => void;
 };
 
 type DataPoint = {
@@ -17,10 +18,11 @@ type DataPoint = {
 };
 type Dim = keyof DataPoint;
 
-export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
-  const { setSelectedEventId, setActiveTab, selectedEventId } =
-    useRunDetailsController();
-
+export function EventGraph({
+  events,
+  selectedEventId,
+  onEventClick,
+}: EventGraphProps) {
   /**
    * old way to create events array, no longer used, here for reference.
    */
@@ -86,31 +88,34 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
       dimensions: ["time", "index", "label", "eventId"],
       source: dataObject,
     },
-    tooltip: {
-      trigger: "item",
+    // ** disabling tooltips now in favor of side by side view the new ui allows
+    // maybe a simpler tooltip would be warranted
+    //
+    // tooltip: {
+    //   trigger: "item",
 
-      formatter: (params: TopLevelFormatterParams) => {
-        const p = Array.isArray(params) ? params[0] : params;
-        if (!isEventPoint(p.data)) return "";
-        const point = p.data;
-        const { time, index, label, eventId } = point;
-        const t = new Date(time).toLocaleString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
+    //   formatter: (params: TopLevelFormatterParams) => {
+    //     const p = Array.isArray(params) ? params[0] : params;
+    //     if (!isEventPoint(p.data)) return "";
+    //     const point = p.data;
+    //     const { time, index, label, eventId } = point;
+    //     const t = new Date(time).toLocaleString("en-US", {
+    //       hour: "2-digit",
+    //       minute: "2-digit",
+    //       second: "2-digit",
+    //     });
 
-        const eventDetails = `id: ${eventId}<br/>`;
-        const eventSource = `source: ${events[index].source}<br/>`;
-        const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3 whitespace-pre-wrap wrap-break-word">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
-        return (
-          `#${index} - ${label}<br/>${t}<br/>` +
-          eventDetails +
-          eventSource +
-          eventData
-        );
-      },
-    },
+    //     const eventDetails = `id: ${eventId}<br/>`;
+    //     const eventSource = `source: ${events[index].source}<br/>`;
+    //     const eventData = `data:<br/><textarea cols="80" rows="10" wrap="hard" class="font-mono text-[0.7rem]/3 whitespace-pre-wrap wrap-break-word">${JSON.stringify(events[index].data, null, 2)}</textarea><br/>`;
+    //     return (
+    //       `#${index} - ${label}<br/>${t}<br/>` +
+    //       eventDetails +
+    //       eventSource +
+    //       eventData
+    //     );
+    //   },
+    // },
 
     grid: [
       { left: 50, right: 80, top: 20, bottom: 180 },
@@ -324,9 +329,7 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
     const { eventId } = params.data;
     if (!eventId) return;
 
-    console.log(eventId);
-    setSelectedEventId(eventId);
-    setActiveTab("details");
+    onEventClick(eventId);
   };
 
   const visibleCount = useMemo(() => {
@@ -359,15 +362,12 @@ export function RunDetailsEventGraph({ events }: RunDetailsEventGraphProps) {
                   ? 14
                   : 15;
   return (
-    <div className="w-12/12 h-[800px] mb-10 caret-blue-500 rounded-lg">
+    <div className="w-full h-full">
       <EChartsReact
         option={option}
         onEvents={{ datazoom: onDataZoom, click: onChartClick }}
-        style={{
-          height: "100%",
-          width: "100%",
-        }}
-        className="p-4 rounded-xl bg-neutral-800 dark:bg-neutral-800"
+        style={{ height: "100%", width: "100%" }}
+        className="p-4 bg-neutral-800 dark:bg-neutral-800"
       />
     </div>
   );

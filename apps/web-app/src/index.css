@@ -129,3 +129,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes step-status-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.77 0.16 75 / 0.6);
+    }
+    50% {
+      box-shadow: 0 0 0 6px oklch(0.77 0.16 75 / 0.15);
+    }
+  }
+  .animate-step-pulse {
+    animation: step-status-pulse 1.8s ease-in-out infinite;
+  }
+}

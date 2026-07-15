@@ -1,9 +1,9 @@
 import type { StepHttpJson } from "@lcase/types";
-import { InputField } from "./InputField";
-import { HeadersField } from "./HeadersField";
-import { CodeEditorField } from "./CodeEditorField";
-import { ExportsField } from "./ExportsField";
-import type { OpenInMainPanel } from "./MainPanelTypes";
+import { InputField } from "../fields/InputField";
+import { HeadersField } from "../fields/HeadersField";
+import { CodeEditorField } from "../fields/CodeEditorField";
+import { ExportsField } from "../fields/ExportsField";
+import type { OpenInMainPanel } from "../MainPanelTypes";
 
 type Props = {
   step: StepHttpJson;

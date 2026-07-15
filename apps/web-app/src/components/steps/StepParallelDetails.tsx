@@ -1,6 +1,6 @@
 import type { StepParallel } from "@lcase/types";
-import { InputField } from "./InputField";
-import { InputListField } from "./InputListField";
+import { InputField } from "../fields/InputField";
+import { InputListField } from "../fields/InputListField";
 
 export function StepParallelDetails({ step }: { step: StepParallel }) {
   return (
