@@ -1,21 +1,35 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventDetails } from "@/components/EventDetails";
 import { FileTextIcon, TerminalSquareIcon } from "lucide-react";
-import type { AnyEvent } from "@lcase/types";
+import type { AnyEvent, FlowDefinition, Ref } from "@lcase/types";
 import type { FlowVersionRunDetailsTab } from "@/redux/slices/flow-version-run-slice";
+import type { StepRunInfo } from "@/hooks/use-step-run-info";
+import type { OpenInMainPanel } from "@/components/MainPanelTypes";
+import { StepResultsTab } from "./StepResultsTab";
 
 type Props = {
   activeDetailsTab: FlowVersionRunDetailsTab;
   onActiveDetailsTabChange: (tab: FlowVersionRunDetailsTab) => void;
   selectedEvent: AnyEvent | null;
   selectedStepId: string | null;
+  flowDef: FlowDefinition | null;
+  refs: Ref[];
+  paramHashes: Record<string, string>;
+  stepRunInfo: Record<string, StepRunInfo>;
+  onOpenInMainPanel: OpenInMainPanel;
 };
 
+// groups and drives far right panel's tabs selected state
 export function FlowVersionRunDetailsPanel({
   activeDetailsTab,
   onActiveDetailsTabChange,
   selectedEvent,
   selectedStepId,
+  flowDef,
+  refs,
+  paramHashes,
+  stepRunInfo,
+  onOpenInMainPanel,
 }: Props) {
   return (
     <Tabs
@@ -30,24 +44,26 @@ export function FlowVersionRunDetailsPanel({
           <FileTextIcon />
           Event Details
         </TabsTrigger>
-        <TabsTrigger value="stepOutput">
+        <TabsTrigger value="stepResults">
           <TerminalSquareIcon />
-          Step Output
+          Step Results
         </TabsTrigger>
       </TabsList>
       <TabsContent value="eventDetails" className="ml-3 mr-3">
-        <EventDetails event={selectedEvent} />
+        <EventDetails
+          event={selectedEvent}
+          onOpenInMainPanel={onOpenInMainPanel}
+        />
       </TabsContent>
-      <TabsContent value="stepOutput" className="ml-3 mr-3">
-        {selectedStepId ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Step "{selectedStepId}" output -- coming soon.
-          </p>
-        ) : (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Click a step in the graph to see its run output.
-          </p>
-        )}
+      <TabsContent value="stepResults" className="ml-3 mr-3">
+        <StepResultsTab
+          stepId={selectedStepId}
+          flowDef={flowDef}
+          refs={refs}
+          paramHashes={paramHashes}
+          stepRunInfo={stepRunInfo}
+          onOpenInMainPanel={onOpenInMainPanel}
+        />
       </TabsContent>
     </Tabs>
   );

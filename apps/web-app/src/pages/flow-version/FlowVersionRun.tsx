@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { shallowEqual } from "react-redux";
 import { skipToken } from "@reduxjs/toolkit/query";
 import {
@@ -9,7 +9,10 @@ import {
 import type { Node } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
-import { makeSelectRunEvents, selectEventById } from "@/redux/slices/events-slice";
+import {
+  makeSelectRunEvents,
+  selectEventById,
+} from "@/redux/slices/events-slice";
 import {
   clearRun,
   enterFlowVersionRunScope,
@@ -24,9 +27,10 @@ import {
 import { FlowVersionRunParamsPanel } from "@/components/flow-version/FlowVersionRunParamsPanel";
 import { FlowVersionRunGraphPanel } from "@/components/flow-version/FlowVersionRunGraphPanel";
 import { FlowVersionRunDetailsPanel } from "@/components/flow-version/FlowVersionRunDetailsPanel";
-import { useStepStatuses } from "@/hooks/use-step-statuses";
+import { useStepRunInfo } from "@/hooks/use-step-run-info";
 import { useFlowVersionOutletContext } from "./context";
 
+// run page for the flow workspace version
 export function FlowVersionRun() {
   const { flowDef, flowAnalysis, flowId, flowVersionId, flowVersionRecord } =
     useFlowVersionOutletContext();
@@ -47,17 +51,29 @@ export function FlowVersionRun() {
     (s) => selectRunEventsRef.current(s, runState.runId),
     shallowEqual,
   );
-  useGetAllRunEventsQuery(runState.runId ? { runId: runState.runId } : skipToken);
+  useGetAllRunEventsQuery(
+    runState.runId ? { runId: runState.runId } : skipToken,
+  );
 
   const selectedEvent = useAppSelector((s) =>
     selectEventById(s, runState.selectedEventId),
   );
 
-  const stepStatuses = useStepStatuses(events, Object.keys(flowDef?.steps ?? {}));
+  const stepRunInfo = useStepRunInfo(events, Object.keys(flowDef?.steps ?? {}));
+  const stepStatuses = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(stepRunInfo).map(([stepId, info]) => [
+          stepId,
+          info.status,
+        ]),
+      ),
+    [stepRunInfo],
+  );
 
   function handleNodeClick(node: Node) {
     dispatch(setSelectedStepId(node.id));
-    dispatch(setActiveDetailsTab("stepOutput"));
+    dispatch(setActiveDetailsTab("stepResults"));
   }
 
   const openInMainPanel = (
@@ -114,6 +130,11 @@ export function FlowVersionRun() {
           onActiveDetailsTabChange={(tab) => dispatch(setActiveDetailsTab(tab))}
           selectedEvent={selectedEvent}
           selectedStepId={runState.selectedStepId}
+          flowDef={flowDef}
+          refs={flowAnalysis?.flowAnalysis.refs ?? []}
+          paramHashes={runState.selectedParamHashes}
+          stepRunInfo={stepRunInfo}
+          onOpenInMainPanel={openInMainPanel}
         />
       </ResizablePanel>
     </ResizablePanelGroup>

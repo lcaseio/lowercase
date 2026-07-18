@@ -5,6 +5,7 @@ import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { FlowVersionModeNav } from "./FlowVersionModeNav";
 import type { FlowVersionOutletContext } from "./context";
 
+// flow version workspace root with outlet for sub pages
 export function FlowVersionWorkspace() {
   const { flowId, versionId } = useParams<{
     flowId: string;

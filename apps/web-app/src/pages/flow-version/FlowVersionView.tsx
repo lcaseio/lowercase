@@ -20,6 +20,7 @@ type FocusedContent = {
   language: MainPanelLanguage;
 };
 
+// view page of the flow version workspace
 export function FlowVersionView() {
   const { flowDef, flowAnalysis } = useFlowVersionOutletContext();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
