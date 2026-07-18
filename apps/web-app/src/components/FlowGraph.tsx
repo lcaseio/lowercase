@@ -5,7 +5,7 @@ import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
-import type { StepStatus } from "@/hooks/use-step-statuses";
+import type { StepStatus } from "@/hooks/use-step-run-info";
 
 // same graphLayout-based rendering as FlowEditPanel, but taking a flowDef
 // directly instead of fetching by route param -- FlowTree's replacement for
@@ -36,7 +36,7 @@ function statusNodeStyle(status: StepStatus | undefined): {
       return { style: { border: "2px solid #34d399" } };
     case "failed":
       return { style: { border: "2px solid #d3344a" } };
-    case "pending":
+    case "initialized":
     default:
       return {};
   }

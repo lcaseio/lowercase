@@ -1,4 +1,8 @@
 import type { AnyEvent, AnyScope } from "@lcase/types";
+import { CodeEditor } from "./CodeEditor";
+import type { OpenInMainPanel } from "./MainPanelTypes";
+import { Button } from "./ui/button";
+import { Maximize2Icon } from "lucide-react";
 
 function getFieldColor(field: string) {
   const f = field as keyof AnyEvent;
@@ -69,32 +73,58 @@ const fieldOrder = [
 export function EventDetails({
   event,
   index,
+  onOpenInMainPanel,
 }: {
   event: AnyEvent | null;
   index?: string;
+  onOpenInMainPanel?: OpenInMainPanel;
 }) {
   if (!event)
     return <div>Select an event in the event graph to view its details.</div>;
+
+  async function openEvent(title: string, event: AnyEvent) {
+    if (onOpenInMainPanel === undefined) return;
+    onOpenInMainPanel(title, JSON.stringify(event, null, 2), "json");
+  }
   return (
     <div className="event-expanded text-sm mt-1 font-mono text-start p-1 rounded-xl mb-2 ">
       <p className="mb-2 text-lg">
         {index && "#" + index}
         {event.type}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 shrink-0"
+          onClick={() => openEvent(`${event.type}`, event)}
+          title="Open output in main tab"
+        >
+          <Maximize2Icon className="size-3.5" />
+        </Button>
       </p>
 
-      {fieldOrder.map((key) => {
+      {fieldOrder.map((key, index) => {
         if (!Object.hasOwn(event, key)) return;
         return (
-          <div className={getFieldColor(key) + " flex justify-start"}>
+          <div
+            key={index + event.id}
+            className={getFieldColor(key) + " flex justify-start text-xs"}
+          >
             <div className="w-[10rem]">[{key}]</div>
             <div>{String(event[key as keyof AnyEvent])}</div>
           </div>
         );
       })}
 
-      <p className="mt-3 mb-2 text-lg">data</p>
-      <pre className="flex flex-col text-start text-sm dark:text-sky-200 text-sky-700">
-        {JSON.stringify(event.data, null, 2)}
+      <p className="mt-3 mb-2 text-lg">Data</p>
+      <CodeEditor
+        key={event.id}
+        value={JSON.stringify(event.data, null, 2)}
+        language="json"
+        readOnly
+        autoHeight
+      />
+      <pre className="flex flex-col text-start text-xs dark:text-sky-200 text-sky-700">
+        {}
       </pre>
     </div>
   );

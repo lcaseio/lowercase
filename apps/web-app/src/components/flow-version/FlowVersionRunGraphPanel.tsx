@@ -10,7 +10,7 @@ import type {
   FlowVersionRunFocusedContent,
   FlowVersionRunMainTab,
 } from "@/redux/slices/flow-version-run-slice";
-import type { StepStatus } from "@/hooks/use-step-statuses";
+import type { StepStatus } from "@/hooks/use-step-run-info";
 
 type Props = {
   flowDef: FlowDefinition | null;
@@ -25,6 +25,7 @@ type Props = {
   stepStatuses: Record<string, StepStatus>;
 };
 
+// main pane in run page used to display in tabs the flow chart + event graph
 export function FlowVersionRunGraphPanel({
   flowDef,
   flowAnalysis,

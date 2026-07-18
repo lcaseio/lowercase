@@ -1,4 +1,9 @@
-import type { ArtifactIndex, FlowDefinition, FlowParamDefinition, Ref } from "@lcase/types";
+import type {
+  ArtifactIndex,
+  FlowDefinition,
+  FlowParamDefinition,
+  Ref,
+} from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import {
   Select,
@@ -14,10 +19,11 @@ import { Maximize2Icon, ListTreeIcon } from "lucide-react";
 import { useLazyGetArtifactQuery } from "@/redux/api/artifacts-api";
 import type { OpenInMainPanel } from "@/components/MainPanelTypes";
 import {
-  buildParamRefUsage,
+  artifactFormatToLanguage,
+  buildRefUsage,
   findParamRefs,
   renderParamRefReport,
-} from "@/lib/param-ref-preview";
+} from "@/lib/ref-resolution";
 
 const UNSET_VALUE = "__unset__";
 
@@ -32,6 +38,7 @@ type Props = {
   refs: Ref[];
 };
 
+// rendere a param row and its selection logic
 export function FlowVersionRunParamRow({
   name,
   definition,
@@ -66,13 +73,11 @@ export function FlowVersionRunParamRow({
     if (data.format === "bytes") return;
     const value =
       data.format === "json" ? JSON.stringify(data.value, null, 2) : data.value;
-    const language =
-      data.format === "json"
-        ? "json"
-        : data.format === "markdown"
-          ? "markdown"
-          : "plaintext";
-    onOpenInMainPanel(`Param "${name}"`, value, language);
+    onOpenInMainPanel(
+      `Param "${name}"`,
+      value,
+      artifactFormatToLanguage(data.format),
+    );
   }
 
   async function handleShowUsages() {
@@ -80,8 +85,12 @@ export function FlowVersionRunParamRow({
     const result = await triggerGetArtifact({ hash: selectedHash });
     if (!result.data?.ok || result.data.format === "bytes") return;
     const data = result.data;
-    const usages = paramRefs.map((ref) => buildParamRefUsage(ref, flowDef, data));
-    onOpenInMainPanel(`Param "${name}" usages`, renderParamRefReport(name, usages), "markdown");
+    const usages = paramRefs.map((ref) => buildRefUsage(ref, flowDef, data));
+    onOpenInMainPanel(
+      `Param "${name}" usages`,
+      renderParamRefReport(name, usages),
+      "markdown",
+    );
   }
 
   return (
