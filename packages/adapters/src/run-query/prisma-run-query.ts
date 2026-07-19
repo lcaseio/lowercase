@@ -174,7 +174,18 @@ export class PrismaRunQuery implements RunQueryPort {
   ) {}
 
   async listRuns(): Promise<RunListItem[]> {
+    return this.#listWhere({});
+  }
+
+  async listByFlowVersionId(flowVersionId: string): Promise<RunListItem[]> {
+    return this.#listWhere({ flowVersionId });
+  }
+
+  async #listWhere(
+    where: NonNullable<Parameters<PrismaRunQueryDb["run"]["findMany"]>[0]>["where"],
+  ): Promise<RunListItem[]> {
     const runs = await this.db.run.findMany({
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 

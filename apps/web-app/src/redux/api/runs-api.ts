@@ -3,6 +3,7 @@ import type {
   GetRunDetailRes,
   GetRunEventsReq,
   GetRunEventsRes,
+  GetRunsReq,
   GetRunsRes,
   PostRunsReq,
   PostRunsRes,
@@ -22,10 +23,11 @@ export const runsApi = createApi({
         headers: { "Content-Type": "application/json" },
       }),
     }),
-    listAllRuns: builder.query<GetRunsRes, void>({
-      query: () => ({
+    listAllRuns: builder.query<GetRunsRes, GetRunsReq | void>({
+      query: (args) => ({
         url: "runs",
         method: "GET",
+        params: args?.flowVersionId ? { flowVersionId: args.flowVersionId } : undefined,
       }),
     }),
 

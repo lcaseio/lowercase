@@ -94,6 +94,7 @@ export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
+  listRunsByFlowVersionId(flowVersionId: string): Promise<RunListItem[]>;
   getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
   getRunParams(runId: string): Promise<Result<RunParamManifest, string>>;
   // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;

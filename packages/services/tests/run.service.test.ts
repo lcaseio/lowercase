@@ -241,4 +241,26 @@ describe("RunService", () => {
 
     expect(runRepository.createRun).toHaveBeenCalledOnce();
   });
+
+  it("listRunsByFlowVersionId passes through to runQuery.listByFlowVersionId", async () => {
+    const runListItem = { runId: "run-1" } as unknown as Awaited<
+      ReturnType<RunQueryPort["listByFlowVersionId"]>
+    >[number];
+    const runQuery = {
+      listByFlowVersionId: vi.fn().mockResolvedValue([runListItem]),
+    } as unknown as RunQueryPort;
+
+    const service = new RunService({
+      artifactRepository: {} as ArtifactRepositoryPort,
+      artifacts: {} as ArtifactsPort,
+      ef: makeEmitterFactory(),
+      runRepository: {} as RunRepositoryPort,
+      runQuery,
+    });
+
+    const result = await service.listRunsByFlowVersionId("flow-version-1");
+
+    expect(runQuery.listByFlowVersionId).toHaveBeenCalledWith("flow-version-1");
+    expect(result).toEqual([runListItem]);
+  });
 });
