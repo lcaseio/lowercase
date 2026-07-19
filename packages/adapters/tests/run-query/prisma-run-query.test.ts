@@ -119,6 +119,65 @@ describe("PrismaRunQuery", () => {
     ]);
   });
 
+  it("lists only runs matching the given flow version id", async () => {
+    const createdAt = new Date("2026-07-02T10:00:00.000Z");
+
+    await prisma.flow.create({
+      data: {
+        id: "flow-1",
+        name: "Prompt Flow",
+        createdAt,
+        updatedAt: createdAt,
+        versions: {
+          create: [
+            {
+              id: "flow-version-1",
+              sequence: 1,
+              definitionHash: "a".repeat(64),
+              versionLabel: "v1",
+              createdAt,
+            },
+            {
+              id: "flow-version-2",
+              sequence: 2,
+              definitionHash: "c".repeat(64),
+              versionLabel: "v2",
+              createdAt,
+            },
+          ],
+        },
+      },
+    });
+
+    await prisma.run.create({
+      data: {
+        id: "run-1",
+        traceId: "trace-1",
+        status: "completed",
+        source: "lowercase://test",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-1",
+        flowDefHash: "a".repeat(64),
+      },
+    });
+    await prisma.run.create({
+      data: {
+        id: "run-2",
+        traceId: "trace-2",
+        status: "completed",
+        source: "lowercase://test",
+        flowId: "flow-1",
+        flowVersionId: "flow-version-2",
+        flowDefHash: "c".repeat(64),
+      },
+    });
+
+    const result = await query.listByFlowVersionId("flow-version-1");
+
+    expect(result).toHaveLength(1);
+    expect(result[0].runId).toBe("run-1");
+  });
+
   it("returns run detail with step projections", async () => {
     const createdAt = new Date("2026-07-02T10:00:00.000Z");
 
