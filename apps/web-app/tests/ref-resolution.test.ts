@@ -161,7 +161,7 @@ describe("renderParamRefReport", () => {
   it("includes a could-not-resolve marker for unresolved usages", () => {
     const ref = makeRef({ string: "params.foo.bar" });
     const report = renderParamRefReport("foo", [
-      { ref, resolved: false, originalField: "{{params.foo.bar}}", interpolatedResult: "{{params.foo.bar}}" },
+      { ref, resolved: false, resolvedValue: undefined, originalField: "{{params.foo.bar}}", interpolatedResult: "{{params.foo.bar}}" },
     ]);
     expect(report).toContain("could not resolve");
     expect(report).toContain("params.foo.bar");
@@ -173,6 +173,7 @@ describe("renderParamRefReport", () => {
       {
         ref,
         resolved: true,
+        resolvedValue: "will it rain",
         originalField: "Question: {{params.userWeatherQuery}} please",
         interpolatedResult: "Question: will it rain please",
       },
