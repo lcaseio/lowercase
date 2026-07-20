@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import {
   ResizableHandle,
@@ -8,6 +8,7 @@ import {
 import type { Node } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { useGetRunParamsQuery } from "@/redux/api/runs-api";
+import { usePostSimsMutation } from "@/redux/api/sims-api";
 import { selectEventById } from "@/redux/slices/events-slice";
 import {
   cancelCreatingSim,
@@ -19,6 +20,9 @@ import {
   setFocusedContent,
   setSelectedEventId,
   setSelectedStepId,
+  setSimDescription,
+  setSimName,
+  simSaved,
   startCreatingSim,
   toggleStepReused,
 } from "@/redux/slices/flow-version-sims-slice";
@@ -27,6 +31,8 @@ import { FlowVersionRunHistoryList } from "@/components/flow-version/FlowVersion
 import { FlowVersionRunGraphPanel } from "@/components/flow-version/FlowVersionRunGraphPanel";
 import { FlowVersionRunDetailsPanel } from "@/components/flow-version/FlowVersionRunDetailsPanel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { useFlowVersionOutletContext } from "./context";
 
@@ -64,6 +70,37 @@ export function FlowVersionSims() {
   );
   const paramHashes = runParamsData?.ok ? runParamsData.value : {};
 
+  const [postSims, { isLoading: isSaving }] = usePostSimsMutation();
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const canSave =
+    simsState.simName.trim().length > 0 &&
+    simsState.selectedRunId !== null &&
+    simsState.reusedStepIds.length > 0 &&
+    !isSaving;
+
+  async function handleSave() {
+    if (!flowId || !flowVersionId || !simsState.selectedRunId) return;
+    setSaveError(null);
+    try {
+      const result = await postSims({
+        name: simsState.simName.trim(),
+        description: simsState.simDescription.trim() || undefined,
+        flowId,
+        flowVersionId,
+        parentRunId: simsState.selectedRunId,
+        reuse: simsState.reusedStepIds,
+      }).unwrap();
+      if (result.ok) {
+        dispatch(simSaved());
+      } else {
+        setSaveError(result.error);
+      }
+    } catch {
+      setSaveError("Failed to save sim. Please try again.");
+    }
+  }
+
   function handleNodeClick(node: Node) {
     dispatch(setSelectedStepId(node.id));
     dispatch(setActiveDetailsTab("stepResults"));
@@ -91,8 +128,29 @@ export function FlowVersionSims() {
         {isAuthoring ? (
           <div className="h-full flex flex-col">
             <div className="p-2 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">New Sim</span>
+              <span className="text-md font-medium">New Sim</span>
+              <Input
+                placeholder="Name"
+                value={simsState.simName}
+                onChange={(e) => dispatch(setSimName(e.target.value))}
+              />
+              <Textarea
+                placeholder="Description (optional)"
+                value={simsState.simDescription}
+                onChange={(e) => dispatch(setSimDescription(e.target.value))}
+              />
+              {saveError && (
+                <p className="text-xs text-destructive">{saveError}</p>
+              )}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  className="cursor-pointer text-neutral-900 bg-emerald-300 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-600 dark:text-neutral-50"
+                  disabled={!canSave}
+                  onClick={handleSave}
+                >
+                  Save
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
@@ -102,8 +160,10 @@ export function FlowVersionSims() {
                   Cancel
                 </Button>
               </div>
+
               <p className="text-xs text-muted-foreground">
-                Select a run below to reuse its steps.
+                Select a run below to reuse its steps. Mark at least one step as
+                reused before saving.
               </p>
             </div>
             <div className="flex-1 min-h-0">
