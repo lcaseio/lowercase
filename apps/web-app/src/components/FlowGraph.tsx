@@ -48,6 +48,7 @@ type Props = {
   outEdges: OutEdges;
   onNodeClickHandler?: (node: Node) => void;
   stepRunInfo?: Record<string, StepRunInfo>;
+  reusedStepIds?: string[];
 };
 export function FlowGraph({
   flowDef,
@@ -55,6 +56,7 @@ export function FlowGraph({
   outEdges,
   onNodeClickHandler,
   stepRunInfo,
+  reusedStepIds,
 }: Props) {
   const { resolvedTheme } = useTheme();
 
@@ -70,11 +72,15 @@ export function FlowGraph({
         const x = calcPosition(col, layout[row].length, 250);
         const status = stepRunInfo?.[node]?.status;
         const { className, style } = statusNodeStyle(status);
+        const reusedPrefix = reusedStepIds?.includes(node) ? "↺ " : "";
 
         const newNode: Node = {
           id: node,
           position: { x, y: 150 * row },
-          data: { label: `${node}: ${flowDef.steps[node]?.type}`, status },
+          data: {
+            label: `${reusedPrefix}${node}: ${flowDef.steps[node]?.type}`,
+            status,
+          },
           ...(className ? { className } : {}),
           ...(style ? { style } : {}),
         };
@@ -94,7 +100,7 @@ export function FlowGraph({
       }
     }
     return { nodes: newNodes, edges: newEdges };
-  }, [flowDef, layout, outEdges, stepRunInfo]);
+  }, [flowDef, layout, outEdges, stepRunInfo, reusedStepIds]);
 
   return (
     <div className="h-full w-full rounded-xl">

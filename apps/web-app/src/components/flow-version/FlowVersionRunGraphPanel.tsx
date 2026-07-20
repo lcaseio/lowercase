@@ -23,6 +23,7 @@ type Props = {
   onEventClick: (eventId: string) => void;
   focusedContent: FlowVersionRunFocusedContent | null;
   stepRunInfo: Record<string, StepRunInfo>;
+  reusedStepIds?: string[];
 };
 
 // main pane in run page used to display in tabs the flow chart + event graph
@@ -37,6 +38,7 @@ export function FlowVersionRunGraphPanel({
   onEventClick,
   focusedContent,
   stepRunInfo,
+  reusedStepIds,
 }: Props) {
   return (
     <Tabs
@@ -68,6 +70,7 @@ export function FlowVersionRunGraphPanel({
             outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
             onNodeClickHandler={onNodeClick}
             stepRunInfo={stepRunInfo}
+            reusedStepIds={reusedStepIds}
           ></FlowGraph>
         ) : (
           "invalid flow def"

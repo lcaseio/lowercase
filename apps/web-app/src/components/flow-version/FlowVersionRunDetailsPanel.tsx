@@ -17,6 +17,8 @@ type Props = {
   paramHashes: Record<string, string>;
   stepRunInfo: Record<string, StepRunInfo>;
   onOpenInMainPanel: OpenInMainPanel;
+  isStepReused?: boolean;
+  onToggleStepReused?: () => void;
 };
 
 // groups and drives far right panel's tabs selected state
@@ -30,6 +32,8 @@ export function FlowVersionRunDetailsPanel({
   paramHashes,
   stepRunInfo,
   onOpenInMainPanel,
+  isStepReused,
+  onToggleStepReused,
 }: Props) {
   return (
     <Tabs
@@ -63,6 +67,8 @@ export function FlowVersionRunDetailsPanel({
           paramHashes={paramHashes}
           stepRunInfo={stepRunInfo}
           onOpenInMainPanel={onOpenInMainPanel}
+          isReused={isStepReused}
+          onToggleReused={onToggleStepReused}
         />
       </TabsContent>
     </Tabs>
