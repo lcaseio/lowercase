@@ -126,12 +126,13 @@ export function StepResultsTab({
 
       <div className="flex items-center justify-between gap-2">
         <h2>{stepId}</h2>
-        {onToggleReused && (
+        {isReused !== undefined && (
           <div className="flex items-center space-x-2">
             <Label htmlFor={stepId}>Reuse</Label>
             <Switch
-              checked={isReused ?? false}
-              onCheckedChange={() => onToggleReused()}
+              checked={isReused}
+              onCheckedChange={onToggleReused}
+              disabled={!onToggleReused}
               size="default"
               id={stepId}
               className="data-[state=checked]:bg-sky-600 dark:data-[state=checked]:bg-sky-300"

@@ -1,11 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventDetails } from "@/components/EventDetails";
-import { FileTextIcon, TerminalSquareIcon } from "lucide-react";
-import type { AnyEvent, FlowDefinition, Ref } from "@lcase/types";
+import { FileTextIcon, SettingsIcon, TerminalSquareIcon } from "lucide-react";
+import type { AnyEvent, FlowDefinition, Ref, SimRecord } from "@lcase/types";
 import type { FlowVersionRunDetailsTab } from "@/lib/run-panel-state.types";
 import type { StepRunInfo } from "@/hooks/use-step-run-info";
 import type { OpenInMainPanel } from "@/components/MainPanelTypes";
 import { StepResultsTab } from "./StepResultsTab";
+import { SimSettingsTab } from "./SimSettingsTab";
 
 type Props = {
   activeDetailsTab: FlowVersionRunDetailsTab;
@@ -19,6 +20,7 @@ type Props = {
   onOpenInMainPanel: OpenInMainPanel;
   isStepReused?: boolean;
   onToggleStepReused?: () => void;
+  simSettings?: { sim: SimRecord | null; parentRunId: string | null };
 };
 
 // groups and drives far right panel's tabs selected state
@@ -34,6 +36,7 @@ export function FlowVersionRunDetailsPanel({
   onOpenInMainPanel,
   isStepReused,
   onToggleStepReused,
+  simSettings,
 }: Props) {
   return (
     <Tabs
@@ -44,6 +47,12 @@ export function FlowVersionRunDetailsPanel({
       className="h-full flex flex-col"
     >
       <TabsList variant="line">
+        {simSettings && (
+          <TabsTrigger value="settings">
+            <SettingsIcon />
+            Settings
+          </TabsTrigger>
+        )}
         <TabsTrigger value="eventDetails">
           <FileTextIcon />
           Event Details
@@ -53,6 +62,14 @@ export function FlowVersionRunDetailsPanel({
           Step Results
         </TabsTrigger>
       </TabsList>
+      {simSettings && (
+        <TabsContent value="settings" className="ml-3 mr-3">
+          <SimSettingsTab
+            sim={simSettings.sim}
+            parentRunId={simSettings.parentRunId}
+          />
+        </TabsContent>
+      )}
       <TabsContent value="eventDetails" className="ml-3 mr-3">
         <EventDetails
           event={selectedEvent}

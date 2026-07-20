@@ -5,6 +5,7 @@ import {
   flowVersionSimsSlice,
   selectFlowVersionSimsState,
   selectRunForNewSim,
+  selectSim,
   setActiveDetailsTab,
   setActiveMainTab,
   setFocusedContent,
@@ -26,13 +27,14 @@ const BASE_STATE = {
   mode: "browsing",
   selectedRunId: null,
   activeMainTab: "graph",
-  activeDetailsTab: "eventDetails",
+  activeDetailsTab: "settings",
   selectedEventId: null,
   selectedStepId: null,
   focusedContent: null,
   reusedStepIds: [],
   simName: "",
   simDescription: "",
+  selectedSimId: null,
 };
 
 function stateFor(flowVersionSims: ReturnType<typeof reducer>) {
@@ -208,8 +210,9 @@ describe("flowVersionSimsSlice", () => {
     expect(state.simDescription).toBe("A description");
   });
 
-  it("cancelCreatingSim also clears simName and simDescription", () => {
-    const authoring = reducer(undefined, startCreatingSim());
+  it("cancelCreatingSim also clears simName, simDescription, and selectedSimId", () => {
+    const withSim = reducer(undefined, selectSim("sim-1"));
+    const authoring = reducer(withSim, startCreatingSim());
     const withName = reducer(authoring, setSimName("My Sim"));
     const withDescription = reducer(withName, setSimDescription("desc"));
     const cancelled = reducer(withDescription, cancelCreatingSim());
@@ -217,7 +220,8 @@ describe("flowVersionSimsSlice", () => {
   });
 
   it("simSaved resets to the same blank browsing state as cancelCreatingSim", () => {
-    const authoring = reducer(undefined, startCreatingSim());
+    const withSim = reducer(undefined, selectSim("sim-1"));
+    const authoring = reducer(withSim, startCreatingSim());
     const withRun = reducer(authoring, selectRunForNewSim("run-1"));
     const withStep = reducer(withRun, setSelectedStepId("step-1"));
     const withReuse = reducer(withStep, toggleStepReused("step-1"));
@@ -226,6 +230,38 @@ describe("flowVersionSimsSlice", () => {
 
     const saved = reducer(withDescription, simSaved());
     expect(saved).toEqual(BASE_STATE);
+  });
+
+  it("selectSim sets the selected sim without changing mode", () => {
+    const state = reducer(undefined, selectSim("sim-1"));
+    expect(state.mode).toBe("browsing");
+    expect(state.selectedSimId).toBe("sim-1");
+  });
+
+  it("selectSim can be called again to freely switch sims while browsing", () => {
+    const withFirstSim = reducer(undefined, selectSim("sim-1"));
+    const withSecondSim = reducer(withFirstSim, selectSim("sim-2"));
+    expect(withSecondSim.selectedSimId).toBe("sim-2");
+  });
+
+  it("selectSim preserves the selected step and details tab across a sim switch, but clears event/focused state", () => {
+    const withFirstSim = reducer(undefined, selectSim("sim-1"));
+    const withStep = reducer(withFirstSim, setSelectedStepId("step-1"));
+    const withDetailsTab = reducer(withStep, setActiveDetailsTab("stepResults"));
+    const withEventAndFocus = {
+      ...reducer(withDetailsTab, setSelectedEventId("evt-1")),
+      focusedContent: { title: "t", value: "v", language: "plaintext" as const },
+      activeMainTab: "focused" as const,
+    };
+
+    const withSecondSim = reducer(withEventAndFocus, selectSim("sim-2"));
+
+    expect(withSecondSim.selectedSimId).toBe("sim-2");
+    expect(withSecondSim.selectedStepId).toBe("step-1");
+    expect(withSecondSim.activeDetailsTab).toBe("stepResults");
+    expect(withSecondSim.selectedEventId).toBeNull();
+    expect(withSecondSim.focusedContent).toBeNull();
+    expect(withSecondSim.activeMainTab).toBe("graph");
   });
 
   it("selectFlowVersionSimsState returns the empty default when the flowVersionId doesn't match the active scope", () => {
