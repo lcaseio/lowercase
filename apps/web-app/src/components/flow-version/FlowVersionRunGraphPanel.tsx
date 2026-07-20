@@ -9,8 +9,8 @@ import type { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import type {
   FlowVersionRunFocusedContent,
   FlowVersionRunMainTab,
-} from "@/redux/slices/flow-version-run-slice";
-import type { StepStatus } from "@/hooks/use-step-run-info";
+} from "@/lib/run-panel-state.types";
+import type { StepRunInfo } from "@/hooks/use-step-run-info";
 
 type Props = {
   flowDef: FlowDefinition | null;
@@ -22,7 +22,7 @@ type Props = {
   selectedEventId: string | null;
   onEventClick: (eventId: string) => void;
   focusedContent: FlowVersionRunFocusedContent | null;
-  stepStatuses: Record<string, StepStatus>;
+  stepRunInfo: Record<string, StepRunInfo>;
 };
 
 // main pane in run page used to display in tabs the flow chart + event graph
@@ -36,7 +36,7 @@ export function FlowVersionRunGraphPanel({
   selectedEventId,
   onEventClick,
   focusedContent,
-  stepStatuses,
+  stepRunInfo,
 }: Props) {
   return (
     <Tabs
@@ -67,7 +67,7 @@ export function FlowVersionRunGraphPanel({
             layout={flowAnalysis?.layout ?? null}
             outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
             onNodeClickHandler={onNodeClick}
-            stepStatuses={stepStatuses}
+            stepRunInfo={stepRunInfo}
           ></FlowGraph>
         ) : (
           "invalid flow def"

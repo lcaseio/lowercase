@@ -5,7 +5,7 @@ import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
-import type { StepStatus } from "@/hooks/use-step-run-info";
+import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
 
 // same graphLayout-based rendering as FlowEditPanel, but taking a flowDef
 // directly instead of fetching by route param -- FlowTree's replacement for
@@ -47,14 +47,14 @@ type Props = {
   layout: string[][] | null;
   outEdges: OutEdges;
   onNodeClickHandler?: (node: Node) => void;
-  stepStatuses?: Record<string, StepStatus>;
+  stepRunInfo?: Record<string, StepRunInfo>;
 };
 export function FlowGraph({
   flowDef,
   layout,
   outEdges,
   onNodeClickHandler,
-  stepStatuses,
+  stepRunInfo,
 }: Props) {
   const { resolvedTheme } = useTheme();
 
@@ -68,7 +68,7 @@ export function FlowGraph({
       for (let col = 0; col < layout[row].length; col++) {
         const node = layout[row][col];
         const x = calcPosition(col, layout[row].length, 250);
-        const status = stepStatuses?.[node];
+        const status = stepRunInfo?.[node]?.status;
         const { className, style } = statusNodeStyle(status);
 
         const newNode: Node = {
@@ -94,7 +94,7 @@ export function FlowGraph({
       }
     }
     return { nodes: newNodes, edges: newEdges };
-  }, [flowDef, layout, outEdges, stepStatuses]);
+  }, [flowDef, layout, outEdges, stepRunInfo]);
 
   return (
     <div className="h-full w-full rounded-xl">

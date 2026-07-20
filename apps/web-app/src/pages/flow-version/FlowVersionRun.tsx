@@ -1,18 +1,12 @@
-import { useEffect, useMemo, useRef } from "react";
-import { shallowEqual } from "react-redux";
-import { skipToken } from "@reduxjs/toolkit/query";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import type { Node } from "@xyflow/react";
-import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
-import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
-import {
-  makeSelectRunEvents,
-  selectEventById,
-} from "@/redux/slices/events-slice";
+import { selectEventById } from "@/redux/slices/events-slice";
 import {
   clearRun,
   enterFlowVersionRunScope,
@@ -27,7 +21,7 @@ import {
 import { FlowVersionRunParamsPanel } from "@/components/flow-version/FlowVersionRunParamsPanel";
 import { FlowVersionRunGraphPanel } from "@/components/flow-version/FlowVersionRunGraphPanel";
 import { FlowVersionRunDetailsPanel } from "@/components/flow-version/FlowVersionRunDetailsPanel";
-import { useStepRunInfo } from "@/hooks/use-step-run-info";
+import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { useFlowVersionOutletContext } from "./context";
 
 // run page for the flow workspace version
@@ -46,29 +40,13 @@ export function FlowVersionRun() {
     selectFlowVersionRunState(s, flowVersionId),
   );
 
-  const selectRunEventsRef = useRef(makeSelectRunEvents());
-  const events = useAppSelector(
-    (s) => selectRunEventsRef.current(s, runState.runId),
-    shallowEqual,
-  );
-  useGetAllRunEventsQuery(
-    runState.runId ? { runId: runState.runId } : skipToken,
+  const { events, stepRunInfo } = useRunEventsWithStatus(
+    runState.runId,
+    Object.keys(flowDef?.steps ?? {}),
   );
 
   const selectedEvent = useAppSelector((s) =>
     selectEventById(s, runState.selectedEventId),
-  );
-
-  const stepRunInfo = useStepRunInfo(events, Object.keys(flowDef?.steps ?? {}));
-  const stepStatuses = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(stepRunInfo).map(([stepId, info]) => [
-          stepId,
-          info.status,
-        ]),
-      ),
-    [stepRunInfo],
   );
 
   function handleNodeClick(node: Node) {
@@ -120,7 +98,7 @@ export function FlowVersionRun() {
             dispatch(setActiveDetailsTab("eventDetails"));
           }}
           focusedContent={runState.focusedContent}
-          stepStatuses={stepStatuses}
+          stepRunInfo={stepRunInfo}
         />
       </ResizablePanel>
       <ResizableHandle withHandle />

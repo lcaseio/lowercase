@@ -15,6 +15,7 @@ import type { ArtifactsPort, ReplayServicePort } from "@lcase/ports";
 import { RunService } from "@lcase/services";
 import type { AnyEvent } from "@lcase/types";
 import { getRunDetailRoute } from "../src/routes/runs/get-run-detail.js";
+import { getRunParamsRoute } from "../src/routes/runs/get-run-params.js";
 import { getRunsEventsListRoute } from "../src/routes/runs/events/events.js";
 import { listRunsRoute } from "../src/routes/runs/list.js";
 
@@ -72,7 +73,7 @@ describe("run sql routes", () => {
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("serves run list, run detail, and replay events with SQL-backed reads", async () => {
+  it("serves run list, run detail, run params, and replay events with SQL-backed reads", async () => {
     const createdAt = new Date("2026-07-02T10:00:00.000Z");
 
     await prisma.flow.create({
@@ -190,6 +191,7 @@ describe("run sql routes", () => {
 
     await app.register(listRunsRoute, { prefix: "/api/runs" });
     await app.register(getRunDetailRoute, { prefix: "/api/runs" });
+    await app.register(getRunParamsRoute, { prefix: "/api/runs" });
     await app.register(getRunsEventsListRoute, { prefix: "/api/runs/details" });
 
     const listResponse = await app.inject({
@@ -254,6 +256,16 @@ describe("run sql routes", () => {
           versionLabel: "v1",
         }),
       },
+    });
+
+    const paramsResponse = await app.inject({
+      method: "GET",
+      url: "/api/runs/run-1/params",
+    });
+    expect(paramsResponse.statusCode).toBe(200);
+    expect(paramsResponse.json()).toEqual({
+      ok: true,
+      value: { payload: "artifact-hash" },
     });
 
     const eventsResponse = await app.inject({

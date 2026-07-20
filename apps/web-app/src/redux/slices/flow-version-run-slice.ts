@@ -1,15 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { MainPanelLanguage } from "@/components/MainPanelTypes";
-
-export type FlowVersionRunMainTab = "graph" | "events" | "focused";
-export type FlowVersionRunDetailsTab = "eventDetails" | "stepResults";
-
-export type FlowVersionRunFocusedContent = {
-  title: string;
-  value: string;
-  language: MainPanelLanguage;
-};
+import type {
+  FlowVersionRunDetailsTab,
+  FlowVersionRunFocusedContent,
+  FlowVersionRunMainTab,
+} from "@/lib/run-panel-state.types";
 
 type FlowVersionRunState = {
   flowVersionId: string | null;

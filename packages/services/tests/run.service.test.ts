@@ -263,4 +263,78 @@ describe("RunService", () => {
     expect(runQuery.listByFlowVersionId).toHaveBeenCalledWith("flow-version-1");
     expect(result).toEqual([runListItem]);
   });
+
+  it("getRunParams maps a run's param selections into a name->hash manifest", async () => {
+    const runQuery = {
+      getRunDetail: vi.fn().mockResolvedValue({
+        ok: true,
+        value: {
+          run: {},
+          steps: [],
+          params: [
+            { name: "prompt", artifactHash: "hash-prompt" },
+            { name: "topic", artifactHash: "hash-topic" },
+          ],
+        },
+      }),
+    } as unknown as RunQueryPort;
+
+    const service = new RunService({
+      artifactRepository: {} as ArtifactRepositoryPort,
+      artifacts: {} as ArtifactsPort,
+      ef: makeEmitterFactory(),
+      runRepository: {} as RunRepositoryPort,
+      runQuery,
+    });
+
+    const result = await service.getRunParams("run-1");
+
+    expect(runQuery.getRunDetail).toHaveBeenCalledWith("run-1");
+    expect(result).toEqual({
+      ok: true,
+      value: { prompt: "hash-prompt", topic: "hash-topic" },
+    });
+  });
+
+  it("getRunParams returns an empty manifest when the run had no params", async () => {
+    const runQuery = {
+      getRunDetail: vi.fn().mockResolvedValue({
+        ok: true,
+        value: { run: {}, steps: [], params: [] },
+      }),
+    } as unknown as RunQueryPort;
+
+    const service = new RunService({
+      artifactRepository: {} as ArtifactRepositoryPort,
+      artifacts: {} as ArtifactsPort,
+      ef: makeEmitterFactory(),
+      runRepository: {} as RunRepositoryPort,
+      runQuery,
+    });
+
+    const result = await service.getRunParams("run-1");
+
+    expect(result).toEqual({ ok: true, value: {} });
+  });
+
+  it("getRunParams passes through a getRunDetail error", async () => {
+    const runQuery = {
+      getRunDetail: vi.fn().mockResolvedValue({
+        ok: false,
+        error: "Run not found",
+      }),
+    } as unknown as RunQueryPort;
+
+    const service = new RunService({
+      artifactRepository: {} as ArtifactRepositoryPort,
+      artifacts: {} as ArtifactsPort,
+      ef: makeEmitterFactory(),
+      runRepository: {} as RunRepositoryPort,
+      runQuery,
+    });
+
+    const result = await service.getRunParams("run-missing");
+
+    expect(result).toEqual({ ok: false, error: "Run not found" });
+  });
 });
