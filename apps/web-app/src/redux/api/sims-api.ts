@@ -1,4 +1,5 @@
 import {
+  type GetSimsReq,
   type GetSimsRes,
   type PostSimsRes,
   type PostSimsReq,
@@ -19,10 +20,11 @@ export const simsApi = createApi({
         headers: { "Content-Type": "application/json" },
       }),
     }),
-    listAllSims: builder.query<GetSimsRes, void>({
-      query: () => ({
+    listAllSims: builder.query<GetSimsRes, GetSimsReq | void>({
+      query: (args) => ({
         url: "sims",
         method: "GET",
+        params: args?.flowVersionId ? { flowVersionId: args.flowVersionId } : undefined,
       }),
     }),
     getSim: builder.query<GetSimSpecRes, GetSimSpecReq>({

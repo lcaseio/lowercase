@@ -135,7 +135,18 @@ export class PrismaSimRepository implements SimRepositoryPort {
   }
 
   async listSimsWithFlowVersion(): Promise<SimListItem[]> {
+    return this.#listWithWhere({});
+  }
+
+  async listSimsByFlowVersionId(flowVersionId: string): Promise<SimListItem[]> {
+    return this.#listWithWhere({ flowVersionId });
+  }
+
+  async #listWithWhere(
+    where: NonNullable<Parameters<PrismaSimRepositoryDb["sim"]["findMany"]>[0]>["where"],
+  ): Promise<SimListItem[]> {
     const sims = await this.db.sim.findMany({
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: {
         flow: true,
