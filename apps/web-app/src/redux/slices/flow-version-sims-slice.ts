@@ -21,6 +21,7 @@ type FlowVersionSimsState = {
   reusedStepIds: string[];
   simName: string;
   simDescription: string;
+  selectedSimId: string | null;
 };
 
 const initialState: FlowVersionSimsState = {
@@ -29,28 +30,32 @@ const initialState: FlowVersionSimsState = {
   mode: "browsing",
   selectedRunId: null,
   activeMainTab: "graph",
-  activeDetailsTab: "eventDetails",
+  activeDetailsTab: "settings",
   selectedEventId: null,
   selectedStepId: null,
   focusedContent: null,
   reusedStepIds: [],
   simName: "",
   simDescription: "",
+  selectedSimId: null,
 };
 
 // shared by cancelCreatingSim (discarding) and simSaved (completing) -- both
-// return to the same blank browsing state, just for different reasons
+// return to the same blank browsing state, just for different reasons.
+// nulling selectedSimId here is what makes the browsing list's
+// auto-select-latest effect land on a just-saved sim right after Save
 function resetToBrowsing(state: FlowVersionSimsState) {
   state.mode = "browsing";
   state.selectedRunId = null;
   state.activeMainTab = "graph";
-  state.activeDetailsTab = "eventDetails";
+  state.activeDetailsTab = "settings";
   state.selectedEventId = null;
   state.selectedStepId = null;
   state.focusedContent = null;
   state.reusedStepIds = [];
   state.simName = "";
   state.simDescription = "";
+  state.selectedSimId = null;
 }
 
 export const flowVersionSimsSlice = createSlice({
@@ -71,6 +76,11 @@ export const flowVersionSimsSlice = createSlice({
     startCreatingSim: (state) => {
       state.mode = "authoring";
       state.selectedRunId = null;
+      // settings tab doesn't exist while authoring -- fall back to a tab
+      // that's always available rather than leaving none selected
+      if (state.activeDetailsTab === "settings") {
+        state.activeDetailsTab = "eventDetails";
+      }
     },
     // deliberately does NOT clear selectedStepId/reusedStepIds/activeDetailsTab --
     // reuse decisions and which step you're inspecting survive switching runs
@@ -123,6 +133,15 @@ export const flowVersionSimsSlice = createSlice({
     setSimDescription: (state, action: PayloadAction<string>) => {
       state.simDescription = action.payload;
     },
+    // mirrors selectRunForNewSim's reset rules: which step you're inspecting
+    // and its details tab survive switching which sim you're viewing, but an
+    // event/focused content from the previous sim's run doesn't carry over
+    selectSim: (state, action: PayloadAction<string>) => {
+      state.selectedSimId = action.payload;
+      state.selectedEventId = null;
+      state.focusedContent = null;
+      state.activeMainTab = "graph";
+    },
   },
 });
 
@@ -140,6 +159,7 @@ export const {
   toggleStepReused,
   setSimName,
   setSimDescription,
+  selectSim,
 } = flowVersionSimsSlice.actions;
 
 const EMPTY_FLOW_VERSION_SIMS_STATE: FlowVersionSimsState = initialState;

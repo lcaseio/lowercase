@@ -8,13 +8,14 @@ import {
 import type { Node } from "@xyflow/react";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { useGetRunParamsQuery } from "@/redux/api/runs-api";
-import { usePostSimsMutation } from "@/redux/api/sims-api";
+import { useGetSimQuery, usePostSimsMutation } from "@/redux/api/sims-api";
 import { selectEventById } from "@/redux/slices/events-slice";
 import {
   cancelCreatingSim,
   enterFlowVersionSimsScope,
   selectFlowVersionSimsState,
   selectRunForNewSim,
+  selectSim,
   setActiveDetailsTab,
   setActiveMainTab,
   setFocusedContent,
@@ -56,8 +57,24 @@ export function FlowVersionSims() {
     selectFlowVersionSimsState(s, flowVersionId),
   );
 
+  const isAuthoring = simsState.mode === "authoring";
+
+  const { data: simDefData } = useGetSimQuery(
+    !isAuthoring && simsState.selectedSimId
+      ? { simId: simsState.selectedSimId }
+      : skipToken,
+  );
+  const viewedSim = simDefData?.ok ? simDefData.value : null;
+
+  const inspectingRunId = isAuthoring
+    ? simsState.selectedRunId
+    : (viewedSim?.spec.parentRunId ?? null);
+  const inspectingReusedStepIds = isAuthoring
+    ? simsState.reusedStepIds
+    : (viewedSim?.spec.reuse ?? []);
+
   const { events, stepRunInfo } = useRunEventsWithStatus(
-    simsState.selectedRunId,
+    inspectingRunId,
     Object.keys(flowDef?.steps ?? {}),
   );
 
@@ -66,7 +83,7 @@ export function FlowVersionSims() {
   );
 
   const { data: runParamsData } = useGetRunParamsQuery(
-    simsState.selectedRunId ? { runId: simsState.selectedRunId } : skipToken,
+    inspectingRunId ? { runId: inspectingRunId } : skipToken,
   );
   const paramHashes = runParamsData?.ok ? runParamsData.value : {};
 
@@ -105,7 +122,6 @@ export function FlowVersionSims() {
     dispatch(setSelectedStepId(node.id));
     dispatch(setActiveDetailsTab("stepResults"));
   }
-
   const openInMainPanel = (
     title: string,
     value: string,
@@ -113,8 +129,6 @@ export function FlowVersionSims() {
   ) => {
     dispatch(setFocusedContent({ title, value, language }));
   };
-
-  const isAuthoring = simsState.mode === "authoring";
 
   return (
     <ResizablePanelGroup
@@ -178,64 +192,62 @@ export function FlowVersionSims() {
           <FlowVersionSimsList
             flowVersionId={flowVersionId}
             onCreateNew={() => dispatch(startCreatingSim())}
+            selectedSimId={simsState.selectedSimId}
+            onSelectSim={(simId) => dispatch(selectSim(simId))}
           />
         )}
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="50%" style={{ overflow: "hidden" }}>
-        {isAuthoring ? (
-          <FlowVersionRunGraphPanel
-            flowDef={flowDef}
-            flowAnalysis={flowAnalysis}
-            activeMainTab={simsState.activeMainTab}
-            onActiveMainTabChange={(tab) => dispatch(setActiveMainTab(tab))}
-            onNodeClick={handleNodeClick}
-            events={events}
-            selectedEventId={simsState.selectedEventId}
-            onEventClick={(id) => {
-              dispatch(setSelectedEventId(id));
-              dispatch(setActiveDetailsTab("eventDetails"));
-            }}
-            focusedContent={simsState.focusedContent}
-            stepRunInfo={stepRunInfo}
-            reusedStepIds={simsState.reusedStepIds}
-          />
-        ) : (
-          <div className="p-4 text-muted-foreground">
-            Select New to create a sim.
-          </div>
-        )}
+        <FlowVersionRunGraphPanel
+          flowDef={flowDef}
+          flowAnalysis={flowAnalysis}
+          activeMainTab={simsState.activeMainTab}
+          onActiveMainTabChange={(tab) => dispatch(setActiveMainTab(tab))}
+          onNodeClick={handleNodeClick}
+          events={events}
+          selectedEventId={simsState.selectedEventId}
+          onEventClick={(id) => {
+            dispatch(setSelectedEventId(id));
+            dispatch(setActiveDetailsTab("eventDetails"));
+          }}
+          focusedContent={simsState.focusedContent}
+          stepRunInfo={stepRunInfo}
+          reusedStepIds={inspectingReusedStepIds}
+        />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" className="dark:bg-neutral-800">
-        {isAuthoring && (
-          <FlowVersionRunDetailsPanel
-            activeDetailsTab={simsState.activeDetailsTab}
-            onActiveDetailsTabChange={(tab) =>
-              dispatch(setActiveDetailsTab(tab))
-            }
-            selectedEvent={selectedEvent}
-            selectedStepId={simsState.selectedStepId}
-            flowDef={flowDef}
-            refs={flowAnalysis?.flowAnalysis.refs ?? []}
-            paramHashes={paramHashes}
-            stepRunInfo={stepRunInfo}
-            onOpenInMainPanel={openInMainPanel}
-            isStepReused={
-              simsState.selectedStepId
-                ? simsState.reusedStepIds.includes(simsState.selectedStepId)
-                : false
-            }
-            onToggleStepReused={
-              simsState.selectedStepId
-                ? () =>
-                    dispatch(
-                      toggleStepReused(simsState.selectedStepId as string),
-                    )
-                : undefined
-            }
-          />
-        )}
+        <FlowVersionRunDetailsPanel
+          activeDetailsTab={simsState.activeDetailsTab}
+          onActiveDetailsTabChange={(tab) => dispatch(setActiveDetailsTab(tab))}
+          selectedEvent={selectedEvent}
+          selectedStepId={simsState.selectedStepId}
+          flowDef={flowDef}
+          refs={flowAnalysis?.flowAnalysis.refs ?? []}
+          paramHashes={paramHashes}
+          stepRunInfo={stepRunInfo}
+          onOpenInMainPanel={openInMainPanel}
+          isStepReused={
+            simsState.selectedStepId
+              ? inspectingReusedStepIds.includes(simsState.selectedStepId)
+              : false
+          }
+          onToggleStepReused={
+            isAuthoring && simsState.selectedStepId
+              ? () =>
+                  dispatch(toggleStepReused(simsState.selectedStepId as string))
+              : undefined
+          }
+          simSettings={
+            isAuthoring
+              ? undefined
+              : {
+                  sim: viewedSim?.sim ?? null,
+                  parentRunId: viewedSim?.spec.parentRunId ?? null,
+                }
+          }
+        />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
