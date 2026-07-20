@@ -1,5 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
+import type {
+  FlowVersionRunDetailsTab,
+  FlowVersionRunFocusedContent,
+  FlowVersionRunMainTab,
+} from "@/lib/run-panel-state.types";
 
 export type FlowVersionSimsMode = "browsing" | "authoring";
 
@@ -8,6 +13,12 @@ type FlowVersionSimsState = {
   flowId: string | null;
   mode: FlowVersionSimsMode;
   selectedRunId: string | null;
+  activeMainTab: FlowVersionRunMainTab;
+  activeDetailsTab: FlowVersionRunDetailsTab;
+  selectedEventId: string | null;
+  selectedStepId: string | null;
+  focusedContent: FlowVersionRunFocusedContent | null;
+  reusedStepIds: string[];
 };
 
 const initialState: FlowVersionSimsState = {
@@ -15,6 +26,12 @@ const initialState: FlowVersionSimsState = {
   flowId: null,
   mode: "browsing",
   selectedRunId: null,
+  activeMainTab: "graph",
+  activeDetailsTab: "eventDetails",
+  selectedEventId: null,
+  selectedStepId: null,
+  focusedContent: null,
+  reusedStepIds: [],
 };
 
 export const flowVersionSimsSlice = createSlice({
@@ -36,12 +53,54 @@ export const flowVersionSimsSlice = createSlice({
       state.mode = "authoring";
       state.selectedRunId = null;
     },
+    // deliberately does NOT clear selectedStepId/reusedStepIds/activeDetailsTab --
+    // reuse decisions and which step you're inspecting survive switching runs
+    // while authoring. selectedEventId/focusedContent DO get cleared: an event
+    // from the previous run doesn't exist in the new run's event stream, and
+    // focused content is a frozen snapshot of specific stale data.
     selectRunForNewSim: (state, action: PayloadAction<string>) => {
       state.selectedRunId = action.payload;
+      state.selectedEventId = null;
+      state.focusedContent = null;
+      state.activeMainTab = "graph";
     },
     cancelCreatingSim: (state) => {
       state.mode = "browsing";
       state.selectedRunId = null;
+      state.activeMainTab = "graph";
+      state.activeDetailsTab = "eventDetails";
+      state.selectedEventId = null;
+      state.selectedStepId = null;
+      state.focusedContent = null;
+      state.reusedStepIds = [];
+    },
+    setActiveMainTab: (state, action: PayloadAction<FlowVersionRunMainTab>) => {
+      state.activeMainTab = action.payload;
+    },
+    setActiveDetailsTab: (
+      state,
+      action: PayloadAction<FlowVersionRunDetailsTab>,
+    ) => {
+      state.activeDetailsTab = action.payload;
+    },
+    setSelectedEventId: (state, action: PayloadAction<string | null>) => {
+      state.selectedEventId = action.payload;
+    },
+    setSelectedStepId: (state, action: PayloadAction<string | null>) => {
+      state.selectedStepId = action.payload;
+    },
+    setFocusedContent: (
+      state,
+      action: PayloadAction<FlowVersionRunFocusedContent>,
+    ) => {
+      state.focusedContent = action.payload;
+      state.activeMainTab = "focused";
+    },
+    toggleStepReused: (state, action: PayloadAction<string>) => {
+      const stepId = action.payload;
+      state.reusedStepIds = state.reusedStepIds.includes(stepId)
+        ? state.reusedStepIds.filter((id) => id !== stepId)
+        : [...state.reusedStepIds, stepId];
     },
   },
 });
@@ -51,6 +110,12 @@ export const {
   startCreatingSim,
   selectRunForNewSim,
   cancelCreatingSim,
+  setActiveMainTab,
+  setActiveDetailsTab,
+  setSelectedEventId,
+  setSelectedStepId,
+  setFocusedContent,
+  toggleStepReused,
 } = flowVersionSimsSlice.actions;
 
 const EMPTY_FLOW_VERSION_SIMS_STATE: FlowVersionSimsState = initialState;

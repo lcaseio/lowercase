@@ -14,6 +14,8 @@ import { ArtifactHashLoader } from "./ArtifactHashLoader";
 import { StepOutputExportsPanel } from "./StepOutputExportsPanel";
 import { StepFieldResolutionPanel } from "./StepFieldResolutionPanel";
 import { StepReferencesPanel } from "./StepReferencesPanel";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "../ui/label";
 
 type Props = {
   stepId: string | null;
@@ -22,6 +24,8 @@ type Props = {
   paramHashes: Record<string, string>;
   stepRunInfo: Record<string, StepRunInfo>;
   onOpenInMainPanel: OpenInMainPanel;
+  isReused?: boolean;
+  onToggleReused?: () => void;
 };
 
 type SubTab = "outputExports" | "fieldResolution" | "references";
@@ -42,6 +46,8 @@ export function StepResultsTab({
   paramHashes,
   stepRunInfo,
   onOpenInMainPanel,
+  isReused,
+  onToggleReused,
 }: Props) {
   const [subTab, setSubTab] = useState<SubTab>("outputExports");
   const [artifactsByHash, setArtifactsByHash] = useState<
@@ -118,7 +124,21 @@ export function StepResultsTab({
         <ArtifactHashLoader key={hash} hash={hash} onLoaded={handleLoaded} />
       ))}
 
-      <h2>{stepId}</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2>{stepId}</h2>
+        {onToggleReused && (
+          <div className="flex items-center space-x-2">
+            <Label htmlFor={stepId}>Reuse</Label>
+            <Switch
+              checked={isReused ?? false}
+              onCheckedChange={() => onToggleReused()}
+              size="default"
+              id={stepId}
+              className="data-[state=checked]:bg-sky-600 dark:data-[state=checked]:bg-sky-300"
+            />
+          </div>
+        )}
+      </div>
       <div className="text-md text-muted-foreground">
         Status: {formatStatus(info?.status) ?? "unknown"}
         {info?.matchedCase ? ` (case: ${info.matchedCase})` : null}
