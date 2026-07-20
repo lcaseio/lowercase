@@ -19,6 +19,8 @@ type FlowVersionSimsState = {
   selectedStepId: string | null;
   focusedContent: FlowVersionRunFocusedContent | null;
   reusedStepIds: string[];
+  simName: string;
+  simDescription: string;
 };
 
 const initialState: FlowVersionSimsState = {
@@ -32,7 +34,24 @@ const initialState: FlowVersionSimsState = {
   selectedStepId: null,
   focusedContent: null,
   reusedStepIds: [],
+  simName: "",
+  simDescription: "",
 };
+
+// shared by cancelCreatingSim (discarding) and simSaved (completing) -- both
+// return to the same blank browsing state, just for different reasons
+function resetToBrowsing(state: FlowVersionSimsState) {
+  state.mode = "browsing";
+  state.selectedRunId = null;
+  state.activeMainTab = "graph";
+  state.activeDetailsTab = "eventDetails";
+  state.selectedEventId = null;
+  state.selectedStepId = null;
+  state.focusedContent = null;
+  state.reusedStepIds = [];
+  state.simName = "";
+  state.simDescription = "";
+}
 
 export const flowVersionSimsSlice = createSlice({
   name: "flowVersionSims",
@@ -65,14 +84,10 @@ export const flowVersionSimsSlice = createSlice({
       state.activeMainTab = "graph";
     },
     cancelCreatingSim: (state) => {
-      state.mode = "browsing";
-      state.selectedRunId = null;
-      state.activeMainTab = "graph";
-      state.activeDetailsTab = "eventDetails";
-      state.selectedEventId = null;
-      state.selectedStepId = null;
-      state.focusedContent = null;
-      state.reusedStepIds = [];
+      resetToBrowsing(state);
+    },
+    simSaved: (state) => {
+      resetToBrowsing(state);
     },
     setActiveMainTab: (state, action: PayloadAction<FlowVersionRunMainTab>) => {
       state.activeMainTab = action.payload;
@@ -102,6 +117,12 @@ export const flowVersionSimsSlice = createSlice({
         ? state.reusedStepIds.filter((id) => id !== stepId)
         : [...state.reusedStepIds, stepId];
     },
+    setSimName: (state, action: PayloadAction<string>) => {
+      state.simName = action.payload;
+    },
+    setSimDescription: (state, action: PayloadAction<string>) => {
+      state.simDescription = action.payload;
+    },
   },
 });
 
@@ -110,12 +131,15 @@ export const {
   startCreatingSim,
   selectRunForNewSim,
   cancelCreatingSim,
+  simSaved,
   setActiveMainTab,
   setActiveDetailsTab,
   setSelectedEventId,
   setSelectedStepId,
   setFocusedContent,
   toggleStepReused,
+  setSimName,
+  setSimDescription,
 } = flowVersionSimsSlice.actions;
 
 const EMPTY_FLOW_VERSION_SIMS_STATE: FlowVersionSimsState = initialState;

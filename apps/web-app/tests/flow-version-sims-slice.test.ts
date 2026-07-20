@@ -10,6 +10,9 @@ import {
   setFocusedContent,
   setSelectedEventId,
   setSelectedStepId,
+  setSimDescription,
+  setSimName,
+  simSaved,
   startCreatingSim,
   toggleStepReused,
 } from "@/redux/slices/flow-version-sims-slice";
@@ -28,6 +31,8 @@ const BASE_STATE = {
   selectedStepId: null,
   focusedContent: null,
   reusedStepIds: [],
+  simName: "",
+  simDescription: "",
 };
 
 function stateFor(flowVersionSims: ReturnType<typeof reducer>) {
@@ -191,6 +196,36 @@ describe("flowVersionSimsSlice", () => {
 
     const removedFirst = reducer(addedSecond, toggleStepReused("step-1"));
     expect(removedFirst.reusedStepIds).toEqual(["step-2"]);
+  });
+
+  it("setSimName updates the sim name", () => {
+    const state = reducer(undefined, setSimName("My Sim"));
+    expect(state.simName).toBe("My Sim");
+  });
+
+  it("setSimDescription updates the sim description", () => {
+    const state = reducer(undefined, setSimDescription("A description"));
+    expect(state.simDescription).toBe("A description");
+  });
+
+  it("cancelCreatingSim also clears simName and simDescription", () => {
+    const authoring = reducer(undefined, startCreatingSim());
+    const withName = reducer(authoring, setSimName("My Sim"));
+    const withDescription = reducer(withName, setSimDescription("desc"));
+    const cancelled = reducer(withDescription, cancelCreatingSim());
+    expect(cancelled).toEqual(BASE_STATE);
+  });
+
+  it("simSaved resets to the same blank browsing state as cancelCreatingSim", () => {
+    const authoring = reducer(undefined, startCreatingSim());
+    const withRun = reducer(authoring, selectRunForNewSim("run-1"));
+    const withStep = reducer(withRun, setSelectedStepId("step-1"));
+    const withReuse = reducer(withStep, toggleStepReused("step-1"));
+    const withName = reducer(withReuse, setSimName("My Sim"));
+    const withDescription = reducer(withName, setSimDescription("desc"));
+
+    const saved = reducer(withDescription, simSaved());
+    expect(saved).toEqual(BASE_STATE);
   });
 
   it("selectFlowVersionSimsState returns the empty default when the flowVersionId doesn't match the active scope", () => {
