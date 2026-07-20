@@ -39,13 +39,13 @@ export function FlowVersionRunHistoryList({
           type="button"
           onClick={() => onSelectRun(run.runId)}
           className={cn(
-            "text-left",
+            "text-left cursor-pointer",
             run.runId === selectedRunId && "ring-2 ring-sky-500 rounded-md",
           )}
         >
           <Item variant="muted">
             <ItemContent>
-              <ItemTitle>{run.runId}</ItemTitle>
+              <ItemTitle className="text-xs">{run.runId}</ItemTitle>
               <ItemDescription>
                 {run.startTime
                   ? new Date(run.startTime).toLocaleString()

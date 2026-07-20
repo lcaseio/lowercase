@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventDetails } from "@/components/EventDetails";
 import { FileTextIcon, TerminalSquareIcon } from "lucide-react";
 import type { AnyEvent, FlowDefinition, Ref } from "@lcase/types";
-import type { FlowVersionRunDetailsTab } from "@/redux/slices/flow-version-run-slice";
+import type { FlowVersionRunDetailsTab } from "@/lib/run-panel-state.types";
 import type { StepRunInfo } from "@/hooks/use-step-run-info";
 import type { OpenInMainPanel } from "@/components/MainPanelTypes";
 import { StepResultsTab } from "./StepResultsTab";

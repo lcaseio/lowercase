@@ -113,7 +113,12 @@ export function StepOutputExportsPanel({
           {exportEntries.map(([name, hash]) => (
             <div key={name} className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm">{name}</span>
+                <div>
+                  <span className="text-sm">{name}</span>
+                  <span className="text-xs font-mono">
+                    &nbsp;{truncateHash(hash)}
+                  </span>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
