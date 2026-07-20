@@ -20,6 +20,7 @@ import { FlowVersionModePlaceholder } from "./pages/flow-version/FlowVersionMode
 import { FlowVersionView } from "./pages/flow-version/FlowVersionView";
 import { FlowVersionRun } from "./pages/flow-version/FlowVersionRun";
 import { FlowVersionRunHistory } from "./pages/flow-version/FlowVersionRunHistory";
+import { FlowVersionSims } from "./pages/flow-version/FlowVersionSims";
 
 function SpikeIndexRedirect() {
   const { data, isLoading } = useGetFlowsQuery();
@@ -62,10 +63,7 @@ export function App() {
           <Route path="view" element={<FlowVersionView />} />
           <Route path="run" element={<FlowVersionRun />} />
           <Route path="runs" element={<FlowVersionRunHistory />} />
-          <Route
-            path="sims"
-            element={<FlowVersionModePlaceholder mode="Sims" />}
-          />
+          <Route path="sims" element={<FlowVersionSims />} />
           <Route
             path="artifacts"
             element={<FlowVersionModePlaceholder mode="Artifacts" />}
