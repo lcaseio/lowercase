@@ -10,5 +10,6 @@ export interface SimRepositoryPort {
   getSim(simId: string): Promise<Result<SimRecord, string>>;
   listSims(): Promise<SimRecord[]>;
   listSimsWithFlowVersion(): Promise<SimListItem[]>;
+  listSimsByFlowVersionId(flowVersionId: string): Promise<SimListItem[]>;
   getSimForkSpecHash(simId: string): Promise<Result<string, string>>;
 }

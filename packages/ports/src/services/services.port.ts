@@ -21,7 +21,6 @@ import type {
 import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
-import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
   flow: FlowServicePort;
@@ -42,6 +41,7 @@ export interface SimServicePort {
   ): Promise<void>;
 
   getAllSims(): Promise<SimListItem[]>;
+  getSimsByFlowVersionId(flowVersionId: string): Promise<SimListItem[]>;
   getSim(simId: string): Promise<Result<SimDefinition, string>>;
   saveSim(
     simDetails: Omit<CreateSimRecordInput, "forkSpecHash"> & {
