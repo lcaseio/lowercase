@@ -14,6 +14,7 @@ import { artifactsApi } from "./api/artifacts-api";
 import { evalsApi } from "./api/evals-api";
 import { flowVersionRunSlice } from "./slices/flow-version-run-slice";
 import { flowVersionRunHistorySlice } from "./slices/flow-version-run-history-slice";
+import { flowVersionSimsSlice } from "./slices/flow-version-sims-slice";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -27,6 +28,7 @@ export const rootReducer = combineReducers({
   runs: runsSlice.reducer,
   flowVersionRun: flowVersionRunSlice.reducer,
   flowVersionRunHistory: flowVersionRunHistorySlice.reducer,
+  flowVersionSims: flowVersionSimsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
   [simsApi.reducerPath]: simsApi.reducer,
