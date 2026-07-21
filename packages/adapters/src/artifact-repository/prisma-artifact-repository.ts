@@ -2,6 +2,7 @@ import type { PrismaClient } from "@lcase/db-prisma";
 import type {
   ArtifactAssociation,
   ArtifactIndex,
+  ArtifactListFilter,
   ArtifactParamCurationRecord,
   Result,
 } from "@lcase/types";
@@ -78,8 +79,12 @@ export class PrismaArtifactRepository
     return this.getIndexList();
   }
 
-  async listArtifacts(): Promise<ArtifactIndex[]> {
-    return this.getAll();
+  async listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]> {
+    const artifacts = await this.db.artifact.findMany({
+      where: filter ? definedFields(filter) : undefined,
+      orderBy: [{ time: "desc" }, { hash: "desc" }],
+    });
+    return artifacts.map(toArtifactIndex);
   }
 
   async put(index: ArtifactIndex): Promise<Result<ArtifactIndex, string>> {
