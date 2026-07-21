@@ -73,6 +73,9 @@ model Artifact {
   format        ArtifactFormat?
   flowId        String?
   flowVersionId String?
+  // set only through deliberate curation (associateArtifact), never by the
+  // worker's content-put path -- see docs/adr/0003-artifact-curated-flag.md
+  curated       Boolean         @default(false)
 
   flow        Flow?        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   flowVersion FlowVersion? @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)

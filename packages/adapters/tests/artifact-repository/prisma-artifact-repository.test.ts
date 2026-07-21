@@ -78,6 +78,38 @@ describe("PrismaArtifactRepository", () => {
     expect(artifact).toEqual(result.value);
   });
 
+  it("put() called again on the same hash does not clear an existing flowId/flowVersionId association", async () => {
+    // simulates the exact real-world case: a run later produces byte-
+    // identical content to something already curated -- the worker's put()
+    // call has no way to reach flowId/flowVersionId at all (excluded from
+    // ArtifactIndexInput), so this must be a true no-op on those columns
+    const flow = await prisma.flow.create({ data: { name: "Test Flow" } });
+    const flowVersion = await prisma.flowVersion.create({
+      data: { flowId: flow.id, sequence: 1, definitionHash: "h".repeat(64) },
+    });
+
+    await repository.saveArtifact({
+      hash: "a".repeat(64),
+      time: "2026-06-30T00:00:00.000Z",
+      format: "json",
+    });
+    await repository.associateArtifact("a".repeat(64), {
+      flowId: flow.id,
+      flowVersionId: flowVersion.id,
+    });
+
+    const result = await repository.saveArtifact({
+      hash: "a".repeat(64),
+      time: "2026-07-01T00:00:00.000Z",
+      format: "json",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.flowId).toBe(flow.id);
+    expect(result.value.flowVersionId).toBe(flowVersion.id);
+  });
+
   it("lists artifact metadata newest first", async () => {
     await repository.saveArtifact({
       hash: "a".repeat(64),
@@ -187,6 +219,60 @@ describe("PrismaArtifactRepository", () => {
         flowId: "nonexistent",
       });
       expect(result.ok).toBe(false);
+    });
+
+    it("new artifacts default to curated: false", async () => {
+      const saveResult = await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2026-06-30T00:00:00.000Z",
+        format: "json",
+      });
+      expect(saveResult.ok).toBe(true);
+      if (!saveResult.ok) return;
+      expect(saveResult.value.curated).toBe(false);
+    });
+
+    it("sets curated to true, and back to false, only through associateArtifact", async () => {
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2026-06-30T00:00:00.000Z",
+        format: "json",
+      });
+
+      const curated = await repository.associateArtifact("a".repeat(64), {
+        curated: true,
+      });
+      expect(curated.ok).toBe(true);
+      if (curated.ok) expect(curated.value.curated).toBe(true);
+
+      const uncurated = await repository.associateArtifact("a".repeat(64), {
+        curated: false,
+      });
+      expect(uncurated.ok).toBe(true);
+      if (uncurated.ok) expect(uncurated.value.curated).toBe(false);
+    });
+
+    it("put() called again on the same hash does not clear an existing curated flag", async () => {
+      // mirrors the flowId/flowVersionId case below -- the worker's put()
+      // path has no way to reach curated at all (excluded from
+      // ArtifactIndexInput), so a run later producing byte-identical
+      // content must not be able to un-curate it
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2026-06-30T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.associateArtifact("a".repeat(64), { curated: true });
+
+      const result = await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2026-07-01T00:00:00.000Z",
+        format: "json",
+      });
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(result.value.curated).toBe(true);
     });
   });
 

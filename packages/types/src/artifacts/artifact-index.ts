@@ -9,4 +9,5 @@ export type ArtifactIndex = {
   format?: "json" | "text" | "markdown" | "bytes";
   flowId?: string;
   flowVersionId?: string;
+  curated?: boolean;
 };
