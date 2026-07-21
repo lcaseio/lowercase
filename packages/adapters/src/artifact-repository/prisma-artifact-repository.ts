@@ -1,11 +1,27 @@
 import type { PrismaClient } from "@lcase/db-prisma";
-import type { ArtifactIndex, Result } from "@lcase/types";
+import type {
+  ArtifactAssociation,
+  ArtifactIndex,
+  ArtifactParamCurationRecord,
+  Result,
+} from "@lcase/types";
 import type {
   ArtifactIndexStorePort,
   ArtifactRepositoryPort,
 } from "@lcase/ports";
 
-type PrismaArtifactRepositoryDb = Pick<PrismaClient, "artifact">;
+type PrismaArtifactRepositoryDb = Pick<
+  PrismaClient,
+  "artifact" | "artifactParamCuration"
+>;
+
+function definedFields<T extends Record<string, unknown>>(
+  input: T,
+): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(input).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
+}
 
 function toArtifactIndex(artifact: {
   hash: string;
@@ -15,6 +31,8 @@ function toArtifactIndex(artifact: {
   contentType: string | null;
   size: number | null;
   format: "json" | "text" | "markdown" | "bytes" | null;
+  flowId: string | null;
+  flowVersionId: string | null;
 }): ArtifactIndex {
   return {
     hash: artifact.hash,
@@ -24,6 +42,8 @@ function toArtifactIndex(artifact: {
     contentType: artifact.contentType ?? undefined,
     size: artifact.size ?? undefined,
     format: artifact.format ?? undefined,
+    flowId: artifact.flowId ?? undefined,
+    flowVersionId: artifact.flowVersionId ?? undefined,
   };
 }
 
@@ -71,6 +91,8 @@ export class PrismaArtifactRepository
           contentType: index.contentType,
           size: index.size,
           format: index.format,
+          flowId: index.flowId,
+          flowVersionId: index.flowVersionId,
         },
         create: {
           hash: index.hash,
@@ -80,6 +102,8 @@ export class PrismaArtifactRepository
           contentType: index.contentType,
           size: index.size,
           format: index.format,
+          flowId: index.flowId,
+          flowVersionId: index.flowVersionId,
         },
       });
       return { ok: true, value: toArtifactIndex(saved) };
@@ -89,6 +113,80 @@ export class PrismaArtifactRepository
         error: `Unable to save artifact metadata: ${String(error)}`,
       };
     }
+  }
+
+  async associateArtifact(
+    hash: string,
+    association: ArtifactAssociation,
+  ): Promise<Result<ArtifactIndex, string>> {
+    try {
+      const saved = await this.db.artifact.update({
+        where: { hash },
+        data: definedFields(association),
+      });
+      return { ok: true, value: toArtifactIndex(saved) };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Unable to associate artifact: ${String(error)}`,
+      };
+    }
+  }
+
+  async curateArtifactForParam(
+    entry: ArtifactParamCurationRecord,
+  ): Promise<Result<void, string>> {
+    try {
+      await this.db.artifactParamCuration.upsert({
+        where: {
+          artifactHash_flowVersionId_paramName: {
+            artifactHash: entry.artifactHash,
+            flowVersionId: entry.flowVersionId,
+            paramName: entry.paramName,
+          },
+        },
+        update: {},
+        create: entry,
+      });
+      return { ok: true, value: undefined };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Unable to curate artifact for param: ${String(error)}`,
+      };
+    }
+  }
+
+  async uncurateArtifactForParam(
+    entry: ArtifactParamCurationRecord,
+  ): Promise<Result<void, string>> {
+    try {
+      await this.db.artifactParamCuration.delete({
+        where: {
+          artifactHash_flowVersionId_paramName: {
+            artifactHash: entry.artifactHash,
+            flowVersionId: entry.flowVersionId,
+            paramName: entry.paramName,
+          },
+        },
+      });
+      return { ok: true, value: undefined };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Unable to uncurate artifact for param: ${String(error)}`,
+      };
+    }
+  }
+
+  async listCuratedArtifacts(
+    flowVersionId: string,
+    paramName: string,
+  ): Promise<ArtifactIndex[]> {
+    const entries = await this.db.artifactParamCuration.findMany({
+      where: { flowVersionId, paramName },
+    });
+    return this.getArtifacts(entries.map((entry) => entry.artifactHash));
   }
 
   async get(hash: string): Promise<ArtifactIndex | undefined> {
