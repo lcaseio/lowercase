@@ -18,7 +18,7 @@ export const workerProfileSubmittedPlanner: SchedulerPlanner<
 > = (
   oldState: SchedulerState,
   newState: SchedulerState,
-  message: WorkerProfileSubmittedMsg
+  message: WorkerProfileSubmittedMsg,
 ): SchedulerEffect[] => {
   const effects: SchedulerEffect[] = [];
 

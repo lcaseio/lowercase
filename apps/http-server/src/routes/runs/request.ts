@@ -6,8 +6,14 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostRunsReq }>(
     "/",
     async (req, rep): Promise<PostRunsRes> => {
-      const { flowId, flowVersionId, flowDefHash, simId, forkSpecHash, params } =
-        req.body;
+      const {
+        flowId,
+        flowVersionId,
+        flowDefHash,
+        simId,
+        forkSpecHash,
+        params,
+      } = req.body;
       if (!isNonEmptyString(flowId)) {
         return { ok: false, error: "Invalid flowId" };
       }

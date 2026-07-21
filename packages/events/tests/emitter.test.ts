@@ -39,11 +39,11 @@ describe("emitter factory", () => {
     const traceParent = ef.makeTraceParent(traceId, spanId);
 
     expect(/^00\-[a-zA-Z0-9]{32}\-[a-zA-Z0-9]{16}\-01$/.test(traceParent)).toBe(
-      true
+      true,
     );
     const traceParentTwo = ef.makeTraceParent(traceId, spanId, false);
     expect(
-      /^00\-[a-zA-Z0-9]{32}\-[a-zA-Z0-9]{16}\-00$/.test(traceParentTwo)
+      /^00\-[a-zA-Z0-9]{32}\-[a-zA-Z0-9]{16}\-00$/.test(traceParentTwo),
     ).toBe(true);
   });
 });

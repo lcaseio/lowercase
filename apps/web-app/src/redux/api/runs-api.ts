@@ -29,7 +29,9 @@ export const runsApi = createApi({
       query: (args) => ({
         url: "runs",
         method: "GET",
-        params: args?.flowVersionId ? { flowVersionId: args.flowVersionId } : undefined,
+        params: args?.flowVersionId
+          ? { flowVersionId: args.flowVersionId }
+          : undefined,
       }),
     }),
 

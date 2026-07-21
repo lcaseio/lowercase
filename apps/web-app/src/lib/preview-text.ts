@@ -7,6 +7,9 @@ export function stringifyForPreview(value: unknown): string {
 }
 
 /** Truncates already-stringified display text with a trailing ellipsis marker. */
-export function truncateForPreview(text: string, maxLength = DEFAULT_TRUNCATE_AT): string {
+export function truncateForPreview(
+  text: string,
+  maxLength = DEFAULT_TRUNCATE_AT,
+): string {
   return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
 }

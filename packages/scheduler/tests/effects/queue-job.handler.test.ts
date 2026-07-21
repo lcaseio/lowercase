@@ -53,7 +53,7 @@ describe("QueueJob Effect Handler", () => {
     expect(parseJobQueued).toHaveBeenCalledExactlyOnceWith(e);
     expect(newJobEmitterFromEvent).toHaveBeenCalledExactlyOnceWith(
       e,
-      "lowercase://rm"
+      "lowercase://rm",
     );
     expect(enqueue).toHaveBeenCalledWith(queueJobFx.toolId, e);
     expect(emitFormedEvent).toHaveBeenCalledWith(e);
@@ -90,7 +90,7 @@ describe("QueueJob Effect Handler", () => {
     expect(emitErrorFn).toHaveBeenCalledExactlyOnceWith(
       jobSubmittedHttpJsonMsg.event,
       ef,
-      `Error queueing event ${e.type}`
+      `Error queueing event ${e.type}`,
     );
   });
 });

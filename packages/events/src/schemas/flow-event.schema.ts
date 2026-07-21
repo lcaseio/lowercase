@@ -20,7 +20,7 @@ export const FlowContextSchema = z
   .strict() satisfies z.ZodType<FlowScope>;
 
 export const FlowQueuedSchema = CloudEventContextSchema.extend(
-  FlowContextSchema.shape
+  FlowContextSchema.shape,
 )
   .merge(
     z.object({
@@ -28,12 +28,12 @@ export const FlowQueuedSchema = CloudEventContextSchema.extend(
       entity: z.undefined().optional(),
       action: z.literal("queued"),
       data: FlowQueuedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.queued">>;
 
 export const FlowSubmittedSchema = CloudEventContextSchema.extend(
-  FlowContextSchema.shape
+  FlowContextSchema.shape,
 )
   .merge(
     z.object({
@@ -41,12 +41,12 @@ export const FlowSubmittedSchema = CloudEventContextSchema.extend(
       entity: z.undefined().optional(),
       action: z.literal("submitted"),
       data: FlowSubmittedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.submitted">>;
 
 export const FlowStartedSchema = CloudEventContextSchema.merge(
-  FlowContextSchema
+  FlowContextSchema,
 )
   .merge(
     z.object({
@@ -54,12 +54,12 @@ export const FlowStartedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("started"),
       data: FlowStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.started">>;
 
 export const FlowCompletedSchema = CloudEventContextSchema.merge(
-  FlowContextSchema
+  FlowContextSchema,
 )
   .merge(
     z.object({
@@ -67,7 +67,7 @@ export const FlowCompletedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("completed"),
       data: FlowCompletedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.completed">>;
 
@@ -78,7 +78,7 @@ export const FlowFailedSchema = CloudEventContextSchema.merge(FlowContextSchema)
       entity: z.undefined().optional(),
       action: z.literal("failed"),
       data: FlowFailedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"flow.failed">>;
 

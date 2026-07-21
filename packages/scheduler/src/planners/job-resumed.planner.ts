@@ -9,7 +9,7 @@ import type {
 export const jobResumedPlanner: SchedulerPlanner<JobResumedMsg> = (
   oldState: SchedulerState,
   newState: SchedulerState,
-  message: JobResumedMsg
+  message: JobResumedMsg,
 ): SchedulerEffect[] => {
   const effects: SchedulerEffect[] = [];
   const toolId = message.event.data.job.toolid;

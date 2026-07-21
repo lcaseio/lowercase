@@ -5,8 +5,4 @@ import { StepParallel } from "./parallel.step.js";
 import { StepBranch } from "./branch.step.js";
 
 export type StepDefinition =
-  | StepMcp
-  | StepHttpJson
-  | StepParallel
-  | StepJoin
-  | StepBranch;
+  StepMcp | StepHttpJson | StepParallel | StepJoin | StepBranch;

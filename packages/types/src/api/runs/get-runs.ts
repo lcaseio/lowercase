@@ -5,5 +5,4 @@ export type GetRunsReq = {
 };
 
 export type GetRunsRes =
-  | { ok: true; runList: RunListItem[] }
-  | { ok: false; error: string };
+  { ok: true; runList: RunListItem[] } | { ok: false; error: string };

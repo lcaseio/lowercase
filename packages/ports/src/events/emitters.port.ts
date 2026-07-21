@@ -51,25 +51,25 @@ export interface StepEmitterPort {
 export interface SystemEmitterPort {
   emit<T extends SystemEventType>(
     type: T,
-    data: SystemEventData<T>
+    data: SystemEventData<T>,
   ): Promise<void>;
 }
 
 export interface ReplayEmitterPort {
   emit<T extends ReplayEventType>(
     type: T,
-    data: ReplayEventData<T>
+    data: ReplayEventData<T>,
   ): Promise<ReplayEvent<T>>;
 }
 
 export interface JobEmitterPort {
   emit<T extends JobEventType>(
     type: T,
-    data: JobEventData<T>
+    data: JobEventData<T>,
   ): Promise<JobEvent<T>>;
   formEvent<T extends JobEventType>(
     type: T,
-    data: JobEventData<T>
+    data: JobEventData<T>,
   ): JobEvent<T>;
   emitFormedEvent(event: JobEvent): Promise<JobEvent>;
 }
@@ -77,48 +77,48 @@ export interface JobEmitterPort {
 export interface EngineEmitterPort {
   emit<T extends EngineEventType>(
     type: T,
-    data: EngineEventData<T>
+    data: EngineEventData<T>,
   ): Promise<EngineEvent<T>>;
 }
 
 export interface FlowEmitterPort {
   emit<T extends FlowEventType>(
     type: T,
-    data: FlowEventData<T>
+    data: FlowEventData<T>,
   ): Promise<FlowEvent<T>>;
 }
 
 export interface RunEmitterPort {
   emit<T extends RunEventType>(
     type: T,
-    data: RunEventData<T>
+    data: RunEventData<T>,
   ): Promise<RunEvent<T>>;
 }
 
 export interface WorkerEmitterPort {
   emit<T extends WorkerEventType>(
     type: T,
-    data: WorkerEventData<T>
+    data: WorkerEventData<T>,
   ): Promise<void>;
 }
 
 export interface ToolEmitterPort {
   emit<T extends ToolEventType>(
     type: T,
-    data: ToolEventData<T>
+    data: ToolEventData<T>,
   ): Promise<ToolEvent<T>>;
 }
 
 export interface SchedulerEmitterPort {
   emit<T extends SchedulerEventType>(
     type: T,
-    data: SchedulerEventData<T>
+    data: SchedulerEventData<T>,
   ): Promise<SchedulerEvent<T>>;
 }
 
 export interface LimiterEmitterPort {
   emit<T extends LimiterEventType>(
     type: T,
-    data: LimiterEventData<T>
+    data: LimiterEventData<T>,
   ): Promise<LimiterEvent<T>>;
 }

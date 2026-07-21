@@ -48,7 +48,10 @@ export function RunDetails() {
       hydrateRunnerFromRun({
         flowSelectedId: detail.run.flowId,
         selectedParamHashes: Object.fromEntries(
-          (detail.params ?? []).map((param) => [param.name, param.artifactHash]),
+          (detail.params ?? []).map((param) => [
+            param.name,
+            param.artifactHash,
+          ]),
         ),
       }),
     );

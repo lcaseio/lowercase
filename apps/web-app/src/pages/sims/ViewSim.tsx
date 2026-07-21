@@ -23,7 +23,9 @@ export function ViewSim() {
     viewedSimId ? { simId: viewedSimId } : skipToken,
   );
   const flowDef = useGetFlowVersionDefQuery(
-    simQuery.data?.ok === true ? simQuery.data.value.sim.flowVersionId : skipToken,
+    simQuery.data?.ok === true
+      ? simQuery.data.value.sim.flowVersionId
+      : skipToken,
   );
 
   useEffect(() => {

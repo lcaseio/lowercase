@@ -43,7 +43,7 @@ describe("emitFlowSubmittedFx()", () => {
 
     expect(newFlowEmitterNewSpan).toHaveBeenCalledExactlyOnceWith(
       effect.scope,
-      "test-traceid"
+      "test-traceid",
     );
     expect(emit).toHaveBeenCalledExactlyOnceWith("flow.analyzed", effect.data);
   });

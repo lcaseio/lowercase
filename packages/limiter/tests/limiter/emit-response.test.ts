@@ -66,7 +66,7 @@ describe("Limiter emitResponse()", () => {
         limiterid: "limiter-id",
         source: "lowercase://limiter/global/limiter-id",
       },
-      decisions[0].traceId
+      decisions[0].traceId,
     );
     expect(newLimiterEmitterNewSpan).toHaveBeenNthCalledWith(
       2,
@@ -74,7 +74,7 @@ describe("Limiter emitResponse()", () => {
         limiterid: "limiter-id",
         source: "lowercase://limiter/global/limiter-id",
       },
-      decisions[1].traceId
+      decisions[1].traceId,
     );
 
     expect(emit).toHaveBeenNthCalledWith(1, "limiter.slot.granted", {

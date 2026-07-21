@@ -25,7 +25,7 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & FlowScope & CloudScope
+    scope: OtelContext & FlowScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, flowversionid, runid } = scope;
@@ -40,7 +40,7 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
 
   async emit<T extends FlowEventType>(
     type: T,
-    data: FlowEventData<T>
+    data: FlowEventData<T>,
   ): Promise<FlowEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -58,7 +58,7 @@ export class FlowEmitter extends BaseEmitter implements FlowEmitterPort {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[flow-emitter] error parsing event; ${type}; ${result.error}`
+        `[flow-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

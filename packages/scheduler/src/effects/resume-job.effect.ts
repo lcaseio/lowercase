@@ -4,7 +4,7 @@ import type { ResumeJobFx } from "../scheduler.types.js";
 
 export const resumeJobEffect = async (
   effect: ResumeJobFx,
-  deps: SchedulerEffectDeps
+  deps: SchedulerEffectDeps,
 ) => {
   const toolId = effect.event.data.job.toolid;
 
@@ -17,7 +17,7 @@ export const resumeJobEffect = async (
     await emitErrorFn(
       effect.event,
       ef,
-      `Error dequeueing delayed job for ${toolId}: event undefined`
+      `Error dequeueing delayed job for ${toolId}: event undefined`,
     );
     return;
   }
@@ -27,7 +27,7 @@ export const resumeJobEffect = async (
     await emitErrorFn(
       effect.event,
       ef,
-      `Error dequeueing delayed job for ${toolId}: event validation failed.`
+      `Error dequeueing delayed job for ${toolId}: event validation failed.`,
     );
     return;
   }
@@ -43,7 +43,7 @@ export const resumeJobEffect = async (
     await emitErrorFn(
       e,
       ef,
-      `Error parsing job as job.*.resumed for tooldId: ${toolId}`
+      `Error parsing job as job.*.resumed for tooldId: ${toolId}`,
     );
     return;
   }

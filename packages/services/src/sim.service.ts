@@ -69,7 +69,9 @@ export class SimService implements SimServicePort {
     const simResult = await this.simRepository.getSim(simId);
     if (!simResult.ok) return simResult;
 
-    const specResult = await this.artifacts.getJson(simResult.value.forkSpecHash);
+    const specResult = await this.artifacts.getJson(
+      simResult.value.forkSpecHash,
+    );
     if (!specResult.ok) {
       return { ok: false, error: specResult.error.message };
     }

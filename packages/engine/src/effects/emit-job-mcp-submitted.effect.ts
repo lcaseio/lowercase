@@ -20,7 +20,7 @@ export const emitJobMcpSubmittedFx: EffectHandler<
       source: "lowercase://engine",
       jobid: "job-" + String(randomUUID()),
     },
-    effect.traceId
+    effect.traceId,
   );
   await emitter.emit("job.mcp.submitted", effect.data);
 };

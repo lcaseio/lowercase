@@ -4,7 +4,7 @@ import { JobDelayedMsg, SchedulerReducer } from "../scheduler.types.js";
 
 export const jobDelayedReducer: SchedulerReducer<JobDelayedMsg> = (
   state: SchedulerState,
-  message: JobDelayedMsg
+  message: JobDelayedMsg,
 ): SchedulerState => {
   return produce(state, (draft) => {
     const runId = message.event.runid;

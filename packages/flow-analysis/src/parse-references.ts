@@ -111,7 +111,9 @@ export function parseExportRef(
   exportName: string,
   problems: FlowProblem[],
 ): ExportRef | undefined {
-  const match = declaration.ref.match(/^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)}}$/);
+  const match = declaration.ref.match(
+    /^{{((output)\.[a-zA-Z0-9\-\[\]_\.]+)}}$/,
+  );
 
   if (!match) {
     problems.push({

@@ -110,7 +110,12 @@ export class SqlRunProjectionSink implements EventSink {
     }
 
     const flowid = "flowid" in event ? event.flowid : undefined;
-    return state.flowDefHash ?? state.index.flowDefHash ?? state.index.flowId ?? flowid;
+    return (
+      state.flowDefHash ??
+      state.index.flowDefHash ??
+      state.index.flowId ??
+      flowid
+    );
   }
 
   async #flushLoop(runId: string, state: ShadowRunState): Promise<void> {

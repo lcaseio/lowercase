@@ -124,13 +124,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   );
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
-  const engine = createInProcessEngine(
-    bus,
-    ef,
-    jobParser,
-    runQuery,
-    artifacts,
-  );
+  const engine = createInProcessEngine(bus, ef, jobParser, runQuery, artifacts);
 
   const worker = createInProcessWorker(
     config.worker.id,

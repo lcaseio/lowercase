@@ -34,7 +34,7 @@ describe("emitStepPlannedFx", () => {
 
     expect(newStepEmitterNewSpan).toHaveBeenCalledExactlyOnceWith(
       effect.scope,
-      "test-traceid"
+      "test-traceid",
     );
     expect(emit).toHaveBeenCalledExactlyOnceWith("step.planned", effect.data);
   });

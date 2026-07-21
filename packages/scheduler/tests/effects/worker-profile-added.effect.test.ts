@@ -25,11 +25,11 @@ describe("workerProfileAddedEffect", () => {
     emitWorkerProfileAdded(effect, deps);
     expect(newWorkerEmitterNewSpan).toHaveBeenCalledExactlyOnceWith(
       effect.scope,
-      effect.traceId
+      effect.traceId,
     );
     expect(emit).toHaveBeenCalledExactlyOnceWith(
       "worker.profile.added",
-      effect.data
+      effect.data,
     );
   });
 });

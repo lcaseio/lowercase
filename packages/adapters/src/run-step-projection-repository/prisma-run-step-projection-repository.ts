@@ -51,15 +51,15 @@ function toOptionalDate(value: string | undefined): Date | undefined {
   return value ? new Date(value) : undefined;
 }
 
-function definedFields<T extends Record<string, unknown>>(input: T): Partial<T> {
+function definedFields<T extends Record<string, unknown>>(
+  input: T,
+): Partial<T> {
   return Object.fromEntries(
     Object.entries(input).filter(([, value]) => value !== undefined),
   ) as Partial<T>;
 }
 
-export class PrismaRunStepProjectionRepository
-  implements RunStepProjectionRepositoryPort
-{
+export class PrismaRunStepProjectionRepository implements RunStepProjectionRepositoryPort {
   constructor(private readonly db: PrismaRunStepProjectionRepositoryDb) {}
 
   async upsertStepProjection(
@@ -154,7 +154,10 @@ export class PrismaRunStepProjectionRepository
       });
       return {
         ok: true,
-        value: toRunStepProjectionRecord(step, exports.map(toRunStepExportRecord)),
+        value: toRunStepProjectionRecord(
+          step,
+          exports.map(toRunStepExportRecord),
+        ),
       };
     } catch (error) {
       return {

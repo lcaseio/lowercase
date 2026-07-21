@@ -6,11 +6,11 @@ import type {
 
 export const emitStepStartedFx: EffectHandler<"EmitStepStarted"> = async (
   effect: EmitStepStartedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newStepEmitterNewSpan(
     { ...effect.scope },
-    effect.traceId
+    effect.traceId,
   );
 
   await emitter.emit("step.started", effect.data);

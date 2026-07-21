@@ -10,7 +10,7 @@ import type { EmitWorkerProfileAddedFx } from "../scheduler.types.js";
  */
 export const emitWorkerProfileAdded = async (
   effect: EmitWorkerProfileAddedFx,
-  deps: SchedulerEffectDeps
+  deps: SchedulerEffectDeps,
 ) => {
   console.log("greetings");
   const emitter = deps.ef.newWorkerEmitterNewSpan(effect.scope, effect.traceId);

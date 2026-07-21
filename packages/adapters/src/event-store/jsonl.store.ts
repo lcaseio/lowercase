@@ -30,7 +30,7 @@ export class JsonlEventLog implements EventStorePort {
 
   async recordEvent(
     event: AnyEvent,
-    runId?: string
+    runId?: string,
   ): Promise<boolean | undefined> {
     runId = runId ?? (this.hasRunId(event) ? event.runid : undefined);
     if (!runId) return;

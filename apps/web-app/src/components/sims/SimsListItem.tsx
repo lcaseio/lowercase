@@ -35,9 +35,7 @@ export function SimsListItem({ simsListItem }: SimsListItemProps) {
     dispatch(setSimsFlowHash(simsListItem.flowVersion.definitionHash));
     dispatch(setSimsFlowSelectedId(simsListItem.sim.flowId));
     dispatch(setViewedSimId(simsListItem.sim.id));
-    dispatch(
-      setReusedStepIds({ flowId: simsListItem.sim.flowId, reused: [] }),
-    );
+    dispatch(setReusedStepIds({ flowId: simsListItem.sim.flowId, reused: [] }));
     navigate(`/sims/view`);
   };
 

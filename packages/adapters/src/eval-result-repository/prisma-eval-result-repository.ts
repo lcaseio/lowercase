@@ -71,9 +71,7 @@ export class PrismaEvalResultRepository implements EvalResultRepositoryPort {
     }
   }
 
-  async listByExperimentId(
-    experimentId: string,
-  ): Promise<EvalResultRecord[]> {
+  async listByExperimentId(experimentId: string): Promise<EvalResultRecord[]> {
     const rows = await this.db.evalResult.findMany({
       where: { experimentId },
       orderBy: { createdAt: "asc" },

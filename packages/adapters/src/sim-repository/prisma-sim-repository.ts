@@ -143,7 +143,9 @@ export class PrismaSimRepository implements SimRepositoryPort {
   }
 
   async #listWithWhere(
-    where: NonNullable<Parameters<PrismaSimRepositoryDb["sim"]["findMany"]>[0]>["where"],
+    where: NonNullable<
+      Parameters<PrismaSimRepositoryDb["sim"]["findMany"]>[0]
+    >["where"],
   ): Promise<SimListItem[]> {
     const sims = await this.db.sim.findMany({
       where,

@@ -22,7 +22,7 @@ server.registerTool(
   async ({ text }) => ({
     content: [{ type: "text", text: String(text) }],
     structuredContent: { text: text },
-  })
+  }),
 );
 
 const transport = new StdioServerTransport();

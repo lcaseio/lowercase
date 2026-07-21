@@ -11,7 +11,7 @@ const absoluteDirPath = path.join(import.meta.dirname, relativePath);
 const absoluteFilePath = path.join(
   import.meta.dirname,
   relativePath,
-  testRunId + ".events.jsonl"
+  testRunId + ".events.jsonl",
 );
 console.log(absoluteDirPath);
 console.log(absoluteFilePath);
@@ -53,7 +53,7 @@ describe("jsonl store adapter", () => {
     stream.end();
     await new Promise<void>((resolve, reject) => {
       stream.on("finish", (err?: Error | null) =>
-        err ? reject(err) : resolve()
+        err ? reject(err) : resolve(),
       );
     });
 
@@ -80,7 +80,7 @@ describe("jsonl store adapter", () => {
     stream.end();
     await new Promise<void>((resolve, reject) => {
       stream.on("finish", (err?: Error | null) =>
-        err ? reject(err) : resolve()
+        err ? reject(err) : resolve(),
       );
     });
 

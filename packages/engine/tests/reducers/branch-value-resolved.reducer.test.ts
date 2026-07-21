@@ -62,7 +62,9 @@ describe("branchValueResolvedReducer()", () => {
     expect(step.status).toBe("completed");
     expect(step.matchedCase).toBe("forecast");
     expect(newState.runs["test-runid"].completedSteps.routeintent).toBe(true);
-    expect(newState.runs["test-runid"].startedSteps.routeintent).toBeUndefined();
+    expect(
+      newState.runs["test-runid"].startedSteps.routeintent,
+    ).toBeUndefined();
   });
 
   it("marks the step completed with matchedCase null when it fell to default", () => {
@@ -77,7 +79,9 @@ describe("branchValueResolvedReducer()", () => {
 
     const newState = branchValueResolvedReducer(state, message);
 
-    expect(newState.runs["test-runid"].steps.routeintent.matchedCase).toBeNull();
+    expect(
+      newState.runs["test-runid"].steps.routeintent.matchedCase,
+    ).toBeNull();
   });
 
   it("marks the step failed when resolution errors", () => {

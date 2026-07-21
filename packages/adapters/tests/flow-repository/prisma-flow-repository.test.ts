@@ -49,10 +49,7 @@ describe("PrismaFlowRepository", () => {
 
     await applyMigrations(
       prisma,
-      path.resolve(
-        process.cwd(),
-        "../db-prisma/prisma/migrations",
-      ),
+      path.resolve(process.cwd(), "../db-prisma/prisma/migrations"),
     );
 
     repository = new PrismaFlowRepository(prisma);
@@ -99,7 +96,10 @@ describe("PrismaFlowRepository", () => {
     expect(second.ok).toBe(true);
 
     const flows = await repository.listFlows();
-    expect(flows.map((flow) => flow.name)).toEqual(["Second Flow", "First Flow"]);
+    expect(flows.map((flow) => flow.name)).toEqual([
+      "Second Flow",
+      "First Flow",
+    ]);
   });
 
   it("lists flows with latest version summary", async () => {

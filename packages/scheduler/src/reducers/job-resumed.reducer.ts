@@ -4,7 +4,7 @@ import { JobResumedMsg, SchedulerReducer } from "../scheduler.types.js";
 
 export const jobResumedReducer: SchedulerReducer<JobResumedMsg> = (
   state: SchedulerState,
-  message: JobResumedMsg
+  message: JobResumedMsg,
 ): SchedulerState => {
   return produce(state, (draft) => {
     const toolId = message.event.data.job.toolid;

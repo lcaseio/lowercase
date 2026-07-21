@@ -40,6 +40,7 @@ Tracked as real follow-on work, not forgotten:
 ## Open questions for implementation planning
 
 Not blocking milestone scope, but flagged for when this gets broken into PRs:
+
 - Exact mechanism for inserting `EvalResult` rows into SQL — likely a new sink alongside `SqlRunProjectionSink`, tapping the bus the same way. Unclear yet whether any event payloads (`run.completed`/`failed`/`denied`) need new fields to make this cheap to consume.
 - Chart/table implementation specifics in the web app (echarts config, which comparison views ship first).
 - Whether `RunQueryPort` already exposes "get a named export's value for a completed run" or needs a small addition.

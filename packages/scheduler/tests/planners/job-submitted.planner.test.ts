@@ -14,7 +14,7 @@ describe("jobSubmittedPlanner", () => {
     const jobId = "test-jobid";
 
     const expectedState = structuredClone(
-      jobSubmittedStartState
+      jobSubmittedStartState,
     ) as SchedulerState;
     expectedState.runtime.perRun = {
       [runId]: {
@@ -59,7 +59,7 @@ describe("jobSubmittedPlanner", () => {
     const result = jobSubmittedPlanner(
       jobSubmittedStartState,
       expectedState,
-      jobSubmittedHttpJsonMsg
+      jobSubmittedHttpJsonMsg,
     );
 
     const queueJobFx = {

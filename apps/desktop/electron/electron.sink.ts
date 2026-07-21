@@ -5,7 +5,10 @@ import { BrowserWindow } from "electron";
 export class ElectronSink implements EventSink {
   id: string;
   #enableSink = false;
-  constructor(id: string, private readonly win: BrowserWindow) {
+  constructor(
+    id: string,
+    private readonly win: BrowserWindow,
+  ) {
     this.id = id;
   }
   async start(): Promise<void> {

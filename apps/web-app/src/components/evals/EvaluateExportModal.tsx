@@ -187,7 +187,9 @@ export function EvaluateExportModal({
             />
           </div>
 
-          {error ? <div className="text-destructive text-sm">{error}</div> : null}
+          {error ? (
+            <div className="text-destructive text-sm">{error}</div>
+          ) : null}
         </div>
 
         <DialogFooter>

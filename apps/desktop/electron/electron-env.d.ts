@@ -20,7 +20,7 @@ declare namespace NodeJS {
   }
 }
 
-type IpcOnArgs = Parameters<typeof import("electron")["ipcRenderer"]["on"]>;
+type IpcOnArgs = Parameters<(typeof import("electron"))["ipcRenderer"]["on"]>;
 type IpcOn = (...args: IpcOnArgs) => () => void;
 
 // Used in Renderer process, expose in `preload.ts`

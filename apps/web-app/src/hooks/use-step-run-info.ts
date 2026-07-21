@@ -27,8 +27,10 @@ export type StepRunInfo = {
   sourceRunId?: string;
 };
 
-type StatusEventType = "step.started" | "step.completed" | "step.failed" | "step.reused";
-type StatusEventData = StepStartedData | StepCompletedData | StepFailedData | StepReusedData;
+type StatusEventType =
+  "step.started" | "step.completed" | "step.failed" | "step.reused";
+type StatusEventData =
+  StepStartedData | StepCompletedData | StepFailedData | StepReusedData;
 
 const STATUS_EVENT_TYPES = new Set<StatusEventType>([
   "step.started",

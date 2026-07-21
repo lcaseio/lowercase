@@ -14,7 +14,7 @@ export class NodeRouter implements RouterPort {
   constructor(
     private readonly bus: EventBusPort,
     private readonly queue: QueuePort,
-    private readonly ef: EmitterFactory
+    private readonly ef: EmitterFactory,
   ) {}
   async route(event: AnyEvent): Promise<void> {
     if (!event.type.endsWith(".submitted") && !event.type.startsWith("job.")) {

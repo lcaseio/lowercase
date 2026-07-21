@@ -1,7 +1,4 @@
-import type {
-  ArtifactsPort,
-  JsonValue,
-} from "@lcase/ports";
+import type { ArtifactsPort, JsonValue } from "@lcase/ports";
 import type { FlowDefinition } from "@lcase/types";
 import path from "node:path";
 import fs from "node:fs";

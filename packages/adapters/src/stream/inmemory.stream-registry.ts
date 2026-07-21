@@ -48,7 +48,7 @@ export class InMemoryStreamRegistry implements StreamRegistryPort {
   async closeStream(streamId: string): Promise<void> {
     if (!this.#registry.has(streamId)) {
       console.error(
-        `[inmemory-stream-registry] cannot close stream: ${streamId}`
+        `[inmemory-stream-registry] cannot close stream: ${streamId}`,
       );
       return;
     }

@@ -14,7 +14,7 @@ export const EngineContextSchema = z
   .strict();
 
 export const EngineStartedSchema = CloudEventContextSchema.merge(
-  EngineContextSchema
+  EngineContextSchema,
 )
   .merge(
     z.object({
@@ -22,11 +22,11 @@ export const EngineStartedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("started"),
       data: EngineStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"engine.started">>;
 export const EngineStoppedSchema = CloudEventContextSchema.merge(
-  EngineContextSchema
+  EngineContextSchema,
 )
   .merge(
     z.object({
@@ -34,6 +34,6 @@ export const EngineStoppedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("stopped"),
       data: EngineStoppedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"engine.stopped">>;

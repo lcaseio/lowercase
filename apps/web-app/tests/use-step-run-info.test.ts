@@ -22,10 +22,21 @@ describe("deriveStepRunInfo", () => {
 
   it("captures running status with no hashes yet", () => {
     const events = [
-      makeEvent({ type: "step.started", stepid: "one", data: { status: "started" } } as never),
+      makeEvent({
+        type: "step.started",
+        stepid: "one",
+        data: { status: "started" },
+      } as never),
     ];
     expect(deriveStepRunInfo(events, ["one"])).toEqual({
-      one: { status: "running", outputHash: undefined, exportHashes: undefined, reason: undefined, matchedCase: undefined, sourceRunId: undefined },
+      one: {
+        status: "running",
+        outputHash: undefined,
+        exportHashes: undefined,
+        reason: undefined,
+        matchedCase: undefined,
+        sourceRunId: undefined,
+      },
     });
   });
 
@@ -65,7 +76,11 @@ describe("deriveStepRunInfo", () => {
       makeEvent({
         type: "step.reused",
         stepid: "one",
-        data: { status: "success", sourceRunId: "run-123", outputHash: "hash-out" },
+        data: {
+          status: "success",
+          sourceRunId: "run-123",
+          outputHash: "hash-out",
+        },
       } as never),
     ];
     const info = deriveStepRunInfo(events, ["one"]).one;

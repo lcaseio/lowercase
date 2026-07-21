@@ -9,11 +9,14 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @lcase/db-prisma run migrate"
   },
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "prettier": "^3.9.6",
     "tsx": "^4.20.6",
     "turbo": "^2.5.8",
     "typescript": "^5.9.2"

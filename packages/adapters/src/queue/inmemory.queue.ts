@@ -43,7 +43,7 @@ export class InMemoryQueue implements QueuePort {
   async reserve(
     queue: string,
     workerId: string,
-    holdMs?: number
+    holdMs?: number,
   ): Promise<AnyEvent> {
     const q = this.#queues.get(queue) ?? [];
 

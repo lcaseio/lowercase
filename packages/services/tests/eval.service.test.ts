@@ -78,7 +78,10 @@ function makeArtifacts(flowDef: unknown = undefined): ArtifactsPort {
   return {
     getJson: vi.fn().mockResolvedValue(
       flowDef === undefined
-        ? { ok: false, error: { code: "STORE_GET_FAILED", message: "no flow" } }
+        ? {
+            ok: false,
+            error: { code: "STORE_GET_FAILED", message: "no flow" },
+          }
         : { ok: true, value: flowDef },
     ),
   } as unknown as ArtifactsPort;
@@ -318,9 +321,9 @@ describe("EvalService", () => {
     const runRepository = makeRunRepository();
     const artifacts = makeArtifacts();
     const evalResults = makeEvalResults();
-    (evalResults.listByTargetShape as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { id: "eval-result-1" },
-    ]);
+    (
+      evalResults.listByTargetShape as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([{ id: "eval-result-1" }]);
     const service = new EvalService({
       runService,
       runQuery,
@@ -349,9 +352,9 @@ describe("EvalService", () => {
     const runRepository = makeRunRepository();
     const artifacts = makeArtifacts();
     const evalResults = makeEvalResults();
-    (evalResults.listByExperimentId as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { id: "eval-result-2" },
-    ]);
+    (
+      evalResults.listByExperimentId as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([{ id: "eval-result-2" }]);
     const service = new EvalService({
       runService,
       runQuery,

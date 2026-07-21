@@ -12,7 +12,7 @@ import type {
  */
 export const emitStepFailedFx: EffectHandler<"EmitStepFailed"> = async (
   effect: EmitStepFailedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
   await emitter.emit("step.failed", effect.data);

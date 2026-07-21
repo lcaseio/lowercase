@@ -37,12 +37,7 @@ export type RunContext = {
 
 export type StepContext = {
   status:
-    | "initialized"
-    | "planned"
-    | "reused"
-    | "started"
-    | "completed"
-    | "failed";
+    "initialized" | "planned" | "reused" | "started" | "completed" | "failed";
   reason?: string;
   attempt: number;
   output: Record<StepId, unknown> | null;
