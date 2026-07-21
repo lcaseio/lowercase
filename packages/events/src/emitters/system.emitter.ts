@@ -25,7 +25,7 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & SystemScope & CloudScope
+    scope: OtelContext & SystemScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, runid, stepid, jobid, toolid } = scope;
@@ -40,7 +40,7 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
 
   async emit<T extends SystemEventType>(
     type: T,
-    data: SystemEventData<T>
+    data: SystemEventData<T>,
   ): Promise<void> {
     const event = {
       ...this.envelopeHeader(),
@@ -59,7 +59,7 @@ export class SystemEmitter extends BaseEmitter implements SystemEmitterPort {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[system-emitter] error parsing event; ${type}; ${result.error}`
+        `[system-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

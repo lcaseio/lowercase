@@ -1,5 +1,8 @@
 import type { FlowDefinition, JsonValue, Ref } from "@lcase/types";
-import { resolvePath, resolveJsonPath } from "@lcase/json-ref-binder/resolve-path";
+import {
+  resolvePath,
+  resolveJsonPath,
+} from "@lcase/json-ref-binder/resolve-path";
 import type { MainPanelLanguage } from "@/components/MainPanelTypes";
 
 export type ParamArtifactContent =
@@ -11,7 +14,11 @@ export type ParamArtifactContent =
 export function artifactFormatToLanguage(
   format: ParamArtifactContent["format"],
 ): MainPanelLanguage {
-  return format === "json" ? "json" : format === "markdown" ? "markdown" : "plaintext";
+  return format === "json"
+    ? "json"
+    : format === "markdown"
+      ? "markdown"
+      : "plaintext";
 }
 
 export type ParamRefUsage = {
@@ -48,7 +55,9 @@ export function formatBindPath(bindPath: (string | number)[]): string {
 }
 
 export function findParamRefs(refs: Ref[], paramName: string): Ref[] {
-  return refs.filter((r) => r.scope === "params" && r.valuePath[1] === paramName);
+  return refs.filter(
+    (r) => r.scope === "params" && r.valuePath[1] === paramName,
+  );
 }
 
 export function findStepRefs(refs: Ref[], stepId: string): Ref[] {
@@ -73,7 +82,9 @@ export function resolveRefHash(
 ): string | null {
   if (ref.scope === "params") {
     const paramName = ref.valuePath[1];
-    return typeof paramName === "string" ? (ctx.paramHashes[paramName] ?? null) : null;
+    return typeof paramName === "string"
+      ? (ctx.paramHashes[paramName] ?? null)
+      : null;
   }
   if (ref.scope !== "steps") return null;
 
@@ -84,7 +95,9 @@ export function resolveRefHash(
 
   if (ref.valuePath[2] === "exports") {
     const exportName = ref.valuePath[3];
-    return typeof exportName === "string" ? (info.exportHashes?.[exportName] ?? null) : null;
+    return typeof exportName === "string"
+      ? (info.exportHashes?.[exportName] ?? null)
+      : null;
   }
   return info.outputHash ?? null;
 }
@@ -143,7 +156,12 @@ export function foldResolvedField(
   stepId: string,
   bindPath: (string | number)[],
   group: ResolvedRef[],
-): { originalField: unknown; value: unknown; anyUnresolved: boolean; anyLoading: boolean } {
+): {
+  originalField: unknown;
+  value: unknown;
+  anyUnresolved: boolean;
+  anyLoading: boolean;
+} {
   const step = flowDef.steps[stepId] as unknown as Record<string, unknown>;
   const originalField = resolvePath(bindPath, step);
 
@@ -181,13 +199,18 @@ export function interpolateRefLocal(
 ): unknown {
   if (ref.interpolated && typeof field === "string") {
     const stringified =
-      typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
+      typeof value === "object" && value !== null
+        ? JSON.stringify(value)
+        : String(value);
     return field.replaceAll(`{{${ref.string}}}`, stringified);
   }
   return value;
 }
 
-export function renderParamRefReport(paramName: string, usages: ParamRefUsage[]): string {
+export function renderParamRefReport(
+  paramName: string,
+  usages: ParamRefUsage[],
+): string {
   if (usages.length === 0) {
     return `No usages of param "${paramName}" found in this flow.`;
   }

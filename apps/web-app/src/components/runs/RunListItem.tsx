@@ -51,9 +51,7 @@ export function RunListItem({ runListItem }: { runListItem: RunListItem }) {
           </ItemDescription>
         </ItemContent>
         <ItemActions>
-          <Link
-            to={`/runs/details/?runId=${runListItem.runId}`}
-          >
+          <Link to={`/runs/details/?runId=${runListItem.runId}`}>
             <Button variant="outline" size="sm" className="cursor-pointer">
               View
             </Button>

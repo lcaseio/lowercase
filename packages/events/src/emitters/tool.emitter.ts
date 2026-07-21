@@ -25,7 +25,7 @@ export class ToolEmitter extends BaseEmitter {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & ToolScope & CloudScope
+    scope: OtelContext & ToolScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, flowversionid, runid, stepid, jobid, capid, toolid } =
@@ -49,7 +49,7 @@ export class ToolEmitter extends BaseEmitter {
 
   async emit<T extends ToolEventType>(
     type: T,
-    data: ToolEventData<T>
+    data: ToolEventData<T>,
   ): Promise<ToolEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -67,7 +67,7 @@ export class ToolEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[tool-emitter] error parsing event; ${type}; ${result.error}`
+        `[tool-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

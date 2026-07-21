@@ -3,7 +3,7 @@ import type { EngineState, Reducer, RunFinishedMsg } from "../engine.types.js";
 
 export const runFinishedReducer: Reducer<RunFinishedMsg> = (
   state: EngineState,
-  message: RunFinishedMsg
+  message: RunFinishedMsg,
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;

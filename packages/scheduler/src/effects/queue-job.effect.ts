@@ -13,7 +13,7 @@ import type { SchedulerEffectDeps } from "../registries/effect.registry.js";
  */
 export const queueJobEffect = async (
   effect: QueueJobFx,
-  deps: SchedulerEffectDeps
+  deps: SchedulerEffectDeps,
 ) => {
   const { event, toolId } = effect;
   const { jobParser, ef, emitErrorFn, queue } = deps;

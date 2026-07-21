@@ -9,7 +9,7 @@ type HandleValue = (value: unknown, path: Path) => void;
 export function traverse(
   value: unknown,
   handleValue: HandleValue,
-  path: Path = []
+  path: Path = [],
 ) {
   if (!isTraversable(value)) {
     handleValue(value, path);
@@ -34,7 +34,7 @@ export function traverse(
  * @returns boolean
  */
 export function isTraversable(
-  value: unknown
+  value: unknown,
 ): value is Record<string, unknown> | unknown[] {
   return typeof value === "object" && value !== null;
 }

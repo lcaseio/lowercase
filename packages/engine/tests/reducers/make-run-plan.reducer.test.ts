@@ -22,7 +22,9 @@ describe("makeRunPlanReducer()", () => {
     expect(state).toEqual(makeRunPlanNewState);
   });
   it("does not make a run plan when flow analysis has problems", () => {
-    const flowDefWithProblemsState = structuredClone(reusableStepDataResultOkState);
+    const flowDefWithProblemsState = structuredClone(
+      reusableStepDataResultOkState,
+    );
     flowDefWithProblemsState.flows["test-flowversionid"].definition =
       flowDefWithProblems;
     const message: MakeRunPlanMsg = {

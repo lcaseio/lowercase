@@ -32,7 +32,9 @@ export const resolveBranchValueFx: EffectHandler<"ResolveBranchValue"> = async (
   if (valueType === "application/json") {
     const result = await deps.artifacts.getJson(ref.hash);
     if (!result.ok) {
-      fail(`Could not resolve branch value ${ref.string}: ${result.error.message}`);
+      fail(
+        `Could not resolve branch value ${ref.string}: ${result.error.message}`,
+      );
       return;
     }
     resolved =
@@ -45,7 +47,9 @@ export const resolveBranchValueFx: EffectHandler<"ResolveBranchValue"> = async (
         ? await deps.artifacts.getMarkdown(ref.hash)
         : await deps.artifacts.getText(ref.hash);
     if (!result.ok) {
-      fail(`Could not resolve branch value ${ref.string}: ${result.error.message}`);
+      fail(
+        `Could not resolve branch value ${ref.string}: ${result.error.message}`,
+      );
       return;
     }
     resolved = result.value;

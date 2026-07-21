@@ -10,7 +10,7 @@ describe("jobDequeuedReducer", () => {
   it("moves queued jobs to running", () => {
     const finalState = jobDequeuedReducer(
       jobDequeuedStartState,
-      jobDequeuedMsg
+      jobDequeuedMsg,
     );
     expect(finalState).toEqual(jobDequeuedEndState);
   });

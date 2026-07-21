@@ -32,7 +32,9 @@ export function CodeEditor({
   const syncHeight = () => {
     const editor = editorRef.current;
     if (!editor) return;
-    setContentHeight(Math.min(Math.max(editor.getContentHeight(), minHeight), maxHeight));
+    setContentHeight(
+      Math.min(Math.max(editor.getContentHeight(), minHeight), maxHeight),
+    );
   };
 
   const handleMount: OnMount = (editor) => {

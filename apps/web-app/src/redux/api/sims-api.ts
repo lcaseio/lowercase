@@ -26,7 +26,9 @@ export const simsApi = createApi({
       query: (args) => ({
         url: "sims",
         method: "GET",
-        params: args?.flowVersionId ? { flowVersionId: args.flowVersionId } : undefined,
+        params: args?.flowVersionId
+          ? { flowVersionId: args.flowVersionId }
+          : undefined,
       }),
       providesTags: ["Sim"],
     }),

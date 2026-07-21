@@ -402,11 +402,7 @@ type EvalResult = {
     name: string;
     dimension?: string;
     scoreKind:
-      | "boolean"
-      | "numeric"
-      | "categorical"
-      | "pairwise"
-      | "diagnostic";
+      "boolean" | "numeric" | "categorical" | "pairwise" | "diagnostic";
     score?: number;
     passed?: boolean;
     label?: string;

@@ -103,10 +103,7 @@ describe("flowVersionSimsSlice", () => {
   it("selectRunForNewSim can be called again to freely switch runs while authoring", () => {
     const authoring = reducer(undefined, startCreatingSim());
     const withFirstRun = reducer(authoring, selectRunForNewSim("run-1"));
-    const withSecondRun = reducer(
-      withFirstRun,
-      selectRunForNewSim("run-2"),
-    );
+    const withSecondRun = reducer(withFirstRun, selectRunForNewSim("run-2"));
     expect(withSecondRun.mode).toBe("authoring");
     expect(withSecondRun.selectedRunId).toBe("run-2");
   });
@@ -130,7 +127,11 @@ describe("flowVersionSimsSlice", () => {
     );
     const withEventAndFocus = {
       ...reducer(withDetailsTab, setSelectedEventId("evt-1")),
-      focusedContent: { title: "t", value: "v", language: "plaintext" as const },
+      focusedContent: {
+        title: "t",
+        value: "v",
+        language: "plaintext" as const,
+      },
       activeMainTab: "focused" as const,
     };
 
@@ -247,10 +248,17 @@ describe("flowVersionSimsSlice", () => {
   it("selectSim preserves the selected step and details tab across a sim switch, but clears event/focused state", () => {
     const withFirstSim = reducer(undefined, selectSim("sim-1"));
     const withStep = reducer(withFirstSim, setSelectedStepId("step-1"));
-    const withDetailsTab = reducer(withStep, setActiveDetailsTab("stepResults"));
+    const withDetailsTab = reducer(
+      withStep,
+      setActiveDetailsTab("stepResults"),
+    );
     const withEventAndFocus = {
       ...reducer(withDetailsTab, setSelectedEventId("evt-1")),
-      focusedContent: { title: "t", value: "v", language: "plaintext" as const },
+      focusedContent: {
+        title: "t",
+        value: "v",
+        language: "plaintext" as const,
+      },
       activeMainTab: "focused" as const,
     };
 

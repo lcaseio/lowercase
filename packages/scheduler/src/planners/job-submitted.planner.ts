@@ -10,7 +10,7 @@ import type {
 export const jobSubmittedPlanner: SchedulerPlanner<JobSubmittedMsg> = (
   oldState: SchedulerState,
   newState: SchedulerState,
-  message: JobSubmittedMsg
+  message: JobSubmittedMsg,
 ): SchedulerEffect[] => {
   const effects: SchedulerEffect[] = [];
   const runId = message.event.runid;

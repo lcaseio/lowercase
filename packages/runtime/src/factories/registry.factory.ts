@@ -8,23 +8,23 @@ export function makeRegistryFactory<R extends Registry>(registry: R) {
   return function createFactory<
     Placement extends keyof R,
     Transport extends keyof R[Placement],
-    Store extends keyof R[Placement][Transport]
+    Store extends keyof R[Placement][Transport],
   >(
     placement: Placement,
     transport: Transport,
-    store: Store
+    store: Store,
   ): R[Placement][Transport][Store] {
     const placementRegistry = registry[placement];
     if (!placementRegistry) {
       throw new Error(
-        `[runtime] no registry for placement ${String(placement)}`
+        `[runtime] no registry for placement ${String(placement)}`,
       );
     }
 
     const transportRegistry = placementRegistry[transport];
     if (!transportRegistry) {
       throw new Error(
-        `[runtime] no registry for transport ${String(transport)}`
+        `[runtime] no registry for transport ${String(transport)}`,
       );
     }
 

@@ -20,7 +20,7 @@ export const emitJobHttpJsonSubmittedFx: EffectHandler<
       source: "lowercase://engine",
       jobid: "job-" + String(randomUUID()),
     },
-    effect.traceId
+    effect.traceId,
   );
   await emitter.emit("job.httpjson.submitted", effect.data);
 };

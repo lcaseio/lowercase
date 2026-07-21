@@ -1,4 +1,7 @@
-import { useGetFlowVersionDefQuery, useGetFlowsQuery } from "@/redux/api/flows-api";
+import {
+  useGetFlowVersionDefQuery,
+  useGetFlowsQuery,
+} from "@/redux/api/flows-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 import {
   Select,
@@ -32,7 +35,9 @@ export function EvalTargetPicker({
   const { data: flowVersionRes } = useGetFlowVersionDefQuery(
     selectedFlow ? selectedFlow.latestVersion.id : skipToken,
   );
-  const definition = flowVersionRes?.ok ? flowVersionRes.value.definition : undefined;
+  const definition = flowVersionRes?.ok
+    ? flowVersionRes.value.definition
+    : undefined;
 
   const stepsWithExports = Object.entries(definition?.steps ?? {}).filter(
     ([, step]) => step.type === "httpjson" && step.exports,
@@ -75,7 +80,9 @@ export function EvalTargetPicker({
         <Select
           key={value.flowId ?? "no-flow"}
           value={value.stepId}
-          onValueChange={(stepId) => onChange({ ...value, stepId, exportName: undefined })}
+          onValueChange={(stepId) =>
+            onChange({ ...value, stepId, exportName: undefined })
+          }
           disabled={!selectedFlow}
         >
           <SelectTrigger className="w-[16rem] max-w-full">

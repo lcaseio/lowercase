@@ -25,7 +25,7 @@ export class EngineEmitter extends BaseEmitter implements EngineEmitterPort {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & EngineScope & CloudScope
+    scope: OtelContext & EngineScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { engineid } = scope;
@@ -40,7 +40,7 @@ export class EngineEmitter extends BaseEmitter implements EngineEmitterPort {
 
   async emit<T extends EngineEventType>(
     type: T,
-    data: EngineEventData<T>
+    data: EngineEventData<T>,
   ): Promise<EngineEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -58,7 +58,7 @@ export class EngineEmitter extends BaseEmitter implements EngineEmitterPort {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[engine-emitter] error parsing event; ${type}; ${result.error}`
+        `[engine-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

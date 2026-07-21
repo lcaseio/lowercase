@@ -386,7 +386,9 @@ describe("PrismaRunQuery", () => {
       ],
     });
 
-    await expect(query.getRunDetail("run-params-missing-metadata")).resolves.toEqual({
+    await expect(
+      query.getRunDetail("run-params-missing-metadata"),
+    ).resolves.toEqual({
       ok: true,
       value: {
         run: expect.objectContaining({

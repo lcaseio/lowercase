@@ -26,15 +26,17 @@ export const artifactsApi = createApi({
         method: "GET",
       }),
     }),
-    addJsonArtifact: builder.mutation<PostJsonArtifactRes, PostJsonArtifactReq>({
-      query: (arg) => ({
-        url: "artifacts/json",
-        method: "POST",
-        body: arg,
-        headers: { "Content-Type": "application/json" },
-      }),
-      invalidatesTags: ["Artifacts"],
-    }),
+    addJsonArtifact: builder.mutation<PostJsonArtifactRes, PostJsonArtifactReq>(
+      {
+        query: (arg) => ({
+          url: "artifacts/json",
+          method: "POST",
+          body: arg,
+          headers: { "Content-Type": "application/json" },
+        }),
+        invalidatesTags: ["Artifacts"],
+      },
+    ),
     uploadArtifactFile: builder.mutation<
       PostArtifactFileRes,
       { file: File; label?: string }

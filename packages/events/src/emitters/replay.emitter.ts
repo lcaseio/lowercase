@@ -26,7 +26,7 @@ export class ReplayEmitter extends BaseEmitter {
   constructor(
     private readonly bus: EventBusPort,
     scope: OtelContext & ReplayScope & CloudScope,
-    private internal: boolean
+    private internal: boolean,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { runid } = scope;
@@ -41,7 +41,7 @@ export class ReplayEmitter extends BaseEmitter {
 
   async emit<T extends ReplayEventType>(
     type: T,
-    data: ReplayEventData<T>
+    data: ReplayEventData<T>,
   ): Promise<ReplayEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -59,7 +59,7 @@ export class ReplayEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[replay-emitter] error parsing event; ${type}; ${result.error}`
+        `[replay-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event, { internal: this.internal });

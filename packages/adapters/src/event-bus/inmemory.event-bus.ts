@@ -27,7 +27,7 @@ export class InMemoryEventBus implements EventBusPort {
   async publish(
     topic: string,
     event: AnyEvent,
-    options?: PublishOptions
+    options?: PublishOptions,
   ): Promise<void> {
     const topics = this.getTopics(topic, options);
 
@@ -45,7 +45,7 @@ export class InMemoryEventBus implements EventBusPort {
 
   subscribe(
     topic: string,
-    handler: (e: AnyEvent, t?: string) => Promise<void>
+    handler: (e: AnyEvent, t?: string) => Promise<void>,
   ): () => unknown {
     const safeHandler = (e: AnyEvent, t: string) => {
       try {

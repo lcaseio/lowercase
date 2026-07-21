@@ -25,7 +25,7 @@ export class ElectronController implements ClientControllerPort {
   // returns unsubscribe function
   subscribeToChannel<TPyaload = unknown>(
     channel: string,
-    handler: (payload: TPyaload) => void
+    handler: (payload: TPyaload) => void,
   ): () => void {
     return this.api.on(channel, (_event, payload: TPyaload) => {
       handler(payload);

@@ -141,7 +141,10 @@ describe("run sql routes", () => {
       async getJson(hash: string) {
         return {
           ok: false as const,
-          error: { code: "STORE_GET_FAILED" as const, message: `Unknown hash: ${hash}` },
+          error: {
+            code: "STORE_GET_FAILED" as const,
+            message: `Unknown hash: ${hash}`,
+          },
         };
       },
     } satisfies Pick<ArtifactsPort, "getJson">;
@@ -151,7 +154,10 @@ describe("run sql routes", () => {
       artifactRepository: new PrismaArtifactRepository(prisma),
       ef: new EmitterFactory(new InMemoryEventBus()),
       runRepository: new PrismaRunRepository(prisma),
-      runQuery: new PrismaRunQuery(prisma, new PrismaArtifactRepository(prisma)),
+      runQuery: new PrismaRunQuery(
+        prisma,
+        new PrismaArtifactRepository(prisma),
+      ),
     });
     const replayEvents: AnyEvent[] = [
       {

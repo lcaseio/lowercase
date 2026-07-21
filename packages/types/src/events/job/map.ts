@@ -6,7 +6,7 @@ export type DomainCapActionDescriptor<
   Domain extends string,
   Id extends CapId,
   Action extends string,
-  Data
+  Data,
 > = {
   domain: Domain;
   entity: Id;

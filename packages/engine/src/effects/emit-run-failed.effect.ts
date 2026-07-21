@@ -12,7 +12,7 @@ import type {
  */
 export const emitRunFailedFx: EffectHandler<"EmitRunFailed"> = async (
   effect: EmitRunFailedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newRunEmitterNewSpan({
     ...effect.scope,

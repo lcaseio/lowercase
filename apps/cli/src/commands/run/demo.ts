@@ -10,7 +10,7 @@ type ManagedProcess = {
 async function spawnServer(
   label: string,
   absolutePath: string,
-  port: number
+  port: number,
 ): Promise<ManagedProcess | undefined> {
   const child = spawn("node", [absolutePath], {
     stdio: "inherit",
@@ -22,7 +22,7 @@ async function spawnServer(
   let result;
 
   console.log(
-    `[demo] waiting on ${label} serrver health check at http://localhost:${port}/health`
+    `[demo] waiting on ${label} serrver health check at http://localhost:${port}/health`,
   );
 
   // try 30 times, wait about 500ms between tries. ~ 15secs overall
@@ -43,7 +43,7 @@ async function spawnServer(
     return;
   } else {
     console.log(
-      `[demo] ${label} server ready; http://localhost:${port}/health returned ${result.ok}`
+      `[demo] ${label} server ready; http://localhost:${port}/health returned ${result.ok}`,
     );
   }
 
@@ -51,7 +51,7 @@ async function spawnServer(
     console.log(
       `[demo] ${label} server exited with code ${code ?? "null"} signal ${
         signal ?? "null"
-      }`
+      }`,
     );
   });
 
@@ -75,13 +75,13 @@ export async function startDemoServers(): Promise<
   const unicodeChild: ManagedProcess | undefined = await spawnServer(
     "unicode",
     unicodeAbsPath,
-    3004
+    3004,
   );
 
   const transformChild: ManagedProcess | undefined = await spawnServer(
     "tranform",
     transformAbsPath,
-    3005
+    3005,
   );
 
   if (!unicodeChild || !transformChild) {

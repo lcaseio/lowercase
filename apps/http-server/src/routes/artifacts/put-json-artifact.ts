@@ -1,8 +1,5 @@
 import type { FastifyInstance } from "fastify/types/instance.js";
-import type {
-  PostJsonArtifactReq,
-  PostJsonArtifactRes,
-} from "@lcase/types";
+import type { PostJsonArtifactReq, PostJsonArtifactRes } from "@lcase/types";
 
 export const putJsonArtifactRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostJsonArtifactReq }>(

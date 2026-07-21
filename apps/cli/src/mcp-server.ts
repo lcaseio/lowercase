@@ -16,7 +16,7 @@ server.registerTool(
   },
   async ({ text }) => ({
     content: [{ type: "text", text: String(text) }],
-  })
+  }),
 );
 const transport = new StdioServerTransport();
 console.log("Connecting");

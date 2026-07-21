@@ -32,7 +32,9 @@ export function RunArtifactList({ runId }: { runId: string | null }) {
         </div>
       ) : null}
 
-      {data.value.steps.some((step) => step.exports && step.exports.length > 0) ? (
+      {data.value.steps.some(
+        (step) => step.exports && step.exports.length > 0,
+      ) ? (
         <div className="mb-4">
           <h3 className="mb-2 font-semibold">Exports</h3>
           <div className="flex flex-col gap-2">
@@ -40,7 +42,11 @@ export function RunArtifactList({ runId }: { runId: string | null }) {
               (step.exports ?? []).map((exp) => (
                 <RunArtifactListItem
                   key={`${step.stepId}:${exp.name}:${exp.artifactHash}`}
-                  item={buildExportLabel(step.stepId, exp.name, exp.artifact?.format)}
+                  item={buildExportLabel(
+                    step.stepId,
+                    exp.name,
+                    exp.artifact?.format,
+                  )}
                   hash={exp.artifactHash}
                   onEvaluate={
                     runId
@@ -91,7 +97,11 @@ function buildParamLabel(name: string, format?: string): string {
   return format ? `Run Param: ${name} (${format})` : `Run Param: ${name}`;
 }
 
-function buildExportLabel(stepId: string, name: string, format?: string): string {
+function buildExportLabel(
+  stepId: string,
+  name: string,
+  format?: string,
+): string {
   const base = `Export: ${stepId}.${name}`;
   return format ? `${base} (${format})` : base;
 }

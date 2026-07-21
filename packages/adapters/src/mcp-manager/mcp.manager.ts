@@ -38,7 +38,7 @@ export class McpManager {
     });
     const client = new Client(
       { name: mcpId, version: "0.0.0" },
-      { capabilities: {} }
+      { capabilities: {} },
     );
     const response = await client.connect(transport);
 
@@ -55,7 +55,7 @@ export class McpManager {
     url: string,
     mcpId: McpId,
     name: string,
-    version: string = "0.0.0"
+    version: string = "0.0.0",
   ) {
     const client = new Client({
       name,
@@ -65,7 +65,7 @@ export class McpManager {
     const transport = new SSEClientTransport(new URL(url));
     try {
       console.log(
-        `[mcp manager] connected to mcp sse at ${url} with id ${mcpId}`
+        `[mcp manager] connected to mcp sse at ${url} with id ${mcpId}`,
       );
       const response = await client.connect(transport);
       console.log(response);

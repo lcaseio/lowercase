@@ -27,7 +27,7 @@ import { delayJobEffect } from "../effects/delay-job.effect.js";
 export const emitError = async (
   event: AnyEvent,
   ef: EmitterFactoryPort,
-  message: string
+  message: string,
 ): Promise<void> => {
   await ef
     .newSystemEmitterNewSpan({ source: "lowercase://rm" }, event.traceid)

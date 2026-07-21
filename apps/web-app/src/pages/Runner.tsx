@@ -49,13 +49,11 @@ export function Runner() {
 
   const selectedSim =
     simsData?.ok === true && simSelectedId
-      ? simsData.value.find((sim) => sim.sim.id === simSelectedId) ?? null
+      ? (simsData.value.find((sim) => sim.sim.id === simSelectedId) ?? null)
       : null;
 
   const { data: latestFlowDefData, isLoading: isLatestFlowLoading } =
-    useGetFlowDefQuery(
-      selectedSim ? skipToken : flowSelectedId ?? skipToken,
-    );
+    useGetFlowDefQuery(selectedSim ? skipToken : (flowSelectedId ?? skipToken));
   const { data: simFlowVersionData, isLoading: isSimFlowLoading } =
     useGetFlowVersionDefQuery(selectedSim?.flowVersion.id ?? skipToken);
 
@@ -115,41 +113,41 @@ export function Runner() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-5">Runner</h2>
-        <div className="flex flex-col gap-3 mb-4">
-          <RunnerFlowSelector />
-          <RunnerSimSelector flowVersionId={selectedFlowVersionId} />
-          <RunnerRunButton
-            flowId={selectedFlowId}
-            flowVersionId={selectedFlowVersionId}
-            flowDefHash={selectedFlowDefHash}
-            simId={selectedSim?.sim.id ?? null}
-            forkSpecHash={selectedSim?.sim.forkSpecHash ?? null}
-            params={runParams}
-            disabled={runDisabled}
-          />
-        </div>
+      <div className="flex flex-col gap-3 mb-4">
+        <RunnerFlowSelector />
+        <RunnerSimSelector flowVersionId={selectedFlowVersionId} />
+        <RunnerRunButton
+          flowId={selectedFlowId}
+          flowVersionId={selectedFlowVersionId}
+          flowDefHash={selectedFlowDefHash}
+          simId={selectedSim?.sim.id ?? null}
+          forkSpecHash={selectedSim?.sim.forkSpecHash ?? null}
+          params={runParams}
+          disabled={runDisabled}
+        />
+      </div>
 
-        <div className="mb-6">
-          <RunnerParamsPanel
-            flowSelectedId={flowSelectedId}
-            params={flowParams}
-            selectedParams={selectedParams}
-            onChange={(name, hash) => {
-              dispatch(setRunnerParamHash({ name, hash }));
-            }}
-          />
-          {flowSelectedId &&
-          activeFlowDefinition &&
-          missingRequiredParams.length > 0 ? (
-            <p className="mt-2 text-md text-amber-700 dark:text-amber-400">
-              Select artifacts for all required params before running this flow.
-            </p>
-          ) : null}
-        </div>
+      <div className="mb-6">
+        <RunnerParamsPanel
+          flowSelectedId={flowSelectedId}
+          params={flowParams}
+          selectedParams={selectedParams}
+          onChange={(name, hash) => {
+            dispatch(setRunnerParamHash({ name, hash }));
+          }}
+        />
+        {flowSelectedId &&
+        activeFlowDefinition &&
+        missingRequiredParams.length > 0 ? (
+          <p className="mt-2 text-md text-amber-700 dark:text-amber-400">
+            Select artifacts for all required params before running this flow.
+          </p>
+        ) : null}
+      </div>
 
-        <RunDetailsControllerProvider value={controller}>
-          <RunDetailsTabs view="live" />
-        </RunDetailsControllerProvider>
+      <RunDetailsControllerProvider value={controller}>
+        <RunDetailsTabs view="live" />
+      </RunDetailsControllerProvider>
     </div>
   );
 }

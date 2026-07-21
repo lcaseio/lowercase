@@ -18,9 +18,7 @@ export function useRunEventsWithStatus(
     (s) => selectRunEventsRef.current(s, runId),
     shallowEqual,
   );
-  const { isFetching } = useGetAllRunEventsQuery(
-    runId ? { runId } : skipToken,
-  );
+  const { isFetching } = useGetAllRunEventsQuery(runId ? { runId } : skipToken);
 
   const stepRunInfo = useStepRunInfo(events, stepIds);
 

@@ -65,12 +65,16 @@ describe("interpolateRefLocal", () => {
   it("returns the value as-is for whole-value (non-string) refs", () => {
     const ref = makeRef({ interpolated: false });
     const value = { location: "Seattle" };
-    expect(interpolateRefLocal("{{params.userWeatherQuery}}", value, ref)).toBe(value);
+    expect(interpolateRefLocal("{{params.userWeatherQuery}}", value, ref)).toBe(
+      value,
+    );
   });
 
   it("returns the value as-is for whole-value string refs", () => {
     const ref = makeRef({ interpolated: false });
-    expect(interpolateRefLocal("{{params.userWeatherQuery}}", "hello", ref)).toBe("hello");
+    expect(
+      interpolateRefLocal("{{params.userWeatherQuery}}", "hello", ref),
+    ).toBe("hello");
   });
 
   it("substitutes a single embedded ref into a larger string", () => {
@@ -87,7 +91,10 @@ describe("interpolateRefLocal", () => {
   });
 
   it("JSON-stringifies non-string values when interpolated into a larger string", () => {
-    const ref = makeRef({ interpolated: true, string: "params.userWeatherQuery" });
+    const ref = makeRef({
+      interpolated: true,
+      string: "params.userWeatherQuery",
+    });
     const result = interpolateRefLocal(
       "data: {{params.userWeatherQuery}}",
       { a: 1 },
@@ -161,14 +168,23 @@ describe("renderParamRefReport", () => {
   it("includes a could-not-resolve marker for unresolved usages", () => {
     const ref = makeRef({ string: "params.foo.bar" });
     const report = renderParamRefReport("foo", [
-      { ref, resolved: false, resolvedValue: undefined, originalField: "{{params.foo.bar}}", interpolatedResult: "{{params.foo.bar}}" },
+      {
+        ref,
+        resolved: false,
+        resolvedValue: undefined,
+        originalField: "{{params.foo.bar}}",
+        interpolatedResult: "{{params.foo.bar}}",
+      },
     ]);
     expect(report).toContain("could not resolve");
     expect(report).toContain("params.foo.bar");
   });
 
   it("renders resolved usages with the interpolated result", () => {
-    const ref = makeRef({ stepId: "one", bindPath: ["body", "messages", 1, "content"] });
+    const ref = makeRef({
+      stepId: "one",
+      bindPath: ["body", "messages", 1, "content"],
+    });
     const report = renderParamRefReport("userWeatherQuery", [
       {
         ref,
@@ -221,7 +237,11 @@ describe("findStepRefs", () => {
   it("filters refs by containing stepId across all scopes", () => {
     const refs: Ref[] = [
       makeRef({ stepId: "one", scope: "params", valuePath: ["params", "a"] }),
-      makeRef({ stepId: "one", scope: "steps", valuePath: ["steps", "other", "output"] }),
+      makeRef({
+        stepId: "one",
+        scope: "steps",
+        valuePath: ["steps", "other", "output"],
+      }),
       makeRef({ stepId: "two", scope: "params", valuePath: ["params", "b"] }),
     ];
     expect(findStepRefs(refs, "one")).toHaveLength(2);
@@ -232,7 +252,10 @@ describe("findStepRefs", () => {
 
 describe("resolveRefHash", () => {
   it("resolves a params-scope ref from the run's param hashes", () => {
-    const ref = makeRef({ scope: "params", valuePath: ["params", "userWeatherQuery"] });
+    const ref = makeRef({
+      scope: "params",
+      valuePath: ["params", "userWeatherQuery"],
+    });
     const hash = resolveRefHash(ref, {
       paramHashes: { userWeatherQuery: "hash-param" },
       stepArtifacts: {},
@@ -241,7 +264,10 @@ describe("resolveRefHash", () => {
   });
 
   it("resolves a steps-scope output ref from the referenced step's outputHash", () => {
-    const ref = makeRef({ scope: "steps", valuePath: ["steps", "other", "output"] });
+    const ref = makeRef({
+      scope: "steps",
+      valuePath: ["steps", "other", "output"],
+    });
     const hash = resolveRefHash(ref, {
       paramHashes: {},
       stepArtifacts: { other: { outputHash: "hash-output" } },
@@ -270,8 +296,13 @@ describe("resolveRefHash", () => {
   });
 
   it("returns null when the referenced step hasn't produced that hash yet", () => {
-    const ref = makeRef({ scope: "steps", valuePath: ["steps", "other", "output"] });
-    expect(resolveRefHash(ref, { paramHashes: {}, stepArtifacts: {} })).toBeNull();
+    const ref = makeRef({
+      scope: "steps",
+      valuePath: ["steps", "other", "output"],
+    });
+    expect(
+      resolveRefHash(ref, { paramHashes: {}, stepArtifacts: {} }),
+    ).toBeNull();
   });
 });
 
@@ -313,17 +344,28 @@ describe("foldResolvedField", () => {
         ref: refA,
         hash: "hash-a",
         artifact: { format: "text", value: "hello" },
-        usage: buildRefUsage(refA, multiRefFlowDef, { format: "text", value: "hello" }),
+        usage: buildRefUsage(refA, multiRefFlowDef, {
+          format: "text",
+          value: "hello",
+        }),
       },
       {
         ref: refB,
         hash: "hash-b",
         artifact: { format: "text", value: "world" },
-        usage: buildRefUsage(refB, multiRefFlowDef, { format: "text", value: "world" }),
+        usage: buildRefUsage(refB, multiRefFlowDef, {
+          format: "text",
+          value: "world",
+        }),
       },
     ];
 
-    const result = foldResolvedField(multiRefFlowDef, "one", ["body", "prompt"], group);
+    const result = foldResolvedField(
+      multiRefFlowDef,
+      "one",
+      ["body", "prompt"],
+      group,
+    );
     expect(result.value).toBe("System: hello User: world");
     expect(result.anyUnresolved).toBe(false);
     expect(result.anyLoading).toBe(false);
@@ -351,12 +393,20 @@ describe("foldResolvedField", () => {
         ref: refA,
         hash: "hash-a",
         artifact: { format: "text", value: "hello" },
-        usage: buildRefUsage(refA, multiRefFlowDef, { format: "text", value: "hello" }),
+        usage: buildRefUsage(refA, multiRefFlowDef, {
+          format: "text",
+          value: "hello",
+        }),
       },
       { ref: refB, hash: null, artifact: undefined, usage: undefined },
     ];
 
-    const result = foldResolvedField(multiRefFlowDef, "one", ["body", "prompt"], group);
+    const result = foldResolvedField(
+      multiRefFlowDef,
+      "one",
+      ["body", "prompt"],
+      group,
+    );
     expect(result.value).toBe("System: hello User: {{steps.other.exports.b}}");
     expect(result.anyUnresolved).toBe(true);
   });
@@ -374,8 +424,15 @@ describe("foldResolvedField", () => {
       { ref: refA, hash: "hash-a", artifact: undefined, usage: undefined },
     ];
 
-    const result = foldResolvedField(multiRefFlowDef, "one", ["body", "prompt"], group);
+    const result = foldResolvedField(
+      multiRefFlowDef,
+      "one",
+      ["body", "prompt"],
+      group,
+    );
     expect(result.anyLoading).toBe(true);
-    expect(result.value).toBe("System: {{params.a}} User: {{steps.other.exports.b}}");
+    expect(result.value).toBe(
+      "System: {{params.a}} User: {{steps.other.exports.b}}",
+    );
   });
 });

@@ -28,15 +28,16 @@ export const evalsApi = createApi({
         params: arg satisfies GetEvalsReq,
       }),
     }),
-    listEvalsByExperimentId: builder.query<GetEvalsRes, { experimentId: string }>(
-      {
-        query: (arg) => ({
-          url: "evals",
-          method: "GET",
-          params: arg satisfies GetEvalsReq,
-        }),
-      },
-    ),
+    listEvalsByExperimentId: builder.query<
+      GetEvalsRes,
+      { experimentId: string }
+    >({
+      query: (arg) => ({
+        url: "evals",
+        method: "GET",
+        params: arg satisfies GetEvalsReq,
+      }),
+    }),
   }),
 });
 

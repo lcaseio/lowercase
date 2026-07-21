@@ -70,9 +70,7 @@ describe("addBranchEdges()", () => {
 
     expect(fa.outEdges).toEqual(expectedOutEdges);
     expect(fa.inEdges.getforecast).toEqual([expectedOutEdges.routeintent[0]]);
-    expect(fa.inEdges.getairquality).toEqual([
-      expectedOutEdges.routeintent[1],
-    ]);
+    expect(fa.inEdges.getairquality).toEqual([expectedOutEdges.routeintent[1]]);
     expect(fa.inEdges.unknownintent).toEqual([expectedOutEdges.routeintent[2]]);
     expect(fa.problems).toEqual([]);
   });

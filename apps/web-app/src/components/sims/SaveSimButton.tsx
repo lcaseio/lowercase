@@ -15,7 +15,13 @@ export function SaveSimButton({ flowId, flowVersionId }: Props) {
   const newSimName = useAppSelector((state) => state.sims.newSimName);
 
   const handleSave = () => {
-    if (!flowId || !flowVersionId || !flowSelectedId || !parentRunId || !reusedSteps) {
+    if (
+      !flowId ||
+      !flowVersionId ||
+      !flowSelectedId ||
+      !parentRunId ||
+      !reusedSteps
+    ) {
       return;
     }
     if (!reusedSteps[flowSelectedId]) return;

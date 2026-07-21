@@ -199,9 +199,7 @@ describe("PrismaEvalResultRepository", () => {
     expect(byTargetRun).toHaveLength(1);
     expect(byTargetRun[0]?.targetRunId).toBe("run-subject");
 
-    await expect(repository.listByExperimentId("missing")).resolves.toEqual(
-      [],
-    );
+    await expect(repository.listByExperimentId("missing")).resolves.toEqual([]);
   });
 
   it("lists eval results by target flow/step/export shape, joining the target run's flow version", async () => {

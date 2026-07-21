@@ -20,13 +20,13 @@ const WorkerDescriptorDataSchema = z
 export const WorkerStartedDataSchema = WorkerDescriptorDataSchema.merge(
   z.object({
     status: z.literal("started"),
-  })
+  }),
 ).strict() satisfies z.ZodType<WorkerStartedData>;
 
 export const WorkerStoppedDataSchema = WorkerDescriptorDataSchema.merge(
   z.object({
     status: z.literal("stopped"),
-  })
+  }),
 ).strict() satisfies z.ZodType<WorkerStoppedData>;
 
 export const WorkerProfileSubmittedDataSchema: z.ZodType<WorkerProfileSubmittedData> =

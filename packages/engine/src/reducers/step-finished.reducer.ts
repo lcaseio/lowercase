@@ -14,7 +14,7 @@ import { setRunStatus } from "./utils/set-run-status.reducer.js";
  */
 export const stepFinishedReducer: Reducer<StepFinishedMsg> = (
   state: EngineState,
-  message: StepFinishedMsg
+  message: StepFinishedMsg,
 ) => {
   return produce(state, (draft) => {
     const runId = message.event.runid;

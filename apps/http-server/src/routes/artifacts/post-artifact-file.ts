@@ -15,11 +15,8 @@ const jsonMimeSet = new Set([
 const textMimeSet = new Set(["text/plain"]);
 const markdownMimeSet = new Set(["text/markdown", "text/x-markdown"]);
 
-type SupportedArtifactFormat = ArtifactPutInput["format"] & (
-  | "json"
-  | "text"
-  | "markdown"
-);
+type SupportedArtifactFormat = ArtifactPutInput["format"] &
+  ("json" | "text" | "markdown");
 
 type BufferedUpload = {
   filename: string;
@@ -101,7 +98,9 @@ export async function makeArtifactPutInput(
   part: MultipartFile,
   format: SupportedArtifactFormat,
   label?: string,
-): Promise<{ ok: true; value: ArtifactPutInput } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; value: ArtifactPutInput } | { ok: false; error: string }
+> {
   return makeArtifactPutInputFromBuffer(
     {
       filename: part.filename,

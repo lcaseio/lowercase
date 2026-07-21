@@ -1,9 +1,7 @@
 import { StepDefinition } from "./step.type.js";
 
 export type FlowParamContentType =
-  | "application/json"
-  | "text/plain"
-  | "text/markdown";
+  "application/json" | "text/plain" | "text/markdown";
 
 export type FlowParamDefinition = {
   type: FlowParamContentType;

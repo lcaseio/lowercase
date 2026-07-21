@@ -8,7 +8,7 @@ import type {
 // TODO: implement revoked flag that throws on each method if true
 
 export function makeProducerView(
-  core: InMemoryStreamCore
+  core: InMemoryStreamCore,
 ): Readonly<ProducerStreamPort> {
   const producer: ProducerStreamPort = {
     send: async (data: InputChunk) => await core.send(data),
@@ -22,7 +22,7 @@ export function makeProducerView(
 }
 
 export function makeConsumerView(
-  core: InMemoryStreamCore
+  core: InMemoryStreamCore,
 ): Readonly<ConsumerStreamPort> {
   const consumer: ConsumerStreamPort = {
     subscribe: () => core.subscribe(),

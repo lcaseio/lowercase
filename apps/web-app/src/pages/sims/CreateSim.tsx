@@ -21,15 +21,17 @@ export function CreateSim() {
 
     if (selectedFlowId) {
       return (
-        flowsData.value.find((flowItem) => flowItem.flow.id === selectedFlowId) ??
-        null
+        flowsData.value.find(
+          (flowItem) => flowItem.flow.id === selectedFlowId,
+        ) ?? null
       );
     }
 
     if (selectedFlowHash) {
       return (
         flowsData.value.find(
-          (flowItem) => flowItem.latestVersion.definitionHash === selectedFlowHash,
+          (flowItem) =>
+            flowItem.latestVersion.definitionHash === selectedFlowHash,
         ) ?? null
       );
     }
@@ -37,7 +39,8 @@ export function CreateSim() {
     return null;
   }, [flowsData, selectedFlowHash, selectedFlowId]);
   const flowDef = useGetFlowDefQuery(selectedFlow?.flow.id ?? skipToken);
-  const selectedFlowDefHash = selectedFlow?.latestVersion.definitionHash ?? null;
+  const selectedFlowDefHash =
+    selectedFlow?.latestVersion.definitionHash ?? null;
   const selectedFlowVersionId = selectedFlow?.latestVersion.id ?? null;
   const dispatch = useAppDispatch();
   dispatch(clearReusedSteps());

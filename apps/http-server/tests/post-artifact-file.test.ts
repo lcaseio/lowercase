@@ -46,7 +46,11 @@ describe("artifact file upload helpers", () => {
   });
 
   it("parses a json file into a json artifact input", async () => {
-    const part = makeMultipartFile('{"hello":"world"}', "data.json", "application/json");
+    const part = makeMultipartFile(
+      '{"hello":"world"}',
+      "data.json",
+      "application/json",
+    );
 
     const result = await makeArtifactPutInput(part, "json", "Prompt");
     expect(result).toEqual({

@@ -8,9 +8,7 @@ export const listEvalsRoute = async (app: FastifyInstance) => {
       const { flowId, stepId, exportName, experimentId } = req.query;
 
       if (isNonEmptyString(experimentId)) {
-        const value = await app.services.eval.listByExperimentId(
-          experimentId,
-        );
+        const value = await app.services.eval.listByExperimentId(experimentId);
         return { ok: true, value };
       }
 
@@ -29,8 +27,7 @@ export const listEvalsRoute = async (app: FastifyInstance) => {
 
       return {
         ok: false,
-        error:
-          "Provide either experimentId, or flowId + stepId + exportName",
+        error: "Provide either experimentId, or flowId + stepId + exportName",
       };
     },
   );

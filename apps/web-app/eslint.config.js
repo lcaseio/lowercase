@@ -19,5 +19,22 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // recognizes `const { [key]: _removed, ...rest } = obj` (omit a key by
+      // destructuring it out) as intentional, not an unused variable
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { ignoreRestSiblings: true },
+      ],
+    },
+  },
+  {
+    // shadcn-generated primitives, not hand-authored -- exporting a cva
+    // variants function alongside the component is shadcn's own convention
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+      "react-hooks/purity": "off",
+    },
   },
 ]);

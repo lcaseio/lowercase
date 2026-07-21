@@ -152,9 +152,9 @@ describe("artifact sql routes", () => {
       orderBy: [{ time: "desc" }, { hash: "desc" }],
     });
     expect(storedMetadata).toHaveLength(2);
-    expect(storedMetadata.some((artifact) => artifact.hash === jsonBody.value)).toBe(
-      true,
-    );
+    expect(
+      storedMetadata.some((artifact) => artifact.hash === jsonBody.value),
+    ).toBe(true);
     expect(
       storedMetadata.some(
         (artifact) =>

@@ -26,7 +26,7 @@ export class SchedulerEmitter extends BaseEmitter {
   constructor(
     private readonly bus: EventBusPort,
     scope: OtelContext & SchedulerScope & CloudScope,
-    private internal: boolean = false
+    private internal: boolean = false,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { schedulerid } = scope;
@@ -41,7 +41,7 @@ export class SchedulerEmitter extends BaseEmitter {
 
   async emit<T extends SchedulerEventType>(
     type: T,
-    data: SchedulerEventData<T>
+    data: SchedulerEventData<T>,
   ): Promise<SchedulerEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -59,7 +59,7 @@ export class SchedulerEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[scheduler-emitter] error parsing event; ${type}; ${result.error}`
+        `[scheduler-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event, { internal: this.internal });

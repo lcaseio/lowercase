@@ -4,7 +4,7 @@ import type { JobSubmittedMsg } from "../scheduler.types.js";
 
 export function jobSubmittedReducer(
   state: SchedulerState,
-  message: JobSubmittedMsg
+  message: JobSubmittedMsg,
 ) {
   return produce(state, (draft) => {
     const { event } = message;

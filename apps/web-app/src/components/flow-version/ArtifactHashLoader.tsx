@@ -17,7 +17,10 @@ export function ArtifactHashLoader({ hash, onLoaded }: Props) {
 
   useEffect(() => {
     if (data?.ok && data.format !== "bytes") {
-      onLoaded(hash, { format: data.format, value: data.value } as ParamArtifactContent);
+      onLoaded(hash, {
+        format: data.format,
+        value: data.value,
+      } as ParamArtifactContent);
     }
   }, [data, hash, onLoaded]);
 

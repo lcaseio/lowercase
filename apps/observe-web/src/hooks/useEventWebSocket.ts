@@ -55,7 +55,7 @@ export function useEventWebSocket(url: string): EventWebSocketHandles {
         socketRef.current.send(JSON.stringify(data));
       }
     },
-    [isConnected]
+    [isConnected],
   );
 
   return { isConnected, message, send, close, connect };
