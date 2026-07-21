@@ -33,6 +33,7 @@ function toArtifactIndex(artifact: {
   format: "json" | "text" | "markdown" | "bytes" | null;
   flowId: string | null;
   flowVersionId: string | null;
+  curated: boolean;
 }): ArtifactIndex {
   return {
     hash: artifact.hash,
@@ -44,6 +45,7 @@ function toArtifactIndex(artifact: {
     format: artifact.format ?? undefined,
     flowId: artifact.flowId ?? undefined,
     flowVersionId: artifact.flowVersionId ?? undefined,
+    curated: artifact.curated,
   };
 }
 
@@ -93,6 +95,7 @@ export class PrismaArtifactRepository
           format: index.format,
           flowId: index.flowId,
           flowVersionId: index.flowVersionId,
+          curated: index.curated,
         },
         create: {
           hash: index.hash,
@@ -104,6 +107,7 @@ export class PrismaArtifactRepository
           format: index.format,
           flowId: index.flowId,
           flowVersionId: index.flowVersionId,
+          curated: index.curated,
         },
       });
       return { ok: true, value: toArtifactIndex(saved) };
