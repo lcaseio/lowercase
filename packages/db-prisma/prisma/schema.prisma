@@ -41,6 +41,7 @@ model Flow {
   versions    FlowVersion[]
   sims        Sim[]
   runs        Run[]
+  artifacts   Artifact[]
 }
 
 model FlowVersion {
@@ -52,24 +53,49 @@ model FlowVersion {
   description    String?
   createdAt      DateTime @default(now())
 
-  flow Flow @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  sims Sim[]
-  runs Run[]
+  flow                   Flow                    @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sims                   Sim[]
+  runs                   Run[]
+  artifacts              Artifact[]
+  artifactParamCurations ArtifactParamCuration[]
 
   @@unique([flowId, sequence])
   @@index([flowId])
 }
 
 model Artifact {
-  hash        String         @id
-  time        DateTime       @default(now())
-  label       String?
-  filename    String?
-  contentType String?
-  size        Int?
-  format      ArtifactFormat?
+  hash          String          @id
+  time          DateTime        @default(now())
+  label         String?
+  filename      String?
+  contentType   String?
+  size          Int?
+  format        ArtifactFormat?
+  flowId        String?
+  flowVersionId String?
+
+  flow        Flow?        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion FlowVersion? @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([time])
+  @@index([flowId])
+  @@index([flowVersionId])
+}
+
+// join table curating which artifacts are offered as candidates for a
+// specific flow version's named param -- paramName is a bare string, not a
+// relation, since flow params aren't modeled as their own SQL entity (see
+// docs/adr/0002-artifact-flow-association-schema.md)
+model ArtifactParamCuration {
+  artifactHash  String
+  flowVersionId String
+  paramName     String
+
+  flowVersion FlowVersion @relation(fields: [flowVersionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([artifactHash, flowVersionId, paramName])
+  @@index([artifactHash])
+  @@index([flowVersionId])
 }
 
 model Sim {
