@@ -1,0 +1,6 @@
+# Commits listed here are skipped by `git blame` (and GitHub's blame view
+# automatically). Use this for mass, purely-mechanical changes -- formatting
+# passes, not real edits -- so blame still points at who actually wrote a line.
+
+# chore: add prettier to repo root and CI (#270) -- one-time repo-wide format pass
+4bd413611f86d7e888ffab8515ff0c3f3073f772
