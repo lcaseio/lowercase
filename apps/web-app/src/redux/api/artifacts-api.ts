@@ -1,6 +1,7 @@
 import type {
   GetArtifactReq,
   GetArtifactRes,
+  GetArtifactsReq,
   GetArtifactsRes,
   PostArtifactFileRes,
   PostJsonArtifactReq,
@@ -13,10 +14,19 @@ export const artifactsApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
   tagTypes: ["Artifacts"],
   endpoints: (builder) => ({
-    listArtifacts: builder.query<GetArtifactsRes, void>({
-      query: () => ({
+    listArtifacts: builder.query<GetArtifactsRes, GetArtifactsReq | void>({
+      query: (args) => ({
         url: "artifacts",
         method: "GET",
+        params: args
+          ? {
+              ...(args.flowId ? { flowId: args.flowId } : {}),
+              ...(args.flowVersionId
+                ? { flowVersionId: args.flowVersionId }
+                : {}),
+              ...(args.curated ? { curated: args.curated } : {}),
+            }
+          : undefined,
       }),
       providesTags: ["Artifacts"],
     }),
