@@ -18,11 +18,13 @@ export function FlowVersionArtifactsList({
     flowVersionId ? { flowVersionId, curated: "true" } : undefined,
   );
 
-  const artifacts = useMemo(
+  const items = useMemo(
     () =>
       data?.ok
         ? [...data.value].sort(
-            (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+            (a, b) =>
+              new Date(b.artifact.time).getTime() -
+              new Date(a.artifact.time).getTime(),
           )
         : [],
     [data],
@@ -32,32 +34,40 @@ export function FlowVersionArtifactsList({
     <div className="flex flex-col gap-2 p-2 overflow-y-auto h-full">
       {isLoading ? (
         <div className="p-4 text-muted-foreground">Loading artifacts...</div>
-      ) : artifacts.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="p-4 text-muted-foreground">No artifacts yet.</div>
       ) : (
-        artifacts.map((artifact) => (
+        items.map((item) => (
           <button
-            key={artifact.hash}
+            key={item.artifact.hash}
             type="button"
-            onClick={() => onSelectArtifact(artifact.hash)}
+            onClick={() => onSelectArtifact(item.artifact.hash)}
             className={cn(
               "text-left cursor-pointer",
-              artifact.hash === selectedHash &&
+              item.artifact.hash === selectedHash &&
                 "ring-2 ring-sky-500 rounded-md",
             )}
           >
             <Item variant="muted">
               <ItemContent>
                 <ItemTitle className="text-xs">
-                  {artifact.label ||
-                    artifact.filename ||
-                    `${artifact.hash.slice(0, 10)}...`}
+                  {item.artifact.label ||
+                    item.artifact.filename ||
+                    `${item.artifact.hash.slice(0, 10)}...`}
                 </ItemTitle>
-                <ItemDescription className="line-clamp-1">
-                  {artifact.format}
-                </ItemDescription>
-                <ItemDescription className="line-clamp-1">
-                  {new Date(artifact.time).toLocaleString()}
+                <ItemDescription className="line-clamp-1 text-xs"></ItemDescription>
+
+                {item.associations.paramCurations.length > 0 && (
+                  <ItemDescription className="line-clamp-1 text-xs">
+                    {item.associations.paramCurations
+                      .map((pc) => pc.paramName)
+                      .join(", ")}
+                  </ItemDescription>
+                )}
+
+                <ItemDescription className="line-clamp-1 text-xs flex flex-row justify-between">
+                  <p>{item.artifact.format}</p>
+                  <p>{new Date(item.artifact.time).toLocaleString()}</p>
                 </ItemDescription>
               </ItemContent>
             </Item>

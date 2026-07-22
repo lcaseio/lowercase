@@ -1,5 +1,6 @@
 import type {
   ArtifactIndex,
+  ArtifactListItem,
   FlowDefinition,
   FlowParamDefinition,
   Ref,
@@ -30,7 +31,7 @@ const UNSET_VALUE = "__unset__";
 type Props = {
   name: string;
   definition: FlowParamDefinition;
-  artifacts: ArtifactIndex[];
+  artifacts: ArtifactListItem[];
   selectedHash?: string;
   onChange: (name: string, hash: string | undefined) => void;
   onOpenInMainPanel: OpenInMainPanel;
@@ -52,15 +53,18 @@ export function FlowVersionRunParamRow({
   const [triggerGetArtifact, { isFetching }] = useLazyGetArtifactQuery();
 
   const isOptional = definition.optional === true;
-  const compatibleArtifacts = artifacts.filter((artifact) =>
-    isArtifactCompatible(artifact, definition.type),
+  const compatibleArtifacts = artifacts.filter((item) =>
+    isArtifactCompatible(item.artifact, definition.type),
   );
   const hasSelectedArtifactInList =
     selectedHash === undefined ||
-    compatibleArtifacts.some((artifact) => artifact.hash === selectedHash);
+    compatibleArtifacts.some((item) => item.artifact.hash === selectedHash);
 
-  const selectedArtifact = artifacts.find((a) => a.hash === selectedHash);
-  const canPreview = selectedArtifact && selectedArtifact.format !== "bytes";
+  const selectedArtifact = artifacts.find(
+    (item) => item.artifact.hash === selectedHash,
+  );
+  const canPreview =
+    selectedArtifact && selectedArtifact.artifact.format !== "bytes";
 
   const paramRefs = findParamRefs(refs, name);
   const canShowUsages = canPreview && paramRefs.length > 0;
@@ -123,9 +127,9 @@ export function FlowVersionRunParamRow({
                   {`Selected artifact unavailable or incompatible: ${selectedHash}`}
                 </SelectItem>
               ) : null}
-              {compatibleArtifacts.map((artifact) => (
-                <SelectItem key={artifact.hash} value={artifact.hash}>
-                  {artifactLabel(artifact)}
+              {compatibleArtifacts.map((item) => (
+                <SelectItem key={item.artifact.hash} value={item.artifact.hash}>
+                  {artifactLabel(item.artifact)}
                 </SelectItem>
               ))}
             </SelectGroup>

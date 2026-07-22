@@ -77,8 +77,9 @@ model Artifact {
   // worker's content-put path -- see docs/adr/0003-artifact-curated-flag.md
   curated       Boolean         @default(false)
 
-  flow        Flow?        @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  flowVersion FlowVersion? @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flow           Flow?                   @relation(fields: [flowId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  flowVersion    FlowVersion?            @relation(fields: [flowVersionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  paramCurations ArtifactParamCuration[]
 
   @@index([time])
   @@index([flowId])
@@ -88,12 +89,15 @@ model Artifact {
 // join table curating which artifacts are offered as candidates for a
 // specific flow version's named param -- paramName is a bare string, not a
 // relation, since flow params aren't modeled as their own SQL entity (see
-// docs/adr/0002-artifact-flow-association-schema.md)
+// docs/adr/0002-artifact-flow-association-schema.md). artifactHash and
+// flowVersionId ARE formal relations -- a curation row is a pure pointer,
+// meaningless once either side it points at is gone, hence Cascade on both.
 model ArtifactParamCuration {
   artifactHash  String
   flowVersionId String
   paramName     String
 
+  artifact    Artifact    @relation(fields: [artifactHash], references: [hash], onDelete: Cascade, onUpdate: Cascade)
   flowVersion FlowVersion @relation(fields: [flowVersionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([artifactHash, flowVersionId, paramName])
