@@ -40,7 +40,10 @@ export function CuratedParamsField({
               }
               disabled={!onToggleParam}
             />
-            <Label htmlFor={`param-${paramName}`} className="text-sm font-normal">
+            <Label
+              htmlFor={`param-${paramName}`}
+              className="text-sm font-normal"
+            >
               {paramName}
             </Label>
           </div>

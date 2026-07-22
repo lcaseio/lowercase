@@ -85,10 +85,7 @@ export function FlowVersionArtifactMetadataPanel({
       <IdentityField label="Format" value={artifact.format} />
 
       <InputField label="Label" value={artifact.label} />
-      <SwitchField
-        label="Share"
-        value={!!associations.flowId}
-      />
+      <SwitchField label="Share" value={!!associations.flowId} />
       <CuratedParamsField
         label="Params"
         params={compatibleParams}
