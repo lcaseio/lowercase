@@ -1,8 +1,8 @@
-import type { ArtifactIndex } from "@lcase/types";
+import type { ArtifactListItem } from "@lcase/types";
 import { Button } from "../ui/button";
 
 type Props = {
-  artifacts: ArtifactIndex[];
+  artifacts: ArtifactListItem[];
   selectedHash: string | null;
   onSelect: (hash: string) => void;
 };
@@ -10,7 +10,8 @@ type Props = {
 export function ArtifactList({ artifacts, selectedHash, onSelect }: Props) {
   return (
     <div className="flex flex-col gap-3">
-      {artifacts.map((artifact) => {
+      {artifacts.map((item) => {
+        const { artifact } = item;
         const isSelected = artifact.hash === selectedHash;
         return (
           <button

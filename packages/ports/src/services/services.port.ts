@@ -2,6 +2,7 @@ import type {
   ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
+  ArtifactListItem,
   ArtifactPutInput,
   AnyEvent,
   CreateSimRecordInput,
@@ -139,7 +140,7 @@ export interface WsServicePort {
 
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
-  listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]>;
+  listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactListItem[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
   associateArtifact(
     hash: string,

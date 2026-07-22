@@ -123,7 +123,7 @@ describe("PrismaArtifactRepository", () => {
     });
 
     const artifacts = await repository.listArtifacts();
-    expect(artifacts.map((artifact) => artifact.hash)).toEqual([
+    expect(artifacts.map((item) => item.artifact.hash)).toEqual([
       "b".repeat(64),
       "a".repeat(64),
     ]);
@@ -165,12 +165,12 @@ describe("PrismaArtifactRepository", () => {
       });
 
       const curated = await repository.listArtifacts({ curated: true });
-      expect(curated.map((artifact) => artifact.hash)).toEqual([
+      expect(curated.map((item) => item.artifact.hash)).toEqual([
         "a".repeat(64),
       ]);
 
       const uncurated = await repository.listArtifacts({ curated: false });
-      expect(uncurated.map((artifact) => artifact.hash)).toEqual([
+      expect(uncurated.map((item) => item.artifact.hash)).toEqual([
         "b".repeat(64),
       ]);
     });
@@ -201,12 +201,14 @@ describe("PrismaArtifactRepository", () => {
       });
 
       const byFlow = await repository.listArtifacts({ flowId: flow.id });
-      expect(byFlow.map((artifact) => artifact.hash)).toEqual(["a".repeat(64)]);
+      expect(byFlow.map((item) => item.artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
 
       const byVersion = await repository.listArtifacts({
         flowVersionId: flowVersion.id,
       });
-      expect(byVersion.map((artifact) => artifact.hash)).toEqual([
+      expect(byVersion.map((item) => item.artifact.hash)).toEqual([
         "a".repeat(64),
       ]);
 
@@ -214,9 +216,80 @@ describe("PrismaArtifactRepository", () => {
         flowId: flow.id,
         curated: true,
       });
-      expect(combined.map((artifact) => artifact.hash)).toEqual([
+      expect(combined.map((item) => item.artifact.hash)).toEqual([
         "a".repeat(64),
       ]);
+    });
+
+    it("includes paramCurations when scoped by flowVersionId, empty for uncurated artifacts", async () => {
+      const { flowVersion } = await createFlowAndVersion();
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.saveArtifact({
+        hash: "b".repeat(64),
+        time: "2026-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      // listArtifacts filters on the Artifact row's own flowVersionId column,
+      // which is independent of the join-table's per-curation flowVersionId --
+      // both must be set for an artifact to show up in a version-scoped list
+      await repository.associateArtifact("a".repeat(64), {
+        flowVersionId: flowVersion.id,
+      });
+      await repository.associateArtifact("b".repeat(64), {
+        flowVersionId: flowVersion.id,
+      });
+      await repository.curateArtifactForParam({
+        artifactHash: "a".repeat(64),
+        flowVersionId: flowVersion.id,
+        paramName: "weatherApiKey",
+      });
+      await repository.curateArtifactForParam({
+        artifactHash: "a".repeat(64),
+        flowVersionId: flowVersion.id,
+        paramName: "otherParam",
+      });
+
+      const items = await repository.listArtifacts({
+        flowVersionId: flowVersion.id,
+      });
+      const curatedItem = items.find(
+        (item) => item.artifact.hash === "a".repeat(64),
+      );
+      const uncuratedItem = items.find(
+        (item) => item.artifact.hash === "b".repeat(64),
+      );
+
+      expect(curatedItem?.associations.paramCurations).toEqual(
+        expect.arrayContaining([
+          { flowVersionId: flowVersion.id, paramName: "weatherApiKey" },
+          { flowVersionId: flowVersion.id, paramName: "otherParam" },
+        ]),
+      );
+      expect(curatedItem?.associations.paramCurations).toHaveLength(2);
+      expect(uncuratedItem?.associations.paramCurations).toEqual([]);
+    });
+
+    it("leaves paramCurations empty for every item when no flowVersionId filter is given, even if curations exist", async () => {
+      const { flowVersion } = await createFlowAndVersion();
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.curateArtifactForParam({
+        artifactHash: "a".repeat(64),
+        flowVersionId: flowVersion.id,
+        paramName: "weatherApiKey",
+      });
+
+      const items = await repository.listArtifacts();
+      expect(
+        items.every((item) => item.associations.paramCurations.length === 0),
+      ).toBe(true);
     });
   });
 
@@ -476,6 +549,18 @@ describe("PrismaArtifactRepository", () => {
       expect(curated.map((artifact) => artifact.hash)).toEqual([
         "a".repeat(64),
       ]);
+    });
+
+    it("fails to curate a hash that was never saved as an artifact (FK constraint)", async () => {
+      const { flowVersion } = await createFlowAndVersion();
+
+      const result = await repository.curateArtifactForParam({
+        artifactHash: "z".repeat(64),
+        flowVersionId: flowVersion.id,
+        paramName: "weatherApiKey",
+      });
+
+      expect(result.ok).toBe(false);
     });
   });
 });

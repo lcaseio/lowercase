@@ -3,6 +3,7 @@ import type {
   ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
+  ArtifactListItem,
   ArtifactParamCurationRecord,
   Result,
 } from "@lcase/types";
@@ -50,6 +51,41 @@ function toArtifactIndex(artifact: {
   };
 }
 
+function toArtifactListItem(row: {
+  hash: string;
+  time: Date;
+  label: string | null;
+  filename: string | null;
+  contentType: string | null;
+  size: number | null;
+  format: "json" | "text" | "markdown" | "bytes" | null;
+  flowId: string | null;
+  flowVersionId: string | null;
+  curated: boolean;
+  paramCurations?: { flowVersionId: string; paramName: string }[];
+}): ArtifactListItem {
+  return {
+    artifact: {
+      hash: row.hash,
+      time: row.time.toISOString(),
+      label: row.label ?? undefined,
+      filename: row.filename ?? undefined,
+      contentType: row.contentType ?? undefined,
+      size: row.size ?? undefined,
+      format: row.format ?? undefined,
+    },
+    associations: {
+      flowId: row.flowId ?? undefined,
+      flowVersionId: row.flowVersionId ?? undefined,
+      curated: row.curated,
+      paramCurations: (row.paramCurations ?? []).map((c) => ({
+        flowVersionId: c.flowVersionId,
+        paramName: c.paramName,
+      })),
+    },
+  };
+}
+
 export class PrismaArtifactRepository
   implements ArtifactRepositoryPort, ArtifactIndexStorePort
 {
@@ -79,12 +115,19 @@ export class PrismaArtifactRepository
     return this.getIndexList();
   }
 
-  async listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]> {
-    const artifacts = await this.db.artifact.findMany({
+  async listArtifacts(
+    filter?: ArtifactListFilter,
+  ): Promise<ArtifactListItem[]> {
+    const rows = await this.db.artifact.findMany({
       where: filter ? definedFields(filter) : undefined,
       orderBy: [{ time: "desc" }, { hash: "desc" }],
+      include: {
+        paramCurations: filter?.flowVersionId
+          ? { where: { flowVersionId: filter.flowVersionId } }
+          : false,
+      },
     });
-    return artifacts.map(toArtifactIndex);
+    return rows.map(toArtifactListItem);
   }
 
   async put(index: ArtifactIndex): Promise<Result<ArtifactIndex, string>> {

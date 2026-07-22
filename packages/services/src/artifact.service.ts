@@ -10,6 +10,7 @@ import type {
   ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
+  ArtifactListItem,
   FlowDefinition,
   Result,
 } from "@lcase/types";
@@ -25,9 +26,13 @@ export class ArtifactService implements ArtifactServicePort {
     return this.artifacts.getAuto(hash);
   }
 
-  async listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]> {
+  async listArtifacts(
+    filter?: ArtifactListFilter,
+  ): Promise<ArtifactListItem[]> {
     const artifacts = await this.artifactRepository.listArtifacts(filter);
-    return artifacts.sort((a, b) => b.time.localeCompare(a.time));
+    return artifacts.sort((a, b) =>
+      b.artifact.time.localeCompare(a.artifact.time),
+    );
   }
 
   async putArtifact(input: ArtifactPutInput): Promise<Result<string, string>> {

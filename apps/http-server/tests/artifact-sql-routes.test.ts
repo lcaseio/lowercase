@@ -17,6 +17,8 @@ import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
 import { postArtifactFileRoute } from "../src/routes/artifacts/post-artifact-file.js";
 import { putJsonArtifactRoute } from "../src/routes/artifacts/put-json-artifact.js";
 import { patchArtifactRoute } from "../src/routes/artifacts/associate-artifact.js";
+import { postCurateArtifactForParamRoute } from "../src/routes/flows/curated-artifacts.js";
+import type { FlowDefinition } from "@lcase/types";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../..");
@@ -125,10 +127,16 @@ describe("artifact sql routes", () => {
       ok: true,
       value: [
         expect.objectContaining({
-          hash: jsonBody.value,
-          label: "Prompt",
-          contentType: "application/json",
-          format: "json",
+          artifact: expect.objectContaining({
+            hash: jsonBody.value,
+            label: "Prompt",
+            contentType: "application/json",
+            format: "json",
+          }),
+          associations: expect.objectContaining({
+            curated: false,
+            paramCurations: [],
+          }),
         }),
       ],
     });
@@ -274,7 +282,11 @@ describe("artifact sql routes", () => {
     });
     expect(curatedOnly.json()).toEqual({
       ok: true,
-      value: [expect.objectContaining({ hash: "a".repeat(64) })],
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+        }),
+      ],
     });
 
     const byFlowVersion = await app.inject({
@@ -283,7 +295,11 @@ describe("artifact sql routes", () => {
     });
     expect(byFlowVersion.json()).toEqual({
       ok: true,
-      value: [expect.objectContaining({ hash: "a".repeat(64) })],
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+        }),
+      ],
     });
 
     const unfiltered = await app.inject({
@@ -291,6 +307,75 @@ describe("artifact sql routes", () => {
       url: "/api/artifacts",
     });
     expect((unfiltered.json() as { value: unknown[] }).value).toHaveLength(2);
+
+    await app.close();
+  });
+
+  it("GET /api/artifacts includes paramCurations when scoped by flowVersionId", async () => {
+    const artifactRepository = new PrismaArtifactRepository(prisma);
+    const flowRepository = new PrismaFlowRepository(prisma);
+    const artifacts = new Artifacts(
+      new FsArtifactStore(artifactDir),
+      artifactRepository,
+    );
+    const artifactService = new ArtifactService(
+      artifacts,
+      artifactRepository,
+      flowRepository,
+    );
+
+    const app = Fastify();
+    app.decorate("services", { artifact: artifactService });
+    await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
+    await app.register(postCurateArtifactForParamRoute, {
+      prefix: "/api/flows",
+    });
+
+    const definition: FlowDefinition = {
+      name: "Weather Flow",
+      version: "v1",
+      params: { weatherApiKey: { type: "text/plain" } },
+      start: "fetch",
+      steps: { fetch: { type: "httpjson", url: "https://example.com" } },
+    };
+    const defResult = await artifacts.putJson(definition);
+    if (!defResult.ok) throw new Error("failed to store flow definition");
+
+    const flow = await prisma.flow.create({ data: { name: "Weather Flow" } });
+    const flowVersion = await prisma.flowVersion.create({
+      data: { flowId: flow.id, sequence: 1, definitionHash: defResult.value },
+    });
+
+    await artifactRepository.saveArtifact({
+      hash: "a".repeat(64),
+      time: "2026-01-01T00:00:00.000Z",
+      format: "text",
+    });
+
+    const curateResponse = await app.inject({
+      method: "POST",
+      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
+      payload: { artifactHash: "a".repeat(64) },
+    });
+    expect(curateResponse.statusCode).toBe(200);
+
+    const listResponse = await app.inject({
+      method: "GET",
+      url: `/api/artifacts?flowVersionId=${flowVersion.id}`,
+    });
+    expect(listResponse.json()).toEqual({
+      ok: true,
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+          associations: expect.objectContaining({
+            paramCurations: [
+              { flowVersionId: flowVersion.id, paramName: "weatherApiKey" },
+            ],
+          }),
+        }),
+      ],
+    });
 
     await app.close();
   });
