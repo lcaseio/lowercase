@@ -1,5 +1,7 @@
 import type {
+  ArtifactAssociation,
   ArtifactIndex,
+  ArtifactListFilter,
   ArtifactPutInput,
   AnyEvent,
   CreateSimRecordInput,
@@ -137,6 +139,25 @@ export interface WsServicePort {
 
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
-  listArtifacts(): Promise<ArtifactIndex[]>;
+  listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
+  associateArtifact(
+    hash: string,
+    association: ArtifactAssociation,
+  ): Promise<Result<ArtifactIndex, string>>;
+  curateArtifactForParam(
+    artifactHash: string,
+    flowVersionId: string,
+    paramName: string,
+    crossVersion?: boolean,
+  ): Promise<Result<ArtifactIndex, string>>;
+  uncurateArtifactForParam(
+    artifactHash: string,
+    flowVersionId: string,
+    paramName: string,
+  ): Promise<Result<void, string>>;
+  listCuratedArtifacts(
+    flowVersionId: string,
+    paramName: string,
+  ): Promise<ArtifactIndex[]>;
 }

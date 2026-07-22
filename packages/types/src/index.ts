@@ -56,6 +56,7 @@ export * from "./artifacts/artifact-index.js";
 export * from "./artifacts/artifact-put.js";
 export * from "./artifacts/artifact-association.js";
 export * from "./artifacts/artifact-param-curation.js";
+export * from "./artifacts/artifact-list-filter.js";
 
 // sql return types used in adapters / api responses
 export * from "./db-sql/index.js";

@@ -1,6 +1,7 @@
 import type {
   ArtifactAssociation,
   ArtifactIndex,
+  ArtifactListFilter,
   ArtifactParamCurationRecord,
   Result,
 } from "@lcase/types";
@@ -10,7 +11,7 @@ export interface ArtifactRepositoryPort {
   getArtifact(hash: string): Promise<ArtifactIndex | undefined>;
   getArtifacts(hashes: string[]): Promise<ArtifactIndex[]>;
   listArtifactHashes(): Promise<string[]>;
-  listArtifacts(): Promise<ArtifactIndex[]>;
+  listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactIndex[]>;
   // the only way flowId/flowVersionId ever get set -- deliberate curation,
   // never the worker's content-put path (see ArtifactIndexInput)
   associateArtifact(

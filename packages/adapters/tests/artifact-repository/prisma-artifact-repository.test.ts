@@ -129,6 +129,97 @@ describe("PrismaArtifactRepository", () => {
     ]);
   });
 
+  describe("listArtifacts filter", () => {
+    it("with no filter, returns everything (unchanged behavior)", async () => {
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.saveArtifact({
+        hash: "b".repeat(64),
+        time: "2026-01-01T00:00:00.000Z",
+        format: "json",
+      });
+
+      const artifacts = await repository.listArtifacts();
+      expect(artifacts).toHaveLength(2);
+    });
+
+    it("filters by curated", async () => {
+      const { flow, flowVersion } = await createFlowAndVersion();
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.saveArtifact({
+        hash: "b".repeat(64),
+        time: "2026-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.associateArtifact("a".repeat(64), {
+        flowId: flow.id,
+        flowVersionId: flowVersion.id,
+        curated: true,
+      });
+
+      const curated = await repository.listArtifacts({ curated: true });
+      expect(curated.map((artifact) => artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
+
+      const uncurated = await repository.listArtifacts({ curated: false });
+      expect(uncurated.map((artifact) => artifact.hash)).toEqual([
+        "b".repeat(64),
+      ]);
+    });
+
+    it("filters by flowId and flowVersionId, and combines with curated", async () => {
+      const { flow, flowVersion } = await createFlowAndVersion();
+      const otherFlow = await prisma.flow.create({
+        data: { name: "Other Flow" },
+      });
+      await repository.saveArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.saveArtifact({
+        hash: "b".repeat(64),
+        time: "2026-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.associateArtifact("a".repeat(64), {
+        flowId: flow.id,
+        flowVersionId: flowVersion.id,
+        curated: true,
+      });
+      await repository.associateArtifact("b".repeat(64), {
+        flowId: otherFlow.id,
+        curated: true,
+      });
+
+      const byFlow = await repository.listArtifacts({ flowId: flow.id });
+      expect(byFlow.map((artifact) => artifact.hash)).toEqual(["a".repeat(64)]);
+
+      const byVersion = await repository.listArtifacts({
+        flowVersionId: flowVersion.id,
+      });
+      expect(byVersion.map((artifact) => artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
+
+      const combined = await repository.listArtifacts({
+        flowId: flow.id,
+        curated: true,
+      });
+      expect(combined.map((artifact) => artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
+    });
+  });
+
   it("lists artifact hashes newest first", async () => {
     await repository.saveArtifact({
       hash: "a".repeat(64),

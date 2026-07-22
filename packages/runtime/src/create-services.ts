@@ -49,7 +49,11 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     // runParamsStore: runParamsIndexStore,
   });
 
-  const artifact = new ArtifactService(ctx.artifacts, artifactRepository);
+  const artifact = new ArtifactService(
+    ctx.artifacts,
+    artifactRepository,
+    flowRepository,
+  );
 
   const evalService = new EvalService({
     runService: run,
