@@ -4,7 +4,7 @@ import { eventsBatch } from "./ws";
 
 export const routeEventListenerMiddleware = createListenerMiddleware();
 
-export function routeEvent(dispatch: Dispatch, event: AnyEvent) {
+export function routeEvent(_dispatch: Dispatch, event: AnyEvent) {
   switch (event.type) {
     case "run.started": {
       // dispatch(wsConnect({ url: "" })); no custom dispatching yet

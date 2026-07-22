@@ -3,8 +3,8 @@ import type {
   GetFlowsRes,
   GetFlowVersionRes,
   PostFlowFileRes,
-  PostJsonFlowReq,
-  PostJsonFlowRes,
+  PostFlowReq,
+  PostFlowRes,
   Result,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
@@ -22,7 +22,7 @@ export const flowsApi = createApi({
     getFlowVersionDef: builder.query<GetFlowVersionRes, string>({
       query: (flowVersionId: string) => `/flows/versions/${flowVersionId}`,
     }),
-    addJsonFlow: builder.mutation<PostJsonFlowRes, PostJsonFlowReq>({
+    addJsonFlow: builder.mutation<PostFlowRes, PostFlowReq>({
       query: (arg) => ({
         url: "flows",
         method: "POST",
