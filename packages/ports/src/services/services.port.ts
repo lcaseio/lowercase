@@ -1,8 +1,8 @@
 import type {
-  ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
+  ArtifactMetadata,
   ArtifactPutInput,
   AnyEvent,
   CreateSimRecordInput,
@@ -142,21 +142,10 @@ export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
   listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactListItem[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
-  associateArtifact(
+  updateArtifactMetadata(
     hash: string,
-    association: ArtifactAssociation,
+    metadata: ArtifactMetadata,
   ): Promise<Result<ArtifactIndex, string>>;
-  curateArtifactForParam(
-    artifactHash: string,
-    flowVersionId: string,
-    paramName: string,
-    crossVersion?: boolean,
-  ): Promise<Result<ArtifactIndex, string>>;
-  uncurateArtifactForParam(
-    artifactHash: string,
-    flowVersionId: string,
-    paramName: string,
-  ): Promise<Result<void, string>>;
   listCuratedArtifacts(
     flowVersionId: string,
     paramName: string,

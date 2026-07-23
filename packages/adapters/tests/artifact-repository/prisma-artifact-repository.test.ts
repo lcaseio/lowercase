@@ -93,7 +93,7 @@ describe("PrismaArtifactRepository", () => {
       time: "2026-06-30T00:00:00.000Z",
       format: "json",
     });
-    await repository.associateArtifact("a".repeat(64), {
+    await repository.updateMetadata("a".repeat(64), {
       flowId: flow.id,
       flowVersionId: flowVersion.id,
     });
@@ -158,10 +158,11 @@ describe("PrismaArtifactRepository", () => {
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.associateArtifact("a".repeat(64), {
+      // updateMetadata always sets curated: true as a side effect -- "b"
+      // stays uncurated simply by never having updateMetadata called on it
+      await repository.updateMetadata("a".repeat(64), {
         flowId: flow.id,
         flowVersionId: flowVersion.id,
-        curated: true,
       });
 
       const curated = await repository.listArtifacts({ curated: true });
@@ -190,14 +191,12 @@ describe("PrismaArtifactRepository", () => {
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.associateArtifact("a".repeat(64), {
+      await repository.updateMetadata("a".repeat(64), {
         flowId: flow.id,
         flowVersionId: flowVersion.id,
-        curated: true,
       });
-      await repository.associateArtifact("b".repeat(64), {
+      await repository.updateMetadata("b".repeat(64), {
         flowId: otherFlow.id,
-        curated: true,
       });
 
       const byFlow = await repository.listArtifacts({ flowId: flow.id });
@@ -235,22 +234,14 @@ describe("PrismaArtifactRepository", () => {
       });
       // listArtifacts filters on the Artifact row's own flowVersionId column,
       // which is independent of the join-table's per-curation flowVersionId --
-      // both must be set for an artifact to show up in a version-scoped list
-      await repository.associateArtifact("a".repeat(64), {
+      // both must be set for an artifact to show up in a version-scoped list.
+      // paramCurations is full-replace, so both params go in one call.
+      await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
+        paramCurations: ["weatherApiKey", "otherParam"],
       });
-      await repository.associateArtifact("b".repeat(64), {
+      await repository.updateMetadata("b".repeat(64), {
         flowVersionId: flowVersion.id,
-      });
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
-        flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
-      });
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
-        flowVersionId: flowVersion.id,
-        paramName: "otherParam",
       });
 
       const items = await repository.listArtifacts({
@@ -280,10 +271,9 @@ describe("PrismaArtifactRepository", () => {
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
 
       const items = await repository.listArtifacts();
@@ -319,8 +309,8 @@ describe("PrismaArtifactRepository", () => {
     return { flow, flowVersion };
   }
 
-  describe("associateArtifact", () => {
-    it("an empty association object is a safe no-op, not an insert or error", async () => {
+  describe("updateMetadata", () => {
+    it("an empty object leaves label/flowId/flowVersionId unchanged, but still marks the artifact curated", async () => {
       await repository.saveArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
@@ -328,13 +318,14 @@ describe("PrismaArtifactRepository", () => {
         format: "json",
       });
 
-      const result = await repository.associateArtifact("a".repeat(64), {});
+      const result = await repository.updateMetadata("a".repeat(64), {});
 
       expect(result.ok).toBe(true);
       if (!result.ok) return;
       expect(result.value.label).toBe("original");
       expect(result.value.flowId).toBeUndefined();
       expect(result.value.flowVersionId).toBeUndefined();
+      expect(result.value.curated).toBe(true);
     });
 
     it("sets flowId and flowVersionId on an existing artifact", async () => {
@@ -345,7 +336,7 @@ describe("PrismaArtifactRepository", () => {
         format: "json",
       });
 
-      const result = await repository.associateArtifact("a".repeat(64), {
+      const result = await repository.updateMetadata("a".repeat(64), {
         flowId: flow.id,
         flowVersionId: flowVersion.id,
       });
@@ -363,12 +354,12 @@ describe("PrismaArtifactRepository", () => {
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
-      await repository.associateArtifact("a".repeat(64), {
+      await repository.updateMetadata("a".repeat(64), {
         flowId: flow.id,
         flowVersionId: flowVersion.id,
       });
 
-      const result = await repository.associateArtifact("a".repeat(64), {
+      const result = await repository.updateMetadata("a".repeat(64), {
         flowVersionId: null,
       });
 
@@ -379,7 +370,7 @@ describe("PrismaArtifactRepository", () => {
     });
 
     it("fails for a hash that doesn't exist", async () => {
-      const result = await repository.associateArtifact("z".repeat(64), {
+      const result = await repository.updateMetadata("z".repeat(64), {
         flowId: "nonexistent",
       });
       expect(result.ok).toBe(false);
@@ -396,28 +387,25 @@ describe("PrismaArtifactRepository", () => {
       expect(saveResult.value.curated).toBe(false);
     });
 
-    it("sets curated to true, and back to false, only through associateArtifact", async () => {
+    it("always sets curated to true, regardless of what's passed, and it can never be set back to false", async () => {
       await repository.saveArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
 
-      const curated = await repository.associateArtifact("a".repeat(64), {
-        curated: true,
+      const result = await repository.updateMetadata("a".repeat(64), {
+        label: "just a label change",
       });
-      expect(curated.ok).toBe(true);
-      if (curated.ok) expect(curated.value.curated).toBe(true);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value.curated).toBe(true);
 
-      const uncurated = await repository.associateArtifact("a".repeat(64), {
-        curated: false,
-      });
-      expect(uncurated.ok).toBe(true);
-      if (uncurated.ok) expect(uncurated.value.curated).toBe(false);
+      // ArtifactMetadata has no `curated` field at all -- there is no way to
+      // pass anything that would set it back to false through this method
     });
 
     it("put() called again on the same hash does not clear an existing curated flag", async () => {
-      // mirrors the flowId/flowVersionId case below -- the worker's put()
+      // mirrors the flowId/flowVersionId case above -- the worker's put()
       // path has no way to reach curated at all (excluded from
       // ArtifactIndexInput), so a run later producing byte-identical
       // content must not be able to un-curate it
@@ -426,7 +414,7 @@ describe("PrismaArtifactRepository", () => {
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
-      await repository.associateArtifact("a".repeat(64), { curated: true });
+      await repository.updateMetadata("a".repeat(64), {});
 
       const result = await repository.saveArtifact({
         hash: "a".repeat(64),
@@ -438,9 +426,7 @@ describe("PrismaArtifactRepository", () => {
       if (!result.ok) return;
       expect(result.value.curated).toBe(true);
     });
-  });
 
-  describe("param curation", () => {
     it("curates an artifact for a param, then lists it", async () => {
       const { flowVersion } = await createFlowAndVersion();
       await repository.saveArtifact({
@@ -449,12 +435,11 @@ describe("PrismaArtifactRepository", () => {
         format: "json",
       });
 
-      const curateResult = await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      const result = await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
-      expect(curateResult.ok).toBe(true);
+      expect(result.ok).toBe(true);
 
       const curated = await repository.listCuratedArtifacts(
         flowVersion.id,
@@ -465,7 +450,7 @@ describe("PrismaArtifactRepository", () => {
       ]);
     });
 
-    it("curating the same artifact/param twice is idempotent", async () => {
+    it("re-sending the same paramCurations is idempotent", async () => {
       const { flowVersion } = await createFlowAndVersion();
       await repository.saveArtifact({
         hash: "a".repeat(64),
@@ -473,15 +458,13 @@ describe("PrismaArtifactRepository", () => {
         format: "json",
       });
 
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
-      const secondResult = await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      const secondResult = await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
 
       expect(secondResult.ok).toBe(true);
@@ -492,25 +475,23 @@ describe("PrismaArtifactRepository", () => {
       expect(curated).toHaveLength(1);
     });
 
-    it("uncurates an artifact, removing it from the list", async () => {
+    it("an empty paramCurations array removes all curations for that flow version", async () => {
       const { flowVersion } = await createFlowAndVersion();
       await repository.saveArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
 
-      const uncurateResult = await repository.uncurateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      const result = await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: [],
       });
-      expect(uncurateResult.ok).toBe(true);
+      expect(result.ok).toBe(true);
 
       const curated = await repository.listCuratedArtifacts(
         flowVersion.id,
@@ -531,15 +512,13 @@ describe("PrismaArtifactRepository", () => {
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
-      await repository.curateArtifactForParam({
-        artifactHash: "a".repeat(64),
+      await repository.updateMetadata("a".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
-      await repository.curateArtifactForParam({
-        artifactHash: "b".repeat(64),
+      await repository.updateMetadata("b".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "otherParam",
+        paramCurations: ["otherParam"],
       });
 
       const curated = await repository.listCuratedArtifacts(
@@ -554,10 +533,9 @@ describe("PrismaArtifactRepository", () => {
     it("fails to curate a hash that was never saved as an artifact (FK constraint)", async () => {
       const { flowVersion } = await createFlowAndVersion();
 
-      const result = await repository.curateArtifactForParam({
-        artifactHash: "z".repeat(64),
+      const result = await repository.updateMetadata("z".repeat(64), {
         flowVersionId: flowVersion.id,
-        paramName: "weatherApiKey",
+        paramCurations: ["weatherApiKey"],
       });
 
       expect(result.ok).toBe(false);

@@ -15,13 +15,9 @@ import { getArtifactRoute } from "./artifacts/get-artifact.js";
 import { putJsonArtifactRoute } from "./artifacts/put-json-artifact.js";
 import { postArtifactFileRoute } from "./artifacts/post-artifact-file.js";
 import { listArtifactsRoute } from "./artifacts/list-artifacts.js";
-import { patchArtifactRoute } from "./artifacts/associate-artifact.js";
+import { patchArtifactRoute } from "./artifacts/patch-artifact.js";
 import { getFlowVersionRoute } from "./flows/get-versions.js";
-import {
-  getCuratedArtifactsForParamRoute,
-  postCurateArtifactForParamRoute,
-  deleteUncurateArtifactForParamRoute,
-} from "./flows/curated-artifacts.js";
+import { getCuratedArtifactsForParamRoute } from "./flows/curated-artifacts.js";
 import { requestEvalsRoute } from "./evals/request.js";
 import { listEvalsRoute } from "./evals/list.js";
 
@@ -33,10 +29,6 @@ export const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   await app.register(postFlowsRoute, { prefix: "/api/flows" });
   await app.register(postFlowsFilesRoute, { prefix: "/api/flows/files" });
   await app.register(getCuratedArtifactsForParamRoute, {
-    prefix: "/api/flows",
-  });
-  await app.register(postCurateArtifactForParamRoute, { prefix: "/api/flows" });
-  await app.register(deleteUncurateArtifactForParamRoute, {
     prefix: "/api/flows",
   });
 

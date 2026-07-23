@@ -8,7 +8,7 @@ export const patchArtifactRoute = async (app: FastifyInstance) => {
     async (req): Promise<PatchArtifactRes> => {
       const { hash } = req.params;
       if (!isHash(hash)) return { ok: false, error: "Invalid hash" };
-      return app.services.artifact.associateArtifact(hash, req.body);
+      return app.services.artifact.updateArtifactMetadata(hash, req.body);
     },
   );
 };

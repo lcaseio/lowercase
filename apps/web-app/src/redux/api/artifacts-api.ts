@@ -3,6 +3,8 @@ import type {
   GetArtifactRes,
   GetArtifactsReq,
   GetArtifactsRes,
+  PatchArtifactReq,
+  PatchArtifactRes,
   PostArtifactFileRes,
   PostJsonArtifactReq,
   PostJsonArtifactRes,
@@ -63,6 +65,17 @@ export const artifactsApi = createApi({
       },
       invalidatesTags: ["Artifacts"],
     }),
+    updateArtifactMetadata: builder.mutation<
+      PatchArtifactRes,
+      { hash: string; metadata: PatchArtifactReq }
+    >({
+      query: ({ hash, metadata }) => ({
+        url: `artifacts/${hash}`,
+        method: "PATCH",
+        body: metadata,
+      }),
+      invalidatesTags: ["Artifacts"],
+    }),
   }),
 });
 
@@ -72,4 +85,5 @@ export const {
   useLazyGetArtifactQuery,
   useAddJsonArtifactMutation,
   useUploadArtifactFileMutation,
+  useUpdateArtifactMetadataMutation,
 } = artifactsApi;

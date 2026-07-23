@@ -7,13 +7,14 @@ import {
   FlowRepositoryPort,
 } from "@lcase/ports";
 import type {
-  ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
+  ArtifactMetadata,
   FlowDefinition,
   Result,
 } from "@lcase/types";
+import { isArtifactCompatible } from "@lcase/flow-analysis";
 
 export class ArtifactService implements ArtifactServicePort {
   constructor(
@@ -42,67 +43,42 @@ export class ArtifactService implements ArtifactServicePort {
     return result;
   }
 
-  async associateArtifact(
+  async updateArtifactMetadata(
     hash: string,
-    association: ArtifactAssociation,
+    metadata: ArtifactMetadata,
   ): Promise<Result<ArtifactIndex, string>> {
-    return this.artifactRepository.associateArtifact(hash, association);
-  }
+    if (metadata.paramCurations) {
+      const versionResult = await this.flowRepository.getFlowVersion(
+        metadata.flowVersionId,
+      );
+      if (!versionResult.ok) return versionResult;
 
-  async curateArtifactForParam(
-    artifactHash: string,
-    flowVersionId: string,
-    paramName: string,
-    crossVersion = false,
-  ): Promise<Result<ArtifactIndex, string>> {
-    const versionResult =
-      await this.flowRepository.getFlowVersion(flowVersionId);
-    if (!versionResult.ok) return versionResult;
+      const definitionResult = await this.artifacts.getJson(
+        versionResult.value.definitionHash,
+      );
+      if (!definitionResult.ok) {
+        return { ok: false, error: definitionResult.error.message };
+      }
+      const definition = definitionResult.value as FlowDefinition;
 
-    const definitionResult = await this.artifacts.getJson(
-      versionResult.value.definitionHash,
-    );
-    if (!definitionResult.ok) {
-      return { ok: false, error: definitionResult.error.message };
+      const artifact = await this.artifactRepository.getArtifact(hash);
+      if (!artifact) return { ok: false, error: `Artifact not found: ${hash}` };
+
+      for (const paramName of metadata.paramCurations) {
+        const paramDef = definition.params?.[paramName];
+        if (!paramDef) {
+          return { ok: false, error: `Undeclared param: ${paramName}` };
+        }
+        if (!isArtifactCompatible(artifact, paramDef.type)) {
+          return {
+            ok: false,
+            error: `Artifact incompatible with param: ${paramName}`,
+          };
+        }
+      }
     }
 
-    const definition = definitionResult.value as FlowDefinition;
-    if (!definition.params?.[paramName]) {
-      return { ok: false, error: `Undeclared param: ${paramName}` };
-    }
-
-    const association: ArtifactAssociation = {
-      flowVersionId,
-      curated: true,
-      ...(crossVersion ? { flowId: versionResult.value.flowId } : {}),
-    };
-
-    const associated = await this.artifactRepository.associateArtifact(
-      artifactHash,
-      association,
-    );
-    if (!associated.ok) return associated;
-
-    const curated = await this.artifactRepository.curateArtifactForParam({
-      artifactHash,
-      flowVersionId,
-      paramName,
-    });
-    if (!curated.ok) return { ok: false, error: curated.error };
-
-    return associated;
-  }
-
-  async uncurateArtifactForParam(
-    artifactHash: string,
-    flowVersionId: string,
-    paramName: string,
-  ): Promise<Result<void, string>> {
-    return this.artifactRepository.uncurateArtifactForParam({
-      artifactHash,
-      flowVersionId,
-      paramName,
-    });
+    return this.artifactRepository.updateMetadata(hash, metadata);
   }
 
   async listCuratedArtifacts(
