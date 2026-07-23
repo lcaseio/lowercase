@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  artifactMetadataSaved,
+  cancelEditingArtifactMetadata,
   enterFlowVersionArtifactsScope,
   flowVersionArtifactsSlice,
   selectArtifact,
   selectFlowVersionArtifactsState,
+  setDraftShare,
+  startEditingArtifactMetadata,
+  toggleDraftParam,
+  updateDraftLabel,
 } from "@/redux/slices/flow-version-artifacts-slice";
 import type { RootState } from "@/redux/store";
 
@@ -13,6 +19,8 @@ const BASE_STATE = {
   flowVersionId: null,
   flowId: null,
   selectedArtifactHash: null,
+  draft: null,
+  isEditing: false,
 };
 
 function stateFor(flowVersionArtifacts: ReturnType<typeof reducer>) {
@@ -105,5 +113,115 @@ describe("flowVersionArtifactsSlice", () => {
     expect(selectFlowVersionArtifactsState(stateFor(active), "fv-1")).toBe(
       active,
     );
+  });
+
+  it("startEditingArtifactMetadata seeds the draft and enters edit mode", () => {
+    const state = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "my label",
+        share: true,
+        curatedParamNames: ["input"],
+      }),
+    );
+    expect(state.draft).toEqual({
+      label: "my label",
+      share: true,
+      curatedParamNames: ["input"],
+    });
+    expect(state.isEditing).toBe(true);
+  });
+
+  it("updateDraftLabel and setDraftShare update the draft in place", () => {
+    const editing = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "old",
+        share: false,
+        curatedParamNames: [],
+      }),
+    );
+    const labeled = reducer(editing, updateDraftLabel("new"));
+    expect(labeled.draft?.label).toBe("new");
+
+    const shared = reducer(labeled, setDraftShare(true));
+    expect(shared.draft?.share).toBe(true);
+  });
+
+  it("updateDraftLabel and setDraftShare are no-ops when there is no draft", () => {
+    const state = reducer(undefined, updateDraftLabel("new"));
+    expect(state.draft).toBeNull();
+  });
+
+  it("toggleDraftParam adds and removes a param name", () => {
+    const editing = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "",
+        share: false,
+        curatedParamNames: [],
+      }),
+    );
+    const added = reducer(
+      editing,
+      toggleDraftParam({ paramName: "input", checked: true }),
+    );
+    expect(added.draft?.curatedParamNames).toEqual(["input"]);
+
+    const removed = reducer(
+      added,
+      toggleDraftParam({ paramName: "input", checked: false }),
+    );
+    expect(removed.draft?.curatedParamNames).toEqual([]);
+  });
+
+  it("artifactMetadataSaved exits edit mode but keeps the draft as the display override", () => {
+    const editing = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "new label",
+        share: false,
+        curatedParamNames: [],
+      }),
+    );
+    const saved = reducer(editing, artifactMetadataSaved());
+    expect(saved.isEditing).toBe(false);
+    expect(saved.draft).toEqual({
+      label: "new label",
+      share: false,
+      curatedParamNames: [],
+    });
+  });
+
+  it("cancelEditingArtifactMetadata exits edit mode and discards the draft", () => {
+    const editing = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "old",
+        share: false,
+        curatedParamNames: [],
+      }),
+    );
+    const cancelled = reducer(editing, cancelEditingArtifactMetadata());
+    expect(cancelled.isEditing).toBe(false);
+    expect(cancelled.draft).toBeNull();
+  });
+
+  it("selectArtifact resets any leftover draft/isEditing from the previous selection", () => {
+    const editing = reducer(
+      undefined,
+      startEditingArtifactMetadata({
+        label: "old",
+        share: false,
+        curatedParamNames: [],
+      }),
+    );
+    const saved = reducer(editing, artifactMetadataSaved());
+    expect(saved.draft).not.toBeNull();
+
+    const switched = reducer(saved, selectArtifact("b".repeat(64)));
+    expect(switched.selectedArtifactHash).toBe("b".repeat(64));
+    expect(switched.draft).toBeNull();
+    expect(switched.isEditing).toBe(false);
   });
 });

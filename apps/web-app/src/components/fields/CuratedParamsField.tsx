@@ -39,6 +39,7 @@ export function CuratedParamsField({
                   : undefined
               }
               disabled={!onToggleParam}
+              className="data-[state=checked]:bg-sky-600 data-[state=checked]:text-neutral-50 dark:data-[state=checked]:bg-sky-700 border-0 checked:neutral-50"
             />
             <Label
               htmlFor={`param-${paramName}`}
