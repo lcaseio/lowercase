@@ -25,6 +25,7 @@ export function SwitchField({ label, value, onChange, description }: Props) {
         onCheckedChange={onChange}
         disabled={!onChange}
         size="default"
+        className="data-[state=checked]:bg-sky-600 dark:data-[state=checked]:bg-sky-300"
       />
     </Field>
   );

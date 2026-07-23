@@ -16,7 +16,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   await app.register(cors, {
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
 
   await app.register(multipart, { limits: { fileSize: 1000 * 1024 * 1024 } });

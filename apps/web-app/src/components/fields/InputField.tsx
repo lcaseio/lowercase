@@ -6,9 +6,16 @@ type Props = {
   value?: string;
   error?: string;
   description?: string;
+  onChange?: (value: string) => void;
 };
 
-export function InputField({ label, value, description, error }: Props) {
+export function InputField({
+  label,
+  value,
+  description,
+  error,
+  onChange,
+}: Props) {
   if (value === undefined) return null;
   return (
     <Field
@@ -24,7 +31,8 @@ export function InputField({ label, value, description, error }: Props) {
         id={label}
         type="text"
         value={value}
-        readOnly
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        readOnly={!onChange}
         className="flex-1 mr-3"
       />
     </Field>
