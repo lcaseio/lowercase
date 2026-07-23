@@ -1,10 +1,9 @@
 import type { PrismaClient } from "@lcase/db-prisma";
 import type {
-  ArtifactAssociation,
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
-  ArtifactParamCurationRecord,
+  ArtifactMetadata,
   Result,
 } from "@lcase/types";
 import type {
@@ -14,7 +13,7 @@ import type {
 
 type PrismaArtifactRepositoryDb = Pick<
   PrismaClient,
-  "artifact" | "artifactParamCuration"
+  "artifact" | "artifactParamCuration" | "$transaction"
 >;
 
 function definedFields<T extends Record<string, unknown>>(
@@ -167,66 +166,49 @@ export class PrismaArtifactRepository
     }
   }
 
-  async associateArtifact(
+  async updateMetadata(
     hash: string,
-    association: ArtifactAssociation,
+    metadata: ArtifactMetadata,
   ): Promise<Result<ArtifactIndex, string>> {
     try {
-      const saved = await this.db.artifact.update({
-        where: { hash },
-        data: definedFields(association),
-      });
-      return { ok: true, value: toArtifactIndex(saved) };
-    } catch (error) {
-      return {
-        ok: false,
-        error: `Unable to associate artifact: ${String(error)}`,
+      const data = {
+        label: metadata.label,
+        flowId: metadata.flowId,
+        flowVersionId: metadata.flowVersionId,
+        curated: true,
       };
-    }
-  }
 
-  async curateArtifactForParam(
-    entry: ArtifactParamCurationRecord,
-  ): Promise<Result<void, string>> {
-    try {
-      await this.db.artifactParamCuration.upsert({
-        where: {
-          artifactHash_flowVersionId_paramName: {
-            artifactHash: entry.artifactHash,
-            flowVersionId: entry.flowVersionId,
-            paramName: entry.paramName,
-          },
-        },
-        update: {},
-        create: entry,
+      if (!metadata.paramCurations) {
+        const updated = await this.db.artifact.update({
+          where: { hash },
+          data,
+        });
+        return { ok: true, value: toArtifactIndex(updated) };
+      }
+
+      const flowVersionId = metadata.flowVersionId;
+      const paramCurations = metadata.paramCurations;
+      const updated = await this.db.$transaction(async (tx) => {
+        const artifact = await tx.artifact.update({ where: { hash }, data });
+        await tx.artifactParamCuration.deleteMany({
+          where: { artifactHash: hash, flowVersionId },
+        });
+        if (paramCurations.length > 0) {
+          await tx.artifactParamCuration.createMany({
+            data: paramCurations.map((paramName) => ({
+              artifactHash: hash,
+              flowVersionId,
+              paramName,
+            })),
+          });
+        }
+        return artifact;
       });
-      return { ok: true, value: undefined };
+      return { ok: true, value: toArtifactIndex(updated) };
     } catch (error) {
       return {
         ok: false,
-        error: `Unable to curate artifact for param: ${String(error)}`,
-      };
-    }
-  }
-
-  async uncurateArtifactForParam(
-    entry: ArtifactParamCurationRecord,
-  ): Promise<Result<void, string>> {
-    try {
-      await this.db.artifactParamCuration.delete({
-        where: {
-          artifactHash_flowVersionId_paramName: {
-            artifactHash: entry.artifactHash,
-            flowVersionId: entry.flowVersionId,
-            paramName: entry.paramName,
-          },
-        },
-      });
-      return { ok: true, value: undefined };
-    } catch (error) {
-      return {
-        ok: false,
-        error: `Unable to uncurate artifact for param: ${String(error)}`,
+        error: `Unable to update artifact metadata: ${String(error)}`,
       };
     }
   }

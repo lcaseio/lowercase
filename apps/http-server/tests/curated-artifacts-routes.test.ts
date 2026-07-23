@@ -12,11 +12,8 @@ import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { ArtifactService } from "@lcase/services";
 import type { FlowDefinition, JsonValue } from "@lcase/types";
-import {
-  getCuratedArtifactsForParamRoute,
-  postCurateArtifactForParamRoute,
-  deleteUncurateArtifactForParamRoute,
-} from "../src/routes/flows/curated-artifacts.js";
+import { getCuratedArtifactsForParamRoute } from "../src/routes/flows/curated-artifacts.js";
+import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../..");
@@ -51,7 +48,10 @@ async function applyMigrations(
   }
 }
 
-describe("curated-artifacts routes", () => {
+// this suite covers GET .../curated-artifacts specifically -- writes now go
+// through the unified PATCH /api/artifacts/:hash (see artifact-sql-routes.test.ts
+// for that route's own coverage), used here only as test setup
+describe("GET .../curated-artifacts", () => {
   let tmpDir: string;
   let artifactDir: string;
   let prisma: PrismaClient;
@@ -95,12 +95,7 @@ describe("curated-artifacts routes", () => {
     await app.register(getCuratedArtifactsForParamRoute, {
       prefix: "/api/flows",
     });
-    await app.register(postCurateArtifactForParamRoute, {
-      prefix: "/api/flows",
-    });
-    await app.register(deleteUncurateArtifactForParamRoute, {
-      prefix: "/api/flows",
-    });
+    await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
 
     const definition: FlowDefinition = {
       name: "Weather Flow",
@@ -134,23 +129,18 @@ describe("curated-artifacts routes", () => {
     return { app, artifactRepository, flow, flowVersion };
   }
 
-  it("curates an artifact for a declared param, then lists it", async () => {
+  it("returns artifacts curated for that param via the unified PATCH", async () => {
     const { app, flowVersion } = await setUp();
 
-    const postResponse = await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64) },
-    });
-    expect(postResponse.statusCode).toBe(200);
-    expect(postResponse.json()).toEqual({
-      ok: true,
-      value: expect.objectContaining({
-        hash: "a".repeat(64),
+    const patchResponse = await app.inject({
+      method: "PATCH",
+      url: `/api/artifacts/${"a".repeat(64)}`,
+      payload: {
         flowVersionId: flowVersion.id,
-        curated: true,
-      }),
+        paramCurations: ["weatherApiKey"],
+      },
     });
+    expect(patchResponse.statusCode).toBe(200);
 
     const getResponse = await app.inject({
       method: "GET",
@@ -164,65 +154,22 @@ describe("curated-artifacts routes", () => {
     await app.close();
   });
 
-  it("rejects curating for a param that isn't declared on the flow version's definition", async () => {
-    const { app, flowVersion } = await setUp();
-
-    const postResponse = await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/undeclaredParam/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64) },
-    });
-    expect(postResponse.json()).toEqual({
-      ok: false,
-      error: expect.stringContaining("Undeclared param"),
-    });
-
-    await app.close();
-  });
-
-  it("crossVersion: true also sets flowId; omitted leaves it unset", async () => {
-    const { app, flow, flowVersion } = await setUp();
-
-    const withoutCrossVersion = await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64) },
-    });
-    const withoutCrossVersionBody = withoutCrossVersion.json() as {
-      value: { flowId?: string };
-    };
-    expect(withoutCrossVersionBody.value.flowId).toBeUndefined();
-
-    const withCrossVersion = await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64), crossVersion: true },
-    });
-    expect(withCrossVersion.json()).toEqual({
-      ok: true,
-      value: expect.objectContaining({
-        flowId: flow.id,
-        flowVersionId: flowVersion.id,
-      }),
-    });
-
-    await app.close();
-  });
-
-  it("uncurates an artifact, removing it from the list", async () => {
+  it("returns an empty list once curation is removed", async () => {
     const { app, flowVersion } = await setUp();
 
     await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64) },
+      method: "PATCH",
+      url: `/api/artifacts/${"a".repeat(64)}`,
+      payload: {
+        flowVersionId: flowVersion.id,
+        paramCurations: ["weatherApiKey"],
+      },
     });
-
-    const deleteResponse = await app.inject({
-      method: "DELETE",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts/${"a".repeat(64)}`,
+    await app.inject({
+      method: "PATCH",
+      url: `/api/artifacts/${"a".repeat(64)}`,
+      payload: { flowVersionId: flowVersion.id, paramCurations: [] },
     });
-    expect(deleteResponse.json()).toEqual({ ok: true, value: undefined });
 
     const getResponse = await app.inject({
       method: "GET",

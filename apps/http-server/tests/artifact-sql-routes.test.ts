@@ -16,8 +16,7 @@ import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
 import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
 import { postArtifactFileRoute } from "../src/routes/artifacts/post-artifact-file.js";
 import { putJsonArtifactRoute } from "../src/routes/artifacts/put-json-artifact.js";
-import { patchArtifactRoute } from "../src/routes/artifacts/associate-artifact.js";
-import { postCurateArtifactForParamRoute } from "../src/routes/flows/curated-artifacts.js";
+import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
 import type { FlowDefinition } from "@lcase/types";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -216,18 +215,20 @@ describe("artifact sql routes", () => {
     const patchResponse = await app.inject({
       method: "PATCH",
       url: `/api/artifacts/${hash}`,
-      payload: { curated: true },
+      payload: { label: "renamed" },
     });
     expect(patchResponse.statusCode).toBe(200);
     expect(patchResponse.json()).toEqual({
       ok: true,
-      value: expect.objectContaining({ hash, curated: true }),
+      // curated is set unconditionally by updateMetadata -- not because the
+      // payload asked for it, ArtifactMetadata has no `curated` field at all
+      value: expect.objectContaining({ hash, label: "renamed", curated: true }),
     });
 
     const invalidHashResponse = await app.inject({
       method: "PATCH",
       url: "/api/artifacts/not-a-hash",
-      payload: { curated: true },
+      payload: { label: "renamed" },
     });
     expect(invalidHashResponse.json()).toEqual({
       ok: false,
@@ -265,10 +266,9 @@ describe("artifact sql routes", () => {
       format: "json",
     });
     expect(curatedResult.ok).toBe(true);
-    await artifactRepository.associateArtifact("a".repeat(64), {
+    await artifactRepository.updateMetadata("a".repeat(64), {
       flowId: flow.id,
       flowVersionId: flowVersion.id,
-      curated: true,
     });
     await artifactRepository.saveArtifact({
       hash: "b".repeat(64),
@@ -327,9 +327,7 @@ describe("artifact sql routes", () => {
     const app = Fastify();
     app.decorate("services", { artifact: artifactService });
     await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
-    await app.register(postCurateArtifactForParamRoute, {
-      prefix: "/api/flows",
-    });
+    await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
 
     const definition: FlowDefinition = {
       name: "Weather Flow",
@@ -353,9 +351,12 @@ describe("artifact sql routes", () => {
     });
 
     const curateResponse = await app.inject({
-      method: "POST",
-      url: `/api/flows/versions/${flowVersion.id}/params/weatherApiKey/curated-artifacts`,
-      payload: { artifactHash: "a".repeat(64) },
+      method: "PATCH",
+      url: `/api/artifacts/${"a".repeat(64)}`,
+      payload: {
+        flowVersionId: flowVersion.id,
+        paramCurations: ["weatherApiKey"],
+      },
     });
     expect(curateResponse.statusCode).toBe(200);
 
