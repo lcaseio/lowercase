@@ -96,10 +96,10 @@ describe("ArtifactService.createArtifact", () => {
     // ArtifactUpdateMetadata never declares `curated`, but metadata arrives
     // over the wire as parsed JSON -- untyped at runtime -- so this proves
     // a client-supplied curated:false can't survive the merge
-    await service.createArtifact(
-      { format: "text", value: "hello" },
-      { curated: false, label: "sneaky" } as never,
-    );
+    await service.createArtifact({ format: "text", value: "hello" }, {
+      curated: false,
+      label: "sneaky",
+    } as never);
 
     expect(artifacts.write).toHaveBeenCalledWith(
       { format: "text", value: "hello" },

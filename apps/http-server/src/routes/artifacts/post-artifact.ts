@@ -54,7 +54,9 @@ export const postArtifactRoute = async (app: FastifyInstance) => {
       }
 
       if (!upload) {
-        return reply.code(400).send({ ok: false, error: "Missing upload file" });
+        return reply
+          .code(400)
+          .send({ ok: false, error: "Missing upload file" });
       }
 
       let metadata: ArtifactUpdateMetadata | undefined;
@@ -62,7 +64,9 @@ export const postArtifactRoute = async (app: FastifyInstance) => {
         try {
           metadata = JSON.parse(metadataRaw) as ArtifactUpdateMetadata;
         } catch {
-          return reply.code(400).send({ ok: false, error: "Invalid metadata JSON" });
+          return reply
+            .code(400)
+            .send({ ok: false, error: "Invalid metadata JSON" });
         }
       }
 
@@ -82,7 +86,10 @@ export const postArtifactRoute = async (app: FastifyInstance) => {
     if (!format) {
       return reply
         .code(400)
-        .send({ ok: false, error: `Unsupported content type: ${body.contentType}` });
+        .send({
+          ok: false,
+          error: `Unsupported content type: ${body.contentType}`,
+        });
     }
 
     const putInput: ArtifactPutInput =

@@ -64,7 +64,8 @@ export const artifactsApi = createApi({
         }
         const formData = new FormData();
         formData.append("file", arg.file);
-        if (arg.metadata) formData.append("metadata", JSON.stringify(arg.metadata));
+        if (arg.metadata)
+          formData.append("metadata", JSON.stringify(arg.metadata));
         return {
           url: "artifacts",
           method: "POST",

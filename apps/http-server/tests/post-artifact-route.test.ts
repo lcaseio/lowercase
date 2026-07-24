@@ -8,7 +8,9 @@ import { postArtifactRoute } from "../src/routes/artifacts/post-artifact.js";
 // JSON branch, so @fastify/multipart must be registered regardless of
 // which branch a given test exercises -- matching how build-server.ts
 // registers it globally in production, not per-route
-async function buildApp(createArtifact = vi.fn().mockResolvedValue({ ok: true, value: "hash" })) {
+async function buildApp(
+  createArtifact = vi.fn().mockResolvedValue({ ok: true, value: "hash" }),
+) {
   const app = Fastify();
   app.decorate("services", { artifact: { createArtifact } });
   await app.register(multipart);
@@ -91,7 +93,11 @@ describe("post-artifact route -- authored (JSON) branch", () => {
     // through to the service unexamined -- enforcement that curated always
     // ends up true lives in ArtifactService.createArtifact, not the route
     expect(createArtifact).toHaveBeenCalledWith(
-      { format: "json", value: { hello: "world" }, index: { contentType: "application/json" } },
+      {
+        format: "json",
+        value: { hello: "world" },
+        index: { contentType: "application/json" },
+      },
       { curated: true, label: "x" },
     );
   });
