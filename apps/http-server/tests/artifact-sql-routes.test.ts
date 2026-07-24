@@ -111,7 +111,10 @@ describe("artifact sql routes", () => {
       },
     });
     expect(jsonResponse.statusCode).toBe(200);
-    const jsonBody = jsonResponse.json() as { ok: true; value: string };
+    const jsonBody = jsonResponse.json() as {
+      ok: true;
+      value: { hash: string };
+    };
     expect(jsonBody.ok).toBe(true);
 
     const listResponse = await app.inject({
@@ -124,7 +127,7 @@ describe("artifact sql routes", () => {
       value: [
         expect.objectContaining({
           artifact: expect.objectContaining({
-            hash: jsonBody.value,
+            hash: jsonBody.value.hash,
             label: "Prompt",
             contentType: "application/json",
             format: "json",
@@ -142,7 +145,7 @@ describe("artifact sql routes", () => {
 
     const getResponse = await app.inject({
       method: "GET",
-      url: `/api/artifacts/${jsonBody.value}`,
+      url: `/api/artifacts/${jsonBody.value.hash}`,
     });
     expect(getResponse.statusCode).toBe(200);
     expect(getResponse.json()).toEqual({
@@ -160,7 +163,10 @@ describe("artifact sql routes", () => {
       headers: makeMultipartHeaders(),
     });
     expect(fileResponse.statusCode).toBe(200);
-    const fileBody = fileResponse.json() as { ok: true; value: string };
+    const fileBody = fileResponse.json() as {
+      ok: true;
+      value: { hash: string };
+    };
     expect(fileBody.ok).toBe(true);
 
     const storedMetadata = await prisma.artifact.findMany({
@@ -168,12 +174,12 @@ describe("artifact sql routes", () => {
     });
     expect(storedMetadata).toHaveLength(2);
     expect(
-      storedMetadata.some((artifact) => artifact.hash === jsonBody.value),
+      storedMetadata.some((artifact) => artifact.hash === jsonBody.value.hash),
     ).toBe(true);
     expect(
       storedMetadata.some(
         (artifact) =>
-          artifact.hash === fileBody.value &&
+          artifact.hash === fileBody.value.hash &&
           artifact.label === "Markdown Prompt" &&
           artifact.filename === "prompt.md" &&
           artifact.contentType === "text/markdown" &&
@@ -181,7 +187,7 @@ describe("artifact sql routes", () => {
       ),
     ).toBe(true);
 
-    const markdown = await artifacts.getMarkdown(fileBody.value);
+    const markdown = await artifacts.getMarkdown(fileBody.value.hash);
     expect(markdown).toEqual({ ok: true, value: "# prompt" });
 
     await app.close();
@@ -211,7 +217,7 @@ describe("artifact sql routes", () => {
       url: "/api/artifacts",
       payload: { contentType: "application/json", value: { hello: "world" } },
     });
-    const hash = (putResponse.json() as { value: string }).value;
+    const hash = (putResponse.json() as { value: { hash: string } }).value.hash;
 
     const patchResponse = await app.inject({
       method: "PATCH",

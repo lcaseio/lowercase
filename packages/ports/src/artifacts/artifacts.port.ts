@@ -1,4 +1,5 @@
 import type {
+  ArtifactIndex,
   ArtifactIndexInput,
   ArtifactPutInput,
   ArtifactWriteMetadata,
@@ -41,7 +42,7 @@ export interface ArtifactsPort {
   write(
     input: ArtifactPutInput,
     metadata?: ArtifactWriteMetadata,
-  ): Promise<Result<string, PutError>>;
+  ): Promise<Result<ArtifactIndex, PutError>>;
 
   get(
     hash: string,

@@ -32,12 +32,14 @@ describe("Artifacts write()", () => {
     const hash = createHash("sha256").update(bytes).digest("hex");
 
     const store = mockStore();
-    const repository = mockRepository();
+    const repository = mockRepository({ hash, format: "json" });
     const artifacts = new Artifacts(store, repository);
 
     const result = await artifacts.write({ format: "json", value: data });
 
-    expect(result).toEqual({ ok: true, value: hash });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.hash).toBe(hash);
     expect(store.putBytes).toHaveBeenCalledWith(hash, bytes, ".json");
     expect(repository.writeArtifact).toHaveBeenCalledWith(
       expect.objectContaining({ hash, format: "json" }),

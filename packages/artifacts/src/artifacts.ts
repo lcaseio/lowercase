@@ -9,6 +9,7 @@ import type { ArtifactRepositoryPort } from "@lcase/ports";
 import type {
   Result,
   ArtifactPutInput,
+  ArtifactIndex,
   ArtifactIndexInput,
   ArtifactFormat,
   ArtifactWriteMetadata,
@@ -63,7 +64,7 @@ export class Artifacts implements ArtifactsPort {
   async write(
     input: ArtifactPutInput,
     metadata?: ArtifactWriteMetadata,
-  ): Promise<Result<string, PutError>> {
+  ): Promise<Result<ArtifactIndex, PutError>> {
     try {
       const bytes =
         input.format === "json"
@@ -84,18 +85,21 @@ export class Artifacts implements ArtifactsPort {
           },
         };
       }
-      if (!this.repository) return { ok: true, value: hash };
+
+      const content: ArtifactIndex = {
+        hash,
+        time: new Date().toISOString(),
+        size: bytes.length,
+        contentType:
+          input.index?.contentType ?? this.defaultContentType(input.format),
+        format: input.format,
+        filename: input.index?.filename,
+      };
+
+      if (!this.repository) return { ok: true, value: content };
 
       const contentResult = await this.repository.writeArtifact(
-        {
-          hash,
-          time: new Date().toISOString(),
-          size: bytes.length,
-          contentType:
-            input.index?.contentType ?? this.defaultContentType(input.format),
-          format: input.format,
-          filename: input.index?.filename,
-        },
+        content,
         metadata,
       );
       if (!contentResult.ok) {
@@ -109,7 +113,7 @@ export class Artifacts implements ArtifactsPort {
           },
         };
       }
-      return { ok: true, value: hash };
+      return { ok: true, value: contentResult.value };
     } catch (e) {
       return {
         ok: false,

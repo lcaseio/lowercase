@@ -1,10 +1,29 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { ArtifactFormat } from "@lcase/types";
 import type { RootState } from "../store";
 
 export type ArtifactMetadataDraft = {
   label: string;
   share: boolean;
   curatedParamNames: string[];
+};
+
+export type ArtifactAuthoringDraft = {
+  label: string;
+  share: boolean;
+  curatedParamNames: string[];
+  // derived synchronously from the picked File at pick-time (name/size/
+  // contentType/format) -- never the File object itself. Not serializable,
+  // was never a good Redux citizen regardless, and doesn't need to survive
+  // a full mode-switch (the component holding the live File already
+  // unmounts on route change) -- this is a remembered breadcrumb, not a
+  // resumable upload.
+  file: {
+    name: string;
+    size: number;
+    contentType: string;
+    format: ArtifactFormat;
+  } | null;
 };
 
 type FlowVersionArtifactsState = {
@@ -19,6 +38,13 @@ type FlowVersionArtifactsState = {
   // whether the fields/buttons are currently in edit mode.
   draft: ArtifactMetadataDraft | null;
   isEditing: boolean;
+  // mode/authoringDraft mirror Sims mode's browsing/authoring shape rather
+  // than the draft/isEditing split above -- simpler, because (unlike
+  // metadata editing) there's no need for the draft to outlive success: a
+  // successful create just returns to browsing with the new artifact
+  // selected, so one mode field covers it
+  mode: "browsing" | "authoring";
+  authoringDraft: ArtifactAuthoringDraft | null;
 };
 
 const initialState: FlowVersionArtifactsState = {
@@ -27,6 +53,8 @@ const initialState: FlowVersionArtifactsState = {
   selectedArtifactHash: null,
   draft: null,
   isEditing: false,
+  mode: "browsing",
+  authoringDraft: null,
 };
 
 export const flowVersionArtifactsSlice = createSlice({
@@ -48,11 +76,14 @@ export const flowVersionArtifactsSlice = createSlice({
       state.selectedArtifactHash = action.payload;
       state.draft = null;
       state.isEditing = false;
+      state.mode = "browsing";
+      state.authoringDraft = null;
     },
     startEditingArtifactMetadata: (
       state,
       action: PayloadAction<ArtifactMetadataDraft>,
     ) => {
+      if (state.mode === "authoring") return;
       state.draft = action.payload;
       state.isEditing = true;
     },
@@ -93,6 +124,64 @@ export const flowVersionArtifactsSlice = createSlice({
       state.isEditing = false;
       state.draft = null;
     },
+    startAuthoringArtifact: (state) => {
+      if (state.isEditing) return;
+      state.mode = "authoring";
+      state.authoringDraft = {
+        label: "",
+        share: false,
+        curatedParamNames: [],
+        file: null,
+      };
+    },
+    // shared by cancelAuthoringArtifact (discarding) and artifactAuthored
+    // (completing) -- both return to the same blank browsing state, just
+    // for different reasons, same pattern flow-version-sims-slice.ts uses
+    cancelAuthoringArtifact: (state) => {
+      state.mode = "browsing";
+      state.authoringDraft = null;
+    },
+    artifactAuthored: (state) => {
+      state.mode = "browsing";
+      state.authoringDraft = null;
+    },
+    updateAuthoringLabel: (state, action: PayloadAction<string>) => {
+      if (!state.authoringDraft) return;
+      state.authoringDraft.label = action.payload;
+    },
+    setAuthoringShare: (state, action: PayloadAction<boolean>) => {
+      if (!state.authoringDraft) return;
+      state.authoringDraft.share = action.payload;
+    },
+    toggleAuthoringParam: (
+      state,
+      action: PayloadAction<{ paramName: string; checked: boolean }>,
+    ) => {
+      if (!state.authoringDraft) return;
+      const { paramName, checked } = action.payload;
+      if (checked) {
+        if (!state.authoringDraft.curatedParamNames.includes(paramName)) {
+          state.authoringDraft.curatedParamNames.push(paramName);
+        }
+      } else {
+        state.authoringDraft.curatedParamNames =
+          state.authoringDraft.curatedParamNames.filter(
+            (name) => name !== paramName,
+          );
+      }
+    },
+    // always clears curatedParamNames alongside the file, whether clearing
+    // to null or replacing with a different file -- params are gated on a
+    // known, current content type, so a stale selection from a
+    // previous/absent file must not survive a file change
+    setAuthoringFile: (
+      state,
+      action: PayloadAction<ArtifactAuthoringDraft["file"]>,
+    ) => {
+      if (!state.authoringDraft) return;
+      state.authoringDraft.file = action.payload;
+      state.authoringDraft.curatedParamNames = [];
+    },
   },
 });
 
@@ -105,6 +194,13 @@ export const {
   toggleDraftParam,
   artifactMetadataSaved,
   cancelEditingArtifactMetadata,
+  startAuthoringArtifact,
+  cancelAuthoringArtifact,
+  artifactAuthored,
+  updateAuthoringLabel,
+  setAuthoringShare,
+  toggleAuthoringParam,
+  setAuthoringFile,
 } = flowVersionArtifactsSlice.actions;
 
 const EMPTY_FLOW_VERSION_ARTIFACTS_STATE: FlowVersionArtifactsState =

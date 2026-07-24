@@ -145,7 +145,7 @@ export interface ArtifactServicePort {
   createArtifact(
     input: ArtifactPutInput,
     metadata?: ArtifactUpdateMetadata,
-  ): Promise<Result<string, string>>;
+  ): Promise<Result<ArtifactIndex, string>>;
   updateArtifactMetadata(
     hash: string,
     metadata: ArtifactUpdateMetadata,
