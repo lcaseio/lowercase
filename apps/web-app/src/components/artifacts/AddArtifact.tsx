@@ -1,16 +1,18 @@
-import {
-  useAddJsonArtifactMutation,
-  useUploadArtifactFileMutation,
-} from "@/redux/api/artifacts-api";
+import { useCreateArtifactMutation } from "@/redux/api/artifacts-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 type ManualFormat = "json" | "text" | "markdown";
 
+const manualContentTypes: Record<ManualFormat, string> = {
+  json: "application/json",
+  text: "text/plain",
+  markdown: "text/markdown",
+};
+
 export function AddArtifact() {
-  const [addJsonArtifact, addJsonState] = useAddJsonArtifactMutation();
-  const [uploadArtifactFile, uploadState] = useUploadArtifactFileMutation();
+  const [createArtifact, createState] = useCreateArtifactMutation();
   const [label, setLabel] = useState("");
   const [format, setFormat] = useState<ManualFormat>("json");
   const [text, setText] = useState("");
@@ -20,23 +22,14 @@ export function AddArtifact() {
   const handleManualSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     try {
-      if (format === "json") {
-        const value = JSON.parse(text);
-        const res = await addJsonArtifact({
-          value,
-          ...(label ? { label } : {}),
-        });
-        setStatus(JSON.stringify(res, null, 2));
-        return;
-      }
-
-      const extension = format === "text" ? "txt" : "md";
-      const contentType = format === "text" ? "text/plain" : "text/markdown";
-      const upload = await uploadArtifactFile({
-        file: new File([text], `artifact.${extension}`, { type: contentType }),
-        ...(label ? { label } : {}),
+      const value = format === "json" ? JSON.parse(text) : text;
+      const res = await createArtifact({
+        kind: "authored",
+        contentType: manualContentTypes[format],
+        value,
+        ...(label ? { metadata: { label } } : {}),
       });
-      setStatus(JSON.stringify(upload, null, 2));
+      setStatus(JSON.stringify(res, null, 2));
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Error creating artifact");
     }
@@ -45,9 +38,10 @@ export function AddArtifact() {
   const handleFileSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!file) return;
-    const res = await uploadArtifactFile({
+    const res = await createArtifact({
+      kind: "file",
       file,
-      ...(label ? { label } : {}),
+      ...(label ? { metadata: { label } } : {}),
     });
     setStatus(JSON.stringify(res, null, 2));
     setFile(null);
@@ -66,7 +60,7 @@ export function AddArtifact() {
         <Button
           className="w-1/6 cursor-pointer"
           type="submit"
-          disabled={uploadState.isLoading || !file}
+          disabled={createState.isLoading || !file}
         >
           Upload File
         </Button>
@@ -105,11 +99,7 @@ export function AddArtifact() {
           type="submit"
           className="w-1/6 cursor-pointer"
           size="lg"
-          disabled={
-            addJsonState.isLoading ||
-            uploadState.isLoading ||
-            text.trim() === ""
-          }
+          disabled={createState.isLoading || text.trim() === ""}
         >
           Create
         </Button>

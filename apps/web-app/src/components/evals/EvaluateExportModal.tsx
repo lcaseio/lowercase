@@ -22,7 +22,7 @@ import {
 } from "../ui/select";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useRequestEvalMutation } from "@/redux/api/evals-api";
-import { useUploadArtifactFileMutation } from "@/redux/api/artifacts-api";
+import { useCreateArtifactMutation } from "@/redux/api/artifacts-api";
 
 export type EvaluateExportTarget = {
   runId: string;
@@ -81,11 +81,11 @@ export function EvaluateExportModal({
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [error, setError] = useState<string>();
 
-  const [uploadArtifactFile, uploadState] = useUploadArtifactFileMutation();
+  const [createArtifact, createState] = useCreateArtifactMutation();
   const [requestEval, requestState] = useRequestEvalMutation();
 
   const selectedFlow = evalFlows.find((f) => f.flow.id === evalFlowId);
-  const isSubmitting = uploadState.isLoading || requestState.isLoading;
+  const isSubmitting = createState.isLoading || requestState.isLoading;
 
   const handleSubmit = async () => {
     setError(undefined);
@@ -94,12 +94,11 @@ export function EvaluateExportModal({
       return;
     }
 
-    const promptFile = new File([systemPrompt], "judge-system-prompt.md", {
-      type: "text/markdown",
-    });
-    const uploadResult = await uploadArtifactFile({
-      file: promptFile,
-      label: "judge system prompt",
+    const uploadResult = await createArtifact({
+      kind: "authored",
+      contentType: "text/markdown",
+      value: systemPrompt,
+      metadata: { label: "judge system prompt" },
     }).unwrap();
     if (!uploadResult.ok) {
       setError(uploadResult.error);

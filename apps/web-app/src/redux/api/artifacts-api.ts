@@ -1,15 +1,26 @@
 import type {
+  ArtifactUpdateMetadata,
   GetArtifactReq,
   GetArtifactRes,
   GetArtifactsReq,
   GetArtifactsRes,
+  JsonValue,
   PatchArtifactReq,
   PatchArtifactRes,
-  PostArtifactFileRes,
-  PostJsonArtifactReq,
-  PostJsonArtifactRes,
+  PostArtifactRes,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+// client-side calling convention, not a wire type -- the route branches on
+// Content-Type, so this just picks which encoding `query` produces
+type CreateArtifactArg =
+  | {
+      kind: "authored";
+      contentType: string;
+      value: JsonValue | string;
+      metadata?: ArtifactUpdateMetadata;
+    }
+  | { kind: "file"; file: File; metadata?: ArtifactUpdateMetadata };
 
 export const artifactsApi = createApi({
   reducerPath: "artifactsApi",
@@ -38,27 +49,25 @@ export const artifactsApi = createApi({
         method: "GET",
       }),
     }),
-    addJsonArtifact: builder.mutation<PostJsonArtifactRes, PostJsonArtifactReq>(
-      {
-        query: (arg) => ({
-          url: "artifacts/json",
-          method: "POST",
-          body: arg,
-          headers: { "Content-Type": "application/json" },
-        }),
-        invalidatesTags: ["Artifacts"],
-      },
-    ),
-    uploadArtifactFile: builder.mutation<
-      PostArtifactFileRes,
-      { file: File; label?: string }
-    >({
-      query: ({ file, label }) => {
+    createArtifact: builder.mutation<PostArtifactRes, CreateArtifactArg>({
+      query: (arg) => {
+        if (arg.kind === "authored") {
+          return {
+            url: "artifacts",
+            method: "POST",
+            body: {
+              contentType: arg.contentType,
+              value: arg.value,
+              metadata: arg.metadata,
+            },
+          };
+        }
         const formData = new FormData();
-        formData.append("file", file);
-        if (label) formData.append("label", label);
+        formData.append("file", arg.file);
+        if (arg.metadata)
+          formData.append("metadata", JSON.stringify(arg.metadata));
         return {
-          url: "artifacts/files",
+          url: "artifacts",
           method: "POST",
           body: formData,
         };
@@ -83,7 +92,6 @@ export const {
   useListArtifactsQuery,
   useGetArtifactQuery,
   useLazyGetArtifactQuery,
-  useAddJsonArtifactMutation,
-  useUploadArtifactFileMutation,
+  useCreateArtifactMutation,
   useUpdateArtifactMetadataMutation,
 } = artifactsApi;

@@ -61,6 +61,42 @@ describe("Artifacts write()", () => {
     );
   });
 
+  it("passes a caller-supplied contentType/filename straight through, not the format-derived default", async () => {
+    const store = mockStore();
+    const repository = mockRepository();
+    const artifacts = new Artifacts(store, repository);
+
+    await artifacts.write({
+      format: "markdown",
+      value: "# hi",
+      index: { contentType: "text/x-markdown", filename: "notes.md" },
+    });
+
+    expect(repository.writeArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentType: "text/x-markdown",
+        filename: "notes.md",
+      }),
+      undefined,
+    );
+  });
+
+  it("falls back to the format-derived default contentType, and undefined filename, when index is omitted", async () => {
+    const store = mockStore();
+    const repository = mockRepository();
+    const artifacts = new Artifacts(store, repository);
+
+    await artifacts.write({ format: "markdown", value: "# hi" });
+
+    expect(repository.writeArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentType: "text/markdown",
+        filename: undefined,
+      }),
+      undefined,
+    );
+  });
+
   it("returns ok with just the hash when no repository is configured", async () => {
     const store = mockStore();
     const artifacts = new Artifacts(store);
