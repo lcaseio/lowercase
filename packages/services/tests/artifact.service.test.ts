@@ -11,6 +11,7 @@ function makeArtifactService(options?: {
   flow?: FlowDefinition;
   artifact?: ArtifactIndex;
   updateMetadata?: ReturnType<typeof vi.fn>;
+  write?: ReturnType<typeof vi.fn>;
 }) {
   const flow =
     options?.flow ??
@@ -35,6 +36,9 @@ function makeArtifactService(options?: {
 
   const artifacts = {
     getJson: vi.fn().mockResolvedValue({ ok: true, value: flow }),
+    write:
+      options?.write ??
+      vi.fn().mockResolvedValue({ ok: true, value: "new-hash" }),
   } as unknown as ArtifactsPort;
 
   const artifactRepository = {
@@ -69,6 +73,97 @@ function makeArtifactService(options?: {
     flowRepository,
   };
 }
+
+describe("ArtifactService.createArtifact", () => {
+  it("forces curated: true even with no metadata at all", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    const result = await service.createArtifact({
+      format: "text",
+      value: "hello",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(artifacts.write).toHaveBeenCalledWith(
+      { format: "text", value: "hello" },
+      { curated: true },
+    );
+  });
+
+  it("forces curated: true even if metadata smuggles its own curated key at runtime", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    // ArtifactUpdateMetadata never declares `curated`, but metadata arrives
+    // over the wire as parsed JSON -- untyped at runtime -- so this proves
+    // a client-supplied curated:false can't survive the merge
+    await service.createArtifact(
+      { format: "text", value: "hello" },
+      { curated: false, label: "sneaky" } as never,
+    );
+
+    expect(artifacts.write).toHaveBeenCalledWith(
+      { format: "text", value: "hello" },
+      { curated: true, label: "sneaky" },
+    );
+  });
+
+  it("merges curated: true into caller-supplied metadata rather than replacing it", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    await service.createArtifact(
+      { format: "text", value: "hello" },
+      { flowVersionId: "version-1", paramCurations: ["weatherApiKey"] },
+    );
+
+    expect(artifacts.write).toHaveBeenCalledWith(
+      { format: "text", value: "hello" },
+      {
+        curated: true,
+        flowVersionId: "version-1",
+        paramCurations: ["weatherApiKey"],
+      },
+    );
+  });
+
+  it("rejects a param that isn't declared on the flow version's definition, without writing anything", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    const result = await service.createArtifact(
+      { format: "text", value: "hello" },
+      { flowVersionId: "version-1", paramCurations: ["undeclaredParam"] },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(artifacts.write).not.toHaveBeenCalled();
+  });
+
+  it("rejects a param whose declared type doesn't match the input's own format, without writing anything", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    const result = await service.createArtifact(
+      { format: "json", value: { hello: "world" } }, // incompatible with "text/plain"
+      { flowVersionId: "version-1", paramCurations: ["weatherApiKey"] },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(artifacts.write).not.toHaveBeenCalled();
+  });
+
+  it("never calls write when the flow version can't be found", async () => {
+    const { service, artifacts, flowRepository } = makeArtifactService();
+    (
+      flowRepository.getFlowVersion as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ ok: false, error: "not found" });
+
+    const result = await service.createArtifact(
+      { format: "text", value: "hello" },
+      { flowVersionId: "version-1", paramCurations: ["weatherApiKey"] },
+    );
+
+    expect(result.ok).toBe(false);
+    expect(artifacts.write).not.toHaveBeenCalled();
+  });
+});
 
 describe("ArtifactService.updateArtifactMetadata", () => {
   it("skips flow-version validation entirely when paramCurations is absent", async () => {

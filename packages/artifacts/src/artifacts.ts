@@ -91,8 +91,10 @@ export class Artifacts implements ArtifactsPort {
           hash,
           time: new Date().toISOString(),
           size: bytes.length,
-          contentType: this.defaultContentType(input.format),
+          contentType:
+            input.index?.contentType ?? this.defaultContentType(input.format),
           format: input.format,
+          filename: input.index?.filename,
         },
         metadata,
       );

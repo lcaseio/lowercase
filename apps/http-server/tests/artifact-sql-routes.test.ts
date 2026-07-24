@@ -14,8 +14,7 @@ import { PrismaClient } from "@lcase/db-prisma";
 import { ArtifactService } from "@lcase/services";
 import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
 import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
-import { postArtifactFileRoute } from "../src/routes/artifacts/post-artifact-file.js";
-import { putJsonArtifactRoute } from "../src/routes/artifacts/put-json-artifact.js";
+import { postArtifactRoute } from "../src/routes/artifacts/post-artifact.js";
 import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
 import type { FlowDefinition, JsonValue } from "@lcase/types";
 
@@ -99,18 +98,16 @@ describe("artifact sql routes", () => {
 
     await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
     await app.register(getArtifactRoute, { prefix: "/api/artifacts" });
-    await app.register(putJsonArtifactRoute, { prefix: "/api/artifacts" });
-    await app.register(postArtifactFileRoute, {
-      prefix: "/api/artifacts/files",
-    });
+    await app.register(postArtifactRoute, { prefix: "/api/artifacts" });
     await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
 
     const jsonResponse = await app.inject({
       method: "POST",
-      url: "/api/artifacts/json",
+      url: "/api/artifacts",
       payload: {
+        contentType: "application/json",
         value: { hello: "world" },
-        label: "Prompt",
+        metadata: { label: "Prompt" },
       },
     });
     expect(jsonResponse.statusCode).toBe(200);
@@ -133,7 +130,10 @@ describe("artifact sql routes", () => {
             format: "json",
           }),
           associations: expect.objectContaining({
-            curated: false,
+            // creation through the unified route always curates -- unlike
+            // the old JSON-only route, which called putArtifact() and never
+            // curated
+            curated: true,
             paramCurations: [],
           }),
         }),
@@ -153,9 +153,9 @@ describe("artifact sql routes", () => {
 
     const fileResponse = await app.inject({
       method: "POST",
-      url: "/api/artifacts/files",
+      url: "/api/artifacts",
       payload: makeMultipartBody("# prompt", "prompt.md", "text/markdown", {
-        label: "Markdown Prompt",
+        metadata: JSON.stringify({ label: "Markdown Prompt" }),
       }),
       headers: makeMultipartHeaders(),
     });
@@ -202,13 +202,14 @@ describe("artifact sql routes", () => {
 
     const app = Fastify();
     app.decorate("services", { artifact: artifactService });
-    await app.register(putJsonArtifactRoute, { prefix: "/api/artifacts" });
+    await app.register(import("@fastify/multipart"));
+    await app.register(postArtifactRoute, { prefix: "/api/artifacts" });
     await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
 
     const putResponse = await app.inject({
       method: "POST",
-      url: "/api/artifacts/json",
-      payload: { value: { hello: "world" } },
+      url: "/api/artifacts",
+      payload: { contentType: "application/json", value: { hello: "world" } },
     });
     const hash = (putResponse.json() as { value: string }).value;
 

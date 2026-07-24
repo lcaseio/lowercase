@@ -142,6 +142,10 @@ export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
   listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactListItem[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
+  createArtifact(
+    input: ArtifactPutInput,
+    metadata?: ArtifactUpdateMetadata,
+  ): Promise<Result<string, string>>;
   updateArtifactMetadata(
     hash: string,
     metadata: ArtifactUpdateMetadata,
