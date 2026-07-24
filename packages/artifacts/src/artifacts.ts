@@ -3,15 +3,16 @@ import type {
   ArtifactStorePort,
   AutoGetResult,
   GetError,
-  JsonValue,
   PutError,
 } from "@lcase/ports";
-import type { ArtifactIndexStorePort } from "@lcase/ports";
+import type { ArtifactRepositoryPort } from "@lcase/ports";
 import type {
   Result,
   ArtifactPutInput,
   ArtifactIndexInput,
   ArtifactFormat,
+  ArtifactWriteMetadata,
+  JsonValue,
 } from "@lcase/types";
 import { createHash } from "node:crypto";
 
@@ -27,7 +28,7 @@ export class Artifacts implements ArtifactsPort {
   decoder: TextDecoder;
   constructor(
     private readonly store: ArtifactStorePort,
-    private readonly indexStore?: ArtifactIndexStorePort,
+    private readonly repository?: ArtifactRepositoryPort,
   ) {
     this.encoder = new TextEncoder();
     this.decoder = new TextDecoder();
@@ -51,6 +52,72 @@ export class Artifacts implements ArtifactsPort {
         message: "Unsupported artifact format",
       },
     };
+  }
+
+  // additive insert path -- carries real ArtifactWriteMetadata through to
+  // the repository, unlike put()/putJson()/etc. above, which only ever map
+  // ArtifactIndexInput's `label` field into a curated:false write. Encodes
+  // by format itself rather than reusing putBytesInternal/putIndex below,
+  // since those are staying untouched (see docs/todo.md's ArtifactIndex
+  // naming-debt entry -- collapsing this redundancy is deliberately deferred)
+  async write(
+    input: ArtifactPutInput,
+    metadata?: ArtifactWriteMetadata,
+  ): Promise<Result<string, PutError>> {
+    try {
+      const bytes =
+        input.format === "json"
+          ? this.encoder.encode(JSON.stringify(this.sortJson(input.value)))
+          : input.format === "bytes"
+            ? input.value
+            : this.encoder.encode(input.value);
+      const hash = this.hashBytes(bytes);
+      const extension = artifactFileExtensions[input.format];
+      const storeResult = await this.store.putBytes(hash, bytes, extension);
+      if (!storeResult.ok) {
+        return {
+          ok: false,
+          error: {
+            code: "STORE_PUT_FAILED",
+            message: "Error putting bytes in store",
+            cause: storeResult.cause,
+          },
+        };
+      }
+      if (!this.repository) return { ok: true, value: hash };
+
+      const contentResult = await this.repository.writeArtifact(
+        {
+          hash,
+          time: new Date().toISOString(),
+          size: bytes.length,
+          contentType: this.defaultContentType(input.format),
+          format: input.format,
+        },
+        metadata,
+      );
+      if (!contentResult.ok) {
+        return {
+          ok: false,
+          error: {
+            code: "INDEX_PUT_FAILED",
+            message: "Error writing artifact",
+            cause: contentResult.error,
+            details: { hash },
+          },
+        };
+      }
+      return { ok: true, value: hash };
+    } catch (e) {
+      return {
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+          message: "Error writing artifact",
+          cause: e instanceof Error ? e.message : String(e),
+        },
+      };
+    }
   }
 
   async get(
@@ -86,7 +153,7 @@ export class Artifacts implements ArtifactsPort {
   }
 
   async getAuto(hash: string): Promise<AutoGetResult> {
-    const index = await this.indexStore?.get(hash);
+    const index = await this.repository?.getArtifact(hash);
     const format = this.inferFormat(index?.format, index?.contentType);
 
     switch (format) {
@@ -269,39 +336,52 @@ export class Artifacts implements ArtifactsPort {
     return { ok: true, value: bytes };
   }
 
+  private defaultContentType(format: ArtifactFormat): string {
+    return format === "json"
+      ? "application/json"
+      : format === "markdown"
+        ? "text/markdown"
+        : format === "text"
+          ? "text/plain"
+          : "application/octet-stream";
+  }
+
   private async putIndex(
     hash: string,
     index: ArtifactIndexInput | undefined,
     size: number,
     format: ArtifactFormat,
   ): Promise<Result<string, PutError>> {
-    if (!this.indexStore) return { ok: true, value: hash };
+    if (!this.repository) return { ok: true, value: hash };
 
-    const defaultContentType =
-      format === "json"
-        ? "application/json"
-        : format === "markdown"
-          ? "text/markdown"
-          : format === "text"
-            ? "text/plain"
-            : "application/octet-stream";
+    // the only relational-ish field ArtifactIndexInput ever carries; every
+    // other field maps straight across with the same override semantics
+    // this had before (index's value wins when present, else the computed
+    // default) -- see docs/todo.md's ArtifactIndex naming-debt entry for why
+    // this stays this narrow rather than accepting real ArtifactWriteMetadata
+    const metadata = index?.label
+      ? ({ curated: false, label: index.label } as const)
+      : undefined;
 
-    const indexResult = await this.indexStore.put({
-      time: index?.time ?? new Date().toISOString(),
-      size,
-      contentType: defaultContentType,
-      format,
-      ...(index ?? {}),
-      hash,
-    });
+    const writeResult = await this.repository.writeArtifact(
+      {
+        hash,
+        time: index?.time ?? new Date().toISOString(),
+        size: index?.size ?? size,
+        contentType: index?.contentType ?? this.defaultContentType(format),
+        format: index?.format ?? format,
+        filename: index?.filename,
+      },
+      metadata,
+    );
 
-    if (!indexResult.ok) {
+    if (!writeResult.ok) {
       return {
         ok: false,
         error: {
           code: "INDEX_PUT_FAILED",
           message: "Error putting artifact index",
-          cause: indexResult.error,
+          cause: writeResult.error,
           details: { hash },
         },
       };

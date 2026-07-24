@@ -1,6 +1,7 @@
 import type {
   ArtifactIndexInput,
   ArtifactPutInput,
+  ArtifactWriteMetadata,
   JsonValue,
   Result,
 } from "@lcase/types";
@@ -34,6 +35,13 @@ export type { ArtifactIndexInput, ArtifactPutInput, JsonValue };
 
 export interface ArtifactsPort {
   put(input: ArtifactPutInput): Promise<Result<string, PutError>>;
+  // additive insert path -- carries real ArtifactWriteMetadata through to
+  // the repository, unlike put()/putJson()/etc., which never touch
+  // relational fields beyond `label`
+  write(
+    input: ArtifactPutInput,
+    metadata?: ArtifactWriteMetadata,
+  ): Promise<Result<string, PutError>>;
 
   get(
     hash: string,

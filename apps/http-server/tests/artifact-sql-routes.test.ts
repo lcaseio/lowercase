@@ -17,7 +17,7 @@ import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
 import { postArtifactFileRoute } from "../src/routes/artifacts/post-artifact-file.js";
 import { putJsonArtifactRoute } from "../src/routes/artifacts/put-json-artifact.js";
 import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
-import type { FlowDefinition } from "@lcase/types";
+import type { FlowDefinition, JsonValue } from "@lcase/types";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../..");
@@ -221,7 +221,7 @@ describe("artifact sql routes", () => {
     expect(patchResponse.json()).toEqual({
       ok: true,
       // curated is set unconditionally by updateMetadata -- not because the
-      // payload asked for it, ArtifactMetadata has no `curated` field at all
+      // payload asked for it, ArtifactUpdateMetadata has no `curated` field at all
       value: expect.objectContaining({ hash, label: "renamed", curated: true }),
     });
 
@@ -260,7 +260,7 @@ describe("artifact sql routes", () => {
       data: { flowId: flow.id, sequence: 1, definitionHash: "h".repeat(64) },
     });
 
-    const curatedResult = await artifactRepository.saveArtifact({
+    const curatedResult = await artifactRepository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-01-01T00:00:00.000Z",
       format: "json",
@@ -270,7 +270,7 @@ describe("artifact sql routes", () => {
       flowId: flow.id,
       flowVersionId: flowVersion.id,
     });
-    await artifactRepository.saveArtifact({
+    await artifactRepository.writeArtifact({
       hash: "b".repeat(64),
       time: "2026-01-02T00:00:00.000Z",
       format: "json",
@@ -336,7 +336,7 @@ describe("artifact sql routes", () => {
       start: "fetch",
       steps: { fetch: { type: "httpjson", url: "https://example.com" } },
     };
-    const defResult = await artifacts.putJson(definition);
+    const defResult = await artifacts.putJson(definition as JsonValue);
     if (!defResult.ok) throw new Error("failed to store flow definition");
 
     const flow = await prisma.flow.create({ data: { name: "Weather Flow" } });
@@ -344,7 +344,7 @@ describe("artifact sql routes", () => {
       data: { flowId: flow.id, sequence: 1, definitionHash: defResult.value },
     });
 
-    await artifactRepository.saveArtifact({
+    await artifactRepository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-01-01T00:00:00.000Z",
       format: "text",

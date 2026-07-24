@@ -3,13 +3,12 @@ import type {
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
-  ArtifactMetadata,
+  ArtifactUpdateMetadata,
+  ArtifactWriteContent,
+  ArtifactWriteMetadata,
   Result,
 } from "@lcase/types";
-import type {
-  ArtifactIndexStorePort,
-  ArtifactRepositoryPort,
-} from "@lcase/ports";
+import type { ArtifactRepositoryPort } from "@lcase/ports";
 
 type PrismaArtifactRepositoryDb = Pick<
   PrismaClient,
@@ -85,21 +84,16 @@ function toArtifactListItem(row: {
   };
 }
 
-export class PrismaArtifactRepository
-  implements ArtifactRepositoryPort, ArtifactIndexStorePort
-{
+export class PrismaArtifactRepository implements ArtifactRepositoryPort {
   constructor(private readonly db: PrismaArtifactRepositoryDb) {}
 
-  async init(): Promise<void> {}
-
-  async saveArtifact(
-    index: ArtifactIndex,
-  ): Promise<Result<ArtifactIndex, string>> {
-    return this.put(index);
-  }
-
   async getArtifact(hash: string): Promise<ArtifactIndex | undefined> {
-    return this.get(hash);
+    try {
+      const artifact = await this.db.artifact.findUnique({ where: { hash } });
+      return artifact ? toArtifactIndex(artifact) : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   async getArtifacts(hashes: string[]): Promise<ArtifactIndex[]> {
@@ -111,7 +105,11 @@ export class PrismaArtifactRepository
   }
 
   async listArtifactHashes(): Promise<string[]> {
-    return this.getIndexList();
+    const artifacts = await this.db.artifact.findMany({
+      orderBy: [{ time: "desc" }, { hash: "desc" }],
+      select: { hash: true },
+    });
+    return artifacts.map((artifact) => artifact.hash);
   }
 
   async listArtifacts(
@@ -129,46 +127,92 @@ export class PrismaArtifactRepository
     return rows.map(toArtifactListItem);
   }
 
-  async put(index: ArtifactIndex): Promise<Result<ArtifactIndex, string>> {
+  /**
+   * insert/upsert path -- content-put (worker/system, metadata omitted) and
+   * a future user-creation flow (real ArtifactWriteMetadata) both funnel
+   * through here. When metadata is omitted, the create/update payload simply
+   * has no label/flowId/flowVersionId/curated keys -- Prisma treats a
+   * missing key the same as undefined (skip on update, schema-default of
+   * curated:false on create), which is what guarantees a worker re-putting
+   * byte-identical content can never touch an existing curation.
+   *
+   * Uses one upsert() with paramCurations expressed as a Prisma nested write
+   * (deleteMany + createMany on the relation) rather than a separate
+   * $transaction -- Prisma wraps nested writes in their own implicit
+   * transaction, and nested writes are Prisma's own documented default for
+   * "atomically write a parent plus related rows," not something to reach
+   * past. Deliberately keeps Prisma's nested-write vocabulary
+   * (deleteMany/createMany) written inline at this call only -- curationRows
+   * below stays plain data, never itself shaped like a Prisma instruction.
+   */
+  async writeArtifact(
+    content: ArtifactWriteContent,
+    metadata?: ArtifactWriteMetadata,
+  ): Promise<Result<ArtifactIndex, string>> {
     try {
-      const saved = await this.db.artifact.upsert({
-        where: { hash: index.hash },
-        update: {
-          time: new Date(index.time),
-          label: index.label,
-          filename: index.filename,
-          contentType: index.contentType,
-          size: index.size,
-          format: index.format,
-          flowId: index.flowId,
-          flowVersionId: index.flowVersionId,
-          curated: index.curated,
-        },
+      const bareData = {
+        time: content.time ? new Date(content.time) : new Date(),
+        size: content.size,
+        contentType: content.contentType,
+        format: content.format,
+        filename: content.filename,
+      };
+      const metadataData = metadata
+        ? {
+            label: metadata.label,
+            flowId: metadata.flowId,
+            flowVersionId: metadata.flowVersionId,
+            curated: metadata.curated,
+          }
+        : {};
+
+      let curationFlowVersionId: string | undefined;
+      let curationRows:
+        { flowVersionId: string; paramName: string }[] | undefined;
+      if (metadata?.curated && metadata.paramCurations) {
+        const flowVersionId = metadata.flowVersionId;
+        curationFlowVersionId = flowVersionId;
+        curationRows = metadata.paramCurations.map((paramName) => ({
+          flowVersionId,
+          paramName,
+        }));
+      }
+
+      const artifact = await this.db.artifact.upsert({
+        where: { hash: content.hash },
         create: {
-          hash: index.hash,
-          time: new Date(index.time),
-          label: index.label,
-          filename: index.filename,
-          contentType: index.contentType,
-          size: index.size,
-          format: index.format,
-          flowId: index.flowId,
-          flowVersionId: index.flowVersionId,
-          curated: index.curated,
+          hash: content.hash,
+          ...bareData,
+          ...metadataData,
+          ...(curationRows
+            ? { paramCurations: { createMany: { data: curationRows } } }
+            : {}),
+        },
+        update: {
+          ...bareData,
+          ...metadataData,
+          ...(curationRows
+            ? {
+                paramCurations: {
+                  deleteMany: { flowVersionId: curationFlowVersionId },
+                  createMany: { data: curationRows },
+                },
+              }
+            : {}),
         },
       });
-      return { ok: true, value: toArtifactIndex(saved) };
+      return { ok: true, value: toArtifactIndex(artifact) };
     } catch (error) {
       return {
         ok: false,
-        error: `Unable to save artifact metadata: ${String(error)}`,
+        error: `Unable to write artifact: ${String(error)}`,
       };
     }
   }
 
   async updateMetadata(
     hash: string,
-    metadata: ArtifactMetadata,
+    metadata: ArtifactUpdateMetadata,
   ): Promise<Result<ArtifactIndex, string>> {
     try {
       const data = {
@@ -221,29 +265,5 @@ export class PrismaArtifactRepository
       where: { flowVersionId, paramName },
     });
     return this.getArtifacts(entries.map((entry) => entry.artifactHash));
-  }
-
-  async get(hash: string): Promise<ArtifactIndex | undefined> {
-    try {
-      const artifact = await this.db.artifact.findUnique({ where: { hash } });
-      return artifact ? toArtifactIndex(artifact) : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async getIndexList(): Promise<string[]> {
-    const artifacts = await this.db.artifact.findMany({
-      orderBy: [{ time: "desc" }, { hash: "desc" }],
-      select: { hash: true },
-    });
-    return artifacts.map((artifact) => artifact.hash);
-  }
-
-  async getAll(): Promise<ArtifactIndex[]> {
-    const artifacts = await this.db.artifact.findMany({
-      orderBy: [{ time: "desc" }, { hash: "desc" }],
-    });
-    return artifacts.map(toArtifactIndex);
   }
 }

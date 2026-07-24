@@ -1,7 +1,8 @@
 // undefined/omitted means "leave unchanged"; null means "explicitly clear"
 // (curated has no field here -- the repository sets it unconditionally on
 // every write, it's never a caller concern)
-export type ArtifactMetadata =
+// the union enforces flowVersionId to be present if paramsCurations are defined
+export type ArtifactUpdateMetadata =
   | {
       label?: string | null;
       flowId?: string | null;
