@@ -61,15 +61,17 @@ describe("PrismaArtifactRepository", () => {
   });
 
   it("saves and reads artifact metadata by hash", async () => {
-    const result = await repository.saveArtifact({
-      hash: "a".repeat(64),
-      time: "2026-06-30T00:00:00.000Z",
-      label: "Prompt",
-      filename: "prompt.md",
-      contentType: "text/markdown",
-      size: 42,
-      format: "markdown",
-    });
+    const result = await repository.writeArtifact(
+      {
+        hash: "a".repeat(64),
+        time: "2026-06-30T00:00:00.000Z",
+        filename: "prompt.md",
+        contentType: "text/markdown",
+        size: 42,
+        format: "markdown",
+      },
+      { curated: false, label: "Prompt" },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -78,17 +80,17 @@ describe("PrismaArtifactRepository", () => {
     expect(artifact).toEqual(result.value);
   });
 
-  it("put() called again on the same hash does not clear an existing flowId/flowVersionId association", async () => {
+  it("writeArtifact called again on the same hash with no metadata does not clear an existing flowId/flowVersionId association", async () => {
     // simulates the exact real-world case: a run later produces byte-
-    // identical content to something already curated -- the worker's put()
-    // call has no way to reach flowId/flowVersionId at all (excluded from
-    // ArtifactIndexInput), so this must be a true no-op on those columns
+    // identical content to something already curated -- the worker's
+    // writeArtifact call omits metadata entirely, so this must be a true
+    // no-op on those columns
     const flow = await prisma.flow.create({ data: { name: "Test Flow" } });
     const flowVersion = await prisma.flowVersion.create({
       data: { flowId: flow.id, sequence: 1, definitionHash: "h".repeat(64) },
     });
 
-    await repository.saveArtifact({
+    await repository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-06-30T00:00:00.000Z",
       format: "json",
@@ -98,7 +100,7 @@ describe("PrismaArtifactRepository", () => {
       flowVersionId: flowVersion.id,
     });
 
-    const result = await repository.saveArtifact({
+    const result = await repository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-07-01T00:00:00.000Z",
       format: "json",
@@ -111,12 +113,12 @@ describe("PrismaArtifactRepository", () => {
   });
 
   it("lists artifact metadata newest first", async () => {
-    await repository.saveArtifact({
+    await repository.writeArtifact({
       hash: "a".repeat(64),
       time: "2025-01-01T00:00:00.000Z",
       format: "json",
     });
-    await repository.saveArtifact({
+    await repository.writeArtifact({
       hash: "b".repeat(64),
       time: "2026-01-01T00:00:00.000Z",
       format: "text",
@@ -131,12 +133,12 @@ describe("PrismaArtifactRepository", () => {
 
   describe("listArtifacts filter", () => {
     it("with no filter, returns everything (unchanged behavior)", async () => {
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "b".repeat(64),
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
@@ -148,12 +150,12 @@ describe("PrismaArtifactRepository", () => {
 
     it("filters by curated", async () => {
       const { flow, flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "b".repeat(64),
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
@@ -181,12 +183,12 @@ describe("PrismaArtifactRepository", () => {
       const otherFlow = await prisma.flow.create({
         data: { name: "Other Flow" },
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "b".repeat(64),
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
@@ -222,12 +224,12 @@ describe("PrismaArtifactRepository", () => {
 
     it("includes paramCurations when scoped by flowVersionId, empty for uncurated artifacts", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "b".repeat(64),
         time: "2026-01-01T00:00:00.000Z",
         format: "json",
@@ -266,7 +268,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("leaves paramCurations empty for every item when no flowVersionId filter is given, even if curations exist", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2025-01-01T00:00:00.000Z",
         format: "json",
@@ -284,12 +286,12 @@ describe("PrismaArtifactRepository", () => {
   });
 
   it("lists artifact hashes newest first", async () => {
-    await repository.saveArtifact({
+    await repository.writeArtifact({
       hash: "a".repeat(64),
       time: "2025-01-01T00:00:00.000Z",
       format: "json",
     });
-    await repository.saveArtifact({
+    await repository.writeArtifact({
       hash: "c".repeat(64),
       time: "2027-01-01T00:00:00.000Z",
       format: "bytes",
@@ -309,14 +311,75 @@ describe("PrismaArtifactRepository", () => {
     return { flow, flowVersion };
   }
 
+  describe("writeArtifact with real metadata (the new insert-with-metadata capability)", () => {
+    it("curated: false with a label sets the label but leaves curated false", async () => {
+      const result = await repository.writeArtifact(
+        {
+          hash: "a".repeat(64),
+          time: "2026-06-30T00:00:00.000Z",
+          format: "json",
+        },
+        { curated: false, label: "system label" },
+      );
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(result.value.label).toBe("system label");
+      expect(result.value.curated).toBe(false);
+    });
+
+    it("curated: true with no paramCurations sets curated on insert directly", async () => {
+      const { flow, flowVersion } = await createFlowAndVersion();
+      const result = await repository.writeArtifact(
+        {
+          hash: "a".repeat(64),
+          time: "2026-06-30T00:00:00.000Z",
+          format: "json",
+        },
+        { curated: true, flowId: flow.id, flowVersionId: flowVersion.id },
+      );
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(result.value.curated).toBe(true);
+      expect(result.value.flowId).toBe(flow.id);
+      expect(result.value.flowVersionId).toBe(flowVersion.id);
+    });
+
+    it("curated: true with paramCurations inserts the artifact and curates it for a param in one call", async () => {
+      const { flowVersion } = await createFlowAndVersion();
+      const result = await repository.writeArtifact(
+        {
+          hash: "a".repeat(64),
+          time: "2026-06-30T00:00:00.000Z",
+          format: "json",
+        },
+        {
+          curated: true,
+          flowVersionId: flowVersion.id,
+          paramCurations: ["weatherApiKey"],
+        },
+      );
+      expect(result.ok).toBe(true);
+
+      const curated = await repository.listCuratedArtifacts(
+        flowVersion.id,
+        "weatherApiKey",
+      );
+      expect(curated.map((artifact) => artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
+    });
+  });
+
   describe("updateMetadata", () => {
     it("an empty object leaves label/flowId/flowVersionId unchanged, but still marks the artifact curated", async () => {
-      await repository.saveArtifact({
-        hash: "a".repeat(64),
-        time: "2026-06-30T00:00:00.000Z",
-        label: "original",
-        format: "json",
-      });
+      await repository.writeArtifact(
+        {
+          hash: "a".repeat(64),
+          time: "2026-06-30T00:00:00.000Z",
+          format: "json",
+        },
+        { curated: false, label: "original" },
+      );
 
       const result = await repository.updateMetadata("a".repeat(64), {});
 
@@ -330,7 +393,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("sets flowId and flowVersionId on an existing artifact", async () => {
       const { flow, flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -349,7 +412,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("leaves omitted fields unchanged, and clears a field set to null", async () => {
       const { flow, flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -377,7 +440,7 @@ describe("PrismaArtifactRepository", () => {
     });
 
     it("new artifacts default to curated: false", async () => {
-      const saveResult = await repository.saveArtifact({
+      const saveResult = await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -388,7 +451,7 @@ describe("PrismaArtifactRepository", () => {
     });
 
     it("always sets curated to true, regardless of what's passed, and it can never be set back to false", async () => {
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -400,23 +463,22 @@ describe("PrismaArtifactRepository", () => {
       expect(result.ok).toBe(true);
       if (result.ok) expect(result.value.curated).toBe(true);
 
-      // ArtifactMetadata has no `curated` field at all -- there is no way to
+      // ArtifactUpdateMetadata has no `curated` field at all -- there is no way to
       // pass anything that would set it back to false through this method
     });
 
-    it("put() called again on the same hash does not clear an existing curated flag", async () => {
-      // mirrors the flowId/flowVersionId case above -- the worker's put()
-      // path has no way to reach curated at all (excluded from
-      // ArtifactIndexInput), so a run later producing byte-identical
-      // content must not be able to un-curate it
-      await repository.saveArtifact({
+    it("writeArtifact called again on the same hash with no metadata does not clear an existing curated flag", async () => {
+      // mirrors the flowId/flowVersionId case above -- the worker's
+      // writeArtifact call omits metadata entirely, so a run later
+      // producing byte-identical content must not be able to un-curate it
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
       await repository.updateMetadata("a".repeat(64), {});
 
-      const result = await repository.saveArtifact({
+      const result = await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-07-01T00:00:00.000Z",
         format: "json",
@@ -429,7 +491,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("curates an artifact for a param, then lists it", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -452,7 +514,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("re-sending the same paramCurations is idempotent", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -477,7 +539,7 @@ describe("PrismaArtifactRepository", () => {
 
     it("an empty paramCurations array removes all curations for that flow version", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
@@ -502,12 +564,12 @@ describe("PrismaArtifactRepository", () => {
 
     it("scopes curated artifacts by paramName within the same flow version", async () => {
       const { flowVersion } = await createFlowAndVersion();
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "a".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",
       });
-      await repository.saveArtifact({
+      await repository.writeArtifact({
         hash: "b".repeat(64),
         time: "2026-06-30T00:00:00.000Z",
         format: "json",

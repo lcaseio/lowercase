@@ -120,7 +120,7 @@ describe("GET .../curated-artifacts", () => {
       },
     });
 
-    await artifactRepository.saveArtifact({
+    await artifactRepository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-01-01T00:00:00.000Z",
       format: "text",

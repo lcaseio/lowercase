@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
-import type { ArtifactMetadata, FlowParamDefinition } from "@lcase/types";
+import type { ArtifactUpdateMetadata, FlowParamDefinition } from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import {
   artifactsApi,
@@ -109,7 +109,7 @@ export function FlowVersionArtifactMetadataPanel({
   async function handleSave() {
     if (!draft || !flowVersionId || !selectedHash) return;
     setSaveError(null);
-    const metadata: ArtifactMetadata = {
+    const metadata: ArtifactUpdateMetadata = {
       label: draft.label.trim() ? draft.label.trim() : null,
       flowId: draft.share ? flowId : null,
       flowVersionId,

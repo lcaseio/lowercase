@@ -10,7 +10,7 @@ import type {
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
-  ArtifactMetadata,
+  ArtifactUpdateMetadata,
   FlowDefinition,
   Result,
 } from "@lcase/types";
@@ -45,7 +45,7 @@ export class ArtifactService implements ArtifactServicePort {
 
   async updateArtifactMetadata(
     hash: string,
-    metadata: ArtifactMetadata,
+    metadata: ArtifactUpdateMetadata,
   ): Promise<Result<ArtifactIndex, string>> {
     if (metadata.paramCurations) {
       const versionResult = await this.flowRepository.getFlowVersion(

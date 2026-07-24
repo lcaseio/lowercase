@@ -2,7 +2,7 @@ import type {
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
-  ArtifactMetadata,
+  ArtifactUpdateMetadata,
   ArtifactPutInput,
   AnyEvent,
   CreateSimRecordInput,
@@ -144,7 +144,7 @@ export interface ArtifactServicePort {
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
   updateArtifactMetadata(
     hash: string,
-    metadata: ArtifactMetadata,
+    metadata: ArtifactUpdateMetadata,
   ): Promise<Result<ArtifactIndex, string>>;
   listCuratedArtifacts(
     flowVersionId: string,

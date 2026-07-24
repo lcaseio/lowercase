@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InMemoryStreamCore } from "../../src/stream/internal/inmemory.stream-core";
+import { InMemoryStreamCore } from "../../src/stream/internal/inmemory.stream-core.js";
 import type { InputChunk } from "@lcase/ports";
 
 describe("in-memory stream core", () => {
