@@ -84,12 +84,10 @@ export const postArtifactRoute = async (app: FastifyInstance) => {
     const body = req.body as PostArtifactReq;
     const format = detectAuthoredFormat(body.contentType);
     if (!format) {
-      return reply
-        .code(400)
-        .send({
-          ok: false,
-          error: `Unsupported content type: ${body.contentType}`,
-        });
+      return reply.code(400).send({
+        ok: false,
+        error: `Unsupported content type: ${body.contentType}`,
+      });
     }
 
     const putInput: ArtifactPutInput =
