@@ -1,4 +1,5 @@
 import type { JsonValue } from "../../json-value.js";
+import type { ArtifactIndex } from "../../artifacts/artifact-index.js";
 import type { ArtifactUpdateMetadata } from "../../artifacts/artifact-update-metadata.js";
 import type { Result } from "../../result.type.js";
 
@@ -10,4 +11,4 @@ export type PostArtifactReq = {
   metadata?: ArtifactUpdateMetadata;
 };
 
-export type PostArtifactRes = Result<string, string>;
+export type PostArtifactRes = Result<ArtifactIndex, string>;

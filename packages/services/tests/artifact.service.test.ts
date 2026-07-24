@@ -38,7 +38,14 @@ function makeArtifactService(options?: {
     getJson: vi.fn().mockResolvedValue({ ok: true, value: flow }),
     write:
       options?.write ??
-      vi.fn().mockResolvedValue({ ok: true, value: "new-hash" }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        value: {
+          hash: "new-hash",
+          time: new Date().toISOString(),
+          curated: true,
+        },
+      }),
   } as unknown as ArtifactsPort;
 
   const artifactRepository = {
@@ -75,6 +82,18 @@ function makeArtifactService(options?: {
 }
 
 describe("ArtifactService.createArtifact", () => {
+  it("temporarily rejects format: bytes, without writing anything", async () => {
+    const { service, artifacts } = makeArtifactService();
+
+    const result = await service.createArtifact({
+      format: "bytes",
+      value: new Uint8Array([1, 2, 3]),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(artifacts.write).not.toHaveBeenCalled();
+  });
+
   it("forces curated: true even with no metadata at all", async () => {
     const { service, artifacts } = makeArtifactService();
 

@@ -117,7 +117,7 @@ export function EvaluateExportModal({
       evalFlowId: selectedFlow.flow.id,
       evalFlowVersionId: selectedFlow.latestVersion.id,
       evalFlowDefHash: selectedFlow.latestVersion.definitionHash,
-      judgeSystemPromptHash: uploadResult.value,
+      judgeSystemPromptHash: uploadResult.value.hash,
       ...(experimentId ? { experimentId } : {}),
     }).unwrap();
 

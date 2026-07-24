@@ -9,10 +9,13 @@ import {
   enterFlowVersionArtifactsScope,
   selectArtifact,
   selectFlowVersionArtifactsState,
+  startAuthoringArtifact,
 } from "@/redux/slices/flow-version-artifacts-slice";
 import { FlowVersionArtifactsList } from "@/components/flow-version/FlowVersionArtifactsList";
 import { FlowVersionArtifactContentPanel } from "@/components/flow-version/FlowVersionArtifactContentPanel";
 import { FlowVersionArtifactMetadataPanel } from "@/components/flow-version/FlowVersionArtifactMetadataPanel";
+import { FlowVersionArtifactUploadPanel } from "@/components/flow-version/FlowVersionArtifactUploadPanel";
+import { FlowVersionArtifactAuthoringMetadataPanel } from "@/components/flow-version/FlowVersionArtifactAuthoringMetadataPanel";
 import {
   Dialog,
   DialogContent,
@@ -26,8 +29,9 @@ import { useFlowVersionOutletContext } from "./context";
 
 // artifacts mode page for the flow workspace version -- browse this flow
 // version's curated artifacts on the left, view content in the middle, and
-// full metadata/associations on the right (editable, PR 5). No creation flow
-// yet (a later PR).
+// full metadata/associations on the right (editable, PR 5). "Add File"
+// (PR 6c) swaps the middle/right panels into an authoring flow in place --
+// no modal, no tabs, driven by flowVersionArtifactsState.mode.
 export function FlowVersionArtifacts() {
   const { flowId, flowVersionId, flowDef } = useFlowVersionOutletContext();
   const dispatch = useAppDispatch();
@@ -56,35 +60,56 @@ export function FlowVersionArtifacts() {
             // re-clicking the artifact you're already viewing isn't a
             // navigation -- nothing to guard
             if (hash === artifactsState.selectedArtifactHash) return;
-            if (artifactsState.isEditing) {
+            if (
+              artifactsState.isEditing ||
+              artifactsState.mode === "authoring"
+            ) {
               setShowGuardModal(true);
               return;
             }
             dispatch(selectArtifact(hash));
           }}
+          onAddFile={() => dispatch(startAuthoringArtifact())}
+          addFileDisabled={
+            artifactsState.isEditing || artifactsState.mode === "authoring"
+          }
         />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="45%" style={{ overflow: "hidden" }}>
-        <FlowVersionArtifactContentPanel
-          hash={artifactsState.selectedArtifactHash}
-        />
+        {artifactsState.mode === "authoring" ? (
+          <FlowVersionArtifactUploadPanel
+            flowId={flowId}
+            flowVersionId={flowVersionId}
+          />
+        ) : (
+          <FlowVersionArtifactContentPanel
+            hash={artifactsState.selectedArtifactHash}
+          />
+        )}
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" className="dark:bg-neutral-800">
-        <FlowVersionArtifactMetadataPanel
-          flowId={flowId}
-          flowVersionId={flowVersionId}
-          selectedHash={artifactsState.selectedArtifactHash}
-          params={flowDef?.params}
-        />
+        {artifactsState.mode === "authoring" ? (
+          <FlowVersionArtifactAuthoringMetadataPanel
+            flowVersionId={flowVersionId}
+            params={flowDef?.params}
+          />
+        ) : (
+          <FlowVersionArtifactMetadataPanel
+            flowId={flowId}
+            flowVersionId={flowVersionId}
+            selectedHash={artifactsState.selectedArtifactHash}
+            params={flowDef?.params}
+          />
+        )}
       </ResizablePanel>
       <Dialog open={showGuardModal} onOpenChange={setShowGuardModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Unsaved changes</DialogTitle>
             <DialogDescription>
-              Save or discard metadata changes before viewing another artifact.
+              Save or discard your changes before viewing another artifact.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

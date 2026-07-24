@@ -2,6 +2,7 @@ import { useState } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import type { ArtifactUpdateMetadata, FlowParamDefinition } from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
+import { formatBytes } from "@/lib/format-bytes";
 import {
   artifactsApi,
   useListArtifactsQuery,
@@ -44,7 +45,7 @@ export function FlowVersionArtifactMetadataPanel({
   params,
 }: Props) {
   const dispatch = useAppDispatch();
-  const { draft, isEditing } = useAppSelector((s) =>
+  const { draft, isEditing, mode } = useAppSelector((s) =>
     selectFlowVersionArtifactsState(s, flowVersionId),
   );
   const [updateMetadata, { isLoading: isSaving }] =
@@ -175,7 +176,7 @@ export function FlowVersionArtifactMetadataPanel({
         <IdentityField
           label="Size"
           value={
-            artifact.size !== undefined ? `${artifact.size} bytes` : undefined
+            artifact.size !== undefined ? formatBytes(artifact.size) : undefined
           }
         />
         <IdentityField label="Format" value={artifact.format} />
@@ -237,6 +238,7 @@ export function FlowVersionArtifactMetadataPanel({
           <Button
             type="button"
             onClick={handleEdit}
+            disabled={mode === "authoring"}
             className="cursor-pointer  text-neutral-900  bg-sky-300 hover:bg-sky-200 dark:bg-sky-800 dark:hover:bg-sky-600  dark:text-neutral-50"
           >
             Edit

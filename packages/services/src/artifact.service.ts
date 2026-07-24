@@ -47,8 +47,17 @@ export class ArtifactService implements ArtifactServicePort {
   async createArtifact(
     input: ArtifactPutInput,
     metadata?: ArtifactUpdateMetadata,
-  ): Promise<Result<string, string>> {
+  ): Promise<Result<ArtifactIndex, string>> {
     if (input.value === undefined) return { ok: false, error: "undefined" };
+    // temporary -- binary artifacts have no content viewer and can never
+    // satisfy any param's compatible type (isArtifactCompatible has no
+    // "bytes" case), so creation rejects them for now rather than
+    // producing an artifact the rest of the system can't do anything
+    // useful with yet. Revisit once binary is actually supported end to
+    // end (see docs/todo.md).
+    if (input.format === "bytes") {
+      return { ok: false, error: "Binary artifacts are not supported yet" };
+    }
 
     if (metadata?.paramCurations) {
       const versionResult = await this.flowRepository.getFlowVersion(
