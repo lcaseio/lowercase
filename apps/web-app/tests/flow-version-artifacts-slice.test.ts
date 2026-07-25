@@ -8,6 +8,8 @@ import {
   flowVersionArtifactsSlice,
   selectArtifact,
   selectFlowVersionArtifactsState,
+  setAuthoringContent,
+  setAuthoringContentType,
   setAuthoringFile,
   setAuthoringShare,
   setDraftShare,
@@ -234,14 +236,28 @@ describe("flowVersionArtifactsSlice", () => {
     expect(switched.isEditing).toBe(false);
   });
 
-  it("startAuthoringArtifact enters authoring mode with a fresh draft", () => {
-    const state = reducer(undefined, startAuthoringArtifact());
+  it("startAuthoringArtifact('file') enters authoring mode with a fresh file-kind draft", () => {
+    const state = reducer(undefined, startAuthoringArtifact("file"));
     expect(state.mode).toBe("authoring");
     expect(state.authoringDraft).toEqual({
+      kind: "file",
       label: "",
       share: false,
       curatedParamNames: [],
       file: null,
+    });
+  });
+
+  it("startAuthoringArtifact('text') enters authoring mode with a fresh text-kind draft", () => {
+    const state = reducer(undefined, startAuthoringArtifact("text"));
+    expect(state.mode).toBe("authoring");
+    expect(state.authoringDraft).toEqual({
+      kind: "text",
+      label: "",
+      share: false,
+      curatedParamNames: [],
+      content: "",
+      contentType: "application/json",
     });
   });
 
@@ -254,13 +270,13 @@ describe("flowVersionArtifactsSlice", () => {
         curatedParamNames: [],
       }),
     );
-    const state = reducer(editing, startAuthoringArtifact());
+    const state = reducer(editing, startAuthoringArtifact("file"));
     expect(state.mode).toBe("browsing");
     expect(state.authoringDraft).toBeNull();
   });
 
   it("startEditingArtifactMetadata is a no-op while authoring", () => {
-    const authoring = reducer(undefined, startAuthoringArtifact());
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
     const state = reducer(
       authoring,
       startEditingArtifactMetadata({
@@ -275,7 +291,7 @@ describe("flowVersionArtifactsSlice", () => {
   });
 
   it("cancelAuthoringArtifact and artifactAuthored both return to browsing with no draft", () => {
-    const authoring = reducer(undefined, startAuthoringArtifact());
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
 
     const cancelled = reducer(authoring, cancelAuthoringArtifact());
     expect(cancelled.mode).toBe("browsing");
@@ -287,7 +303,7 @@ describe("flowVersionArtifactsSlice", () => {
   });
 
   it("updateAuthoringLabel, setAuthoringShare, and toggleAuthoringParam update the authoring draft in place", () => {
-    const authoring = reducer(undefined, startAuthoringArtifact());
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
 
     const labeled = reducer(authoring, updateAuthoringLabel("new label"));
     expect(labeled.authoringDraft?.label).toBe("new label");
@@ -314,7 +330,7 @@ describe("flowVersionArtifactsSlice", () => {
   });
 
   it("setAuthoringFile sets the file breadcrumb and always clears curatedParamNames", () => {
-    const authoring = reducer(undefined, startAuthoringArtifact());
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
     const withParam = reducer(
       authoring,
       toggleAuthoringParam({ paramName: "input", checked: true }),
@@ -327,14 +343,16 @@ describe("flowVersionArtifactsSlice", () => {
         name: "notes.md",
         size: 42,
         contentType: "text/markdown",
-        format: "markdown",
       }),
     );
-    expect(withFile.authoringDraft?.file).toEqual({
+    expect(
+      withFile.authoringDraft?.kind === "file"
+        ? withFile.authoringDraft.file
+        : undefined,
+    ).toEqual({
       name: "notes.md",
       size: 42,
       contentType: "text/markdown",
-      format: "markdown",
     });
     expect(withFile.authoringDraft?.curatedParamNames).toEqual([]);
 
@@ -347,18 +365,77 @@ describe("flowVersionArtifactsSlice", () => {
         name: "other.json",
         size: 1,
         contentType: "application/json",
-        format: "json",
       }),
     );
     expect(rePicked.authoringDraft?.curatedParamNames).toEqual([]);
 
     const cleared = reducer(rePicked, setAuthoringFile(null));
-    expect(cleared.authoringDraft?.file).toBeNull();
+    expect(
+      cleared.authoringDraft?.kind === "file"
+        ? cleared.authoringDraft.file
+        : undefined,
+    ).toBeNull();
     expect(cleared.authoringDraft?.curatedParamNames).toEqual([]);
   });
 
+  it("setAuthoringFile is a no-op against a text-kind draft", () => {
+    const authoring = reducer(undefined, startAuthoringArtifact("text"));
+    const state = reducer(
+      authoring,
+      setAuthoringFile({
+        name: "notes.md",
+        size: 42,
+        contentType: "text/markdown",
+      }),
+    );
+    expect(state.authoringDraft).toEqual({
+      kind: "text",
+      label: "",
+      share: false,
+      curatedParamNames: [],
+      content: "",
+      contentType: "application/json",
+    });
+  });
+
+  it("setAuthoringContent and setAuthoringContentType update the text-kind draft in place", () => {
+    const authoring = reducer(undefined, startAuthoringArtifact("text"));
+
+    const withContent = reducer(authoring, setAuthoringContent("# hello"));
+    expect(
+      withContent.authoringDraft?.kind === "text"
+        ? withContent.authoringDraft.content
+        : undefined,
+    ).toBe("# hello");
+
+    const withContentType = reducer(
+      withContent,
+      setAuthoringContentType("text/markdown"),
+    );
+    expect(
+      withContentType.authoringDraft?.kind === "text"
+        ? withContentType.authoringDraft.contentType
+        : undefined,
+    ).toBe("text/markdown");
+  });
+
+  it("setAuthoringContent and setAuthoringContentType are no-ops against a file-kind draft", () => {
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
+    const state = reducer(
+      reducer(authoring, setAuthoringContent("ignored")),
+      setAuthoringContentType("text/plain"),
+    );
+    expect(state.authoringDraft).toEqual({
+      kind: "file",
+      label: "",
+      share: false,
+      curatedParamNames: [],
+      file: null,
+    });
+  });
+
   it("selectArtifact resets authoring mode/draft too", () => {
-    const authoring = reducer(undefined, startAuthoringArtifact());
+    const authoring = reducer(undefined, startAuthoringArtifact("file"));
     const switched = reducer(authoring, selectArtifact("b".repeat(64)));
     expect(switched.mode).toBe("browsing");
     expect(switched.authoringDraft).toBeNull();

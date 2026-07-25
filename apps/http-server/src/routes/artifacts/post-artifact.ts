@@ -90,18 +90,28 @@ export const postArtifactRoute = async (app: FastifyInstance) => {
       });
     }
 
-    const putInput: ArtifactPutInput =
-      format === "json"
-        ? {
-            format: "json",
-            value: body.value as JsonValue,
-            index: { contentType: body.contentType },
-          }
-        : {
-            format,
-            value: body.value as string,
-            index: { contentType: body.contentType },
-          };
+    let putInput: ArtifactPutInput;
+    if (format === "json") {
+      let value: JsonValue;
+      try {
+        value = JSON.parse(body.value) as JsonValue;
+      } catch {
+        return reply
+          .code(400)
+          .send({ ok: false, error: "Invalid JSON content" });
+      }
+      putInput = {
+        format: "json",
+        value,
+        index: { contentType: body.contentType },
+      };
+    } else {
+      putInput = {
+        format,
+        value: body.value,
+        index: { contentType: body.contentType },
+      };
+    }
 
     const result = await app.services.artifact.createArtifact(
       putInput,

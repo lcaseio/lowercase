@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ArtifactFormat } from "@lcase/types";
+import type { FlowParamContentType } from "@lcase/types";
 import type { RootState } from "../store";
 
 export type ArtifactMetadataDraft = {
@@ -8,23 +8,32 @@ export type ArtifactMetadataDraft = {
   curatedParamNames: string[];
 };
 
-export type ArtifactAuthoringDraft = {
-  label: string;
-  share: boolean;
-  curatedParamNames: string[];
-  // derived synchronously from the picked File at pick-time (name/size/
-  // contentType/format) -- never the File object itself. Not serializable,
-  // was never a good Redux citizen regardless, and doesn't need to survive
-  // a full mode-switch (the component holding the live File already
-  // unmounts on route change) -- this is a remembered breadcrumb, not a
-  // resumable upload.
-  file: {
-    name: string;
-    size: number;
-    contentType: string;
-    format: ArtifactFormat;
-  } | null;
+// format deliberately omitted -- it's fully derivable from name+contentType
+// (see detectFileFormat) and only ever needed transiently, as an input to
+// isArtifactCompatible's fallback check, so it's computed at that point of
+// use rather than stored
+export type ArtifactAuthoringDraftFile = {
+  name: string;
+  size: number;
+  contentType: string;
 };
+
+export type ArtifactAuthoringDraft =
+  | (ArtifactMetadataDraft & {
+      kind: "file";
+      // derived synchronously from the picked File at pick-time (name/size/
+      // contentType/format) -- never the File object itself. Not serializable,
+      // was never a good Redux citizen regardless, and doesn't need to survive
+      // a full mode-switch (the component holding the live File already
+      // unmounts on route change) -- this is a remembered breadcrumb, not a
+      // resumable upload.
+      file: ArtifactAuthoringDraftFile | null;
+    })
+  | (ArtifactMetadataDraft & {
+      kind: "text";
+      content: string;
+      contentType: FlowParamContentType;
+    });
 
 type FlowVersionArtifactsState = {
   flowVersionId: string | null;
@@ -124,15 +133,40 @@ export const flowVersionArtifactsSlice = createSlice({
       state.isEditing = false;
       state.draft = null;
     },
-    startAuthoringArtifact: (state) => {
+    startAuthoringArtifact: (
+      state,
+      action: PayloadAction<ArtifactAuthoringDraft["kind"]>,
+    ) => {
       if (state.isEditing) return;
       state.mode = "authoring";
-      state.authoringDraft = {
+
+      const metadata: ArtifactMetadataDraft = {
         label: "",
         share: false,
         curatedParamNames: [],
-        file: null,
       };
+
+      switch (action.payload) {
+        case "file":
+          state.authoringDraft = {
+            ...metadata,
+            kind: action.payload,
+            file: null,
+          };
+          break;
+        case "text":
+          state.authoringDraft = {
+            ...metadata,
+            kind: action.payload,
+            content: "",
+            contentType: "application/json",
+          };
+          break;
+        default: {
+          const _exhaustive: never = action.payload;
+          return _exhaustive;
+        }
+      }
     },
     // shared by cancelAuthoringArtifact (discarding) and artifactAuthored
     // (completing) -- both return to the same blank browsing state, just
@@ -176,11 +210,25 @@ export const flowVersionArtifactsSlice = createSlice({
     // previous/absent file must not survive a file change
     setAuthoringFile: (
       state,
-      action: PayloadAction<ArtifactAuthoringDraft["file"]>,
+      action: PayloadAction<ArtifactAuthoringDraftFile | null>,
     ) => {
       if (!state.authoringDraft) return;
+      if (state.authoringDraft.kind !== "file") return;
       state.authoringDraft.file = action.payload;
       state.authoringDraft.curatedParamNames = [];
+    },
+    setAuthoringContent: (state, action: PayloadAction<string>) => {
+      if (!state.authoringDraft) return;
+      if (state.authoringDraft.kind !== "text") return;
+      state.authoringDraft.content = action.payload;
+    },
+    setAuthoringContentType: (
+      state,
+      action: PayloadAction<FlowParamContentType>,
+    ) => {
+      if (!state.authoringDraft) return;
+      if (state.authoringDraft.kind !== "text") return;
+      state.authoringDraft.contentType = action.payload;
     },
   },
 });
@@ -201,6 +249,8 @@ export const {
   setAuthoringShare,
   toggleAuthoringParam,
   setAuthoringFile,
+  setAuthoringContent,
+  setAuthoringContentType,
 } = flowVersionArtifactsSlice.actions;
 
 const EMPTY_FLOW_VERSION_ARTIFACTS_STATE: FlowVersionArtifactsState =

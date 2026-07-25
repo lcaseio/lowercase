@@ -4,7 +4,6 @@ import type {
   GetArtifactRes,
   GetArtifactsReq,
   GetArtifactsRes,
-  JsonValue,
   PatchArtifactReq,
   PatchArtifactRes,
   PostArtifactRes,
@@ -12,12 +11,15 @@ import type {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // client-side calling convention, not a wire type -- the route branches on
-// Content-Type, so this just picks which encoding `query` produces
+// Content-Type, so this just picks which encoding `query` produces. value
+// is always a raw string, even for contentType: application/json -- the
+// server decides whether to JSON.parse it, matching the multipart branch's
+// own contract (raw text in, format-based parsing happens server-side)
 type CreateArtifactArg =
   | {
       kind: "authored";
       contentType: string;
-      value: JsonValue | string;
+      value: string;
       metadata?: ArtifactUpdateMetadata;
     }
   | { kind: "file"; file: File; metadata?: ArtifactUpdateMetadata };
