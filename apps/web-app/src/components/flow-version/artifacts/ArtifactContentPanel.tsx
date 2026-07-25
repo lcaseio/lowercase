@@ -3,13 +3,7 @@ import { useGetArtifactQuery } from "@/redux/api/artifacts-api";
 import { CodeEditor } from "@/components/CodeEditor";
 import { artifactFormatToLanguage } from "@/lib/ref-resolution";
 
-type FlowVersionArtifactContentPanelProps = {
-  hash: string | null;
-};
-
-export function FlowVersionArtifactContentPanel({
-  hash,
-}: FlowVersionArtifactContentPanelProps) {
+export function ArtifactContentPanel({ hash }: { hash: string | null }) {
   const artifact = useGetArtifactQuery(hash ? { hash } : skipToken);
 
   if (!hash) {

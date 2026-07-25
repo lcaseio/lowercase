@@ -4,6 +4,7 @@ import { useTheme } from "@/contexts/use-theme";
 
 type Props = {
   value: string;
+  onChange?: (value: string) => void;
   language?: "json" | "markdown" | "plaintext";
   readOnly?: boolean;
   height?: string;
@@ -18,6 +19,7 @@ type Props = {
 
 export function CodeEditor({
   value,
+  onChange,
   language = "plaintext",
   readOnly = false,
   height = "200px",
@@ -48,6 +50,7 @@ export function CodeEditor({
       height={autoHeight ? contentHeight : height}
       language={language}
       value={value}
+      onChange={(value) => onChange?.(value ?? "")}
       theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
       onMount={autoHeight ? handleMount : undefined}
       options={{

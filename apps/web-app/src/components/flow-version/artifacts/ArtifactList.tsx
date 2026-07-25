@@ -1,24 +1,26 @@
 import { useMemo } from "react";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { cn } from "@/lib/utils";
-import { Item, ItemContent, ItemDescription, ItemTitle } from "../ui/item";
-import { Button } from "../ui/button";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "../../ui/item";
+import { Button } from "../../ui/button";
+import { FilePlusCornerIcon, UploadIcon } from "lucide-react";
+import type { ArtifactAuthoringDraft } from "@/redux/slices/flow-version-artifacts-slice";
 
-type FlowVersionArtifactsListProps = {
+type ArtifactListProps = {
   flowVersionId: string | null;
   selectedHash: string | null;
   onSelectArtifact: (hash: string) => void;
-  onAddFile: () => void;
-  addFileDisabled: boolean;
+  onAuthorArtifact: (kind: ArtifactAuthoringDraft["kind"]) => void;
+  addArtifactDisabled: boolean;
 };
 
-export function FlowVersionArtifactsList({
+export function ArtifactList({
   flowVersionId,
   selectedHash,
   onSelectArtifact,
-  onAddFile,
-  addFileDisabled,
-}: FlowVersionArtifactsListProps) {
+  onAuthorArtifact,
+  addArtifactDisabled,
+}: ArtifactListProps) {
   const { data, isLoading } = useListArtifactsQuery(
     flowVersionId ? { flowVersionId, curated: "true" } : undefined,
   );
@@ -81,15 +83,26 @@ export function FlowVersionArtifactsList({
           ))
         )}
       </div>
-      <div className="p-2 border-t dark:border-neutral-800">
+      <div className="flex gap-2 p-2 border-t dark:border-neutral-800">
         <Button
           type="button"
           variant="outline"
-          onClick={onAddFile}
-          disabled={addFileDisabled}
-          className="w-full cursor-pointer bg-sky-300 hover:bg-sky-200 dark:bg-sky-800 dark:hover:bg-sky-600"
+          onClick={() => onAuthorArtifact("file")}
+          disabled={addArtifactDisabled}
+          className="flex-1 cursor-pointer bg-sky-300 hover:bg-sky-200 dark:bg-sky-800 dark:hover:bg-sky-600"
         >
+          <UploadIcon />
           Add File
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onAuthorArtifact("text")}
+          disabled={addArtifactDisabled}
+          className="flex-1 cursor-pointer bg-sky-300 hover:bg-sky-200 dark:bg-sky-800 dark:hover:bg-sky-600"
+        >
+          <FilePlusCornerIcon />
+          New Text Artifact
         </Button>
       </div>
     </div>

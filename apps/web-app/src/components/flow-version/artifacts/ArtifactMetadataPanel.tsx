@@ -18,11 +18,12 @@ import {
   toggleDraftParam,
   updateDraftLabel,
 } from "@/redux/slices/flow-version-artifacts-slice";
-import { Button } from "../ui/button";
-import { IdentityField } from "../fields/IdentityField";
-import { InputField } from "../fields/InputField";
-import { SwitchField } from "../fields/SwitchField";
-import { CuratedParamsField } from "../fields/CuratedParamsField";
+import { Button } from "../../ui/button";
+import { IdentityField } from "../../fields/IdentityField";
+import { InputField } from "../../fields/InputField";
+import { SwitchField } from "../../fields/SwitchField";
+import { CuratedParamsField } from "../../fields/CuratedParamsField";
+import { CheckIcon, PenLineIcon, XIcon } from "lucide-react";
 
 type Props = {
   flowId: string | null;
@@ -38,7 +39,7 @@ type Props = {
 // Read-only by default; an explicit Edit button seeds a draft (owned by
 // flow-version-artifacts-slice, so it survives navigating to another mode
 // and back) and swaps the bottom action row to Save/Cancel.
-export function FlowVersionArtifactMetadataPanel({
+export function ArtifactMetadataPanel({
   flowId,
   flowVersionId,
   selectedHash,
@@ -223,7 +224,7 @@ export function FlowVersionArtifactMetadataPanel({
               disabled={isSaving}
               className="cursor-pointer text-neutral-900 bg-rose-300 hover:bg-rose-200 dark:bg-rose-800 dark:hover:bg-rose-600 dark:text-neutral-50"
             >
-              Cancel
+              <XIcon /> Cancel
             </Button>
             <Button
               type="button"
@@ -231,7 +232,7 @@ export function FlowVersionArtifactMetadataPanel({
               disabled={isSaving}
               className="cursor-pointer text-neutral-900 bg-emerald-300 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-600 dark:text-neutral-50"
             >
-              Save
+              <CheckIcon /> Save
             </Button>
           </>
         ) : (
@@ -241,7 +242,7 @@ export function FlowVersionArtifactMetadataPanel({
             disabled={mode === "authoring"}
             className="cursor-pointer  text-neutral-900  bg-sky-300 hover:bg-sky-200 dark:bg-sky-800 dark:hover:bg-sky-600  dark:text-neutral-50"
           >
-            Edit
+            <PenLineIcon /> Edit
           </Button>
         )}
       </div>

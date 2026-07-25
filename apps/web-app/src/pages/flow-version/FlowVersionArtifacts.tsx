@@ -10,12 +10,13 @@ import {
   selectArtifact,
   selectFlowVersionArtifactsState,
   startAuthoringArtifact,
+  type ArtifactAuthoringDraft,
 } from "@/redux/slices/flow-version-artifacts-slice";
-import { FlowVersionArtifactsList } from "@/components/flow-version/FlowVersionArtifactsList";
-import { FlowVersionArtifactContentPanel } from "@/components/flow-version/FlowVersionArtifactContentPanel";
-import { FlowVersionArtifactMetadataPanel } from "@/components/flow-version/FlowVersionArtifactMetadataPanel";
-import { FlowVersionArtifactUploadPanel } from "@/components/flow-version/FlowVersionArtifactUploadPanel";
-import { FlowVersionArtifactAuthoringMetadataPanel } from "@/components/flow-version/FlowVersionArtifactAuthoringMetadataPanel";
+import { ArtifactList } from "@/components/flow-version/artifacts/ArtifactList";
+import { ArtifactContentPanel } from "@/components/flow-version/artifacts/ArtifactContentPanel";
+import { ArtifactMetadataPanel } from "@/components/flow-version/artifacts/ArtifactMetadataPanel";
+import { ArtifactUploadPanel } from "@/components/flow-version/artifacts/ArtifactUploadPanel";
+import { ArtifactAuthoringMetadataPanel } from "@/components/flow-version/artifacts/ArtifactAuthoringMetadataPanel";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useFlowVersionOutletContext } from "./context";
+import { ArtifactAuthorTextPanel } from "@/components/flow-version/artifacts/ArtifactAuthorTextPanel";
 
 // artifacts mode page for the flow workspace version -- browse this flow
 // version's curated artifacts on the left, view content in the middle, and
@@ -53,9 +55,17 @@ export function FlowVersionArtifacts() {
       className="h-full border dark:border-neutral-800"
     >
       <ResizablePanel defaultSize="25%" className="dark:bg-neutral-875">
-        <FlowVersionArtifactsList
+        <ArtifactList
           flowVersionId={flowVersionId}
-          selectedHash={artifactsState.selectedArtifactHash}
+          // while authoring, the middle/right panels no longer show the
+          // previously-selected artifact -- selectedArtifactHash itself is
+          // deliberately untouched (still there for when authoring ends),
+          // this only affects whether the list visually rings it
+          selectedHash={
+            artifactsState.mode === "authoring"
+              ? null
+              : artifactsState.selectedArtifactHash
+          }
           onSelectArtifact={(hash) => {
             // re-clicking the artifact you're already viewing isn't a
             // navigation -- nothing to guard
@@ -69,8 +79,10 @@ export function FlowVersionArtifacts() {
             }
             dispatch(selectArtifact(hash));
           }}
-          onAddFile={() => dispatch(startAuthoringArtifact())}
-          addFileDisabled={
+          onAuthorArtifact={(kind: ArtifactAuthoringDraft["kind"]) =>
+            dispatch(startAuthoringArtifact(kind))
+          }
+          addArtifactDisabled={
             artifactsState.isEditing || artifactsState.mode === "authoring"
           }
         />
@@ -78,25 +90,30 @@ export function FlowVersionArtifacts() {
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="45%" style={{ overflow: "hidden" }}>
         {artifactsState.mode === "authoring" ? (
-          <FlowVersionArtifactUploadPanel
-            flowId={flowId}
-            flowVersionId={flowVersionId}
-          />
+          artifactsState.authoringDraft?.kind === "file" ? (
+            <ArtifactUploadPanel
+              flowId={flowId}
+              flowVersionId={flowVersionId}
+            />
+          ) : artifactsState.authoringDraft?.kind === "text" ? (
+            <ArtifactAuthorTextPanel
+              flowId={flowId}
+              flowVersionId={flowVersionId}
+            />
+          ) : null
         ) : (
-          <FlowVersionArtifactContentPanel
-            hash={artifactsState.selectedArtifactHash}
-          />
+          <ArtifactContentPanel hash={artifactsState.selectedArtifactHash} />
         )}
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" className="dark:bg-neutral-800">
         {artifactsState.mode === "authoring" ? (
-          <FlowVersionArtifactAuthoringMetadataPanel
+          <ArtifactAuthoringMetadataPanel
             flowVersionId={flowVersionId}
             params={flowDef?.params}
           />
         ) : (
-          <FlowVersionArtifactMetadataPanel
+          <ArtifactMetadataPanel
             flowId={flowId}
             flowVersionId={flowVersionId}
             selectedHash={artifactsState.selectedArtifactHash}

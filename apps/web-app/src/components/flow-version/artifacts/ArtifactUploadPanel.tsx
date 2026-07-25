@@ -13,7 +13,8 @@ import {
   setAuthoringFile,
 } from "@/redux/slices/flow-version-artifacts-slice";
 import { detectFileFormat } from "@/lib/detect-file-format";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
+import { CheckIcon, XIcon } from "lucide-react";
 
 type Props = {
   flowId: string | null;
@@ -24,10 +25,7 @@ type Props = {
 // deliberately not in the right panel (which just composes metadata) to
 // avoid colliding with the metadata-edit panel's own Save/Cancel in the
 // same visual slot
-export function FlowVersionArtifactUploadPanel({
-  flowId,
-  flowVersionId,
-}: Props) {
+export function ArtifactUploadPanel({ flowId, flowVersionId }: Props) {
   const dispatch = useAppDispatch();
   const { authoringDraft } = useAppSelector((s) =>
     selectFlowVersionArtifactsState(s, flowVersionId),
@@ -50,7 +48,7 @@ export function FlowVersionArtifactUploadPanel({
   // this should only reconcile the mount-time value once, never re-fire
   // just because authoringDraft changes later (e.g. from picking a file)
   useLayoutEffect(() => {
-    if (authoringDraft?.file) {
+    if (authoringDraft?.kind === "file" && authoringDraft.file) {
       dispatch(setAuthoringFile(null));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,7 +87,6 @@ export function FlowVersionArtifactUploadPanel({
         name: picked.name,
         size: picked.size,
         contentType: picked.type,
-        format,
       }),
     );
   }
@@ -115,7 +112,7 @@ export function FlowVersionArtifactUploadPanel({
       }).unwrap();
       if (result.ok) {
         // patches the cached artifact list with this response, mirroring
-        // FlowVersionArtifactMetadataPanel.handleSave -- lets selectArtifact
+        // ArtifactMetadataPanel.handleSave -- lets selectArtifact
         // below show the new item immediately instead of waiting on
         // invalidatesTags' refetch to land
         dispatch(
@@ -189,6 +186,7 @@ export function FlowVersionArtifactUploadPanel({
           disabled={isSaving}
           className="cursor-pointer text-neutral-900 bg-rose-300 hover:bg-rose-200 dark:bg-rose-800 dark:hover:bg-rose-600 dark:text-neutral-50"
         >
+          <XIcon />
           Cancel
         </Button>
         <Button
@@ -197,6 +195,7 @@ export function FlowVersionArtifactUploadPanel({
           disabled={!file || isSaving}
           className="cursor-pointer text-neutral-900 bg-emerald-300 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-600 dark:text-neutral-50"
         >
+          <CheckIcon />
           Save
         </Button>
       </div>

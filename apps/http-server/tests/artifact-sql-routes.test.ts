@@ -106,7 +106,7 @@ describe("artifact sql routes", () => {
       url: "/api/artifacts",
       payload: {
         contentType: "application/json",
-        value: { hello: "world" },
+        value: JSON.stringify({ hello: "world" }),
         metadata: { label: "Prompt" },
       },
     });
@@ -215,7 +215,10 @@ describe("artifact sql routes", () => {
     const putResponse = await app.inject({
       method: "POST",
       url: "/api/artifacts",
-      payload: { contentType: "application/json", value: { hello: "world" } },
+      payload: {
+        contentType: "application/json",
+        value: JSON.stringify({ hello: "world" }),
+      },
     });
     const hash = (putResponse.json() as { value: { hash: string } }).value.hash;
 

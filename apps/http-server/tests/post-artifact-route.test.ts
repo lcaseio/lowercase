@@ -27,7 +27,7 @@ describe("post-artifact route -- authored (JSON) branch", () => {
       url: "/",
       payload: {
         contentType: "application/json",
-        value: { hello: "world" },
+        value: JSON.stringify({ hello: "world" }),
         metadata: { label: "Prompt" },
       },
     });
@@ -40,6 +40,42 @@ describe("post-artifact route -- authored (JSON) branch", () => {
         index: { contentType: "application/json" },
       },
       { label: "Prompt" },
+    );
+  });
+
+  it("400s on malformed JSON when contentType is application/json, without calling createArtifact", async () => {
+    const { app, createArtifact } = await buildApp();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/",
+      payload: { contentType: "application/json", value: "{not valid json" },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(createArtifact).not.toHaveBeenCalled();
+  });
+
+  it("accepts a bare JSON string as the value -- a legitimate json-format artifact, not a mistake", async () => {
+    const { app, createArtifact } = await buildApp();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/",
+      payload: {
+        contentType: "application/json",
+        value: JSON.stringify("just a string"),
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(createArtifact).toHaveBeenCalledWith(
+      {
+        format: "json",
+        value: "just a string",
+        index: { contentType: "application/json" },
+      },
+      undefined,
     );
   });
 
@@ -84,7 +120,7 @@ describe("post-artifact route -- authored (JSON) branch", () => {
       url: "/",
       payload: {
         contentType: "application/json",
-        value: { hello: "world" },
+        value: JSON.stringify({ hello: "world" }),
         metadata: { curated: true, label: "x" },
       },
     });
