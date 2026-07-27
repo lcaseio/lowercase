@@ -9,6 +9,7 @@ import {
   FileTextIcon,
   ScaleIcon,
   SettingsIcon,
+  RocketIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboardIcon },
   { to: "/spike", label: "Spike", icon: FlaskConicalIcon },
+  { to: "/explorer", label: "Explorer", icon: RocketIcon },
   { to: "/runner", label: "Runner", icon: PlayIcon },
   { to: "/flows", label: "Flows", icon: WorkflowIcon },
   { to: "/sims", label: "Sims", icon: BotIcon },

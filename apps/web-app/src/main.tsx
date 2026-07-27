@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { WsBootstrap } from "./ws-bootstrap";
 import { ThemeProvider } from "./contexts/theme-provider";
+import { Toaster } from "./components/ui/sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -15,6 +16,7 @@ createRoot(document.getElementById("root")!).render(
       <Provider store={store}>
         <BrowserRouter>
           <WsBootstrap />
+          <Toaster />
           <App />
         </BrowserRouter>
       </Provider>

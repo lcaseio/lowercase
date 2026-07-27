@@ -16,7 +16,7 @@ export function ThemeProvider({
   );
 
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
+    if (typeof window === "undefined") return "dark";
     return theme === "system" ? getSystemTheme() : theme;
   });
 
@@ -34,8 +34,8 @@ export function ThemeProvider({
     if (theme === "system") {
       apply(getSystemTheme());
 
-      const mql = window.matchMedia("(prefers-color-scheme: dark)");
-      const onChange = () => apply(mql.matches ? "dark" : "light");
+      const mql = window.matchMedia("(prefers-color-scheme: light)");
+      const onChange = () => apply(mql.matches ? "light" : "dark");
 
       // addEventListener is modern, later maybe add addListener for older
       mql.addEventListener?.("change", onChange);
@@ -64,7 +64,7 @@ export function ThemeProvider({
 }
 
 function getSystemTheme() {
-  return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches
-    ? "dark"
-    : "light";
+  return window.matchMedia?.("(prefers-color-scheme: light)")?.matches
+    ? "light"
+    : "dark";
 }
