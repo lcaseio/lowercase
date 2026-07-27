@@ -14,7 +14,7 @@ export function ExplorerVersionRow({
     <div
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-2 pl-10 pr-2 py-1 text-xs cursor-pointer rounded-sm",
+        "flex items-center gap-2 pl-10 pr-2 py-1 text-xs cursor-pointer",
         isSelected ? "bg-accent" : "hover:bg-accent/40",
       )}
     >
