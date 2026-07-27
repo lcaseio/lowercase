@@ -24,11 +24,12 @@ export function FlowVersionModeNav() {
   const location = useLocation();
   const activeMode = location.pathname.split("/").filter(Boolean).pop();
 
+  //  text-sky-800 dark:text-sky-300 dark:bg-sky-950 bg-sky-200
   return (
     <ToggleGroup
       type="single"
       value={activeMode}
-      className="w-full flex justify-center overflow-hidden rounded-none text-sky-800 dark:text-sky-300 dark:bg-sky-950 bg-sky-200"
+      className="w-full flex justify-center overflow-hidden rounded-none"
     >
       {modes.map((mode) => (
         <ToggleGroupItem value={mode.path} key={mode.path} asChild>

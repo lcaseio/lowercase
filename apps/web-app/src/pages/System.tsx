@@ -1,4 +1,4 @@
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { WebSocketPanel } from "../components/WebSocketPanel";
 
 export function System() {
@@ -7,7 +7,7 @@ export function System() {
       <h2 className="text-xl font-bold mb-5">System</h2>
       <WebSocketPanel />
 
-      <ModeToggle />
+      <ThemeToggle />
     </div>
   );
 }

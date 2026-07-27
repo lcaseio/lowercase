@@ -14,6 +14,7 @@ import { CreateSim } from "./pages/sims/CreateSim";
 import { ViewSim } from "./pages/sims/ViewSim";
 import { Artifacts } from "./pages/Artifacts";
 import { Evals } from "./pages/Evals";
+import { Explorer } from "./pages/Explorer";
 import { FlowVersionWorkspace } from "./pages/flow-version/FlowVersionWorkspace";
 import { FlowVersionEdit } from "./pages/flow-version/FlowVersionEdit";
 import { FlowVersionModePlaceholder } from "./pages/flow-version/FlowVersionModePlaceholder";
@@ -71,6 +72,7 @@ export function App() {
             element={<FlowVersionModePlaceholder mode="Evals" />}
           />
         </Route>
+        <Route path="/explorer" element={<Explorer />} />
         <Route path="/flows" element={<Flows />} />
         <Route path="/flows/edit/:flowId" element={<FlowsEdit />} />
         <Route path="/runner" element={<Runner />} />

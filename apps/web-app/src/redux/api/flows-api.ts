@@ -2,6 +2,7 @@ import type {
   FlowDefinition,
   GetFlowsRes,
   GetFlowVersionRes,
+  GetFlowVersionsRes,
   PostFlowFileRes,
   PostFlowReq,
   PostFlowRes,
@@ -21,6 +22,9 @@ export const flowsApi = createApi({
     }),
     getFlowVersionDef: builder.query<GetFlowVersionRes, string>({
       query: (flowVersionId: string) => `/flows/versions/${flowVersionId}`,
+    }),
+    getFlowVersions: builder.query<GetFlowVersionsRes, string>({
+      query: (flowId: string) => `/flows/${flowId}/versions`,
     }),
     addJsonFlow: builder.mutation<PostFlowRes, PostFlowReq>({
       query: (arg) => ({
@@ -51,4 +55,5 @@ export const {
   useGetFlowsQuery,
   useGetFlowDefQuery,
   useGetFlowVersionDefQuery,
+  useGetFlowVersionsQuery,
 } = flowsApi;
