@@ -126,7 +126,7 @@ What actually landed summarized, the important "why" and "what" bits for history
 - **Where artifacts live in the tree, resolved**: version-scoped artifacts under their Version node, flow-shared ones (the "Share" toggle) one level up under the Flow node instead of duplicated per-version, and no global-artifacts root in this tree at all — Flows are the tree's actual root; a flat/global browse, if ever built, is a separate surface. Closes the open question in `UI_ARTIFACTS_MODE.md` about how cross-version sharing shows up once more UI layers exist. Param-level curation stays out of the tree — deliberately not addressed.
 - **Loading latency at scale (relevant once step 4 adds nodes), not solved yet**: lazy-per-node fetching (matching VS Code's own explorer) is still the right shape, but should eventually pair with prefetching one level ahead of what's rendered (RTK Query's `usePrefetch`) rather than eager full-tree preload — exact shape left open until it's actually needed.
 
-#### PR 2 - Tab/Panel Skeleton
+#### PR 2 - Tab/Panel Skeleton - merged (#285)
 
 Original notes: **The smallest possible tab/panel skeleton** — open/close/switch between tabs, no drag/split/reorder, state assuming one instance per content type.
 
@@ -142,9 +142,21 @@ Design settled from discussion, going into Plan Mode next — still revisable, b
 - **First real test uses a placeholder content `kind`, not a real content type** — proves open/close/switch works before PR 3 wires in real content. The trigger is PR 1's existing tree-row click (today it only sets `selectedRowId` for highlighting); this PR extends that same click to also dispatch `openOrFocusTab`, so the tree stops being purely cosmetic.
 - **Still explicitly deferred, unchanged from before this discussion**: adopting a docking/tab library (`dockview`/`flexlayout-react`/`rc-dock`); tab-list persistence across a real page reload (a nicety for later, not blocking); movable tabs / multiple instances of the same content kind (the long-term want named in the Global workspace section above, still not this PR).
 
+**Refined after actually using it, not just planned in advance**: Flow rows in the tree now always toggle expand/collapse on click and never open a tab — resolved a real tension (a click can't simultaneously mean "browse" and "open" without ambiguity) the same way VS Code resolves it for directories. Since that leaves no way to view/edit a Flow's own metadata, a fixed **Settings** row was added as the first child under an expanded Flow — a literal tree leaf, not a new interaction mechanism, reusing the exact same "leaf opens a tab" behavior everything else already had. This container-never-opens/leaf-always-opens split is now the tree's general rule going into PR 3, not just a Flow-specific fix. The now-unreachable `placeholder-flow` tab kind was removed as a result.
+
 #### PR 3 - Content In Tab
 
 Original notes: **Land the first real content type in a tab** — the flow graph (`FlowGraph.tsx` already exists), proving arbitrary existing React content can live in the new tab host cleanly, using something already built rather than something new.
+
+Design settled from discussion, going into Plan Mode next — still revisable, but no longer scratch. Scope grew from "just the flow graph" to four real leaves, since the container/leaf split PR 2 landed on needed a second real test to confirm it generalizes, not just work once:
+
+- **Version becomes a container**, same rule as Flow: click always toggles expand/collapse, never opens a tab. Confirms the container-never-opens/leaf-always-opens split from PR 2 is the tree's general rule, not a Flow-specific fix.
+- **Four real leaves, not one** — Flow Settings (already exists as a placeholder since PR 2, now wired to real data), and three new leaves under Version: **Settings** (first child, fixed position — matches the existing Flow-level pattern), **JSON Definition**, and **Flow Graph**.
+- **Both Settings leaves are read-only, and deliberately reuse the existing `Fields` components** (`InputField`/`IdentityField` etc., already built read-only-first for Artifacts mode) rather than inventing a new display pattern — even though there isn't much data to show yet (Flow: name/description; Version: versionLabel/sequence/description/createdAt). Consistency of pattern matters more here than the amount of content.
+- **Flow Settings and Version Settings both use data already in memory** — `FlowRecord`/`FlowVersionRecord` are already fetched and held by `ExplorerTree`/`ExplorerFlowRow`/`ExplorerVersionRow` today (that's what renders the tree rows' own labels) — no new query needed for either.
+- **JSON Definition and Flow Graph both need the actual flow definition fetched** — `getFlowVersionDef`/`useGetFlowVersionDefQuery` already exists (`GET /flows/versions/:versionId`) and is unused by the Explorer arc so far. Whether both leaves share one query call/cache entry or fetch independently is an implementation detail, not a design one — RTK Query's own cache should just handle this for free either way.
+- **Everything stays view-only** — no edit fields, no save button, on any of the four leaves. Matches the standing "you don't ever edit yet, only view" constraint; editing is still blocked on the undesigned draft/published/authoring flow, not this PR's problem.
+- **Genuinely still open, implementation-level rather than design-level** — exact new tab `kind` names/params replacing `placeholder-version` (now dead, same as `placeholder-flow` before it); which components live where; whether Flow Graph and JSON Definition end up sharing a fetch. Left for Plan Mode, not resolved here.
 
 #### PR 4 - Extend Tree with Sub Lists
 

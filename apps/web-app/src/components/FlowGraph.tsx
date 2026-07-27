@@ -88,11 +88,19 @@ export function FlowGraph({
 
         if (outEdges[node]) {
           for (const edge of outEdges[node]) {
+            // a branch step can route multiple distinct cases to the same
+            // next step -- startStepId-endStepId alone collides for those,
+            // since it ignores which case each edge represents. caseValue
+            // (or isDefault for the mandatory fallback) is what's actually
+            // unique per edge; gate ("always"/"onSuccess"/"onFailure") is a
+            // different concept and was never a case identifier.
+            const branchCase =
+              edge.caseValue ?? (edge.isDefault ? "default" : undefined);
             const newEdge: Edge = {
-              id: `${edge.startStepId}-${edge.endStepId}`,
+              id: `${edge.startStepId}-${edge.endStepId}-${branchCase ?? edge.gate}`,
               source: edge.startStepId,
               target: edge.endStepId,
-              label: edge.gate,
+              label: branchCase ?? edge.gate,
             };
             newEdges.push(newEdge);
           }
