@@ -12,8 +12,7 @@ export function ExplorerTree() {
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   if (isLoading) return showLoading ? <div>Loading flows...</div> : null;
-  if (data?.ok === false)
-    return <div>Error loading flows: {data.error}</div>;
+  if (data?.ok === false) return <div>Error loading flows: {data.error}</div>;
   if (error || !data) return <div>Error loading flows</div>;
 
   const toggleExpanded = (flowId: string) => {
