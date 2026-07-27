@@ -1,5 +1,5 @@
 import type { FlowRecord } from "@lcase/types";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -14,6 +14,7 @@ export function ExplorerFlowRow({
   onToggleExpanded,
   selectedRowId,
   onSelectFlow,
+  onSelectFlowSettings,
   onSelectVersion,
 }: {
   flow: FlowRecord;
@@ -21,16 +22,21 @@ export function ExplorerFlowRow({
   onToggleExpanded: () => void;
   selectedRowId: string | null;
   onSelectFlow: () => void;
+  onSelectFlowSettings: () => void;
   onSelectVersion: (versionId: string) => void;
 }) {
   const isSelected = selectedRowId === `flow:${flow.id}`;
+  const isSettingsSelected = selectedRowId === `flow-settings:${flow.id}`;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggleExpanded}>
       <div
-        onClick={onSelectFlow}
+        onClick={() => {
+          onToggleExpanded();
+          onSelectFlow();
+        }}
         className={cn(
-          "flex items-center gap-2 px-2 py-1 text-xs cursor-pointer rounded-sm",
+          "flex items-center gap-2 px-2 py-1 text-xs cursor-pointer",
           isSelected ? "bg-accent" : "hover:bg-accent/40",
         )}
       >
@@ -54,11 +60,23 @@ export function ExplorerFlowRow({
       </div>
       <CollapsibleContent>
         {isExpanded ? (
-          <ExplorerVersionList
-            flowId={flow.id}
-            selectedRowId={selectedRowId}
-            onSelectVersion={onSelectVersion}
-          />
+          <>
+            <div
+              onClick={onSelectFlowSettings}
+              className={cn(
+                "flex items-center gap-2 pl-10 pr-2 py-1 text-xs italic text-muted-foreground cursor-pointer",
+                isSettingsSelected ? "bg-accent" : "hover:bg-accent/40",
+              )}
+            >
+              <SettingsIcon className="size-3.5 shrink-0" />
+              <span className="truncate">Settings</span>
+            </div>
+            <ExplorerVersionList
+              flowId={flow.id}
+              selectedRowId={selectedRowId}
+              onSelectVersion={onSelectVersion}
+            />
+          </>
         ) : null}
       </CollapsibleContent>
     </Collapsible>
