@@ -5,8 +5,8 @@ export function ExplorerTabContent({ tab }: { tab: ExplorerTabEntry }) {
     case "placeholder-version":
       return (
         <div className="p-4 text-sm text-muted-foreground">
-          Version placeholder — versionId: {tab.versionId}. Real content
-          lands in a later PR.
+          Version placeholder — versionId: {tab.versionId}. Real content lands
+          in a later PR.
         </div>
       );
     case "placeholder-flow-settings":

@@ -82,5 +82,4 @@ export const explorerTabsSlice = createSlice({
 export const { openOrFocusTab, setActiveTab, closeTab } =
   explorerTabsSlice.actions;
 
-export const selectExplorerTabsState = (state: RootState) =>
-  state.explorerTabs;
+export const selectExplorerTabsState = (state: RootState) => state.explorerTabs;

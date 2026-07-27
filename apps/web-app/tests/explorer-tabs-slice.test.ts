@@ -61,7 +61,9 @@ describe("explorerTabsSlice", () => {
       );
 
       expect(state.tabs).toHaveLength(2);
-      const flowTab = state.tabs.find((t) => t.kind === "placeholder-flow-settings");
+      const flowTab = state.tabs.find(
+        (t) => t.kind === "placeholder-flow-settings",
+      );
       expect(flowTab).toEqual({
         id: "placeholder-flow-settings",
         kind: "placeholder-flow-settings",
@@ -119,7 +121,10 @@ describe("explorerTabsSlice", () => {
         setActiveTab("placeholder-flow-settings"),
       );
 
-      const state = reducer(withActiveFirst, closeTab("placeholder-flow-settings"));
+      const state = reducer(
+        withActiveFirst,
+        closeTab("placeholder-flow-settings"),
+      );
       expect(state.tabs).toHaveLength(1);
       expect(state.tabs[0].kind).toBe("placeholder-version");
       expect(state.activeTabId).toBe("placeholder-version");
