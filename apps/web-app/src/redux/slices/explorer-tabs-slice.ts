@@ -1,23 +1,18 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
-// only placeholders for now, standing in for real content kinds that land
-// in later PRs (flow-graph, artifact, run, ...). Flow rows themselves never
-// open a tab (click always just toggles expand) -- only Settings and
-// Version rows do.
+// Flow and Version rows themselves never open a tab (click always just
+// toggles expand) -- only their fixed leaf children do.
 export type ExplorerTabEntry =
+  | { id: string; kind: "flow-settings"; label: string; flowId: string }
   | {
       id: string;
-      kind: "placeholder-version";
+      kind: "version-settings";
       label: string;
       versionId: string;
     }
-  | {
-      id: string;
-      kind: "placeholder-flow-settings";
-      label: string;
-      flowId: string;
-    };
+  | { id: string; kind: "json-definition"; label: string; versionId: string }
+  | { id: string; kind: "flow-graph"; label: string; versionId: string };
 
 // plain `Omit<ExplorerTabEntry, "id">` doesn't distribute over the union --
 // keyof a union only includes fields common to every member, so it would

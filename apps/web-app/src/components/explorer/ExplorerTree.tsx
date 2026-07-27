@@ -44,7 +44,7 @@ export function ExplorerTree() {
             setSelectedRowId(`flow-settings:${flow.id}`);
             dispatch(
               openOrFocusTab({
-                kind: "placeholder-flow-settings",
+                kind: "flow-settings",
                 label: `${flow.name} Settings`,
                 flowId: flow.id,
               }),
@@ -52,11 +52,34 @@ export function ExplorerTree() {
           }}
           onSelectVersion={(versionId) => {
             setSelectedRowId(`version:${versionId}`);
+          }}
+          onSelectVersionSettings={(version) => {
+            setSelectedRowId(`version-settings:${version.id}`);
             dispatch(
               openOrFocusTab({
-                kind: "placeholder-version",
-                label: `Version ${versionId.slice(0, 8)}`,
-                versionId,
+                kind: "version-settings",
+                label: `${version.versionLabel ?? `Version ${version.sequence}`} Settings`,
+                versionId: version.id,
+              }),
+            );
+          }}
+          onSelectFlowGraph={(version) => {
+            setSelectedRowId(`flow-graph:${version.id}`);
+            dispatch(
+              openOrFocusTab({
+                kind: "flow-graph",
+                label: `${version.versionLabel ?? `Version ${version.sequence}`} Graph`,
+                versionId: version.id,
+              }),
+            );
+          }}
+          onSelectJsonDefinition={(version) => {
+            setSelectedRowId(`json-definition:${version.id}`);
+            dispatch(
+              openOrFocusTab({
+                kind: "json-definition",
+                label: `${version.versionLabel ?? `Version ${version.sequence}`} JSON`,
+                versionId: version.id,
               }),
             );
           }}

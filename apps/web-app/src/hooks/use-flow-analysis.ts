@@ -14,7 +14,6 @@ export function useFlowAnalysis(flowDef: FlowDefinition | null) {
     let fa = analyzeFlow(flowDef);
     fa = analyzeRefs(flowDef, fa);
     fa.toposort = toposort(fa);
-    console.log("toposort", fa.toposort);
 
     return { flowAnalysis: fa, layout: graphLayout(fa) };
   }, [flowDef]);

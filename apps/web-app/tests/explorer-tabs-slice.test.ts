@@ -19,26 +19,26 @@ describe("explorerTabsSlice", () => {
       const state = reducer(
         BASE_STATE,
         openOrFocusTab({
-          kind: "placeholder-flow-settings",
+          kind: "flow-settings",
           label: "Flow A",
           flowId: "flow-a",
         }),
       );
       expect(state.tabs).toHaveLength(1);
       expect(state.tabs[0]).toEqual({
-        id: "placeholder-flow-settings",
-        kind: "placeholder-flow-settings",
+        id: "flow-settings",
+        kind: "flow-settings",
         label: "Flow A",
         flowId: "flow-a",
       });
-      expect(state.activeTabId).toBe("placeholder-flow-settings");
+      expect(state.activeTabId).toBe("flow-settings");
     });
 
     it("overwrites the existing tab for the same kind instead of duplicating", () => {
       let state = reducer(
         BASE_STATE,
         openOrFocusTab({
-          kind: "placeholder-flow-settings",
+          kind: "flow-settings",
           label: "Flow A",
           flowId: "flow-a",
         }),
@@ -46,7 +46,7 @@ describe("explorerTabsSlice", () => {
       state = reducer(
         state,
         openOrFocusTab({
-          kind: "placeholder-version",
+          kind: "version-settings",
           label: "Version 1",
           versionId: "version-1",
         }),
@@ -54,33 +54,31 @@ describe("explorerTabsSlice", () => {
       state = reducer(
         state,
         openOrFocusTab({
-          kind: "placeholder-flow-settings",
+          kind: "flow-settings",
           label: "Flow B",
           flowId: "flow-b",
         }),
       );
 
       expect(state.tabs).toHaveLength(2);
-      const flowTab = state.tabs.find(
-        (t) => t.kind === "placeholder-flow-settings",
-      );
+      const flowTab = state.tabs.find((t) => t.kind === "flow-settings");
       expect(flowTab).toEqual({
-        id: "placeholder-flow-settings",
-        kind: "placeholder-flow-settings",
+        id: "flow-settings",
+        kind: "flow-settings",
         label: "Flow B",
         flowId: "flow-b",
       });
-      expect(state.activeTabId).toBe("placeholder-flow-settings");
+      expect(state.activeTabId).toBe("flow-settings");
     });
   });
 
   describe("setActiveTab", () => {
     it("sets the active tab id directly", () => {
       const state = reducer(
-        { tabs: [], activeTabId: "placeholder-flow-settings" },
-        setActiveTab("placeholder-version"),
+        { tabs: [], activeTabId: "flow-settings" },
+        setActiveTab("version-settings"),
       );
-      expect(state.activeTabId).toBe("placeholder-version");
+      expect(state.activeTabId).toBe("version-settings");
     });
   });
 
@@ -89,7 +87,7 @@ describe("explorerTabsSlice", () => {
       let state = reducer(
         BASE_STATE,
         openOrFocusTab({
-          kind: "placeholder-flow-settings",
+          kind: "flow-settings",
           label: "Flow A",
           flowId: "flow-a",
         }),
@@ -97,7 +95,7 @@ describe("explorerTabsSlice", () => {
       state = reducer(
         state,
         openOrFocusTab({
-          kind: "placeholder-version",
+          kind: "version-settings",
           label: "Version 1",
           versionId: "version-1",
         }),
@@ -107,36 +105,30 @@ describe("explorerTabsSlice", () => {
 
     it("leaves activeTabId untouched when closing a non-active tab", () => {
       const opened = openTwoTabs();
-      expect(opened.activeTabId).toBe("placeholder-version");
+      expect(opened.activeTabId).toBe("version-settings");
 
-      const state = reducer(opened, closeTab("placeholder-flow-settings"));
+      const state = reducer(opened, closeTab("flow-settings"));
       expect(state.tabs).toHaveLength(1);
-      expect(state.activeTabId).toBe("placeholder-version");
+      expect(state.activeTabId).toBe("version-settings");
     });
 
     it("activates the tab that shifted into the closed slot when the active tab isn't last", () => {
       const opened = openTwoTabs();
-      const withActiveFirst = reducer(
-        opened,
-        setActiveTab("placeholder-flow-settings"),
-      );
+      const withActiveFirst = reducer(opened, setActiveTab("flow-settings"));
 
-      const state = reducer(
-        withActiveFirst,
-        closeTab("placeholder-flow-settings"),
-      );
+      const state = reducer(withActiveFirst, closeTab("flow-settings"));
       expect(state.tabs).toHaveLength(1);
-      expect(state.tabs[0].kind).toBe("placeholder-version");
-      expect(state.activeTabId).toBe("placeholder-version");
+      expect(state.tabs[0].kind).toBe("version-settings");
+      expect(state.activeTabId).toBe("version-settings");
     });
 
     it("activates the new last tab when the closed active tab was last", () => {
       const opened = openTwoTabs();
-      expect(opened.activeTabId).toBe("placeholder-version");
+      expect(opened.activeTabId).toBe("version-settings");
 
-      const state = reducer(opened, closeTab("placeholder-version"));
+      const state = reducer(opened, closeTab("version-settings"));
       expect(state.tabs).toHaveLength(1);
-      expect(state.activeTabId).toBe("placeholder-flow-settings");
+      expect(state.activeTabId).toBe("flow-settings");
     });
 
     it("sets activeTabId to null when closing the last remaining tab", () => {
@@ -144,15 +136,15 @@ describe("explorerTabsSlice", () => {
         {
           tabs: [
             {
-              id: "placeholder-flow-settings",
-              kind: "placeholder-flow-settings" as const,
+              id: "flow-settings",
+              kind: "flow-settings" as const,
               label: "Flow A",
               flowId: "flow-a",
             },
           ],
-          activeTabId: "placeholder-flow-settings",
+          activeTabId: "flow-settings",
         },
-        closeTab("placeholder-flow-settings"),
+        closeTab("flow-settings"),
       );
       expect(state.tabs).toHaveLength(0);
       expect(state.activeTabId).toBeNull();
