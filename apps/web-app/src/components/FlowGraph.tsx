@@ -1,7 +1,14 @@
 import type { FlowDefinition } from "@lcase/types";
 import type { OutEdges } from "@lcase/types";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { Controls, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import {
+  Controls,
+  Panel,
+  ReactFlow,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
@@ -49,6 +56,7 @@ type Props = {
   onNodeClickHandler?: (node: Node) => void;
   stepRunInfo?: Record<string, StepRunInfo>;
   reusedStepIds?: string[];
+  toolbar?: ReactNode;
 };
 export function FlowGraph({
   flowDef,
@@ -57,6 +65,7 @@ export function FlowGraph({
   onNodeClickHandler,
   stepRunInfo,
   reusedStepIds,
+  toolbar,
 }: Props) {
   const { resolvedTheme } = useTheme();
 
@@ -121,9 +130,11 @@ export function FlowGraph({
             ? (_event, node) => onNodeClickHandler(node)
             : undefined
         }
+        fitViewOptions={{ padding: 0.3 }}
         fitView
       >
         <Controls />
+        {toolbar && <Panel position="bottom-center">{toolbar}</Panel>}
       </ReactFlow>
     </div>
   );

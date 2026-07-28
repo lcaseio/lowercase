@@ -34,7 +34,7 @@ type Props = {
   artifacts: ArtifactListItem[];
   selectedHash?: string;
   onChange: (name: string, hash: string | undefined) => void;
-  onOpenInMainPanel: OpenInMainPanel;
+  onOpenInMainPanel?: OpenInMainPanel;
   flowDef: FlowDefinition | null;
   refs: Ref[];
 };
@@ -70,7 +70,7 @@ export function FlowVersionRunParamRow({
   const canShowUsages = canPreview && paramRefs.length > 0;
 
   async function handlePreview() {
-    if (!selectedHash) return;
+    if (!selectedHash || !onOpenInMainPanel) return;
     const result = await triggerGetArtifact({ hash: selectedHash });
     if (!result.data?.ok) return;
     const data = result.data;
@@ -85,7 +85,7 @@ export function FlowVersionRunParamRow({
   }
 
   async function handleShowUsages() {
-    if (!selectedHash || !flowDef) return;
+    if (!selectedHash || !flowDef || !onOpenInMainPanel) return;
     const result = await triggerGetArtifact({ hash: selectedHash });
     if (!result.data?.ok || result.data.format === "bytes") return;
     const data = result.data;
@@ -135,26 +135,30 @@ export function FlowVersionRunParamRow({
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 shrink-0"
-          disabled={!canPreview || isFetching}
-          onClick={handlePreview}
-          title="Preview artifact content"
-        >
-          <Maximize2Icon className="size-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 shrink-0"
-          disabled={!canShowUsages || isFetching}
-          onClick={handleShowUsages}
-          title="Show where this param is used"
-        >
-          <ListTreeIcon className="size-3.5" />
-        </Button>
+        {onOpenInMainPanel && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 shrink-0"
+            disabled={!canPreview || isFetching}
+            onClick={handlePreview}
+            title="Preview artifact content"
+          >
+            <Maximize2Icon className="size-3.5" />
+          </Button>
+        )}
+        {onOpenInMainPanel && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 shrink-0"
+            disabled={!canShowUsages || isFetching}
+            onClick={handleShowUsages}
+            title="Show where this param is used"
+          >
+            <ListTreeIcon className="size-3.5" />
+          </Button>
+        )}
       </div>
     </div>
   );
