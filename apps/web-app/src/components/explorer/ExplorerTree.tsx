@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
-import { useAppDispatch } from "@/redux/typed-hooks";
-import { openOrFocusTab } from "@/redux/slices/explorer-tabs-slice";
+import { useDockviewApi } from "./explorer-dockview-context";
+import { openOrFocusPanel } from "./explorer-panels";
 import { ExplorerFlowRow } from "./ExplorerFlowRow";
 
 export function ExplorerTree() {
-  const dispatch = useAppDispatch();
+  const api = useDockviewApi();
   const { data, error, isLoading } = useGetFlowsQuery();
   const showLoading = useDelayedLoading(isLoading);
   const [expandedFlowIds, setExpandedFlowIds] = useState<Set<string>>(
@@ -42,46 +42,42 @@ export function ExplorerTree() {
           }}
           onSelectFlowSettings={() => {
             setSelectedRowId(`flow-settings:${flow.id}`);
-            dispatch(
-              openOrFocusTab({
-                kind: "flow-settings",
-                label: `${flow.name} Settings`,
-                flowId: flow.id,
-              }),
-            );
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "flow-settings",
+              label: `${flow.name} Settings`,
+              flowId: flow.id,
+            });
           }}
           onSelectVersion={(versionId) => {
             setSelectedRowId(`version:${versionId}`);
           }}
           onSelectVersionSettings={(version) => {
             setSelectedRowId(`version-settings:${version.id}`);
-            dispatch(
-              openOrFocusTab({
-                kind: "version-settings",
-                label: `${version.versionLabel ?? `Version ${version.sequence}`} Settings`,
-                versionId: version.id,
-              }),
-            );
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "version-settings",
+              label: `${version.versionLabel ?? `Version ${version.sequence}`} Settings`,
+              versionId: version.id,
+            });
           }}
           onSelectFlowGraph={(version) => {
             setSelectedRowId(`flow-graph:${version.id}`);
-            dispatch(
-              openOrFocusTab({
-                kind: "flow-graph",
-                label: `${version.versionLabel ?? `Version ${version.sequence}`} Graph`,
-                versionId: version.id,
-              }),
-            );
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "flow-graph",
+              label: `${version.versionLabel ?? `Version ${version.sequence}`} Graph`,
+              versionId: version.id,
+            });
           }}
           onSelectJsonDefinition={(version) => {
             setSelectedRowId(`json-definition:${version.id}`);
-            dispatch(
-              openOrFocusTab({
-                kind: "json-definition",
-                label: `${version.versionLabel ?? `Version ${version.sequence}`} JSON`,
-                versionId: version.id,
-              }),
-            );
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "json-definition",
+              label: `${version.versionLabel ?? `Version ${version.sequence}`} JSON`,
+              versionId: version.id,
+            });
           }}
         />
       ))}

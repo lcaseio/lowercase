@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
 
 // Flow and Version rows themselves never open a tab (click always just
 // toggles expand) -- only their fixed leaf children do.
@@ -76,5 +75,3 @@ export const explorerTabsSlice = createSlice({
 
 export const { openOrFocusTab, setActiveTab, closeTab } =
   explorerTabsSlice.actions;
-
-export const selectExplorerTabsState = (state: RootState) => state.explorerTabs;
