@@ -1,9 +1,15 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { useRequestRunMutation } from "@/redux/api/runs-api";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
+import {
+  paramHashSet,
+  rightPanelTabSet,
+  runSubmitted,
+  selectFlowGraphPanelState,
+} from "@/redux/slices/flow-graph-panels-slice";
 import { FlowGraph } from "@/components/FlowGraph";
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
@@ -13,23 +19,24 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ExplorerRunToolbar } from "./ExplorerRunToolbar";
-import {
-  ExplorerRunRightPanel,
-  type ExplorerRunRightPanelTab,
-} from "./ExplorerRunRightPanel";
+import { ExplorerRunRightPanel } from "./ExplorerRunRightPanel";
 
-export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
+export function ExplorerFlowGraphContent({
+  versionId,
+  panelId,
+}: {
+  versionId: string;
+  panelId: string;
+}) {
   const { data, error, isLoading, refetch } =
     useGetFlowVersionDefQuery(versionId);
   const { data: artifactsData } = useListArtifactsQuery();
   const [requestRun] = useRequestRunMutation();
 
-  const [selectedParamHashes, setSelectedParamHashes] = useState<
-    Record<string, string>
-  >({});
-  const [rightPanelTab, setRightPanelTab] =
-    useState<ExplorerRunRightPanelTab | null>(null);
-  const [runId, setRunId] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { selectedParamHashes, rightPanelTab, runId } = useAppSelector(
+    (state) => selectFlowGraphPanelState(state, panelId),
+  );
 
   const hasError = error || data?.ok === false;
   useEffect(() => {
@@ -43,7 +50,14 @@ export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
   const flowAnalysis = useFlowAnalysis(flowDef);
   const artifacts = artifactsData?.ok ? artifactsData.value : [];
 
-  const stepIds = flowDef ? Object.keys(flowDef.steps) : [];
+  // stable across renders unless flowDef itself changes -- otherwise a fresh
+  // array every render invalidates useStepRunInfo's (and, downstream,
+  // FlowGraph's own node/edge) memoization by reference on every unrelated
+  // re-render, e.g. just switching the right panel's tab
+  const stepIds = useMemo(
+    () => (flowDef ? Object.keys(flowDef.steps) : []),
+    [flowDef],
+  );
   const { events, stepRunInfo } = useRunEventsWithStatus(runId, stepIds);
 
   const params = flowDef?.params ?? {};
@@ -59,12 +73,7 @@ export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
   const runDisabled = missingRequiredParams.length > 0 || runInFlight;
 
   const handleParamChange = (name: string, hash: string | undefined) => {
-    setSelectedParamHashes((prev) => {
-      const next = { ...prev };
-      if (hash) next[name] = hash;
-      else delete next[name];
-      return next;
-    });
+    dispatch(paramHashSet({ panelId, name, hash }));
   };
 
   const handleRun = async () => {
@@ -79,7 +88,7 @@ export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
       ...(entries.length > 0 ? { params: Object.fromEntries(entries) } : {}),
     });
     if (result.data?.ok) {
-      setRunId(result.data.runId);
+      dispatch(runSubmitted({ panelId, runId: result.data.runId }));
     }
   };
 
@@ -100,26 +109,16 @@ export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
       hasParams={Object.keys(params).length > 0}
       paramsHasUnsetRequired={missingRequiredParams.length > 0}
       runDisabled={runDisabled}
-      onOpenParams={() => setRightPanelTab("params")}
-      onOpenSim={() => setRightPanelTab("sim")}
+      onOpenParams={() =>
+        dispatch(rightPanelTabSet({ panelId, tab: "params" }))
+      }
+      onOpenSim={() => dispatch(rightPanelTabSet({ panelId, tab: "sim" }))}
       onRun={handleRun}
     />
   );
 
   const graph = (
-    // keyed on versionId -- this tab is a singleton (one per kind), so
-    // opening a different version's graph updates this same component's
-    // props in place rather than unmounting it. React Flow keeps a lot of
-    // internal state (viewport, measurement cache, edge bookkeeping) tied
-    // to one component instance that a plain prop change doesn't reliably
-    // reset. The key forces a real remount instead, so each graph always
-    // starts from the same clean state the fitView fix already relies on.
-    // (This component's own run/param/panel state above is reset the same
-    // way, one level up -- ExplorerTabContent.tsx keys *this* component by
-    // tab.versionId, so all of it is torn down and recreated fresh whenever
-    // a different version's graph reuses this same singleton tab.)
     <FlowGraph
-      key={versionId}
       flowDef={flowDef}
       layout={flowAnalysis?.layout ?? null}
       outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
@@ -137,8 +136,10 @@ export function ExplorerFlowGraphContent({ versionId }: { versionId: string }) {
       <ResizablePanel defaultSize="30%">
         <ExplorerRunRightPanel
           activeTab={rightPanelTab}
-          onActiveTabChange={setRightPanelTab}
-          onClose={() => setRightPanelTab(null)}
+          onActiveTabChange={(tab) =>
+            dispatch(rightPanelTabSet({ panelId, tab }))
+          }
+          onClose={() => dispatch(rightPanelTabSet({ panelId, tab: null }))}
           flowDef={flowDef}
           params={params}
           artifacts={artifacts}
