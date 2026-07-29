@@ -1,33 +1,27 @@
-import type { ExplorerTabEntry } from "@/redux/slices/explorer-tabs-slice";
+import type { IDockviewPanelProps } from "dockview-react";
+import type { OpenPanelRequest } from "./explorer-panels";
 import { ExplorerFlowSettingsContent } from "./ExplorerFlowSettingsContent";
 import { ExplorerVersionSettingsContent } from "./ExplorerVersionSettingsContent";
 import { ExplorerJsonDefinitionContent } from "./ExplorerJsonDefinitionContent";
 import { ExplorerFlowGraphContent } from "./ExplorerFlowGraphContent";
 
-export function ExplorerTabContent({ tab }: { tab: ExplorerTabEntry }) {
-  switch (tab.kind) {
+// registered as dockview's "explorer-tab" component (see explorer-panels.ts)
+// -- each panel gets its own distinct id per kind+content now, so a panel is
+// never reused for different content the way the old singleton tab was.
+export function ExplorerTabContent({
+  params,
+}: IDockviewPanelProps<OpenPanelRequest>) {
+  switch (params.kind) {
     case "flow-settings":
-      return <ExplorerFlowSettingsContent flowId={tab.flowId} />;
+      return <ExplorerFlowSettingsContent flowId={params.flowId} />;
     case "version-settings":
-      return <ExplorerVersionSettingsContent versionId={tab.versionId} />;
+      return <ExplorerVersionSettingsContent versionId={params.versionId} />;
     case "json-definition":
-      return <ExplorerJsonDefinitionContent versionId={tab.versionId} />;
+      return <ExplorerJsonDefinitionContent versionId={params.versionId} />;
     case "flow-graph":
-      // keyed on versionId -- this tab is a singleton, so switching to a
-      // different version updates this same component's props in place
-      // rather than remounting it, meaning the same useGetFlowVersionDefQuery
-      // hook instance would otherwise transition between two different
-      // query args instead of starting a fresh subscription. The key forces
-      // a full remount of the whole data-fetching subtree, not just the
-      // graph rendering inside it.
-      return (
-        <ExplorerFlowGraphContent
-          key={tab.versionId}
-          versionId={tab.versionId}
-        />
-      );
+      return <ExplorerFlowGraphContent versionId={params.versionId} />;
     default: {
-      const _exhaustive: never = tab;
+      const _exhaustive: never = params;
       return _exhaustive;
     }
   }

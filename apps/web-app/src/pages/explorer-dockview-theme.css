@@ -1,0 +1,32 @@
+/*
+ * Overrides for dockview's built-in "abyss" theme. The theme's className is
+ * applied by the library to an internal element it manages itself (not
+ * `<DockviewReact>`'s own root), so a wrapping element's inline style can't
+ * reach it -- CSS custom properties are re-declared there, cutting off
+ * inheritance from anything above. A real rule against the same selector,
+ * loaded after dockview's own stylesheet, is what actually wins.
+ * Generated via dockview.dev's theme editor.
+ */
+.dockview-theme-abyss {
+  --dv-floating-group-dragging-opacity: 1;
+  --dv-activegroup-visiblepanel-tab-background-color: #1f1f1f;
+  --dv-activegroup-hiddenpanel-tab-background-color: #181818;
+  --dv-activegroup-hiddenpanel-tab-color: #6a6a6a;
+  --dv-group-view-background-color: #1f1f1f;
+  --dv-tabs-and-actions-container-background-color: #181818;
+  --dv-separator-border: #2b2b2b;
+  --dv-paneview-header-border-color: #2b2b2b;
+  --dv-activegroup-visiblepanel-tab-color: #eeeeee;
+  --dv-inactivegroup-visiblepanel-tab-background-color: #1f1f1f;
+  --dv-inactivegroup-hiddenpanel-tab-background-color: #181818;
+  --dv-inactivegroup-visiblepanel-tab-color: #eeeeee;
+  --dv-inactivegroup-hiddenpanel-tab-color: #6a6a6a;
+  --dv-tab-divider-color: #2b2b2b;
+  --dv-icon-hover-background-color: #3c3c3c;
+  --dv-active-sash-color: #bb3e3e;
+  --dv-spacing-padding: 12px;
+  --dv-tabs-and-actions-container-height: 39px;
+  --dv-border-radius: 0px;
+  --dv-tab-border-radius: 0px;
+  --dv-sash-border-radius: 0px;
+}
