@@ -10,6 +10,7 @@ import { ExplorerFlowGraphContent } from "./ExplorerFlowGraphContent";
 // never reused for different content the way the old singleton tab was.
 export function ExplorerTabContent({
   params,
+  api,
 }: IDockviewPanelProps<OpenPanelRequest>) {
   switch (params.kind) {
     case "flow-settings":
@@ -19,7 +20,12 @@ export function ExplorerTabContent({
     case "json-definition":
       return <ExplorerJsonDefinitionContent versionId={params.versionId} />;
     case "flow-graph":
-      return <ExplorerFlowGraphContent versionId={params.versionId} />;
+      return (
+        <ExplorerFlowGraphContent
+          versionId={params.versionId}
+          panelId={api.id}
+        />
+      );
     default: {
       const _exhaustive: never = params;
       return _exhaustive;

@@ -89,8 +89,15 @@ export const getRunEventIds = (state: RootState) => {
   return state.events.runEventIds;
 };
 
+// returned whenever there's no real array to give back -- a fresh `[]`
+// literal on every call would defeat createSelector's memoization in
+// makeSelectRunEvents below, since it can't tell "still nothing" apart from
+// "something changed" without a stable reference to compare against
+const EMPTY_EVENT_IDS: EventId[] = [];
+
 export const selectRunEventIds = (state: RootState, runId: string | null) => {
-  return runId ? (state.events.runEventIds[runId] ?? []) : [];
+  if (runId === null) return EMPTY_EVENT_IDS;
+  return state.events.runEventIds[runId] ?? EMPTY_EVENT_IDS;
 };
 
 export const selectEventById = (state: RootState, id: string | null) =>
