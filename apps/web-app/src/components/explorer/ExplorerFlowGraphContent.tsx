@@ -19,7 +19,8 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ExplorerRunToolbar } from "./ExplorerRunToolbar";
-import { ExplorerRunRightPanel } from "./ExplorerRunRightPanel";
+import { ExplorerRunRail } from "./ExplorerRunRail";
+import { ExplorerRunRightPanelContent } from "./ExplorerRunRightPanelContent";
 
 export function ExplorerFlowGraphContent({
   versionId,
@@ -127,26 +128,41 @@ export function ExplorerFlowGraphContent({
     />
   );
 
-  if (!rightPanelTab) return <div className="h-full">{graph}</div>;
+  if (!rightPanelTab) {
+    return (
+      <div className="flex h-full">
+        <div className="flex-1">{graph}</div>
+        <ExplorerRunRail
+          activeTab={rightPanelTab}
+          onSelectTab={(tab) => dispatch(rightPanelTabSet({ panelId, tab }))}
+        />
+      </div>
+    );
+  }
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="h-full">
       <ResizablePanel defaultSize="70%">{graph}</ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize="30%">
-        <ExplorerRunRightPanel
-          activeTab={rightPanelTab}
-          onActiveTabChange={(tab) =>
-            dispatch(rightPanelTabSet({ panelId, tab }))
-          }
-          onClose={() => dispatch(rightPanelTabSet({ panelId, tab: null }))}
-          flowDef={flowDef}
-          params={params}
-          artifacts={artifacts}
-          selectedParamHashes={selectedParamHashes}
-          onParamChange={handleParamChange}
-          missingRequiredParams={missingRequiredParams}
-        />
+      <ResizablePanel defaultSize="30%" minSize="15%">
+        <div className="flex h-full">
+          <ExplorerRunRail
+            activeTab={rightPanelTab}
+            onSelectTab={(tab) => dispatch(rightPanelTabSet({ panelId, tab }))}
+          />
+          <div className="flex-1 min-w-0">
+            <ExplorerRunRightPanelContent
+              activeTab={rightPanelTab}
+              onClose={() => dispatch(rightPanelTabSet({ panelId, tab: null }))}
+              flowDef={flowDef}
+              params={params}
+              artifacts={artifacts}
+              selectedParamHashes={selectedParamHashes}
+              onParamChange={handleParamChange}
+              missingRequiredParams={missingRequiredParams}
+            />
+          </div>
+        </div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );
