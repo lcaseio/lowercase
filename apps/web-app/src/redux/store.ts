@@ -17,6 +17,7 @@ import { flowVersionRunHistorySlice } from "./slices/flow-version-run-history-sl
 import { flowVersionSimsSlice } from "./slices/flow-version-sims-slice";
 import { flowVersionArtifactsSlice } from "./slices/flow-version-artifacts-slice";
 import { flowGraphPanelsSlice } from "./slices/flow-graph-panels-slice";
+import { loadPersistedExplorerState } from "./explorer-persistence";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -42,8 +43,16 @@ export const rootReducer = combineReducers({
 
 export type RootState = ReturnType<typeof rootReducer>;
 
+// read synchronously at module load, before configureStore -- preloadedState
+// has to be provided at construction time, so this can't happen inside any
+// component. No dispatch happens here, so nothing can react to it.
+const persistedExplorerState = loadPersistedExplorerState();
+
 export const store = configureStore({
   reducer: rootReducer,
+  preloadedState: {
+    flowGraphPanels: persistedExplorerState.flowGraphPanels ?? undefined,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(routeEventListenerMiddleware.middleware)
