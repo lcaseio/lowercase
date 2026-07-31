@@ -7,3 +7,4 @@ One file per significant, settled decision — see [ADR-0001](0001-adopt-archite
 | [0001](0001-adopt-architecture-decision-records.md) | Adopt Architecture Decision Records                    | Accepted |
 | [0002](0002-artifact-flow-association-schema.md)    | Artifact-to-flow association schema for Artifacts mode | Accepted |
 | [0003](0003-artifact-curated-flag.md)               | Dedicated `curated` flag on `Artifact`                 | Accepted |
+| [0004](0004-panel-state-management-and-persistence.md) | Panel state management and persistence for the dockview-based workspace UI | Accepted |
