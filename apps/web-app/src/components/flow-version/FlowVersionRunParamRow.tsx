@@ -116,7 +116,7 @@ export function FlowVersionRunParamRow({
           <SelectTrigger className="w-60">
             <SelectValue placeholder="Select an artifact" />
           </SelectTrigger>
-          <SelectContent className="">
+          <SelectContent>
             <SelectGroup>
               <SelectLabel>{name}</SelectLabel>
               <SelectItem value={UNSET_VALUE}>

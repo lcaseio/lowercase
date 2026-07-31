@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { ExplorerRunRightPanelTab } from "@/components/explorer/ExplorerRunRightPanel";
+import type { ExplorerRunRightPanelTab } from "@/components/explorer/ExplorerRunRightPanelContent";
 
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
