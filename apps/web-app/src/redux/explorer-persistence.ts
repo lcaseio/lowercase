@@ -1,0 +1,138 @@
+import type { SerializedDockview } from "dockview-react";
+import type { FlowGraphPanelsState } from "./slices/flow-graph-panels-slice";
+
+// workspace id hardcoded for now -- see UI_STATE_RESEARCH.md's
+// workspace-switching notes for why this is still the right seam to leave in
+// place even with only one implicit workspace today
+const STORAGE_KEY = "explorer-workspace:default";
+const CURRENT_VERSION = 1;
+
+// injectable rather than a bare `localStorage`/`sessionStorage` reference --
+// this repo's vitest runs in Node, not jsdom, so there's no real global to
+// reach for in tests, and it happens to be the same seam a future
+// async/database-backed swap would use
+type ExplorerStorage = Pick<Storage, "getItem" | "setItem">;
+type ExplorerStorages = { session: ExplorerStorage; local: ExplorerStorage };
+
+type LoadedExplorerState = {
+  dockview: SerializedDockview | null;
+  flowGraphPanels: FlowGraphPanelsState | null;
+};
+
+const EMPTY_LOADED_STATE: LoadedExplorerState = {
+  dockview: null,
+  flowGraphPanels: null,
+};
+
+// null means this storage has nothing *usable at the envelope level*
+// (missing, corrupt, or wrong version) -- distinct from a valid envelope
+// whose individual fields might still be independently null, which is a
+// real LoadedExplorerState, not a signal to fall back to the next source.
+// Deliberately shallow validation (typeof checks, not a schema validator) --
+// proportionate for low-stakes local UI state. dockview's own tree shape is
+// not validated at all here; see UI_WORKSPACE_MILESTONE.md's PR 7 entry for
+// why that's deferred.
+function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
+  let raw: string | null;
+  try {
+    raw = storage.getItem(STORAGE_KEY);
+  } catch {
+    return null; // storage inaccessible (privacy mode, etc.)
+  }
+  if (!raw) return null;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    (parsed as { version?: unknown }).version !== CURRENT_VERSION
+  ) {
+    // wrong/missing version -- discard the whole thing, don't guess at an
+    // older shape
+    return null;
+  }
+
+  const p = parsed as Record<string, unknown>;
+
+  const dockview =
+    typeof p.dockview === "object" && p.dockview !== null
+      ? (p.dockview as SerializedDockview)
+      : null;
+
+  // flowGraphPanels is only ever used if dockview also came back -- a panel
+  // manually recreated by clicking the tree into an empty dockview host
+  // should never silently resurrect old business state it wasn't really
+  // reopened with (a "fresh" panel that secretly isn't one). This isn't
+  // symmetric on purpose: dockview restoring is never conditioned on
+  // flowGraphPanels the other way, since a restored panel's own identity
+  // lives entirely in dockview's own params, independent of this slice --
+  // that direction was already harmless and stays independent.
+  const panelState = p.panelState as { flowGraphPanels?: unknown } | undefined;
+  const flowGraphPanels =
+    dockview !== null &&
+    typeof panelState?.flowGraphPanels === "object" &&
+    panelState.flowGraphPanels !== null
+      ? (panelState.flowGraphPanels as FlowGraphPanelsState)
+      : null;
+
+  return { dockview, flowGraphPanels };
+}
+
+// tab-local sessionStorage wins first -- same-tab continuity across both
+// in-app navigation (Explorer unmount/remount) and a real reload, neither of
+// which should be able to pick up a *different* tab's edits. Only a
+// genuinely new tab (empty or unusable sessionStorage) falls back to the
+// cross-tab-shared localStorage "last known good" snapshot. The choice
+// happens at the whole-envelope level, never per field -- a valid
+// sessionStorage envelope is used entirely on its own terms (including
+// whatever per-field nulls it has), never patched with fields pulled from a
+// different tab's localStorage data.
+export function loadPersistedExplorerState(
+  storages: ExplorerStorages = {
+    session: window.sessionStorage,
+    local: window.localStorage,
+  },
+): LoadedExplorerState {
+  return (
+    readSnapshot(storages.session) ??
+    readSnapshot(storages.local) ??
+    EMPTY_LOADED_STATE
+  );
+}
+
+// written to both on every save -- session for this tab's own isolated
+// continuity, local to keep the cross-tab "seed a new tab" fallback fresh.
+// Each write is independent/best-effort; one storage being unavailable
+// doesn't block the other.
+export function savePersistedExplorerState(
+  snapshot: {
+    dockview: SerializedDockview;
+    flowGraphPanels: FlowGraphPanelsState;
+  },
+  storages: ExplorerStorages = {
+    session: window.sessionStorage,
+    local: window.localStorage,
+  },
+): void {
+  const payload = JSON.stringify({
+    version: CURRENT_VERSION,
+    dockview: snapshot.dockview,
+    panelState: { flowGraphPanels: snapshot.flowGraphPanels },
+  });
+  try {
+    storages.session.setItem(STORAGE_KEY, payload);
+  } catch {
+    // storage full/unavailable -- best-effort only, nothing to recover into
+  }
+  try {
+    storages.local.setItem(STORAGE_KEY, payload);
+  } catch {
+    // storage full/unavailable -- best-effort only, nothing to recover into
+  }
+}

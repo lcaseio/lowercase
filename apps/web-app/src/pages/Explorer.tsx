@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DockviewReact, themeAbyss, type DockviewApi } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 // must load after the import above -- overrides the same `.dockview-theme-abyss`
@@ -15,12 +15,18 @@ import { ExplorerTabContent } from "@/components/explorer/ExplorerTabContent";
 import { ExplorerWatermark } from "@/components/explorer/ExplorerWatermark";
 import { DockviewApiContext } from "@/components/explorer/explorer-dockview-context";
 import { EXPLORER_PANEL_COMPONENT } from "@/components/explorer/explorer-panels";
-import { useAppDispatch } from "@/redux/typed-hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { panelRemoved } from "@/redux/slices/flow-graph-panels-slice";
+import {
+  loadPersistedExplorerState,
+  savePersistedExplorerState,
+} from "@/redux/explorer-persistence";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 export function Explorer() {
   const [dockviewApi, setDockviewApi] = useState<DockviewApi | null>(null);
   const dispatch = useAppDispatch();
+  const flowGraphPanelsState = useAppSelector((s) => s.flowGraphPanels);
 
   // owned by whichever component holds the live dockviewApi, not specific to
   // this page -- deletes a panel's keyed Redux state on intentional removal
@@ -33,6 +39,73 @@ export function Explorer() {
     );
     return () => disposable.dispose();
   }, [dockviewApi, dispatch]);
+
+  // tracks whether there's an actual pending change since the last write --
+  // without this, closing a stale, long-untouched background tab (or just
+  // navigating away from an idle /explorer) unconditionally re-persists that
+  // tab's old state on the way out, which can stomp a *different*, more
+  // recently-active tab's more current write even though nothing here
+  // actually changed. Only ever write when something really did.
+  const isDirtyRef = useRef(false);
+  const writeSnapshotRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    writeSnapshotRef.current = () => {
+      if (!dockviewApi) return;
+      savePersistedExplorerState({
+        dockview: dockviewApi.toJSON(),
+        flowGraphPanels: flowGraphPanelsState,
+      });
+      isDirtyRef.current = false;
+    };
+  }, [dockviewApi, flowGraphPanelsState]);
+
+  const debouncedWrite = useDebouncedCallback(
+    () => writeSnapshotRef.current(),
+    400,
+  );
+  const scheduleWrite = useCallback(() => {
+    isDirtyRef.current = true;
+    debouncedWrite();
+  }, [debouncedWrite]);
+
+  // restores dockview's own layout, then attaches the layout-change and
+  // page-unload flush listeners, all in one synchronous pass -- no separate
+  // "hydration complete" flag needed. fromJSON() itself fires
+  // onDidLayoutChange, but the listener attached below it in this same
+  // callback literally cannot exist yet while fromJSON() is still running,
+  // so the ordering that matters falls out of plain execution order.
+  useEffect(() => {
+    if (!dockviewApi) return;
+    const { dockview } = loadPersistedExplorerState();
+    if (dockview) {
+      dockviewApi.fromJSON(dockview, { reuseExistingPanels: false });
+    }
+
+    const layoutDisposable = dockviewApi.onDidLayoutChange(scheduleWrite);
+    const flush = () => {
+      if (!isDirtyRef.current) return;
+      writeSnapshotRef.current();
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+
+    return () => {
+      layoutDisposable.dispose();
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      flush();
+    };
+  }, [dockviewApi, scheduleWrite]);
+
+  // fires on every change to the flow-graph panels slice itself, independent
+  // of dockview's own layout-change events. Declared after the hydration
+  // effect above -- React runs effects in declaration order per commit, so
+  // this can never fire before that one has on the same render transition,
+  // without needing a flag to say so.
+  useEffect(() => {
+    if (!dockviewApi) return;
+    scheduleWrite();
+  }, [dockviewApi, flowGraphPanelsState, scheduleWrite]);
 
   return (
     <div className="h-full flex flex-col  dark:bg-neutral-850">

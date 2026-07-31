@@ -13,6 +13,7 @@ import {
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
 import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
+import { AutoFitView } from "./AutoFitView";
 
 // same graphLayout-based rendering as FlowEditPanel, but taking a flowDef
 // directly instead of fetching by route param -- FlowTree's replacement for
@@ -130,9 +131,8 @@ export function FlowGraph({
             ? (_event, node) => onNodeClickHandler(node)
             : undefined
         }
-        fitViewOptions={{ padding: 0.3 }}
-        fitView
       >
+        <AutoFitView />
         <Controls />
         {toolbar && <Panel position="bottom-center">{toolbar}</Panel>}
       </ReactFlow>
