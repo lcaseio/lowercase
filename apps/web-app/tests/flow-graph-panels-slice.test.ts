@@ -5,6 +5,7 @@ import {
   panelRemoved,
   rightPanelTabSet,
   runSubmitted,
+  stepSelected,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import type { RootState } from "@/redux/store";
@@ -15,6 +16,7 @@ const DEFAULT_PANEL_STATE = {
   selectedParamHashes: {},
   rightPanelTab: null,
   runId: null,
+  selectedStepId: null,
 };
 
 describe("flowGraphPanelsSlice", () => {
@@ -65,6 +67,19 @@ describe("flowGraphPanelsSlice", () => {
       expect(state["flow-graph-v1"]).toEqual({
         ...DEFAULT_PANEL_STATE,
         runId: "run-1",
+      });
+    });
+  });
+
+  describe("stepSelected", () => {
+    it("creates a panel entry lazily and sets the selectedStepId", () => {
+      const state = reducer(
+        {},
+        stepSelected({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        selectedStepId: "step-1",
       });
     });
   });

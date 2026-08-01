@@ -37,6 +37,7 @@ const SAMPLE_PANELS: FlowGraphPanelsState = {
     selectedParamHashes: { a: "h1" },
     rightPanelTab: "runinput",
     runId: "run-1",
+    selectedStepId: null,
   },
 };
 const OTHER_DOCKVIEW = {
@@ -47,6 +48,7 @@ const OTHER_PANELS: FlowGraphPanelsState = {
     selectedParamHashes: {},
     rightPanelTab: null,
     runId: "run-2",
+    selectedStepId: null,
   },
 };
 
