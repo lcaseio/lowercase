@@ -1,9 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  FlaskConicalIcon,
-  PlayIcon,
-  SlidersHorizontalIcon,
-} from "lucide-react";
+import { FileInputIcon, FlaskConicalIcon, PlayIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -18,7 +14,7 @@ type Props = {
 // bottom-center floating toolbar over the graph canvas (via FlowGraph's
 // `toolbar` prop / react-flow's own `Panel`) -- Sim/Params slots stay fixed
 // left-to-right regardless of flow content so Run's position never moves.
-export function ExplorerRunToolbar({
+export function RunToolbar({
   hasParams,
   paramsHasUnsetRequired,
   runDisabled,
@@ -51,8 +47,8 @@ export function ExplorerRunToolbar({
           onClick={onOpenParams}
           title="Set params"
         >
-          <SlidersHorizontalIcon className="size-4" />
-          Run Params
+          <FileInputIcon className="size-4" />
+          Run Input
         </Button>
       ) : (
         // reserved empty slot, same footprint as the button above, so Run's

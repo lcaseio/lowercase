@@ -1,10 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { ExplorerRunRightPanelTab } from "@/components/explorer/ExplorerRunRightPanelContent";
+import type { SidePanelTab } from "@/components/explorer/flow-graph-panel/SidePanel";
 
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
-  rightPanelTab: ExplorerRunRightPanelTab | null;
+  rightPanelTab: SidePanelTab | null;
   runId: string | null;
 };
 
@@ -48,7 +48,7 @@ export const flowGraphPanelsSlice = createSlice({
       state,
       action: PayloadAction<{
         panelId: string;
-        tab: ExplorerRunRightPanelTab | null;
+        tab: SidePanelTab | null;
       }>,
     ) => {
       ensurePanel(state, action.payload.panelId).rightPanelTab =

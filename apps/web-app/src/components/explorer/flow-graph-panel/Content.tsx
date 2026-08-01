@@ -18,11 +18,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ExplorerRunToolbar } from "./ExplorerRunToolbar";
-import { ExplorerRunRail } from "./ExplorerRunRail";
-import { ExplorerRunRightPanelContent } from "./ExplorerRunRightPanelContent";
+import { RunToolbar } from "./RunToolbar";
+import { Rail } from "./Rail";
+import { SidePanel } from "./SidePanel";
 
-export function ExplorerFlowGraphContent({
+export function Content({
   versionId,
   panelId,
 }: {
@@ -50,6 +50,7 @@ export function ExplorerFlowGraphContent({
   const version = data?.ok ? data.value.version : null;
   const flowAnalysis = useFlowAnalysis(flowDef);
   const artifacts = artifactsData?.ok ? artifactsData.value : [];
+  const problems = flowAnalysis?.flowAnalysis.problems ?? [];
 
   // stable across renders unless flowDef itself changes -- otherwise a fresh
   // array every render invalidates useStepRunInfo's (and, downstream,
@@ -106,12 +107,12 @@ export function ExplorerFlowGraphContent({
   if (!flowDef) return null;
 
   const toolbar = (
-    <ExplorerRunToolbar
+    <RunToolbar
       hasParams={Object.keys(params).length > 0}
       paramsHasUnsetRequired={missingRequiredParams.length > 0}
       runDisabled={runDisabled}
       onOpenParams={() =>
-        dispatch(rightPanelTabSet({ panelId, tab: "params" }))
+        dispatch(rightPanelTabSet({ panelId, tab: "runinput" }))
       }
       onOpenSim={() => dispatch(rightPanelTabSet({ panelId, tab: "sim" }))}
       onRun={handleRun}
@@ -132,9 +133,10 @@ export function ExplorerFlowGraphContent({
     return (
       <div className="flex h-full">
         <div className="flex-1">{graph}</div>
-        <ExplorerRunRail
+        <Rail
           activeTab={rightPanelTab}
           onSelectTab={(tab) => dispatch(rightPanelTabSet({ panelId, tab }))}
+          problemsCount={problems.length}
         />
       </div>
     );
@@ -146,12 +148,13 @@ export function ExplorerFlowGraphContent({
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" minSize="15%">
         <div className="flex h-full">
-          <ExplorerRunRail
+          <Rail
             activeTab={rightPanelTab}
             onSelectTab={(tab) => dispatch(rightPanelTabSet({ panelId, tab }))}
+            problemsCount={problems.length}
           />
           <div className="flex-1 min-w-0">
-            <ExplorerRunRightPanelContent
+            <SidePanel
               activeTab={rightPanelTab}
               onClose={() => dispatch(rightPanelTabSet({ panelId, tab: null }))}
               flowDef={flowDef}
@@ -160,6 +163,7 @@ export function ExplorerFlowGraphContent({
               selectedParamHashes={selectedParamHashes}
               onParamChange={handleParamChange}
               missingRequiredParams={missingRequiredParams}
+              problems={problems}
             />
           </div>
         </div>
