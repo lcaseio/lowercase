@@ -3,6 +3,7 @@ import {
   CircleAlertIcon,
   FileInputIcon,
   FlaskConicalIcon,
+  Footprints,
   SlidersHorizontalIcon,
   VariableIcon,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const RAIL_ITEMS: {
   label: string;
   icon: typeof SlidersHorizontalIcon;
 }[] = [
+  { tab: "stepdetails", label: "Step Details", icon: Footprints },
   { tab: "parameters", label: "Parameters", icon: VariableIcon },
   { tab: "runinput", label: "Run Input", icon: FileInputIcon },
   { tab: "sim", label: "Sim", icon: FlaskConicalIcon },

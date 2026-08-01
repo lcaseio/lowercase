@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import type { Node } from "@xyflow/react";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { useRequestRunMutation } from "@/redux/api/runs-api";
@@ -8,6 +9,7 @@ import {
   paramHashSet,
   rightPanelTabSet,
   runSubmitted,
+  stepSelected,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { FlowGraph } from "@/components/FlowGraph";
@@ -35,9 +37,8 @@ export function Content({
   const [requestRun] = useRequestRunMutation();
 
   const dispatch = useAppDispatch();
-  const { selectedParamHashes, rightPanelTab, runId } = useAppSelector(
-    (state) => selectFlowGraphPanelState(state, panelId),
-  );
+  const { selectedParamHashes, rightPanelTab, runId, selectedStepId } =
+    useAppSelector((state) => selectFlowGraphPanelState(state, panelId));
 
   const hasError = error || data?.ok === false;
   useEffect(() => {
@@ -76,6 +77,17 @@ export function Content({
 
   const handleParamChange = (name: string, hash: string | undefined) => {
     dispatch(paramHashSet({ panelId, name, hash }));
+  };
+
+  // Only auto-switches to Step Details when no run is active on this panel
+  // -- once Event Details/Step Results exist, a run-present branch should
+  // switch there instead, showing the step's outcome rather than its
+  // definition. Not built yet, so there's no `else` here, just the gate.
+  const handleNodeClick = (node: Node) => {
+    dispatch(stepSelected({ panelId, stepId: node.id }));
+    if (!runId) {
+      dispatch(rightPanelTabSet({ panelId, tab: "stepdetails" }));
+    }
   };
 
   const handleRun = async () => {
@@ -126,6 +138,7 @@ export function Content({
       outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
       stepRunInfo={stepRunInfo}
       toolbar={toolbar}
+      onNodeClickHandler={handleNodeClick}
     />
   );
 
@@ -164,6 +177,7 @@ export function Content({
               onParamChange={handleParamChange}
               missingRequiredParams={missingRequiredParams}
               problems={problems}
+              selectedStepId={selectedStepId}
             />
           </div>
         </div>

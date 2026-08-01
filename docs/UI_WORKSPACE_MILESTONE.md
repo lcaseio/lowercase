@@ -273,7 +273,7 @@ This is also the point where this arc stops being framed as "the Explorer spike"
 
 **Found, not fixed here — logged in `docs/todo.md` instead**: the Params tab has a real, felt render delay (confirmed via React DevTools profiling, not just suspected) driven by `ExplorerFlowGraphContent.tsx`'s `useListArtifactsQuery()` pulling every artifact in the project unscoped (336 in this dev DB) into each param row's compatible-artifacts filter and `Select` dropdown. Ruled out `SelectContent`'s `position` prop as a fix (tried `popper`, made the dropdown's own open animation worse via the same Floating-UI-vs-animation class of issue as the tooltip bug above, and didn't reduce the item count rendered either way). Confirmed the real lever by temporarily slicing the artifact list to 5 items, which dropped the worst render commit from ~50ms to ~2-3ms. Real fix is the already-known Artifacts-mode wiring gap (a curated/scoped artifact set instead of the global list) — out of scope for this PR since it changes picker behavior, not just performance.
 
-#### PR 10 - Problems + Parameters migrated to the rail
+#### PR 10 - Problems + Parameters migrated to the rail - merged (#293)
 
 Supersedes the old loose "PR 10+ - other content types" placeholder with a concrete next three. Both `FlowProblemsList` (flow-analysis problems, from View/Edit's `FlowVersionDetailsPanel`) and `FlowParameters` (the flow's declared param schema — names + content types; a different concept from the rail's existing run-input picker, even though both get called "Params" colloquially) become new rail tabs. Neither depends on step selection or a run existing — both are purely `flowDef`/`flowAnalysis`-driven, reusing existing standalone components as-is. Lowest-risk of the three, no new interaction wiring needed.
 
@@ -282,6 +282,10 @@ Supersedes the old loose "PR 10+ - other content types" placeholder with a concr
 #### PR 11 - Step Details migrated to the rail
 
 The one piece needing real new engineering: `FlowGraph`'s existing but currently-unused `onNodeClickHandler` prop gets wired up for the first time (clicking a step node sets a "selected step" state on the panel), then `StepDetails` renders as a new rail tab driven by that selection. Worth its own PR since a future Event Details/Step Results migration will need the same click-to-select capability — getting it right here pays off twice, not a one-off.
+
+**What actually landed**: as planned — a new `selectedStepId` field + `stepSelected` reducer on `FlowGraphPanelState` (persists across rail-tab switches, same as every other panel-scoped field), a new `StepDetailsTab.tsx` under `flow-graph-panel/side-panel/`, and a `handleNodeClick` in `Content.tsx` wired into `FlowGraph`'s `onNodeClickHandler`. The auto-switch-to-Step-Details behavior is gated on `runId`: no run active → switch tabs; a run present → just update the selection, no tab switch, deliberately leaving the `else` branch unbuilt until Event Details/Step Results exist to switch to instead (confirmed working correctly for both cases in manual testing). `StepDetails`' required `onOpenInMainPanel` prop is stubbed as a no-op — "open in main panel" has no equivalent in the new dockview UI yet, logged in `docs/todo.md` rather than improvised here.
+
+**Found along the way, not caused by this PR**: testing the run-active branch surfaced a real, previously-hard-to-reproduce bug — a run showing partial event hydration (REST backfill fills in what already happened, but no further live events ever arrive) when the WebSocket connection ends up attached to a different app instance/session than the one being watched. Root cause is the already-known WebSocket session-robustness gap in `docs/todo.md`, not something new; the concrete repro is now logged there alongside it.
 
 #### PR 12 - Settings migrated to the rail, removed from the tree
 

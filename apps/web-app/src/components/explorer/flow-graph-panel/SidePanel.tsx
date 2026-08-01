@@ -10,14 +10,17 @@ import { ParamsTab } from "./side-panel/ParamsTab";
 import { SimTab } from "./side-panel/SimTab";
 import { ProblemsTab } from "./side-panel/ProblemsTab";
 import { ParametersTab } from "./side-panel/ParametersTab";
+import { StepDetailsTab } from "./side-panel/StepDetailsTab";
 
-export type SidePanelTab = "runinput" | "sim" | "problems" | "parameters";
+export type SidePanelTab =
+  "runinput" | "sim" | "problems" | "parameters" | "stepdetails";
 
 const TAB_LABELS: Record<SidePanelTab, string> = {
   runinput: "Run Input",
   sim: "Sim",
   problems: "Problems",
   parameters: "Parameters",
+  stepdetails: "Step Details",
 };
 
 type Props = {
@@ -30,6 +33,7 @@ type Props = {
   onParamChange: (name: string, hash: string | undefined) => void;
   missingRequiredParams: string[];
   problems: FlowProblem[];
+  selectedStepId: string | null;
 };
 
 // scoped to the Flow Graph tab only -- own local tab state (owned by the
@@ -50,6 +54,7 @@ export function SidePanel({
   onParamChange,
   missingRequiredParams,
   problems,
+  selectedStepId,
 }: Props) {
   function renderTab() {
     switch (activeTab) {
@@ -70,6 +75,8 @@ export function SidePanel({
         return <ProblemsTab problems={problems} />;
       case "parameters":
         return <ParametersTab params={params} />;
+      case "stepdetails":
+        return <StepDetailsTab stepId={selectedStepId} flowDef={flowDef} />;
       default: {
         const _exhaustive: never = activeTab;
         return _exhaustive;

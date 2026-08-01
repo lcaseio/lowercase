@@ -6,6 +6,7 @@ export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
   rightPanelTab: SidePanelTab | null;
   runId: string | null;
+  selectedStepId: string | null;
 };
 
 export type FlowGraphPanelsState = Record<string, FlowGraphPanelState>;
@@ -14,6 +15,7 @@ const DEFAULT_PANEL_STATE: FlowGraphPanelState = {
   selectedParamHashes: {},
   rightPanelTab: null,
   runId: null,
+  selectedStepId: null,
 };
 
 const initialState: FlowGraphPanelsState = {};
@@ -60,6 +62,13 @@ export const flowGraphPanelsSlice = createSlice({
     ) => {
       ensurePanel(state, action.payload.panelId).runId = action.payload.runId;
     },
+    stepSelected: (
+      state,
+      action: PayloadAction<{ panelId: string; stepId: string }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).selectedStepId =
+        action.payload.stepId;
+    },
     // named to match dockview's own onDidRemovePanel event, not a different
     // verb -- dispatched from a central listener wherever the live
     // dockviewApi is held, not from this panel's own component
@@ -69,8 +78,13 @@ export const flowGraphPanelsSlice = createSlice({
   },
 });
 
-export const { paramHashSet, rightPanelTabSet, runSubmitted, panelRemoved } =
-  flowGraphPanelsSlice.actions;
+export const {
+  paramHashSet,
+  rightPanelTabSet,
+  runSubmitted,
+  stepSelected,
+  panelRemoved,
+} = flowGraphPanelsSlice.actions;
 
 export const selectFlowGraphPanelState = (
   state: RootState,
