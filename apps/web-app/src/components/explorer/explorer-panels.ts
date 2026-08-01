@@ -7,7 +7,6 @@ export const EXPLORER_PANEL_COMPONENT = "explorer-tab";
 // expand) -- only their fixed leaf children do.
 export type OpenPanelRequest =
   | { kind: "flow-settings"; label: string; flowId: string }
-  | { kind: "version-settings"; label: string; versionId: string }
   | { kind: "json-definition"; label: string; versionId: string }
   | { kind: "flow-graph"; label: string; versionId: string };
 
@@ -15,7 +14,6 @@ function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
     case "flow-settings":
       return req.flowId;
-    case "version-settings":
     case "json-definition":
     case "flow-graph":
       return req.versionId;

@@ -52,15 +52,6 @@ export function ExplorerTree() {
           onSelectVersion={(versionId) => {
             setSelectedRowId(`version:${versionId}`);
           }}
-          onSelectVersionSettings={(version) => {
-            setSelectedRowId(`version-settings:${version.id}`);
-            if (!api) return;
-            openOrFocusPanel(api, {
-              kind: "version-settings",
-              label: `${version.versionLabel ?? `Version ${version.sequence}`} Settings`,
-              versionId: version.id,
-            });
-          }}
           onSelectFlowGraph={(version) => {
             setSelectedRowId(`flow-graph:${version.id}`);
             if (!api) return;

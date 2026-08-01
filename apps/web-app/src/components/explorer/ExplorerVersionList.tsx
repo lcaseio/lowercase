@@ -8,14 +8,12 @@ export function ExplorerVersionList({
   flowId,
   selectedRowId,
   onSelectVersion,
-  onSelectVersionSettings,
   onSelectFlowGraph,
   onSelectJsonDefinition,
 }: {
   flowId: string;
   selectedRowId: string | null;
   onSelectVersion: (versionId: string) => void;
-  onSelectVersionSettings: (version: FlowVersionRecord) => void;
   onSelectFlowGraph: (version: FlowVersionRecord) => void;
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
 }) {
@@ -63,7 +61,6 @@ export function ExplorerVersionList({
           onToggleExpanded={() => toggleExpanded(version.id)}
           selectedRowId={selectedRowId}
           onSelectVersion={() => onSelectVersion(version.id)}
-          onSelectVersionSettings={() => onSelectVersionSettings(version)}
           onSelectFlowGraph={() => onSelectFlowGraph(version)}
           onSelectJsonDefinition={() => onSelectJsonDefinition(version)}
         />

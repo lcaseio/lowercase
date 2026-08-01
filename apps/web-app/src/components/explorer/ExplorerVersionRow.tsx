@@ -1,10 +1,5 @@
 import type { FlowVersionRecord } from "@lcase/types";
-import {
-  ChevronDownIcon,
-  CurlyBracesIcon,
-  NetworkIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { ChevronDownIcon, CurlyBracesIcon, NetworkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -18,7 +13,6 @@ export function ExplorerVersionRow({
   onToggleExpanded,
   selectedRowId,
   onSelectVersion,
-  onSelectVersionSettings,
   onSelectFlowGraph,
   onSelectJsonDefinition,
 }: {
@@ -27,12 +21,10 @@ export function ExplorerVersionRow({
   onToggleExpanded: () => void;
   selectedRowId: string | null;
   onSelectVersion: () => void;
-  onSelectVersionSettings: () => void;
   onSelectFlowGraph: () => void;
   onSelectJsonDefinition: () => void;
 }) {
   const isSelected = selectedRowId === `version:${version.id}`;
-  const isSettingsSelected = selectedRowId === `version-settings:${version.id}`;
   const isGraphSelected = selectedRowId === `flow-graph:${version.id}`;
   const isJsonSelected = selectedRowId === `json-definition:${version.id}`;
 
@@ -69,16 +61,6 @@ export function ExplorerVersionRow({
       <CollapsibleContent>
         {isExpanded ? (
           <>
-            <div
-              onClick={onSelectVersionSettings}
-              className={cn(
-                "flex items-center gap-2 pl-16 pr-2 py-1 text-xs italic text-muted-foreground cursor-pointer",
-                isSettingsSelected ? "bg-accent" : "hover:bg-accent/40",
-              )}
-            >
-              <SettingsIcon className="size-3.5 shrink-0" />
-              <span className="truncate">Settings</span>
-            </div>
             <div
               onClick={onSelectFlowGraph}
               className={cn(
