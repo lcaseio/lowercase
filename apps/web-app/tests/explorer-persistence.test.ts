@@ -35,7 +35,7 @@ const SAMPLE_DOCKVIEW = { grid: {} } as unknown as SerializedDockview;
 const SAMPLE_PANELS: FlowGraphPanelsState = {
   "flow-graph-v1": {
     selectedParamHashes: { a: "h1" },
-    rightPanelTab: "params",
+    rightPanelTab: "runinput",
     runId: "run-1",
   },
 };

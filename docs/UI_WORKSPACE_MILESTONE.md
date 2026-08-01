@@ -249,7 +249,7 @@ Explicitly deferred past this PR: **validating dockview's own `SerializedDockvie
 
 Docs-only. Distills PR 6/7's state-management arc (keyed Redux slices per panel kind, dockview-removal-triggered cleanup, the two-tier `sessionStorage`/`localStorage` persistence split, the asymmetric dockview-depends-on-panel-state failure policy) into `docs/adr/0004-panel-state-management-and-persistence.md`, written now that the shape has actually been felt in practice rather than argued to a conclusion in the abstract — see `UI_STATE_RESEARCH.md`'s "Sequencing" section for why this was the right point to write it, not earlier. Full reasoning trail stays in `UI_STATE_RESEARCH.md`; the ADR is the distilled decision record, not a replacement for it.
 
-#### PR 9 - Right Panel Icon Rail (Params/Sim migrated first)
+#### PR 9 - Right Panel Icon Rail (Params/Sim migrated first) - merged (#292)
 
 Supersedes this slot's original "Extend the tree with nested sub-lists" idea — displaced, not just renamed, for a reason worth keeping: exposing Runs as a tree node is very likely just a UI for setting `runId` on the Flow Graph panel that already exists (see below), not a new panel/tab kind that needs tree scaffolding first. That question is resolved for real once this rail exists to host it, not before.
 
@@ -273,9 +273,19 @@ This is also the point where this arc stops being framed as "the Explorer spike"
 
 **Found, not fixed here — logged in `docs/todo.md` instead**: the Params tab has a real, felt render delay (confirmed via React DevTools profiling, not just suspected) driven by `ExplorerFlowGraphContent.tsx`'s `useListArtifactsQuery()` pulling every artifact in the project unscoped (336 in this dev DB) into each param row's compatible-artifacts filter and `Select` dropdown. Ruled out `SelectContent`'s `position` prop as a fix (tried `popper`, made the dropdown's own open animation worse via the same Floating-UI-vs-animation class of issue as the tooltip bug above, and didn't reduce the item count rendered either way). Confirmed the real lever by temporarily slicing the artifact list to 5 items, which dropped the worst render commit from ~50ms to ~2-3ms. Real fix is the already-known Artifacts-mode wiring gap (a curated/scoped artifact set instead of the global list) — out of scope for this PR since it changes picker behavior, not just performance.
 
-#### PR 10+ - Other content types loaded into tabs
+#### PR 10 - Problems + Parameters migrated to the rail
 
-Original notes: **Onward, one content type at a time** — progressively wiring existing panels (artifact metadata, run details, etc.) into tab content, in whatever order matters most once 1–5 exist; also where the mount-lifecycle-dependent pieces flagged above (the breadcrumb-clearing `useLayoutEffect`, singleton drafts in Redux) get properly revisited, once it's actually known whether their new host unmounts or not.
+Supersedes the old loose "PR 10+ - other content types" placeholder with a concrete next three. Both `FlowProblemsList` (flow-analysis problems, from View/Edit's `FlowVersionDetailsPanel`) and `FlowParameters` (the flow's declared param schema — names + content types; a different concept from the rail's existing run-input picker, even though both get called "Params" colloquially) become new rail tabs. Neither depends on step selection or a run existing — both are purely `flowDef`/`flowAnalysis`-driven, reusing existing standalone components as-is. Lowest-risk of the three, no new interaction wiring needed.
+
+**What actually landed**: as planned — `ProblemsTab.tsx`/`ParametersTab.tsx` (new, under `flow-graph-panel/side-panel/`) are thin wrappers around `FlowProblemsList`/`FlowParameters`, no data transformation needed since `Content.tsx` already had `flowAnalysis.flowAnalysis.problems` and `flowDef.params` computed. The rail now has four tabs (Parameters, Run Input, Sim, Problems), with a small count badge on the Problems icon, visible even when the panel is closed — mirroring the old page's Problems-tab-trigger badge treatment. One real naming change made while building this, acting on the Parameters-vs-run-values confusion discussed earlier in this arc: the former "Params" tab/rail-item (the run-input value picker) is now labeled and keyed **"Run Input"** (`SidePanelTab`'s `"params"` value renamed to `"runinput"`, `RunToolbar`'s button label updated to match), disambiguating it from the new Parameters tab (the read-only schema view) — both used to colloquially share the word "Params." Visual polish (icon choices, spacing, badge styling) deliberately left rough for now — Step Details (PR 11) and Settings (PR 12) will add more to this same rail/side panel, so it's not worth tuning the visual details until the fuller tab set actually lands.
+
+#### PR 11 - Step Details migrated to the rail
+
+The one piece needing real new engineering: `FlowGraph`'s existing but currently-unused `onNodeClickHandler` prop gets wired up for the first time (clicking a step node sets a "selected step" state on the panel), then `StepDetails` renders as a new rail tab driven by that selection. Worth its own PR since a future Event Details/Step Results migration will need the same click-to-select capability — getting it right here pays off twice, not a one-off.
+
+#### PR 12 - Settings migrated to the rail, removed from the tree
+
+A decided direction, not a stretch idea — just gated on this PR's own scope (reworking tree click behavior, not only adding a tab), which is why it's sequenced last. Flow/Version Settings currently open as their own standalone tab (a big tab hosting one small form) — a shape that predates the rail, from back when there was no other way to surface settings at all and the tree's own click-vs-open semantics were still being felt out. Once this lands, clicking a Settings tree item will be removed and not its own tab in dockview; Settings becomes a rail tab on the Flow Graph panel instead, the same as Problems/Parameters/Step Details.
 
 #### PR (originally 8, no longer planned) - Workspaces - skipped
 

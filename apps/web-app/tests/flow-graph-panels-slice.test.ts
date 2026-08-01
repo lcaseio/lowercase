@@ -47,11 +47,11 @@ describe("flowGraphPanelsSlice", () => {
     it("creates a panel entry lazily and sets the tab", () => {
       const state = reducer(
         {},
-        rightPanelTabSet({ panelId: "flow-graph-v1", tab: "params" }),
+        rightPanelTabSet({ panelId: "flow-graph-v1", tab: "runinput" }),
       );
       expect(state["flow-graph-v1"]).toEqual({
         ...DEFAULT_PANEL_STATE,
-        rightPanelTab: "params",
+        rightPanelTab: "runinput",
       });
     });
   });
