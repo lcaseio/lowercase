@@ -117,6 +117,7 @@ export function Content({
       </div>
     );
   if (!flowDef) return null;
+  if (!version) return null;
 
   const toolbar = (
     <RunToolbar
@@ -178,6 +179,7 @@ export function Content({
               missingRequiredParams={missingRequiredParams}
               problems={problems}
               selectedStepId={selectedStepId}
+              version={version}
             />
           </div>
         </div>

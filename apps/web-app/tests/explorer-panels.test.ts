@@ -31,13 +31,6 @@ describe("explorerPanelId", () => {
       explorerPanelId({ kind: "flow-settings", label: "x", flowId: "f1" }),
     ).toBe("flow-settings-f1");
     expect(
-      explorerPanelId({
-        kind: "version-settings",
-        label: "x",
-        versionId: "v1",
-      }),
-    ).toBe("version-settings-v1");
-    expect(
       explorerPanelId({ kind: "json-definition", label: "x", versionId: "v1" }),
     ).toBe("json-definition-v1");
     expect(

@@ -16,7 +16,6 @@ export function ExplorerFlowRow({
   onSelectFlow,
   onSelectFlowSettings,
   onSelectVersion,
-  onSelectVersionSettings,
   onSelectFlowGraph,
   onSelectJsonDefinition,
 }: {
@@ -27,7 +26,6 @@ export function ExplorerFlowRow({
   onSelectFlow: () => void;
   onSelectFlowSettings: () => void;
   onSelectVersion: (versionId: string) => void;
-  onSelectVersionSettings: (version: FlowVersionRecord) => void;
   onSelectFlowGraph: (version: FlowVersionRecord) => void;
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
 }) {
@@ -81,7 +79,6 @@ export function ExplorerFlowRow({
               flowId={flow.id}
               selectedRowId={selectedRowId}
               onSelectVersion={onSelectVersion}
-              onSelectVersionSettings={onSelectVersionSettings}
               onSelectFlowGraph={onSelectFlowGraph}
               onSelectJsonDefinition={onSelectJsonDefinition}
             />

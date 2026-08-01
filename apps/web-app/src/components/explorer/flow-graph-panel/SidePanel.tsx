@@ -3,6 +3,7 @@ import type {
   FlowDefinition,
   FlowParamDefinition,
   FlowProblem,
+  FlowVersionRecord,
 } from "@lcase/types";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
@@ -11,9 +12,10 @@ import { SimTab } from "./side-panel/SimTab";
 import { ProblemsTab } from "./side-panel/ProblemsTab";
 import { ParametersTab } from "./side-panel/ParametersTab";
 import { StepDetailsTab } from "./side-panel/StepDetailsTab";
+import { SettingsTab } from "./side-panel/SettingsTab";
 
 export type SidePanelTab =
-  "runinput" | "sim" | "problems" | "parameters" | "stepdetails";
+  "runinput" | "sim" | "problems" | "parameters" | "stepdetails" | "settings";
 
 const TAB_LABELS: Record<SidePanelTab, string> = {
   runinput: "Run Input",
@@ -21,6 +23,7 @@ const TAB_LABELS: Record<SidePanelTab, string> = {
   problems: "Problems",
   parameters: "Parameters",
   stepdetails: "Step Details",
+  settings: "Settings",
 };
 
 type Props = {
@@ -34,6 +37,7 @@ type Props = {
   missingRequiredParams: string[];
   problems: FlowProblem[];
   selectedStepId: string | null;
+  version: FlowVersionRecord;
 };
 
 // scoped to the Flow Graph tab only -- own local tab state (owned by the
@@ -55,6 +59,7 @@ export function SidePanel({
   missingRequiredParams,
   problems,
   selectedStepId,
+  version,
 }: Props) {
   function renderTab() {
     switch (activeTab) {
@@ -77,6 +82,8 @@ export function SidePanel({
         return <ParametersTab params={params} />;
       case "stepdetails":
         return <StepDetailsTab stepId={selectedStepId} flowDef={flowDef} />;
+      case "settings":
+        return <SettingsTab version={version} start={flowDef.start} />;
       default: {
         const _exhaustive: never = activeTab;
         return _exhaustive;
