@@ -51,6 +51,37 @@ describe("explorerPanelId", () => {
     });
     expect(a).not.toBe(b);
   });
+
+  it("gives a run-specific flow-graph request a distinct id from the plain version request", () => {
+    const plain = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+    });
+    const runSpecific = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      runId: "r1",
+    });
+    expect(runSpecific).not.toBe(plain);
+  });
+
+  it("gives two different runs of the same version distinct ids", () => {
+    const a = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      runId: "r1",
+    });
+    const b = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      runId: "r2",
+    });
+    expect(a).not.toBe(b);
+  });
 });
 
 describe("openOrFocusPanel", () => {

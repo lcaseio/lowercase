@@ -16,6 +16,7 @@ import { eventsBatch } from "../middleware/ws";
 export const runsApi = createApi({
   reducerPath: "runsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
+  tagTypes: ["Runs"],
   endpoints: (builder) => ({
     requestRun: builder.mutation<PostRunsRes, PostRunsReq>({
       query: (arg) => ({
@@ -24,6 +25,10 @@ export const runsApi = createApi({
         body: arg,
         headers: { "Content-Type": "application/json" },
       }),
+      // only a real runId (not an error response) should invalidate the
+      // list -- an ok:false result never created anything worth refetching
+      // for
+      invalidatesTags: (result) => (result?.ok ? ["Runs"] : []),
     }),
     listAllRuns: builder.query<GetRunsRes, GetRunsReq | void>({
       query: (args) => ({
@@ -33,6 +38,7 @@ export const runsApi = createApi({
           ? { flowVersionId: args.flowVersionId }
           : undefined,
       }),
+      providesTags: ["Runs"],
     }),
 
     getRunDetail: builder.query<GetRunDetailRes, GetRunDetailReq>({

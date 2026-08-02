@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FlowVersionRecord } from "@lcase/types";
+import type { FlowVersionRecord, RunListItem } from "@lcase/types";
 import { useGetFlowVersionsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { ExplorerVersionRow } from "./ExplorerVersionRow";
@@ -10,12 +10,14 @@ export function ExplorerVersionList({
   onSelectVersion,
   onSelectFlowGraph,
   onSelectJsonDefinition,
+  onSelectRun,
 }: {
   flowId: string;
   selectedRowId: string | null;
   onSelectVersion: (versionId: string) => void;
   onSelectFlowGraph: (version: FlowVersionRecord) => void;
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
+  onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
 }) {
   const { data, error, isLoading } = useGetFlowVersionsQuery(flowId);
   const showLoading = useDelayedLoading(isLoading);
@@ -63,6 +65,7 @@ export function ExplorerVersionList({
           onSelectVersion={() => onSelectVersion(version.id)}
           onSelectFlowGraph={() => onSelectFlowGraph(version)}
           onSelectJsonDefinition={() => onSelectJsonDefinition(version)}
+          onSelectRun={(run) => onSelectRun(version, run)}
         />
       ))}
     </>

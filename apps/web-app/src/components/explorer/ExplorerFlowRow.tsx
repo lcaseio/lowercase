@@ -1,4 +1,4 @@
-import type { FlowRecord, FlowVersionRecord } from "@lcase/types";
+import type { FlowRecord, FlowVersionRecord, RunListItem } from "@lcase/types";
 import { ChevronDownIcon, SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +18,7 @@ export function ExplorerFlowRow({
   onSelectVersion,
   onSelectFlowGraph,
   onSelectJsonDefinition,
+  onSelectRun,
 }: {
   flow: FlowRecord;
   isExpanded: boolean;
@@ -28,6 +29,7 @@ export function ExplorerFlowRow({
   onSelectVersion: (versionId: string) => void;
   onSelectFlowGraph: (version: FlowVersionRecord) => void;
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
+  onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
 }) {
   const isSelected = selectedRowId === `flow:${flow.id}`;
   const isSettingsSelected = selectedRowId === `flow-settings:${flow.id}`;
@@ -81,6 +83,7 @@ export function ExplorerFlowRow({
               onSelectVersion={onSelectVersion}
               onSelectFlowGraph={onSelectFlowGraph}
               onSelectJsonDefinition={onSelectJsonDefinition}
+              onSelectRun={onSelectRun}
             />
           </>
         ) : null}
