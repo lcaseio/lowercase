@@ -8,15 +8,16 @@ export const EXPLORER_PANEL_COMPONENT = "explorer-tab";
 export type OpenPanelRequest =
   | { kind: "flow-settings"; label: string; flowId: string }
   | { kind: "json-definition"; label: string; versionId: string }
-  | { kind: "flow-graph"; label: string; versionId: string };
+  | { kind: "flow-graph"; label: string; versionId: string; runId?: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
     case "flow-settings":
       return req.flowId;
     case "json-definition":
-    case "flow-graph":
       return req.versionId;
+    case "flow-graph":
+      return req.runId ? `${req.versionId}-${req.runId}` : req.versionId;
   }
 }
 

@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
+import { useAppDispatch } from "@/redux/typed-hooks";
+import { runSelected } from "@/redux/slices/flow-graph-panels-slice";
 import { useDockviewApi } from "./explorer-dockview-context";
-import { openOrFocusPanel } from "./explorer-panels";
+import { explorerPanelId, openOrFocusPanel } from "./explorer-panels";
 import { ExplorerFlowRow } from "./ExplorerFlowRow";
 
 export function ExplorerTree() {
   const api = useDockviewApi();
+  const dispatch = useAppDispatch();
   const { data, error, isLoading } = useGetFlowsQuery();
   const showLoading = useDelayedLoading(isLoading);
   const [expandedFlowIds, setExpandedFlowIds] = useState<Set<string>>(
@@ -69,6 +72,27 @@ export function ExplorerTree() {
               label: `${version.versionLabel ?? `Version ${version.sequence}`} JSON`,
               versionId: version.id,
             });
+          }}
+          onSelectRun={(version, run) => {
+            setSelectedRowId(`run:${run.runId}`);
+            const label = `${version.versionLabel ?? `Version ${version.sequence}`} — ${
+              run.startTime
+                ? new Date(run.startTime).toLocaleString(undefined, {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })
+                : run.runId
+            }`;
+            const req = {
+              kind: "flow-graph" as const,
+              label,
+              versionId: version.id,
+              runId: run.runId,
+            };
+            dispatch(
+              runSelected({ panelId: explorerPanelId(req), runId: run.runId }),
+            );
+            if (api) openOrFocusPanel(api, req);
           }}
         />
       ))}

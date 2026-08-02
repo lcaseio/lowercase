@@ -62,6 +62,15 @@ export const flowGraphPanelsSlice = createSlice({
     ) => {
       ensurePanel(state, action.payload.panelId).runId = action.payload.runId;
     },
+    // mechanically identical to runSubmitted, but for a panel opened
+    // directly at an existing historical run (from the tree's Runs list)
+    // rather than one that just submitted a fresh run itself
+    runSelected: (
+      state,
+      action: PayloadAction<{ panelId: string; runId: string }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).runId = action.payload.runId;
+    },
     stepSelected: (
       state,
       action: PayloadAction<{ panelId: string; stepId: string }>,
@@ -82,6 +91,7 @@ export const {
   paramHashSet,
   rightPanelTabSet,
   runSubmitted,
+  runSelected,
   stepSelected,
   panelRemoved,
 } = flowGraphPanelsSlice.actions;

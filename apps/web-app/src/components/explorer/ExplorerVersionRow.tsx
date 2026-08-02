@@ -1,11 +1,18 @@
-import type { FlowVersionRecord } from "@lcase/types";
-import { ChevronDownIcon, CurlyBracesIcon, NetworkIcon } from "lucide-react";
+import { useState } from "react";
+import type { FlowVersionRecord, RunListItem } from "@lcase/types";
+import {
+  ChevronDownIcon,
+  CurlyBracesIcon,
+  HistoryIcon,
+  NetworkIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { ExplorerVersionRunList } from "./ExplorerVersionRunList";
 
 export function ExplorerVersionRow({
   version,
@@ -15,6 +22,7 @@ export function ExplorerVersionRow({
   onSelectVersion,
   onSelectFlowGraph,
   onSelectJsonDefinition,
+  onSelectRun,
 }: {
   version: FlowVersionRecord;
   isExpanded: boolean;
@@ -23,7 +31,9 @@ export function ExplorerVersionRow({
   onSelectVersion: () => void;
   onSelectFlowGraph: () => void;
   onSelectJsonDefinition: () => void;
+  onSelectRun: (run: RunListItem) => void;
 }) {
+  const [isRunsExpanded, setIsRunsExpanded] = useState(false);
   const isSelected = selectedRowId === `version:${version.id}`;
   const isGraphSelected = selectedRowId === `flow-graph:${version.id}`;
   const isJsonSelected = selectedRowId === `json-definition:${version.id}`;
@@ -81,6 +91,26 @@ export function ExplorerVersionRow({
               <CurlyBracesIcon className="size-3.5 shrink-0" />
               <span className="truncate">JSON Definition</span>
             </div>
+            <div
+              onClick={() => setIsRunsExpanded((prev) => !prev)}
+              className="flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer hover:bg-accent/40"
+            >
+              <ChevronDownIcon
+                className={cn(
+                  "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                  !isRunsExpanded && "-rotate-90",
+                )}
+              />
+              <HistoryIcon className="size-3.5 shrink-0" />
+              <span className="truncate">Runs</span>
+            </div>
+            {isRunsExpanded ? (
+              <ExplorerVersionRunList
+                versionId={version.id}
+                selectedRowId={selectedRowId}
+                onSelectRun={onSelectRun}
+              />
+            ) : null}
           </>
         ) : null}
       </CollapsibleContent>
