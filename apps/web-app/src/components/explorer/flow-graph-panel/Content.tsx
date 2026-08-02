@@ -79,15 +79,18 @@ export function Content({
     dispatch(paramHashSet({ panelId, name, hash }));
   };
 
-  // Only auto-switches to Step Details when no run is active on this panel
-  // -- once Event Details/Step Results exist, a run-present branch should
-  // switch there instead, showing the step's outcome rather than its
-  // definition. Not built yet, so there's no `else` here, just the gate.
+  // No run active -> Step Details (static definition); run active ->
+  // Step Results (status/output/exports) instead. Either tab stays
+  // manually selectable via the rail regardless of run state -- this only
+  // gates the auto-switch on node click.
   const handleNodeClick = (node: Node) => {
     dispatch(stepSelected({ panelId, stepId: node.id }));
-    if (!runId) {
-      dispatch(rightPanelTabSet({ panelId, tab: "stepdetails" }));
-    }
+    dispatch(
+      rightPanelTabSet({
+        panelId,
+        tab: runId ? "stepresults" : "stepdetails",
+      }),
+    );
   };
 
   const handleRun = async () => {
@@ -180,6 +183,9 @@ export function Content({
               problems={problems}
               selectedStepId={selectedStepId}
               version={version}
+              refs={flowAnalysis?.flowAnalysis.refs ?? []}
+              stepRunInfo={stepRunInfo}
+              runId={runId}
             />
           </div>
         </div>

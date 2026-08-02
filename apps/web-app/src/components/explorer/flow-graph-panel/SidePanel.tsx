@@ -4,18 +4,27 @@ import type {
   FlowParamDefinition,
   FlowProblem,
   FlowVersionRecord,
+  Ref,
 } from "@lcase/types";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
+import type { StepRunInfo } from "@/hooks/use-step-run-info";
 import { ParamsTab } from "./side-panel/ParamsTab";
 import { SimTab } from "./side-panel/SimTab";
 import { ProblemsTab } from "./side-panel/ProblemsTab";
 import { ParametersTab } from "./side-panel/ParametersTab";
 import { StepDetailsTab } from "./side-panel/StepDetailsTab";
+import { StepResultsTab } from "./side-panel/StepResultsTab";
 import { SettingsTab } from "./side-panel/SettingsTab";
 
 export type SidePanelTab =
-  "runinput" | "sim" | "problems" | "parameters" | "stepdetails" | "settings";
+  | "runinput"
+  | "sim"
+  | "problems"
+  | "parameters"
+  | "stepdetails"
+  | "stepresults"
+  | "settings";
 
 const TAB_LABELS: Record<SidePanelTab, string> = {
   runinput: "Run Input",
@@ -23,6 +32,7 @@ const TAB_LABELS: Record<SidePanelTab, string> = {
   problems: "Problems",
   parameters: "Parameters",
   stepdetails: "Step Details",
+  stepresults: "Step Results",
   settings: "Settings",
 };
 
@@ -38,6 +48,9 @@ type Props = {
   problems: FlowProblem[];
   selectedStepId: string | null;
   version: FlowVersionRecord;
+  refs: Ref[];
+  stepRunInfo: Record<string, StepRunInfo>;
+  runId: string | null;
 };
 
 // scoped to the Flow Graph tab only -- own local tab state (owned by the
@@ -60,6 +73,9 @@ export function SidePanel({
   problems,
   selectedStepId,
   version,
+  refs,
+  stepRunInfo,
+  runId,
 }: Props) {
   function renderTab() {
     switch (activeTab) {
@@ -82,6 +98,17 @@ export function SidePanel({
         return <ParametersTab params={params} />;
       case "stepdetails":
         return <StepDetailsTab stepId={selectedStepId} flowDef={flowDef} />;
+      case "stepresults":
+        return (
+          <StepResultsTab
+            stepId={selectedStepId}
+            flowDef={flowDef}
+            refs={refs}
+            paramHashes={selectedParamHashes}
+            stepRunInfo={stepRunInfo}
+            runId={runId}
+          />
+        );
       case "settings":
         return <SettingsTab version={version} start={flowDef.start} />;
       default: {

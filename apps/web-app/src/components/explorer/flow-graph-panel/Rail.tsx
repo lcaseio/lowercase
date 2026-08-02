@@ -6,6 +6,7 @@ import {
   Footprints,
   SettingsIcon,
   SlidersHorizontalIcon,
+  TerminalSquareIcon,
   VariableIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const RAIL_ITEMS: {
   { tab: "parameters", label: "Parameters", icon: VariableIcon },
   { tab: "runinput", label: "Run Input", icon: FileInputIcon },
   { tab: "sim", label: "Sim", icon: FlaskConicalIcon },
+  { tab: "stepresults", label: "Step Results", icon: TerminalSquareIcon },
   { tab: "problems", label: "Problems", icon: CircleAlertIcon },
 ];
 
