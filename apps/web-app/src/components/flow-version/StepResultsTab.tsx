@@ -117,6 +117,15 @@ export function StepResultsTab({
   }
 
   const info = stepRunInfo[stepId];
+  // Prefer the caller's explicit plan (a sim's declared, pre-run reuse
+  // list) when given -- otherwise fall back to whether this step's own
+  // outcome in the run actually being viewed was a reuse (`step.reused`,
+  // surfaced as `info.sourceRunId`). Either way this is always a fact, not
+  // an editable choice, in the new dockview UI -- `onToggleReused` is never
+  // passed there, so the switch stays disabled regardless of which source
+  // set it.
+  const effectiveIsReused =
+    isReused ?? (info?.sourceRunId !== undefined ? true : undefined);
 
   return (
     <div className="flex flex-col gap-2">
@@ -126,11 +135,11 @@ export function StepResultsTab({
 
       <div className="flex items-center justify-between gap-2">
         <h2>{stepId}</h2>
-        {isReused !== undefined && (
+        {effectiveIsReused !== undefined && (
           <div className="flex items-center space-x-2">
             <Label htmlFor={stepId}>Reuse</Label>
             <Switch
-              checked={isReused}
+              checked={effectiveIsReused}
               onCheckedChange={onToggleReused}
               disabled={!onToggleReused}
               size="default"

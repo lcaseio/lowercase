@@ -82,6 +82,44 @@ describe("explorerPanelId", () => {
     });
     expect(a).not.toBe(b);
   });
+
+  it("gives a sim-specific flow-graph request a distinct id from the plain and run-specific requests", () => {
+    const plain = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+    });
+    const runSpecific = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      runId: "r1",
+    });
+    const simSpecific = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      simId: "s1",
+    });
+    expect(simSpecific).not.toBe(plain);
+    expect(simSpecific).not.toBe(runSpecific);
+  });
+
+  it("gives two different sims of the same version distinct ids", () => {
+    const a = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      simId: "s1",
+    });
+    const b = explorerPanelId({
+      kind: "flow-graph",
+      label: "x",
+      versionId: "v1",
+      simId: "s2",
+    });
+    expect(a).not.toBe(b);
+  });
 });
 
 describe("openOrFocusPanel", () => {

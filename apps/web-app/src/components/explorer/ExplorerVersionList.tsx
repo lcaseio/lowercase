@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FlowVersionRecord, RunListItem } from "@lcase/types";
+import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
 import { useGetFlowVersionsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { ExplorerVersionRow } from "./ExplorerVersionRow";
@@ -11,6 +11,7 @@ export function ExplorerVersionList({
   onSelectFlowGraph,
   onSelectJsonDefinition,
   onSelectRun,
+  onSelectSim,
 }: {
   flowId: string;
   selectedRowId: string | null;
@@ -18,6 +19,7 @@ export function ExplorerVersionList({
   onSelectFlowGraph: (version: FlowVersionRecord) => void;
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
   onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
+  onSelectSim: (version: FlowVersionRecord, sim: SimListItem["sim"]) => void;
 }) {
   const { data, error, isLoading } = useGetFlowVersionsQuery(flowId);
   const showLoading = useDelayedLoading(isLoading);
@@ -66,6 +68,7 @@ export function ExplorerVersionList({
           onSelectFlowGraph={() => onSelectFlowGraph(version)}
           onSelectJsonDefinition={() => onSelectJsonDefinition(version)}
           onSelectRun={(run) => onSelectRun(version, run)}
+          onSelectSim={(sim) => onSelectSim(version, sim)}
         />
       ))}
     </>
