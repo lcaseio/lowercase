@@ -18,7 +18,11 @@ export function ExplorerTabContent({
       return <ExplorerJsonDefinitionContent versionId={params.versionId} />;
     case "flow-graph":
       return (
-        <FlowGraphPanelContent versionId={params.versionId} panelId={api.id} />
+        <FlowGraphPanelContent
+          versionId={params.versionId}
+          panelId={api.id}
+          simId={params.simId}
+        />
       );
     default: {
       const _exhaustive: never = params;

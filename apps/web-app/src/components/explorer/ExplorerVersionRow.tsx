@@ -1,8 +1,9 @@
 import { useState } from "react";
-import type { FlowVersionRecord, RunListItem } from "@lcase/types";
+import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
 import {
   ChevronDownIcon,
   CurlyBracesIcon,
+  FlaskConicalIcon,
   HistoryIcon,
   NetworkIcon,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ExplorerVersionRunList } from "./ExplorerVersionRunList";
+import { ExplorerVersionSimList } from "./ExplorerVersionSimList";
 
 export function ExplorerVersionRow({
   version,
@@ -23,6 +25,7 @@ export function ExplorerVersionRow({
   onSelectFlowGraph,
   onSelectJsonDefinition,
   onSelectRun,
+  onSelectSim,
 }: {
   version: FlowVersionRecord;
   isExpanded: boolean;
@@ -32,8 +35,10 @@ export function ExplorerVersionRow({
   onSelectFlowGraph: () => void;
   onSelectJsonDefinition: () => void;
   onSelectRun: (run: RunListItem) => void;
+  onSelectSim: (sim: SimListItem["sim"]) => void;
 }) {
   const [isRunsExpanded, setIsRunsExpanded] = useState(false);
+  const [isSimsExpanded, setIsSimsExpanded] = useState(false);
   const isSelected = selectedRowId === `version:${version.id}`;
   const isGraphSelected = selectedRowId === `flow-graph:${version.id}`;
   const isJsonSelected = selectedRowId === `json-definition:${version.id}`;
@@ -109,6 +114,26 @@ export function ExplorerVersionRow({
                 versionId={version.id}
                 selectedRowId={selectedRowId}
                 onSelectRun={onSelectRun}
+              />
+            ) : null}
+            <div
+              onClick={() => setIsSimsExpanded((prev) => !prev)}
+              className="flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer hover:bg-accent/40"
+            >
+              <ChevronDownIcon
+                className={cn(
+                  "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                  !isSimsExpanded && "-rotate-90",
+                )}
+              />
+              <FlaskConicalIcon className="size-3.5 shrink-0" />
+              <span className="truncate">Sims</span>
+            </div>
+            {isSimsExpanded ? (
+              <ExplorerVersionSimList
+                versionId={version.id}
+                selectedRowId={selectedRowId}
+                onSelectSim={onSelectSim}
               />
             ) : null}
           </>

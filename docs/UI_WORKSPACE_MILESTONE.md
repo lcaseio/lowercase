@@ -14,7 +14,7 @@ The core problem with the current page-based UI: nearly everything lives at the 
 - **Flow (all versions) = one level up.** Comparing sims/runs/artifacts/evals across every version of one flow — needed, but not the primary workspace.
 - **Global (all flows/all runs/etc.) = top, rare.** Useful sometimes as a filterable escape hatch, but explicitly not where work usually happens — today's UI is almost entirely this level, which is the concrete reason it's been "not very useful."
 
-Longer-term context worth keeping in view even though it's not being built yet: the eventual target runtime is Tauri (not just a browser tab), with real multi-pane coexistence (view + edit + preview at once, like an IDE) rather than one panel at a time, and an explicit non-goal of supporting small/phone-sized screens — the panel/toolbar model is inherently a desktop pattern. Also an explicit constraint: this UI is being hand-designed and understood, not generated wholesale by an AI/design tool in one shot, the same ownership stance as the rest of this codebase.
+Longer-term context worth keeping in view even though it's not being built yet: the eventual target runtime is Electron (not just a browser tab), with real multi-pane coexistence (view + edit + preview at once, like an IDE) rather than one panel at a time, and an explicit non-goal of supporting small/phone-sized screens — the panel/toolbar model is inherently a desktop pattern. Also an explicit constraint: this UI is being hand-designed and understood, not generated wholesale by an AI/design tool in one shot, the same ownership stance as the rest of this codebase.
 
 ## What's already built
 
@@ -301,7 +301,7 @@ The last piece of Run/Run History's own content: `StepResultsTab.tsx` (Output & 
 
 This covers the **right panel** of the old Run page (and, for step-level content, View/Edit) — not everything those pages did. Two real pieces are still unmigrated, on purpose: **Event Details** (the old right panel's other tab, alongside Step Results) has no home yet — it belongs on a future `EventGraph` tab/rail, not here, since it's driven by selecting a node on the _event_ graph, not the step graph. **Run History's run list** (browsing/picking among past runs for a version) is a separate browsing surface entirely, not a right-panel tab at all. Both are already named below under "Candidate next chunks," not forgotten — this PR only closes out the step-selection-driven right-panel content that lives on the Flow Graph panel itself.
 
-#### PR 14 - Runs list in the tree, each run opens its own Flow Graph panel
+#### PR 14 - Runs list in the tree, each run opens its own Flow Graph panel - merged (#297)
 
 Promotes the "Runs as a lazy-loaded, collapsible tree category under a Version" candidate (previously just a bullet below) into a real PR. Adds a "Runs" sub-node under each Version in the tree, listing that version's past runs newest-first with a brief date/time label. Clicking a run opens a Flow Graph panel scoped to that specific run, distinct from the version's plain graph panel and from any other run's panel — by design, so multiple runs (or a run alongside the live/editable graph) can sit open side by side for comparison.
 
@@ -311,12 +311,41 @@ Also fixed along the way, not originally scoped but surfaced immediately in test
 
 **Explicitly deferred, raised in discussion but genuinely undecided**: whether `EventGraph` fits into this story at all (still not integrated into the new panel anywhere); whether the Run button should change (e.g. to "Rerun") on a run-specific panel; whether a run-specific panel's Run Input tab should show that run's actual chosen params (a `useGetRunParamsQuery({runId})` endpoint already exists returning the exact shape needed — `RunParamManifest = Record<string,string>`, same as `selectedParamHashes` — making this easier than first assumed, but not built); and whether those params should be editable or treated as a stable historical record. All logged in `docs/todo.md` rather than improvised here.
 
+#### PR 15 - Sims list in the tree, click opens a sim in its own Flow Graph panel
+
+Promotes "Sims in the tree" from a candidate bullet into a real PR — same per-version, lazy-loaded tree-category shape PR 14 just proved out for runs, applied to `SimRecord` instead.
+
+**Design landed on, via discussion, before any implementation plan:**
+
+- Sims list mirrors PR 14's `ExplorerVersionRunList` shape closely — a lazy-expand "Sims" node per version, `useListAllSimsQuery({flowVersionId})`, each row showing the sim's own `name` (no date fallback needed, unlike runs — a `SimRecord` always has one).
+- Clicking a sim opens a Flow Graph panel loaded at `spec.parentRunId` (`SimDefinition = {sim, spec: ForkSpec}`, `ForkSpec = {parentRunId, reuse}`, from `useGetSimQuery({simId})`). Not read-only overall — running directly from this panel is allowed and useful, unlike the old Sims page. Only the per-step "reuse" indicator is non-interactive: pass `StepResultsTab`'s existing `isReused` prop (unused since PR 13) without `onToggleReused` — it already disables its own `Switch` when that's undefined, no new "read-only mode" needed. That overlay should stop applying the moment the panel's `runId` moves past `spec.parentRunId` (i.e. once you actually run from it) — also falls out for free, since it's only ever computed while `runId === spec.parentRunId`.
+- Panel identity: keyed by `simId`, not `runId` — mechanically the same editable-panel shape the plain graph panel already has (mutable `runId`, just starting non-null here instead of `null`), plus a `simId` for its own identity/title/reuse-overlay. Explicitly provisional, flagged in discussion as possibly needing to diverge later (collisions, or whatever's allowed to be viewed by then) — not settled now.
+- The rail's existing `"sim"` tab (currently a stub, "Sim selection isn't wired up yet") becomes this sim's own identity display (name/description/parent run) when sim-scoped, with a plain fallback message otherwise.
+
+**Also needed for this to actually behave like a fork, not just visually resemble one**: `Content.tsx`'s `handleRun` needs to pass `simId` through to `requestRun` — `PostRunsReq` already has `simId?`/`forkSpecHash?` and `run.service.ts` already threads them into `runFlow()`, but nothing in the new UI sends either today, so running from a sim panel as-is wouldn't actually reuse anything.
+
+**Explicitly not this PR, named so it isn't lost:**
+
+- Assigning a sim to run with from the plain/non-sim panel (a dropdown initially; drag-and-drop into a future "run workspace" is the longer-term idea), or previewing an assigned sim before committing to running it.
+- Authoring/creating a new sim at all — a right-click-a-run-to-fork-a-sim flow, or any other creation path — separate, unresolved.
+- Showing which sim a run used on the Runs _list_ itself (the tree). `RunListItem` (the list endpoint's type) doesn't carry `simId` — needs a small backend read-path addition first. **Correction, found while wiring the Sim tab for arbitrary run panels**: this gap is narrower than first thought — it's list-only. The _detail_ endpoint (`useGetRunDetailQuery`) already returns the full `RunRecord` (nested under `.run`), which already has `simId`/`forkSpecHash` — no backend change needed for any already-open panel to know its own run's sim. A migration lapse on the list specifically (an old version of the runs list had an icon for this), not a new gap, but not part of this PR.
+- The long-term "two run ids" question — a sim's own parent run vs. the run it actually produces by running it — and how much swapping between viewing those two is really needed.
+
+**What actually landed** (abbreviated — real substance, several fixes found past the original plan during testing): the Sims tree list, sim-specific panel identity, and reuse indicators landed as designed above. Three real fixes came out of testing, not scope creep:
+
+- **Running a sim didn't actually fork/reuse anything** — `handleRun` was sending `simId` but not `forkSpecHash`, and only the latter drives the engine's reuse planning (`simId` is pure attribution). Traced through `run.service.ts`/`run-flow.ts`/the engine's `flow-def-result.planner.ts`, confirmed via the old `RunnerRunButton.tsx`'s working precedent, fixed by also sending `simDefinition.sim.forkSpecHash` (already in hand, no new fetch).
+- **The graph's own "↺ " reused-node marker was never wired up** — `FlowGraph.tsx` already had a `reusedStepIds` prop from the old UI; `Content.tsx` just never passed it. Now does, gated the same way as the Step Results reuse indicator.
+- **The "Reuse" switch now merges two sources**, not one: the sim's declared pre-run plan (as designed) _or_, falling back, a step's real `sourceRunId` fact from its own `step.reused` event — so a completed run's actually-reused steps show correctly too, not just a sim's forward-looking plan. Same switch, no new UI.
+
+One more extension beyond the plan: the Sim tab's identity display now shows for _any_ panel whose currently-displayed run has an active sim — not just panels opened directly from a sim — by reading `simId` off `useGetRunDetailQuery`'s existing `RunRecord`, no backend change needed (that gap turned out to be list-endpoint-only, corrected above).
+
+Two things surfaced during testing, deliberately not investigated, logged in `docs/todo.md` instead: a real bug with sims that combine parallel branching/joins and step reuse, and a note that the run detail and run list endpoints could use a joint review (the detail one's a bit old).
+
 ### Candidate next chunks, order genuinely undecided — captured now while context allows, not a committed sequence
 
 The following aren't sequenced relative to each other yet — recorded now as a checkpoint of the direction, not a plan to follow in this order. Each still needs its own informal discussion pass before a real implementation plan, same as every PR above did.
 
 - **EventGraph in the tree.** Add `EventGraph` (the separate graph component `Run`/`Run History`/`Sims` already use, distinct from `FlowGraph`) as its own tree-addressable thing, likely with its own rail + side panel already following this same shape, hosting the Event Details piece as its one rail tab to start. Exactly how/when `EventGraph` should be spawned across the different scenarios it's useful in (live run, historical run, sim) still needs figuring out — not resolved yet, named so it isn't lost. Also unresolved: how it relates to the new per-run Flow Graph panels from PR 14 — side by side, launched from a button on the panel, or from a context menu on a tree run row.
-- **Sims — authoring specifically still unresolved.** Browsing an existing sim likely fits the same "runs" tree-category shape PR 14 just built (sims read very similarly to a special kind of run). Authoring a _new_ sim is the open question — no shape decided yet.
 - **Artifacts mode's transition to the new UI** — flagged as needing its own discussion pass, not scoped at all yet.
 
 ### Further out, after the above
@@ -340,3 +369,7 @@ Decision: skipped, not deferred with a maybe. Once PR 6/7 shipped and were teste
 ## Process note
 
 Milestones here don't need to map 1:1 to version bumps or a formal GitHub Milestone object — each chunk above can close independently, with version bumps happening at whatever later point represents a real, demo-able jump (e.g. "the revamped UI once the pages are mostly done"), not tied to milestone count.
+
+### Workflow for this arc, per PR
+
+The rhythm each PR Log entry above actually follows: discuss the idea informally first, sometimes at real length with research baked in (PR 9's rail-shell design, or PR 14/15's Sims discussion) and sometimes brief (PR 10, PR 12) — then write the PR's idea down here, succinctly but completely enough to plan from (including for an AI picking this doc up cold later), _before_ any implementation plan gets made. Only after that: a real implementation plan, then building it, then reviewing/testing (typecheck/lint/vitest plus manual browser testing), then writing "What actually landed" (before or after opening the GitHub PR — either order, whichever fits), then the PR itself, then marking the heading "- merged (#N)" once it's actually merged. The write-down-the-idea step is the one easiest to skip under time pressure — worth resisting, since it's what lets a plan get made from this doc alone later without re-deriving the discussion.

@@ -5,6 +5,7 @@ import type {
   FlowProblem,
   FlowVersionRecord,
   Ref,
+  SimDefinition,
 } from "@lcase/types";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
@@ -51,6 +52,8 @@ type Props = {
   refs: Ref[];
   stepRunInfo: Record<string, StepRunInfo>;
   runId: string | null;
+  simDefinition: SimDefinition | null;
+  isReusedForSelectedStep?: boolean;
 };
 
 // scoped to the Flow Graph tab only -- own local tab state (owned by the
@@ -76,6 +79,8 @@ export function SidePanel({
   refs,
   stepRunInfo,
   runId,
+  simDefinition,
+  isReusedForSelectedStep,
 }: Props) {
   function renderTab() {
     switch (activeTab) {
@@ -91,7 +96,7 @@ export function SidePanel({
           />
         );
       case "sim":
-        return <SimTab />;
+        return <SimTab simDefinition={simDefinition} />;
       case "problems":
         return <ProblemsTab problems={problems} />;
       case "parameters":
@@ -107,6 +112,7 @@ export function SidePanel({
             paramHashes={selectedParamHashes}
             stepRunInfo={stepRunInfo}
             runId={runId}
+            isReused={isReusedForSelectedStep}
           />
         );
       case "settings":

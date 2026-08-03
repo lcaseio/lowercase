@@ -94,6 +94,16 @@ export function ExplorerTree() {
             );
             if (api) openOrFocusPanel(api, req);
           }}
+          onSelectSim={(version, sim) => {
+            setSelectedRowId(`sim:${sim.id}`);
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "flow-graph",
+              label: `${version.versionLabel ?? `Version ${version.sequence}`} — ${sim.name}`,
+              versionId: version.id,
+              simId: sim.id,
+            });
+          }}
         />
       ))}
     </div>

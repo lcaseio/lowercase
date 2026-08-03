@@ -1,14 +1,20 @@
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { skipToken } from "@reduxjs/toolkit/query";
 import type { Node } from "@xyflow/react";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
-import { useRequestRunMutation } from "@/redux/api/runs-api";
+import {
+  useGetRunDetailQuery,
+  useRequestRunMutation,
+} from "@/redux/api/runs-api";
+import { useGetSimQuery } from "@/redux/api/sims-api";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import {
   paramHashSet,
   rightPanelTabSet,
   runSubmitted,
+  runSelected,
   stepSelected,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
@@ -27,18 +33,50 @@ import { SidePanel } from "./SidePanel";
 export function Content({
   versionId,
   panelId,
+  simId,
 }: {
   versionId: string;
   panelId: string;
+  simId?: string;
 }) {
   const { data, error, isLoading, refetch } =
     useGetFlowVersionDefQuery(versionId);
   const { data: artifactsData } = useListArtifactsQuery();
+  const { data: simDefData } = useGetSimQuery(simId ? { simId } : skipToken);
   const [requestRun] = useRequestRunMutation();
 
   const dispatch = useAppDispatch();
   const { selectedParamHashes, rightPanelTab, runId, selectedStepId } =
     useAppSelector((state) => selectFlowGraphPanelState(state, panelId));
+  const simDefinition = simDefData?.ok ? simDefData.value : null;
+
+  // Broader than `simId`/`simDefinition` above (which only ever reflect
+  // *this panel having been opened directly from a sim*): this also covers
+  // a plain or run-specific panel whose currently-displayed run just
+  // happens to have used a sim. Only feeds the Sim tab's identity display
+  // -- seeding, handleRun's forkSpecHash, and the reuse overlay all stay
+  // keyed on the explicit `simId` prop only, unchanged.
+  const { data: runDetailData } = useGetRunDetailQuery(
+    runId ? { runId } : skipToken,
+  );
+  const activeRunSimId =
+    simId ?? (runDetailData?.ok ? runDetailData.value.run.simId : undefined);
+  const { data: activeSimDefData } = useGetSimQuery(
+    activeRunSimId ? { simId: activeRunSimId } : skipToken,
+  );
+  const activeSimDefinition = activeSimDefData?.ok
+    ? activeSimDefData.value
+    : null;
+
+  // Seeds this panel's runId from the sim's parent run exactly once, on
+  // first mount -- gated on runId still being null so it never re-fires
+  // once a real run's been submitted from this panel (or been restored
+  // from persistence).
+  useEffect(() => {
+    if (simId && simDefinition && runId === null) {
+      dispatch(runSelected({ panelId, runId: simDefinition.spec.parentRunId }));
+    }
+  }, [simId, simDefinition, runId, panelId, dispatch]);
 
   const hasError = error || data?.ok === false;
   useEffect(() => {
@@ -75,6 +113,17 @@ export function Content({
     !events.some((e) => e.type === "run.completed" || e.type === "run.failed");
   const runDisabled = missingRequiredParams.length > 0 || runInFlight;
 
+  // Only set while still looking at the sim's own parent run -- stops
+  // applying the moment you run something new from this panel, since the
+  // reuse plan only ever described that original parent run.
+  const reuse =
+    simDefinition && runId === simDefinition.spec.parentRunId
+      ? simDefinition.spec.reuse
+      : null;
+  const reusedStepIds = reuse ?? undefined;
+  const isReusedForSelectedStep =
+    reuse && selectedStepId ? reuse.includes(selectedStepId) : undefined;
+
   const handleParamChange = (name: string, hash: string | undefined) => {
     dispatch(paramHashSet({ panelId, name, hash }));
   };
@@ -103,6 +152,9 @@ export function Content({
       flowVersionId: versionId,
       flowDefHash: version.definitionHash,
       ...(entries.length > 0 ? { params: Object.fromEntries(entries) } : {}),
+      ...(simId && simDefinition
+        ? { simId, forkSpecHash: simDefinition.sim.forkSpecHash }
+        : {}),
     });
     if (result.data?.ok) {
       dispatch(runSubmitted({ panelId, runId: result.data.runId }));
@@ -141,6 +193,7 @@ export function Content({
       layout={flowAnalysis?.layout ?? null}
       outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
       stepRunInfo={stepRunInfo}
+      reusedStepIds={reusedStepIds}
       toolbar={toolbar}
       onNodeClickHandler={handleNodeClick}
     />
@@ -186,6 +239,8 @@ export function Content({
               refs={flowAnalysis?.flowAnalysis.refs ?? []}
               stepRunInfo={stepRunInfo}
               runId={runId}
+              simDefinition={activeSimDefinition}
+              isReusedForSelectedStep={isReusedForSelectedStep}
             />
           </div>
         </div>
