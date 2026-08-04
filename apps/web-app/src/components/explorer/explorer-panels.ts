@@ -1,4 +1,4 @@
-import type { DockviewApi } from "dockview-react";
+import type { AddPanelPositionOptions, DockviewApi } from "dockview-react";
 import { shallowEqual } from "react-redux";
 
 export const EXPLORER_PANEL_COMPONENT = "explorer-tab";
@@ -14,7 +14,14 @@ export type OpenPanelRequest =
       versionId: string;
       runId?: string;
       simId?: string;
-    };
+    }
+  // opened by a Flow Graph panel's own toolbar, not the tree -- but a
+  // singleton, not per-source-panel: it follows whichever Flow Graph panel
+  // currently has dockview focus (see use-tracked-flow-graph-panel.ts), so
+  // it has no target-specific identity of its own to carry here.
+  // `initialTrackedPanelId` is a one-shot bootstrap hint, not identity --
+  // used once on first mount, never read again (see that file for why).
+  | { kind: "event-graph"; label: string; initialTrackedPanelId?: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
@@ -26,6 +33,12 @@ function contentId(req: OpenPanelRequest): string {
       if (req.simId) return `${req.versionId}-sim-${req.simId}`;
       if (req.runId) return `${req.versionId}-${req.runId}`;
       return req.versionId;
+    // "singleton" here, not something more decorated -- explorerPanelId()
+    // already prefixes every id with the kind, so this alone resolves to
+    // "event-graph-singleton", unambiguous even if some other panel kind
+    // later also wants a singleton and reuses this same literal.
+    case "event-graph":
+      return "singleton";
   }
 }
 
@@ -39,6 +52,9 @@ export function explorerPanelId(req: OpenPanelRequest): string {
 export function openOrFocusPanel(
   api: DockviewApi,
   req: OpenPanelRequest,
+  // only consulted when creating a brand-new panel -- an already-open one
+  // just gets refocused wherever it already lives.
+  options?: { position?: AddPanelPositionOptions },
 ): void {
   const id = explorerPanelId(req);
   const existing = api.getPanel(id);
@@ -61,5 +77,8 @@ export function openOrFocusPanel(
     component: EXPLORER_PANEL_COMPONENT,
     title: req.label,
     params: req,
+    ...(options?.position
+      ? { position: options.position, floating: false }
+      : {}),
   });
 }

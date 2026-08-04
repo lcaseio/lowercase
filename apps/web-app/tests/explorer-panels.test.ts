@@ -120,6 +120,13 @@ describe("explorerPanelId", () => {
     });
     expect(a).not.toBe(b);
   });
+
+  it("gives every event-graph request the same id regardless of label -- it's a singleton", () => {
+    const a = explorerPanelId({ kind: "event-graph", label: "Event Graph" });
+    const b = explorerPanelId({ kind: "event-graph", label: "Something else" });
+    expect(a).toBe(b);
+    expect(a).toBe("event-graph-singleton");
+  });
 });
 
 describe("openOrFocusPanel", () => {
@@ -190,6 +197,55 @@ describe("openOrFocusPanel", () => {
 
     expect(existing.api.updateParameters).toHaveBeenCalledWith(newReq);
     expect(existing.api.setTitle).toHaveBeenCalledWith("Flow A (renamed)");
+    expect(existing.api.setActive).toHaveBeenCalledOnce();
+  });
+
+  it("passes position through to addPanel when creating a brand-new panel", () => {
+    const api = fakeApi(undefined);
+    const req: OpenPanelRequest = { kind: "event-graph", label: "Event Graph" };
+
+    openOrFocusPanel(api as never, req, {
+      position: { direction: "right", referencePanel: "flow-graph-v1" },
+    });
+
+    expect(api.addPanel).toHaveBeenCalledWith({
+      id: "event-graph-singleton",
+      component: EXPLORER_PANEL_COMPONENT,
+      title: "Event Graph",
+      params: req,
+      position: { direction: "right", referencePanel: "flow-graph-v1" },
+      floating: false,
+    });
+  });
+
+  it("passes initialTrackedPanelId through as part of params, as a one-shot bootstrap hint", () => {
+    const api = fakeApi(undefined);
+    const req: OpenPanelRequest = {
+      kind: "event-graph",
+      label: "Event Graph",
+      initialTrackedPanelId: "flow-graph-v1",
+    };
+
+    openOrFocusPanel(api as never, req);
+
+    expect(api.addPanel).toHaveBeenCalledWith({
+      id: "event-graph-singleton",
+      component: EXPLORER_PANEL_COMPONENT,
+      title: "Event Graph",
+      params: req,
+    });
+  });
+
+  it("ignores position when refocusing an already-open panel", () => {
+    const req: OpenPanelRequest = { kind: "event-graph", label: "Event Graph" };
+    const existing = fakePanel(req, "Event Graph");
+    const api = fakeApi(existing);
+
+    openOrFocusPanel(api as never, req, {
+      position: { direction: "right", referencePanel: "flow-graph-v1" },
+    });
+
+    expect(api.addPanel).not.toHaveBeenCalled();
     expect(existing.api.setActive).toHaveBeenCalledOnce();
   });
 });
