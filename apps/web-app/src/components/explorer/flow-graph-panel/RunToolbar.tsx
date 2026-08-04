@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { FileInputIcon, FlaskConicalIcon, PlayIcon } from "lucide-react";
+import {
+  ChartNoAxesGanttIcon,
+  FileInputIcon,
+  FlaskConicalIcon,
+  PlayIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -8,6 +13,7 @@ type Props = {
   runDisabled: boolean;
   onOpenParams: () => void;
   onOpenSim: () => void;
+  onOpenEventGraph: () => void;
   onRun: () => void;
 };
 
@@ -20,6 +26,7 @@ export function RunToolbar({
   runDisabled,
   onOpenParams,
   onOpenSim,
+  onOpenEventGraph,
   onRun,
 }: Props) {
   return (
@@ -33,6 +40,16 @@ export function RunToolbar({
       >
         <FlaskConicalIcon className="size-4" />
         Sim
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="cursor-pointer text-xs text-muted-foreground "
+        onClick={onOpenEventGraph}
+        title="Open event graph"
+      >
+        <ChartNoAxesGanttIcon className="size-4" />
+        Events
       </Button>
       {hasParams ? (
         <Button

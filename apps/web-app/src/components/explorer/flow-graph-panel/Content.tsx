@@ -26,6 +26,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useDockviewApi } from "../explorer-dockview-context";
+import { openOrFocusPanel } from "../explorer-panels";
 import { RunToolbar } from "./RunToolbar";
 import { Rail } from "./Rail";
 import { SidePanel } from "./SidePanel";
@@ -42,6 +44,7 @@ export function Content({
   const { data, error, isLoading, refetch } =
     useGetFlowVersionDefQuery(versionId);
   const { data: artifactsData } = useListArtifactsQuery();
+  const dockviewApi = useDockviewApi();
   const { data: simDefData } = useGetSimQuery(simId ? { simId } : skipToken);
   const [requestRun] = useRequestRunMutation();
 
@@ -161,6 +164,25 @@ export function Content({
     }
   };
 
+  // Opens (or focuses) the singleton EventGraph panel. "Event Graph" is a
+  // deliberately generic label, not describing current content, since the
+  // panel has no per-instance identity to name. initialTrackedPanelId is a
+  // one-shot seed passed as this panel's own id (see
+  // use-tracked-flow-graph-panel.ts for why it can't just ask dockview who's
+  // active) -- has no effect on an already-open singleton.
+  const handleOpenEventGraph = () => {
+    if (!dockviewApi) return;
+    openOrFocusPanel(
+      dockviewApi,
+      {
+        kind: "event-graph",
+        label: "Event Graph",
+        initialTrackedPanelId: panelId,
+      },
+      { position: { direction: "right", referencePanel: panelId } },
+    );
+  };
+
   if (isLoading) return <div className="p-4">Loading flow graph...</div>;
   if (hasError)
     return (
@@ -183,6 +205,7 @@ export function Content({
         dispatch(rightPanelTabSet({ panelId, tab: "runinput" }))
       }
       onOpenSim={() => dispatch(rightPanelTabSet({ panelId, tab: "sim" }))}
+      onOpenEventGraph={handleOpenEventGraph}
       onRun={handleRun}
     />
   );

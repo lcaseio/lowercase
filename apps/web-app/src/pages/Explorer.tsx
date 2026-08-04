@@ -110,35 +110,39 @@ export function Explorer() {
   return (
     <div className="h-full flex flex-col  dark:bg-neutral-850">
       <div className="flex-1 min-h-0">
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="h-full border dark:border-neutral-800"
-        >
-          <ResizablePanel defaultSize="25%">
-            <DockviewApiContext.Provider value={dockviewApi}>
+        {/* wraps DockviewReact too, not just the tree -- Flow Graph panel
+            content (rendered inside DockviewReact via portals, which keep
+            React context even though the DOM node is elsewhere) needs
+            useDockviewApi() as well now, to open the EventGraph panel. */}
+        <DockviewApiContext.Provider value={dockviewApi}>
+          <ResizablePanelGroup
+            orientation="horizontal"
+            className="h-full border dark:border-neutral-800"
+          >
+            <ResizablePanel defaultSize="25%">
               <ExplorerTree />
-            </DockviewApiContext.Provider>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          {/* react-resizable-panels' own Panel defaults its inner content
-              wrapper to `overflow: auto` (see react-resizable-panels.js) --
-              fine for typical scrollable content, but DockviewReact manages
-              its own internal sizing/scrolling entirely itself. Left at the
-              default, shrinking this panel below dockview's natural size
-              toggles a native scrollbar for the *whole* dockview area (not
-              any one panel), which can change the available width enough to
-              toggle it back off -- an oscillation that shows up as flicker
-              during a continuous window resize. */}
-          <ResizablePanel defaultSize="75%" style={{ overflow: "hidden" }}>
-            <DockviewReact
-              className="h-full"
-              theme={themeAbyss}
-              components={{ [EXPLORER_PANEL_COMPONENT]: ExplorerTabContent }}
-              watermarkComponent={ExplorerWatermark}
-              onReady={(event) => setDockviewApi(event.api)}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            {/* react-resizable-panels' own Panel defaults its inner content
+                wrapper to `overflow: auto` (see react-resizable-panels.js) --
+                fine for typical scrollable content, but DockviewReact manages
+                its own internal sizing/scrolling entirely itself. Left at the
+                default, shrinking this panel below dockview's natural size
+                toggles a native scrollbar for the *whole* dockview area (not
+                any one panel), which can change the available width enough to
+                toggle it back off -- an oscillation that shows up as flicker
+                during a continuous window resize. */}
+            <ResizablePanel defaultSize="75%" style={{ overflow: "hidden" }}>
+              <DockviewReact
+                className="h-full"
+                theme={themeAbyss}
+                components={{ [EXPLORER_PANEL_COMPONENT]: ExplorerTabContent }}
+                watermarkComponent={ExplorerWatermark}
+                onReady={(event) => setDockviewApi(event.api)}
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </DockviewApiContext.Provider>
       </div>
     </div>
   );

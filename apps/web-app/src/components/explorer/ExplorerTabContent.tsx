@@ -3,6 +3,7 @@ import type { OpenPanelRequest } from "./explorer-panels";
 import { ExplorerFlowSettingsContent } from "./ExplorerFlowSettingsContent";
 import { ExplorerJsonDefinitionContent } from "./ExplorerJsonDefinitionContent";
 import { Content as FlowGraphPanelContent } from "./flow-graph-panel/Content";
+import { Content as EventGraphPanelContent } from "./event-graph-panel/Content";
 
 // registered as dockview's "explorer-tab" component (see explorer-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is
@@ -22,6 +23,12 @@ export function ExplorerTabContent({
           versionId={params.versionId}
           panelId={api.id}
           simId={params.simId}
+        />
+      );
+    case "event-graph":
+      return (
+        <EventGraphPanelContent
+          initialTrackedPanelId={params.initialTrackedPanelId}
         />
       );
     default: {
