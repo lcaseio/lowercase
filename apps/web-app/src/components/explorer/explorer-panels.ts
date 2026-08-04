@@ -49,6 +49,11 @@ export function explorerPanelId(req: OpenPanelRequest): string {
   return `${req.kind}-${contentId(req)}`;
 }
 
+export const EVENT_GRAPH_SINGLETON_ID = explorerPanelId({
+  kind: "event-graph",
+  label: "",
+});
+
 export function openOrFocusPanel(
   api: DockviewApi,
   req: OpenPanelRequest,

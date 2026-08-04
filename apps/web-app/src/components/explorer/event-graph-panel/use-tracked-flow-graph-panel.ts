@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import type { IDockviewPanel } from "dockview-react";
-import { useAppSelector } from "@/redux/typed-hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { selectFlowGraphPanelState } from "@/redux/slices/flow-graph-panels-slice";
+import {
+  selectEventGraphPanelState,
+  trackedPanelSet,
+  snapshotSet,
+} from "@/redux/slices/event-graph-panels-slice";
 import { useDockviewApi } from "../explorer-dockview-context";
-import type { OpenPanelRequest } from "../explorer-panels";
+import {
+  EVENT_GRAPH_SINGLETON_ID,
+  type OpenPanelRequest,
+} from "../explorer-panels";
 
 export type TrackedFlowGraphPanel = {
   runId: string | null;
@@ -22,16 +30,23 @@ export function useTrackedFlowGraphPanel(
   initialTrackedPanelId?: string,
 ): TrackedFlowGraphPanel {
   const dockviewApi = useDockviewApi();
+  const dispatch = useAppDispatch();
+  const persisted = useAppSelector((s) =>
+    selectEventGraphPanelState(s, EVENT_GRAPH_SINGLETON_ID),
+  );
 
-  // which flow-graph panel (if any) is the most recently focused one --
-  // null means "never tracked anything yet," the signal to stop updating
-  // the snapshot below and let it freeze. Seeded once from
-  // initialTrackedPanelId (see explorer-panels.ts) rather than starting at
-  // null; useState's initial argument is only ever consulted on the first
-  // render, so a later click's different value never re-seeds an
-  // already-mounted singleton.
+  // Redux wins when present -- it's the accurate "who was actually being
+  // tracked" signal, mirrored continuously below. initialTrackedPanelId
+  // only reflects whichever flow-graph panel most recently had its Events
+  // button clicked (openOrFocusPanel keeps overwriting it live, all
+  // session, on every differing click), which can diverge from "who's
+  // actually being tracked right now" -- e.g. click Events from panel A,
+  // then just refocus panel B directly (tracking correctly follows B, live,
+  // no reclick needed) -- dockview's serialized params still say A. So it
+  // only matters for true cold start, before this slice has ever been
+  // written to.
   const [trackedPanelId, setTrackedPanelId] = useState<string | null>(
-    () => initialTrackedPanelId ?? null,
+    () => persisted.trackedPanelId ?? initialTrackedPanelId ?? null,
   );
 
   useEffect(() => {
@@ -49,6 +64,12 @@ export function useTrackedFlowGraphPanel(
     return () => disposable.dispose();
   }, [dockviewApi]);
 
+  useEffect(() => {
+    dispatch(
+      trackedPanelSet({ panelId: EVENT_GRAPH_SINGLETON_ID, trackedPanelId }),
+    );
+  }, [trackedPanelId, dispatch]);
+
   const liveRunId = useAppSelector((s) =>
     trackedPanelId ? selectFlowGraphPanelState(s, trackedPanelId).runId : null,
   );
@@ -61,11 +82,16 @@ export function useTrackedFlowGraphPanel(
   // against a value from the last render and conditionally setState-ing),
   // not inside a useEffect: this is pure derivation from other state, and
   // an effect that exists only to copy one piece of state into another is
-  // exactly the anti-pattern react-hooks/set-state-in-effect flags.
-  const [snapshot, setSnapshot] = useState<TrackedFlowGraphPanel>({
-    runId: null,
-    versionId: null,
-  });
+  // exactly the anti-pattern react-hooks/set-state-in-effect flags. Seeded
+  // from Redux once at mount, same as trackedPanelId above.
+  const [snapshot, setSnapshot] = useState<TrackedFlowGraphPanel>(
+    () => persisted.snapshot,
+  );
+  // Deliberately *not* seeded from Redux -- pure bookkeeping for the
+  // comparison below, not real state. Starting it at null just means the
+  // first render's comparison recomputes it from whatever's actually live,
+  // which is correct (and harmless even if it briefly recomputes to the
+  // same values snapshot was already seeded with).
   const [snapshotKey, setSnapshotKey] = useState<string | null>(null);
   const liveKey = trackedPanelId
     ? `${trackedPanelId}:${liveRunId ?? ""}`
@@ -78,6 +104,16 @@ export function useTrackedFlowGraphPanel(
       setSnapshotKey(liveKey);
     }
   }
+
+  useEffect(() => {
+    dispatch(
+      snapshotSet({
+        panelId: EVENT_GRAPH_SINGLETON_ID,
+        runId: snapshot.runId,
+        versionId: snapshot.versionId,
+      }),
+    );
+  }, [snapshot, dispatch]);
 
   return snapshot;
 }

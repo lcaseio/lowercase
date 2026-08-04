@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { AnyEvent, AnyScope } from "@lcase/types";
 import { CodeEditor } from "./CodeEditor";
 import type { OpenInMainPanel } from "./MainPanelTypes";
@@ -80,16 +81,20 @@ export function EventDetails({
   onOpenInMainPanel?: OpenInMainPanel;
 }) {
   if (!event)
-    return <div>Select an event in the event graph to view its details.</div>;
+    return (
+      <div className="dark:text-neutral-500">
+        Select an event in the event graph to view its details.
+      </div>
+    );
 
   async function openEvent(title: string, event: AnyEvent) {
     if (onOpenInMainPanel === undefined) return;
     onOpenInMainPanel(title, JSON.stringify(event, null, 2), "json");
   }
   return (
-    <div className="event-expanded text-sm mt-1 font-mono text-start p-1 rounded-xl mb-2 ">
-      <p className="mb-2 text-lg">
-        {index && "#" + index}
+    <div className="event-expanded text-sm mt-1 font-mono text-start rounded-xl mb-2 ">
+      <p className="mb-2 text-md">
+        {index && "#" + index + " "}
         {event.type}
         <Button
           variant="ghost"
@@ -102,20 +107,51 @@ export function EventDetails({
         </Button>
       </p>
 
-      {fieldOrder.map((key, index) => {
-        if (!Object.hasOwn(event, key)) return;
-        return (
-          <div
-            key={index + event.id}
-            className={getFieldColor(key) + " flex justify-start text-xs"}
-          >
-            <div className="w-[10rem]">[{key}]</div>
-            <div>{String(event[key as keyof AnyEvent])}</div>
-          </div>
-        );
-      })}
+      {/* grid, not flex -- a shared auto column across every row sizes
+          itself to the widest label once, so a value that wraps on one row
+          can't shrink that row's own label narrower than the rest. minmax(0,
+          1fr) on the value column keeps a long unbroken value (e.g. a hash)
+          from doing the same in the other direction, forcing the grid wider
+          than its container instead of wrapping. */}
+      {/* <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5">
+        {fieldOrder.map((key, index) => {
+          if (!Object.hasOwn(event, key)) return null;
+          return (
+            <Fragment key={index + event.id}>
+              <div
+                className={getFieldColor(key) + " text-xs whitespace-nowrap"}
+              >
+                [{key}]
+              </div>
+              <div className={getFieldColor(key) + " text-xs wrap-break-word"}>
+                {String(event[key as keyof AnyEvent])}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div> */}
 
-      <p className="mt-3 mb-2 text-lg">Data</p>
+      <div>
+        {fieldOrder.map((key, index) => {
+          if (!Object.hasOwn(event, key)) return null;
+          return (
+            <Fragment key={index + event.id}>
+              <div
+                className={getFieldColor(key) + " text-xs whitespace-nowrap"}
+              >
+                [{key}]
+              </div>
+              <div
+                className={getFieldColor(key) + " text-xs wrap-break-word mb-2"}
+              >
+                {String(event[key as keyof AnyEvent])}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+
+      <p className="mt-3 mb-2 text-md">[data]</p>
       <CodeEditor
         key={event.id}
         value={JSON.stringify(event.data, null, 2)}

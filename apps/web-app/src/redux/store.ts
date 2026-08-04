@@ -17,6 +17,7 @@ import { flowVersionRunHistorySlice } from "./slices/flow-version-run-history-sl
 import { flowVersionSimsSlice } from "./slices/flow-version-sims-slice";
 import { flowVersionArtifactsSlice } from "./slices/flow-version-artifacts-slice";
 import { flowGraphPanelsSlice } from "./slices/flow-graph-panels-slice";
+import { eventGraphPanelsSlice } from "./slices/event-graph-panels-slice";
 import { loadPersistedExplorerState } from "./explorer-persistence";
 
 // reducers are separated out to type RootState independently of store,
@@ -34,6 +35,7 @@ export const rootReducer = combineReducers({
   flowVersionSims: flowVersionSimsSlice.reducer,
   flowVersionArtifacts: flowVersionArtifactsSlice.reducer,
   flowGraphPanels: flowGraphPanelsSlice.reducer,
+  eventGraphPanels: eventGraphPanelsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
   [simsApi.reducerPath]: simsApi.reducer,
@@ -52,6 +54,7 @@ export const store = configureStore({
   reducer: rootReducer,
   preloadedState: {
     flowGraphPanels: persistedExplorerState.flowGraphPanels ?? undefined,
+    eventGraphPanels: persistedExplorerState.eventGraphPanels ?? undefined,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

@@ -179,7 +179,7 @@ export function Content({
         label: "Event Graph",
         initialTrackedPanelId: panelId,
       },
-      { position: { direction: "right", referencePanel: panelId } },
+      { position: { direction: "below", referencePanel: panelId } },
     );
   };
 

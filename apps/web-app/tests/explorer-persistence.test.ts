@@ -4,6 +4,7 @@ import {
   savePersistedExplorerState,
 } from "@/redux/explorer-persistence";
 import type { FlowGraphPanelsState } from "@/redux/slices/flow-graph-panels-slice";
+import type { EventGraphPanelsState } from "@/redux/slices/event-graph-panels-slice";
 import type { SerializedDockview } from "dockview-react";
 
 const STORAGE_KEY = "explorer-workspace:default";
@@ -40,6 +41,14 @@ const SAMPLE_PANELS: FlowGraphPanelsState = {
     selectedStepId: null,
   },
 };
+const SAMPLE_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
+  "event-graph-singleton": {
+    trackedPanelId: "flow-graph-v1",
+    snapshot: { runId: "run-1", versionId: "version-1" },
+    selectedEventId: "event-1",
+    sidePanelTab: "eventdetails",
+  },
+};
 const OTHER_DOCKVIEW = {
   grid: { other: true },
 } as unknown as SerializedDockview;
@@ -51,81 +60,147 @@ const OTHER_PANELS: FlowGraphPanelsState = {
     selectedStepId: null,
   },
 };
+const OTHER_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
+  "event-graph-singleton": {
+    trackedPanelId: "flow-graph-v2",
+    snapshot: { runId: "run-2", versionId: "version-2" },
+    selectedEventId: null,
+    sidePanelTab: null,
+  },
+};
 
 function storageWithEnvelope(envelope: unknown) {
   return fakeStorage({ [STORAGE_KEY]: JSON.stringify(envelope) });
 }
 
 describe("loadPersistedExplorerState", () => {
-  it("returns both-null when both storages are empty", () => {
+  it("returns all-null when both storages are empty", () => {
     expect(
       loadPersistedExplorerState({
         session: fakeStorage(),
         local: fakeStorage(),
       }),
-    ).toEqual({ dockview: null, flowGraphPanels: null });
+    ).toEqual({
+      dockview: null,
+      flowGraphPanels: null,
+      eventGraphPanels: null,
+    });
   });
 
-  it("returns both-null when getItem throws on both", () => {
+  it("returns all-null when getItem throws on both", () => {
     expect(
       loadPersistedExplorerState({
         session: throwingStorage(),
         local: throwingStorage(),
       }),
-    ).toEqual({ dockview: null, flowGraphPanels: null });
+    ).toEqual({
+      dockview: null,
+      flowGraphPanels: null,
+      eventGraphPanels: null,
+    });
   });
 
-  it("returns both-null when the stored value isn't valid JSON", () => {
+  it("returns all-null when the stored value isn't valid JSON", () => {
     const bad = fakeStorage({ [STORAGE_KEY]: "not json" });
     expect(
       loadPersistedExplorerState({ session: bad, local: fakeStorage() }),
-    ).toEqual({ dockview: null, flowGraphPanels: null });
+    ).toEqual({
+      dockview: null,
+      flowGraphPanels: null,
+      eventGraphPanels: null,
+    });
   });
 
-  it("returns both-null when version doesn't match", () => {
+  it("returns all-null when version doesn't match", () => {
     const wrongVersion = storageWithEnvelope({
       version: 0,
       dockview: SAMPLE_DOCKVIEW,
-      panelState: { flowGraphPanels: SAMPLE_PANELS },
+      panelState: {
+        flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      },
     });
     expect(
       loadPersistedExplorerState({
         session: wrongVersion,
         local: fakeStorage(),
       }),
-    ).toEqual({ dockview: null, flowGraphPanels: null });
+    ).toEqual({
+      dockview: null,
+      flowGraphPanels: null,
+      eventGraphPanels: null,
+    });
   });
 
-  it("returns both pieces when version matches and both validate", () => {
+  it("returns all three pieces when version matches and all validate", () => {
     const good = storageWithEnvelope({
       version: 1,
       dockview: SAMPLE_DOCKVIEW,
-      panelState: { flowGraphPanels: SAMPLE_PANELS },
+      panelState: {
+        flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      },
     });
     expect(
       loadPersistedExplorerState({ session: good, local: fakeStorage() }),
-    ).toEqual({ dockview: SAMPLE_DOCKVIEW, flowGraphPanels: SAMPLE_PANELS });
+    ).toEqual({
+      dockview: SAMPLE_DOCKVIEW,
+      flowGraphPanels: SAMPLE_PANELS,
+      eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+    });
   });
 
   it("keeps dockview when panelState.flowGraphPanels is malformed", () => {
     const partial = storageWithEnvelope({
       version: 1,
       dockview: SAMPLE_DOCKVIEW,
-      panelState: { flowGraphPanels: "not an object" },
+      panelState: {
+        flowGraphPanels: "not an object",
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      },
     });
     expect(
       loadPersistedExplorerState({ session: partial, local: fakeStorage() }),
-    ).toEqual({ dockview: SAMPLE_DOCKVIEW, flowGraphPanels: null });
+    ).toEqual({
+      dockview: SAMPLE_DOCKVIEW,
+      flowGraphPanels: null,
+      eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+    });
   });
 
-  it("also nulls flowGraphPanels when dockview is missing -- a fresh panel manually reopened into an empty host shouldn't resurrect old business state", () => {
+  it("keeps dockview and flowGraphPanels when panelState.eventGraphPanels is malformed", () => {
     const partial = storageWithEnvelope({
       version: 1,
-      panelState: { flowGraphPanels: SAMPLE_PANELS },
+      dockview: SAMPLE_DOCKVIEW,
+      panelState: {
+        flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: "not an object",
+      },
     });
     expect(
       loadPersistedExplorerState({ session: partial, local: fakeStorage() }),
-    ).toEqual({ dockview: null, flowGraphPanels: null });
+    ).toEqual({
+      dockview: SAMPLE_DOCKVIEW,
+      flowGraphPanels: SAMPLE_PANELS,
+      eventGraphPanels: null,
+    });
+  });
+
+  it("also nulls flowGraphPanels and eventGraphPanels when dockview is missing -- a fresh panel manually reopened into an empty host shouldn't resurrect old business state", () => {
+    const partial = storageWithEnvelope({
+      version: 1,
+      panelState: {
+        flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      },
+    });
+    expect(
+      loadPersistedExplorerState({ session: partial, local: fakeStorage() }),
+    ).toEqual({
+      dockview: null,
+      flowGraphPanels: null,
+      eventGraphPanels: null,
+    });
   });
 
   describe("session-first, local-fallback behavior", () => {
@@ -133,16 +208,23 @@ describe("loadPersistedExplorerState", () => {
       const session = storageWithEnvelope({
         version: 1,
         dockview: SAMPLE_DOCKVIEW,
-        panelState: { flowGraphPanels: SAMPLE_PANELS },
+        panelState: {
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        },
       });
       const local = storageWithEnvelope({
         version: 1,
         dockview: OTHER_DOCKVIEW,
-        panelState: { flowGraphPanels: OTHER_PANELS },
+        panelState: {
+          flowGraphPanels: OTHER_PANELS,
+          eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        },
       });
       expect(loadPersistedExplorerState({ session, local })).toEqual({
         dockview: SAMPLE_DOCKVIEW,
         flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
       });
     });
 
@@ -150,55 +232,83 @@ describe("loadPersistedExplorerState", () => {
       const local = storageWithEnvelope({
         version: 1,
         dockview: OTHER_DOCKVIEW,
-        panelState: { flowGraphPanels: OTHER_PANELS },
+        panelState: {
+          flowGraphPanels: OTHER_PANELS,
+          eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        },
       });
       expect(
         loadPersistedExplorerState({ session: EMPTY_STORAGE, local }),
-      ).toEqual({ dockview: OTHER_DOCKVIEW, flowGraphPanels: OTHER_PANELS });
+      ).toEqual({
+        dockview: OTHER_DOCKVIEW,
+        flowGraphPanels: OTHER_PANELS,
+        eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+      });
     });
 
     it("falls back to local when session's envelope is corrupt or wrong version", () => {
       const badSession = storageWithEnvelope({
         version: 0,
         dockview: SAMPLE_DOCKVIEW,
-        panelState: { flowGraphPanels: SAMPLE_PANELS },
+        panelState: {
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        },
       });
       const local = storageWithEnvelope({
         version: 1,
         dockview: OTHER_DOCKVIEW,
-        panelState: { flowGraphPanels: OTHER_PANELS },
+        panelState: {
+          flowGraphPanels: OTHER_PANELS,
+          eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        },
       });
       expect(
         loadPersistedExplorerState({ session: badSession, local }),
-      ).toEqual({ dockview: OTHER_DOCKVIEW, flowGraphPanels: OTHER_PANELS });
+      ).toEqual({
+        dockview: OTHER_DOCKVIEW,
+        flowGraphPanels: OTHER_PANELS,
+        eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+      });
     });
 
     it("does not patch a valid session envelope's null fields from local -- the choice is whole-envelope, never per field", () => {
       const session = storageWithEnvelope({
         version: 1,
-        panelState: { flowGraphPanels: SAMPLE_PANELS }, // dockview missing
+        panelState: {
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        }, // dockview missing
       });
       const local = storageWithEnvelope({
         version: 1,
         dockview: OTHER_DOCKVIEW,
-        panelState: { flowGraphPanels: OTHER_PANELS },
+        panelState: {
+          flowGraphPanels: OTHER_PANELS,
+          eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        },
       });
       expect(loadPersistedExplorerState({ session, local })).toEqual({
         dockview: null, // stays null, not patched from local's dockview
         // also null (dockview-depends-on rule), not patched from local's
-        // flowGraphPanels either
+        // flowGraphPanels/eventGraphPanels either
         flowGraphPanels: null,
+        eventGraphPanels: null,
       });
     });
   });
 });
 
 describe("savePersistedExplorerState", () => {
-  it("writes the same version/dockview/panelState.flowGraphPanels payload to both session and local", () => {
+  it("writes the same version/dockview/panelState payload to both session and local", () => {
     const session = fakeStorage();
     const local = fakeStorage();
     savePersistedExplorerState(
-      { dockview: SAMPLE_DOCKVIEW, flowGraphPanels: SAMPLE_PANELS },
+      {
+        dockview: SAMPLE_DOCKVIEW,
+        flowGraphPanels: SAMPLE_PANELS,
+        eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      },
       { session, local },
     );
 
@@ -209,7 +319,10 @@ describe("savePersistedExplorerState", () => {
       expect(JSON.parse(value)).toEqual({
         version: 1,
         dockview: SAMPLE_DOCKVIEW,
-        panelState: { flowGraphPanels: SAMPLE_PANELS },
+        panelState: {
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        },
       });
     }
   });
@@ -219,7 +332,11 @@ describe("savePersistedExplorerState", () => {
     const local = fakeStorage();
     expect(() =>
       savePersistedExplorerState(
-        { dockview: SAMPLE_DOCKVIEW, flowGraphPanels: SAMPLE_PANELS },
+        {
+          dockview: SAMPLE_DOCKVIEW,
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        },
         { session: brokenSession, local },
       ),
     ).not.toThrow();
@@ -229,7 +346,11 @@ describe("savePersistedExplorerState", () => {
   it("doesn't throw if both storages' setItem throw", () => {
     expect(() =>
       savePersistedExplorerState(
-        { dockview: SAMPLE_DOCKVIEW, flowGraphPanels: SAMPLE_PANELS },
+        {
+          dockview: SAMPLE_DOCKVIEW,
+          flowGraphPanels: SAMPLE_PANELS,
+          eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        },
         { session: throwingStorage(), local: throwingStorage() },
       ),
     ).not.toThrow();

@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   flowGraphPanelsSlice,
   paramHashSet,
-  panelRemoved,
   rightPanelTabSet,
   runSubmitted,
   stepSelected,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
+import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
 import type { RootState } from "@/redux/store";
 
 const reducer = flowGraphPanelsSlice.reducer;
