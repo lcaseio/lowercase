@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { SidePanelTab } from "@/components/explorer/flow-graph-panel/SidePanel";
+import { panelRemoved } from "./panel-lifecycle-actions";
 
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
@@ -78,12 +79,15 @@ export const flowGraphPanelsSlice = createSlice({
       ensurePanel(state, action.payload.panelId).selectedStepId =
         action.payload.stepId;
     },
-    // named to match dockview's own onDidRemovePanel event, not a different
-    // verb -- dispatched from a central listener wherever the live
-    // dockviewApi is held, not from this panel's own component
-    panelRemoved: (state, action: PayloadAction<{ panelId: string }>) => {
+  },
+  // panelRemoved is shared across every keyed-by-panelId slice (see
+  // panel-lifecycle-actions.ts) -- dispatched once from a central listener
+  // wherever the live dockviewApi is held, not from this panel's own
+  // component.
+  extraReducers: (builder) => {
+    builder.addCase(panelRemoved, (state, action) => {
       delete state[action.payload.panelId];
-    },
+    });
   },
 });
 
@@ -93,7 +97,6 @@ export const {
   runSubmitted,
   runSelected,
   stepSelected,
-  panelRemoved,
 } = flowGraphPanelsSlice.actions;
 
 export const selectFlowGraphPanelState = (

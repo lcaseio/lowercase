@@ -362,12 +362,12 @@ export function EventGraph({
                   ? 14
                   : 15;
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
       <EChartsReact
         option={option}
         onEvents={{ datazoom: onDataZoom, click: onChartClick }}
         style={{ height: "100%", width: "100%" }}
-        className="p-4 bg-neutral-800 dark:bg-neutral-800"
+        className="pl-2 pr-2 bg-neutral-800 dark:bg-neutral-900"
       />
     </div>
   );

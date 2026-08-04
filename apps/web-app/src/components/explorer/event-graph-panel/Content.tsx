@@ -1,11 +1,25 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { EventGraph } from "@/components/EventGraph";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useGetRunDetailQuery } from "@/redux/api/runs-api";
 import { useGetSimQuery } from "@/redux/api/sims-api";
+import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
+import {
+  selectEventGraphPanelState,
+  selectedEventIdSet,
+  sidePanelTabSet,
+} from "@/redux/slices/event-graph-panels-slice";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { EVENT_GRAPH_SINGLETON_ID } from "../explorer-panels";
 import { useTrackedFlowGraphPanel } from "./use-tracked-flow-graph-panel";
+import { Rail } from "./Rail";
+import { SidePanel, type EventGraphSidePanelTab } from "./SidePanel";
 
 // The one singleton EventGraph panel. What it's currently showing comes
 // entirely from useTrackedFlowGraphPanel -- everything below is just
@@ -16,17 +30,30 @@ export function Content({
   initialTrackedPanelId?: string;
 }) {
   const { runId, versionId } = useTrackedFlowGraphPanel(initialTrackedPanelId);
+  const dispatch = useAppDispatch();
+  const { selectedEventId, sidePanelTab } = useAppSelector((s) =>
+    selectEventGraphPanelState(s, EVENT_GRAPH_SINGLETON_ID),
+  );
 
-  // Same pattern the hook uses internally: reset the selection whenever the
-  // displayed run changes, computed during render rather than in an effect.
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [selectedEventResetKey, setSelectedEventResetKey] = useState<
-    string | null
-  >(runId);
-  if (runId !== selectedEventResetKey) {
-    setSelectedEventResetKey(runId);
-    setSelectedEventId(null);
-  }
+  // Clears the selection when the displayed run genuinely changes -- but
+  // not on mount, since a mount can be restoring a persisted selection for
+  // the *same* run (e.g. after a reload) and shouldn't immediately wipe it.
+  // Can't use the render-time-compare trick use-tracked-flow-graph-panel.ts
+  // uses for snapshot: that trick relies on setting *local* state during
+  // render, which is safe; clearing selectedEventId means dispatching to
+  // Redux, which isn't.
+  const prevRunIdRef = useRef(runId);
+  useEffect(() => {
+    if (prevRunIdRef.current !== runId) {
+      dispatch(
+        selectedEventIdSet({
+          panelId: EVENT_GRAPH_SINGLETON_ID,
+          eventId: null,
+        }),
+      );
+    }
+    prevRunIdRef.current = runId;
+  }, [runId, dispatch]);
 
   const { data: versionData } = useGetFlowVersionDefQuery(
     versionId ?? skipToken,
@@ -58,18 +85,74 @@ export function Content({
   })();
 
   const { events } = useRunEventsWithStatus(runId, []);
+  const selectedEventIndex = events.findIndex((e) => e.id === selectedEventId);
+  const selectedEvent =
+    selectedEventIndex >= 0 ? events[selectedEventIndex] : null;
+
+  const handleSelectTab = (tab: EventGraphSidePanelTab) =>
+    dispatch(sidePanelTabSet({ panelId: EVENT_GRAPH_SINGLETON_ID, tab }));
+  const handleCloseSidePanel = () =>
+    dispatch(sidePanelTabSet({ panelId: EVENT_GRAPH_SINGLETON_ID, tab: null }));
+
+  // Selecting an event always means "show its details" -- same as clicking
+  // a node in the Flow Graph panel unconditionally switching to the
+  // relevant side-panel tab, not just setting the selection alone.
+  const handleEventClick = (eventId: string) => {
+    dispatch(
+      selectedEventIdSet({ panelId: EVENT_GRAPH_SINGLETON_ID, eventId }),
+    );
+    dispatch(
+      sidePanelTabSet({
+        panelId: EVENT_GRAPH_SINGLETON_ID,
+        tab: "eventdetails",
+      }),
+    );
+  };
+
+  const graph = (
+    <EventGraph
+      events={events}
+      selectedEventId={selectedEventId}
+      onEventClick={handleEventClick}
+    />
+  );
 
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 border-b px-3 py-1.5 text-sm text-muted-foreground">
+      <div className="shrink-0 px-3 py-1.5 text-sm text-muted-foreground">
         {headerText}
       </div>
       <div className="min-h-0 flex-1">
-        <EventGraph
-          events={events}
-          selectedEventId={selectedEventId}
-          onEventClick={setSelectedEventId}
-        />
+        {!sidePanelTab ? (
+          <div className="flex h-full">
+            <div className="flex-1 min-w-0">{graph}</div>
+            <Rail activeTab={sidePanelTab} onSelectTab={handleSelectTab} />
+          </div>
+        ) : (
+          <ResizablePanelGroup orientation="horizontal" className="h-full">
+            <ResizablePanel defaultSize="70%" className="min-w-0">
+              {graph}
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize="30%" minSize="15%">
+              <div className="flex h-full">
+                <Rail activeTab={sidePanelTab} onSelectTab={handleSelectTab} />
+                <div className="flex-1 min-w-0">
+                  <SidePanel
+                    activeTab={sidePanelTab}
+                    onClose={handleCloseSidePanel}
+                    event={selectedEvent}
+                    eventIndex={
+                      selectedEventIndex >= 0
+                        ? String(selectedEventIndex + 1)
+                        : undefined
+                    }
+                  />
+                </div>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );

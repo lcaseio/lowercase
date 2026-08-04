@@ -1,5 +1,6 @@
 import type { SerializedDockview } from "dockview-react";
 import type { FlowGraphPanelsState } from "./slices/flow-graph-panels-slice";
+import type { EventGraphPanelsState } from "./slices/event-graph-panels-slice";
 
 // workspace id hardcoded for now -- see UI_STATE_RESEARCH.md's
 // workspace-switching notes for why this is still the right seam to leave in
@@ -17,12 +18,35 @@ type ExplorerStorages = { session: ExplorerStorage; local: ExplorerStorage };
 type LoadedExplorerState = {
   dockview: SerializedDockview | null;
   flowGraphPanels: FlowGraphPanelsState | null;
+  eventGraphPanels: EventGraphPanelsState | null;
 };
 
 const EMPTY_LOADED_STATE: LoadedExplorerState = {
   dockview: null,
   flowGraphPanels: null,
+  eventGraphPanels: null,
 };
+
+// Shared shape for every keyed-panel-state field (flowGraphPanels,
+// eventGraphPanels, ...): only trusted if dockview also restored -- a panel
+// manually recreated by clicking the tree into an empty dockview host
+// should never silently resurrect old business state it wasn't really
+// reopened with (a "fresh" panel that secretly isn't one). This isn't
+// symmetric on purpose: dockview restoring is never conditioned on any of
+// these the other way, since a restored panel's own identity lives entirely
+// in dockview's own params, independent of any of these slices -- that
+// direction is already harmless and stays independent. Same shallow
+// validation (typeof checks, not a schema validator) as the rest of this
+// file -- proportionate for low-stakes local UI state, trusting the cast
+// rather than verifying it.
+function readGatedPanelState<T>(
+  dockview: SerializedDockview | null,
+  value: unknown,
+): T | null {
+  return dockview !== null && typeof value === "object" && value !== null
+    ? (value as T)
+    : null;
+}
 
 // null means this storage has nothing *usable at the envelope level*
 // (missing, corrupt, or wrong version) -- distinct from a valid envelope
@@ -65,23 +89,18 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
       ? (p.dockview as SerializedDockview)
       : null;
 
-  // flowGraphPanels is only ever used if dockview also came back -- a panel
-  // manually recreated by clicking the tree into an empty dockview host
-  // should never silently resurrect old business state it wasn't really
-  // reopened with (a "fresh" panel that secretly isn't one). This isn't
-  // symmetric on purpose: dockview restoring is never conditioned on
-  // flowGraphPanels the other way, since a restored panel's own identity
-  // lives entirely in dockview's own params, independent of this slice --
-  // that direction was already harmless and stays independent.
-  const panelState = p.panelState as { flowGraphPanels?: unknown } | undefined;
-  const flowGraphPanels =
-    dockview !== null &&
-    typeof panelState?.flowGraphPanels === "object" &&
-    panelState.flowGraphPanels !== null
-      ? (panelState.flowGraphPanels as FlowGraphPanelsState)
-      : null;
+  const panelState = p.panelState as
+    { flowGraphPanels?: unknown; eventGraphPanels?: unknown } | undefined;
+  const flowGraphPanels = readGatedPanelState<FlowGraphPanelsState>(
+    dockview,
+    panelState?.flowGraphPanels,
+  );
+  const eventGraphPanels = readGatedPanelState<EventGraphPanelsState>(
+    dockview,
+    panelState?.eventGraphPanels,
+  );
 
-  return { dockview, flowGraphPanels };
+  return { dockview, flowGraphPanels, eventGraphPanels };
 }
 
 // tab-local sessionStorage wins first -- same-tab continuity across both
@@ -114,6 +133,7 @@ export function savePersistedExplorerState(
   snapshot: {
     dockview: SerializedDockview;
     flowGraphPanels: FlowGraphPanelsState;
+    eventGraphPanels: EventGraphPanelsState;
   },
   storages: ExplorerStorages = {
     session: window.sessionStorage,
@@ -123,7 +143,10 @@ export function savePersistedExplorerState(
   const payload = JSON.stringify({
     version: CURRENT_VERSION,
     dockview: snapshot.dockview,
-    panelState: { flowGraphPanels: snapshot.flowGraphPanels },
+    panelState: {
+      flowGraphPanels: snapshot.flowGraphPanels,
+      eventGraphPanels: snapshot.eventGraphPanels,
+    },
   });
   try {
     storages.session.setItem(STORAGE_KEY, payload);

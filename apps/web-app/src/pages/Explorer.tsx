@@ -16,7 +16,7 @@ import { ExplorerWatermark } from "@/components/explorer/ExplorerWatermark";
 import { DockviewApiContext } from "@/components/explorer/explorer-dockview-context";
 import { EXPLORER_PANEL_COMPONENT } from "@/components/explorer/explorer-panels";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
-import { panelRemoved } from "@/redux/slices/flow-graph-panels-slice";
+import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
 import {
   loadPersistedExplorerState,
   savePersistedExplorerState,
@@ -27,6 +27,7 @@ export function Explorer() {
   const [dockviewApi, setDockviewApi] = useState<DockviewApi | null>(null);
   const dispatch = useAppDispatch();
   const flowGraphPanelsState = useAppSelector((s) => s.flowGraphPanels);
+  const eventGraphPanelsState = useAppSelector((s) => s.eventGraphPanels);
 
   // owned by whichever component holds the live dockviewApi, not specific to
   // this page -- deletes a panel's keyed Redux state on intentional removal
@@ -54,10 +55,11 @@ export function Explorer() {
       savePersistedExplorerState({
         dockview: dockviewApi.toJSON(),
         flowGraphPanels: flowGraphPanelsState,
+        eventGraphPanels: eventGraphPanelsState,
       });
       isDirtyRef.current = false;
     };
-  }, [dockviewApi, flowGraphPanelsState]);
+  }, [dockviewApi, flowGraphPanelsState, eventGraphPanelsState]);
 
   const debouncedWrite = useDebouncedCallback(
     () => writeSnapshotRef.current(),
@@ -105,7 +107,7 @@ export function Explorer() {
   useEffect(() => {
     if (!dockviewApi) return;
     scheduleWrite();
-  }, [dockviewApi, flowGraphPanelsState, scheduleWrite]);
+  }, [dockviewApi, flowGraphPanelsState, eventGraphPanelsState, scheduleWrite]);
 
   return (
     <div className="h-full flex flex-col  dark:bg-neutral-850">
