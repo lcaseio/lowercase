@@ -72,8 +72,7 @@ export function useTrackedFlowGraphPanel(
     : null;
   if (trackedPanelId && dockviewApi && liveKey !== snapshotKey) {
     const params = dockviewApi.getPanel(trackedPanelId)?.params as
-      | (OpenPanelRequest & { kind: "flow-graph" })
-      | undefined;
+      (OpenPanelRequest & { kind: "flow-graph" }) | undefined;
     if (params) {
       setSnapshot({ runId: liveRunId, versionId: params.versionId });
       setSnapshotKey(liveKey);

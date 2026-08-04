@@ -174,7 +174,11 @@ export function Content({
     if (!dockviewApi) return;
     openOrFocusPanel(
       dockviewApi,
-      { kind: "event-graph", label: "Event Graph", initialTrackedPanelId: panelId },
+      {
+        kind: "event-graph",
+        label: "Event Graph",
+        initialTrackedPanelId: panelId,
+      },
       { position: { direction: "right", referencePanel: panelId } },
     );
   };
