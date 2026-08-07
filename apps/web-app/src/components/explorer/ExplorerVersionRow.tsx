@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
 import {
+  BotIcon,
   ChevronDownIcon,
   CurlyBracesIcon,
-  FlaskConicalIcon,
   HistoryIcon,
   NetworkIcon,
 } from "lucide-react";
@@ -126,7 +126,7 @@ export function ExplorerVersionRow({
                   !isSimsExpanded && "-rotate-90",
                 )}
               />
-              <FlaskConicalIcon className="size-3.5 shrink-0" />
+              <BotIcon className="size-3.5 shrink-0" />
               <span className="truncate">Sims</span>
             </div>
             {isSimsExpanded ? (

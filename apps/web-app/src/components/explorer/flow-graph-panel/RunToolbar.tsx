@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
+  BotIcon,
   ChartNoAxesGanttIcon,
   FileInputIcon,
-  FlaskConicalIcon,
   PlayIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   hasParams: boolean;
   paramsHasUnsetRequired: boolean;
+  showSimulate: boolean;
   runDisabled: boolean;
   onOpenParams: () => void;
   onOpenSim: () => void;
@@ -18,11 +19,17 @@ type Props = {
 };
 
 // bottom-center floating toolbar over the graph canvas (via FlowGraph's
-// `toolbar` prop / react-flow's own `Panel`) -- Sim/Params slots stay fixed
-// left-to-right regardless of flow content so Run's position never moves.
+// `toolbar` prop / react-flow's own `Panel`) -- Params keeps a reserved slot
+// so Run's position never moves regardless of flow content; Simulate is
+// removed outright (no reserved slot) instead, when hidden -- unlike
+// Params, whose absence is just "this flow has none", Simulate being
+// hidden means "viewing a sim directly, nothing to do here but look, which
+// the rail's own Simulate tab already covers" -- a different enough case
+// not to reuse the same placeholder treatment.
 export function RunToolbar({
   hasParams,
   paramsHasUnsetRequired,
+  showSimulate,
   runDisabled,
   onOpenParams,
   onOpenSim,
@@ -31,16 +38,18 @@ export function RunToolbar({
 }: Props) {
   return (
     <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="cursor-pointer text-xs text-muted-foreground "
-        onClick={onOpenSim}
-        title="Set sim"
-      >
-        <FlaskConicalIcon className="size-4" />
-        Sim
-      </Button>
+      {showSimulate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="cursor-pointer text-xs text-muted-foreground "
+          onClick={onOpenSim}
+          title="Simulate"
+        >
+          <BotIcon className="size-4" />
+          Simulate
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="sm"

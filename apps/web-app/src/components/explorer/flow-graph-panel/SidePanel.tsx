@@ -1,22 +1,6 @@
-import type {
-  ArtifactListItem,
-  FlowDefinition,
-  FlowParamDefinition,
-  FlowProblem,
-  FlowVersionRecord,
-  Ref,
-  SimDefinition,
-} from "@lcase/types";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
-import type { StepRunInfo } from "@/hooks/use-step-run-info";
-import { ParamsTab } from "./side-panel/ParamsTab";
-import { SimTab } from "./side-panel/SimTab";
-import { ProblemsTab } from "./side-panel/ProblemsTab";
-import { ParametersTab } from "./side-panel/ParametersTab";
-import { StepDetailsTab } from "./side-panel/StepDetailsTab";
-import { StepResultsTab } from "./side-panel/StepResultsTab";
-import { SettingsTab } from "./side-panel/SettingsTab";
 
 export type SidePanelTab =
   | "runinput"
@@ -29,7 +13,7 @@ export type SidePanelTab =
 
 const TAB_LABELS: Record<SidePanelTab, string> = {
   runinput: "Run Input",
-  sim: "Sim",
+  sim: "Simulate",
   problems: "Problems",
   parameters: "Parameters",
   stepdetails: "Step Details",
@@ -40,90 +24,18 @@ const TAB_LABELS: Record<SidePanelTab, string> = {
 type Props = {
   activeTab: SidePanelTab;
   onClose: () => void;
-  flowDef: FlowDefinition;
-  params: Record<string, FlowParamDefinition>;
-  artifacts: ArtifactListItem[];
-  selectedParamHashes: Record<string, string>;
-  onParamChange: (name: string, hash: string | undefined) => void;
-  missingRequiredParams: string[];
-  problems: FlowProblem[];
-  selectedStepId: string | null;
-  version: FlowVersionRecord;
-  refs: Ref[];
-  stepRunInfo: Record<string, StepRunInfo>;
-  runId: string | null;
-  simDefinition: SimDefinition | null;
-  isReusedForSelectedStep?: boolean;
+  children: ReactNode;
 };
 
-// scoped to the Flow Graph tab only -- own local tab state (owned by the
-// caller, same fully-controlled shape as FlowVersionRunDetailsPanel), not
-// the main Explorer tab registry in explorer-tabs-slice.ts. Tab switching
-// itself lives in the sibling Rail; this component only ever mounts once a
-// tab is already active. Thin dispatcher, same shape as ExplorerTabContent
-// one level up -- each tab's actual body lives in its own file under
-// side-panel/, not inlined here, so this doesn't grow into a big ternary as
-// more tabs (Problems, Parameters, ...) land.
-export function SidePanel({
-  activeTab,
-  onClose,
-  flowDef,
-  params,
-  artifacts,
-  selectedParamHashes,
-  onParamChange,
-  missingRequiredParams,
-  problems,
-  selectedStepId,
-  version,
-  refs,
-  stepRunInfo,
-  runId,
-  simDefinition,
-  isReusedForSelectedStep,
-}: Props) {
-  function renderTab() {
-    switch (activeTab) {
-      case "runinput":
-        return (
-          <ParamsTab
-            flowDef={flowDef}
-            params={params}
-            artifacts={artifacts}
-            selectedParamHashes={selectedParamHashes}
-            onParamChange={onParamChange}
-            missingRequiredParams={missingRequiredParams}
-          />
-        );
-      case "sim":
-        return <SimTab simDefinition={simDefinition} />;
-      case "problems":
-        return <ProblemsTab problems={problems} />;
-      case "parameters":
-        return <ParametersTab params={params} />;
-      case "stepdetails":
-        return <StepDetailsTab stepId={selectedStepId} flowDef={flowDef} />;
-      case "stepresults":
-        return (
-          <StepResultsTab
-            stepId={selectedStepId}
-            flowDef={flowDef}
-            refs={refs}
-            paramHashes={selectedParamHashes}
-            stepRunInfo={stepRunInfo}
-            runId={runId}
-            isReused={isReusedForSelectedStep}
-          />
-        );
-      case "settings":
-        return <SettingsTab version={version} start={flowDef.start} />;
-      default: {
-        const _exhaustive: never = activeTab;
-        return _exhaustive;
-      }
-    }
-  }
-
+// Pure chrome -- header (label + close) and the scroll container. Which
+// tab is active only matters here for the label; deciding *what* to render
+// for it is the caller's job (Content.tsx, which already computes
+// everything any tab could need), passed down as children -- keeps this
+// component's own prop surface from having to grow every time a tab needs
+// new data. Used to hold a renderTab() switch + every tab's own props
+// directly; moved here once that union got too large to keep justifying
+// living in this file instead of Content.tsx.
+export function SidePanel({ activeTab, onClose, children }: Props) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between  py-1.5">
@@ -138,7 +50,7 @@ export function SidePanel({
           <XIcon className="size-4" />
         </Button>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto p-3">{renderTab()}</div>
+      <div className="flex-1 min-h-0 overflow-auto p-3">{children}</div>
     </div>
   );
 }

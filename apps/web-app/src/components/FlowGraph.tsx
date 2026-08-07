@@ -57,6 +57,7 @@ type Props = {
   stepRunInfo?: Record<string, StepRunInfo>;
   reusedStepIds?: string[];
   toolbar?: ReactNode;
+  authoringBar?: ReactNode;
 };
 export function FlowGraph({
   flowDef,
@@ -66,6 +67,7 @@ export function FlowGraph({
   stepRunInfo,
   reusedStepIds,
   toolbar,
+  authoringBar,
 }: Props) {
   const { resolvedTheme } = useTheme();
 
@@ -134,6 +136,7 @@ export function FlowGraph({
         fitViewOptions={{ padding: 0.5 }}
       >
         <Controls />
+        {authoringBar && <Panel position="top-center">{authoringBar}</Panel>}
         {toolbar && <Panel position="bottom-center">{toolbar}</Panel>}
       </ReactFlow>
     </div>

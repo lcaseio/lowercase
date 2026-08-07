@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   flowGraphPanelsSlice,
   paramHashSet,
-  rightPanelTabSet,
+  sidePanelTabSet,
   runSubmitted,
   stepSelected,
+  simDraftStarted,
+  simDraftReuseToggled,
+  simDraftEnded,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
@@ -14,9 +17,10 @@ const reducer = flowGraphPanelsSlice.reducer;
 
 const DEFAULT_PANEL_STATE = {
   selectedParamHashes: {},
-  rightPanelTab: null,
+  sidePanelTab: null,
   runId: null,
   selectedStepId: null,
+  simDraft: null,
 };
 
 describe("flowGraphPanelsSlice", () => {
@@ -45,15 +49,15 @@ describe("flowGraphPanelsSlice", () => {
     });
   });
 
-  describe("rightPanelTabSet", () => {
+  describe("sidePanelTabSet", () => {
     it("creates a panel entry lazily and sets the tab", () => {
       const state = reducer(
         {},
-        rightPanelTabSet({ panelId: "flow-graph-v1", tab: "runinput" }),
+        sidePanelTabSet({ panelId: "flow-graph-v1", tab: "runinput" }),
       );
       expect(state["flow-graph-v1"]).toEqual({
         ...DEFAULT_PANEL_STATE,
-        rightPanelTab: "runinput",
+        sidePanelTab: "runinput",
       });
     });
   });
@@ -81,6 +85,60 @@ describe("flowGraphPanelsSlice", () => {
         ...DEFAULT_PANEL_STATE,
         selectedStepId: "step-1",
       });
+    });
+  });
+
+  describe("simDraftStarted", () => {
+    it("creates a panel entry lazily and starts an empty draft", () => {
+      const state = reducer({}, simDraftStarted({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        simDraft: { reuse: [] },
+      });
+    });
+  });
+
+  describe("simDraftReuseToggled", () => {
+    it("adds a step id to an empty draft", () => {
+      let state = reducer({}, simDraftStarted({ panelId: "flow-graph-v1" }));
+      state = reducer(
+        state,
+        simDraftReuseToggled({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      expect(state["flow-graph-v1"].simDraft).toEqual({ reuse: ["step-1"] });
+    });
+
+    it("removes an already-marked step id (toggles off)", () => {
+      let state = reducer({}, simDraftStarted({ panelId: "flow-graph-v1" }));
+      state = reducer(
+        state,
+        simDraftReuseToggled({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      state = reducer(
+        state,
+        simDraftReuseToggled({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      expect(state["flow-graph-v1"].simDraft).toEqual({ reuse: [] });
+    });
+
+    it("no-ops when there's no draft to toggle against", () => {
+      const state = reducer(
+        {},
+        simDraftReuseToggled({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      expect(state["flow-graph-v1"]).toEqual(DEFAULT_PANEL_STATE);
+    });
+  });
+
+  describe("simDraftEnded", () => {
+    it("clears an in-progress draft back to null", () => {
+      let state = reducer({}, simDraftStarted({ panelId: "flow-graph-v1" }));
+      state = reducer(
+        state,
+        simDraftReuseToggled({ panelId: "flow-graph-v1", stepId: "step-1" }),
+      );
+      state = reducer(state, simDraftEnded({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"].simDraft).toBeNull();
     });
   });
 
