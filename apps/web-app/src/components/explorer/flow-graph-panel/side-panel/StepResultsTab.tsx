@@ -12,6 +12,7 @@ export function StepResultsTab({
   stepRunInfo,
   runId,
   isReused,
+  onToggleReused,
 }: {
   stepId: string | null;
   flowDef: FlowDefinition;
@@ -20,6 +21,7 @@ export function StepResultsTab({
   stepRunInfo: Record<string, StepRunInfo>;
   runId: string | null;
   isReused?: boolean;
+  onToggleReused?: () => void;
 }) {
   // This tab stays manually selectable via the rail even with no run
   // active (unlike the auto-switch-on-node-click gate in Content.tsx), so
@@ -45,6 +47,7 @@ export function StepResultsTab({
       paramHashes={paramHashes}
       stepRunInfo={stepRunInfo}
       isReused={isReused}
+      onToggleReused={onToggleReused}
       onOpenInMainPanel={() => {}}
     />
   );

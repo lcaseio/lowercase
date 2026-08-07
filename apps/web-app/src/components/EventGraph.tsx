@@ -243,11 +243,12 @@ export function EventGraph({
           const pct = span > 0 ? ((timeVal as number) - startTime) / span : 0;
           const flip = pct >= 0.8;
           const gap = 6 + baseLabelSize / 2;
-          const time = new Date(timeVal).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
+          // temporarily removing time from the tooltip
+          // const time = new Date(timeVal).toLocaleTimeString("en-US", {
+          //   hour: "2-digit",
+          //   minute: "2-digit",
+          //   second: "2-digit",
+          // });
 
           return {
             type: "group",
@@ -275,8 +276,8 @@ export function EventGraph({
                   x: flip ? point[0] - gap : point[0] + gap,
                   y: point[1],
                   text: flip
-                    ? `{time|${time}} {label|${label}}`
-                    : `{label|${label}} {time|${time}}`,
+                    ? `{label|${label}}` //{time|${time}}
+                    : `{label|${label}}`, // {time|${time}}
                   fill: "#e2e8f0",
                   textAlign: flip ? "right" : "left",
                   textVerticalAlign: "middle",

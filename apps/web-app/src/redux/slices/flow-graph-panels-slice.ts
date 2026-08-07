@@ -3,20 +3,24 @@ import type { RootState } from "../store";
 import type { SidePanelTab } from "@/components/explorer/flow-graph-panel/SidePanel";
 import { panelRemoved } from "./panel-lifecycle-actions";
 
+export type SimDraftState = { reuse: string[] };
+
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
-  rightPanelTab: SidePanelTab | null;
+  sidePanelTab: SidePanelTab | null;
   runId: string | null;
   selectedStepId: string | null;
+  simDraft: SimDraftState | null;
 };
 
 export type FlowGraphPanelsState = Record<string, FlowGraphPanelState>;
 
 const DEFAULT_PANEL_STATE: FlowGraphPanelState = {
   selectedParamHashes: {},
-  rightPanelTab: null,
+  sidePanelTab: null,
   runId: null,
   selectedStepId: null,
+  simDraft: null,
 };
 
 const initialState: FlowGraphPanelsState = {};
@@ -47,14 +51,14 @@ export const flowGraphPanelsSlice = createSlice({
       }
       panel.selectedParamHashes[name] = hash;
     },
-    rightPanelTabSet: (
+    sidePanelTabSet: (
       state,
       action: PayloadAction<{
         panelId: string;
         tab: SidePanelTab | null;
       }>,
     ) => {
-      ensurePanel(state, action.payload.panelId).rightPanelTab =
+      ensurePanel(state, action.payload.panelId).sidePanelTab =
         action.payload.tab;
     },
     runSubmitted: (
@@ -79,6 +83,29 @@ export const flowGraphPanelsSlice = createSlice({
       ensurePanel(state, action.payload.panelId).selectedStepId =
         action.payload.stepId;
     },
+    simDraftStarted: (state, action: PayloadAction<{ panelId: string }>) => {
+      ensurePanel(state, action.payload.panelId).simDraft = { reuse: [] };
+    },
+    // toggles whatever the current membership is -- matches the Switch's
+    // own onCheckedChange convention downstream (StepResultsTab.tsx),
+    // which is typed to take no argument, so this always flips rather than
+    // ever being told the new value directly.
+    simDraftReuseToggled: (
+      state,
+      action: PayloadAction<{ panelId: string; stepId: string }>,
+    ) => {
+      const panel = ensurePanel(state, action.payload.panelId);
+      if (!panel.simDraft) return;
+      const { stepId } = action.payload;
+      panel.simDraft.reuse = panel.simDraft.reuse.includes(stepId)
+        ? panel.simDraft.reuse.filter((id) => id !== stepId)
+        : [...panel.simDraft.reuse, stepId];
+    },
+    // dispatched both on explicit cancel and after a successful save --
+    // same "stop authoring" meaning either way.
+    simDraftEnded: (state, action: PayloadAction<{ panelId: string }>) => {
+      ensurePanel(state, action.payload.panelId).simDraft = null;
+    },
   },
   // panelRemoved is shared across every keyed-by-panelId slice (see
   // panel-lifecycle-actions.ts) -- dispatched once from a central listener
@@ -93,10 +120,13 @@ export const flowGraphPanelsSlice = createSlice({
 
 export const {
   paramHashSet,
-  rightPanelTabSet,
+  sidePanelTabSet,
   runSubmitted,
   runSelected,
   stepSelected,
+  simDraftStarted,
+  simDraftReuseToggled,
+  simDraftEnded,
 } = flowGraphPanelsSlice.actions;
 
 export const selectFlowGraphPanelState = (

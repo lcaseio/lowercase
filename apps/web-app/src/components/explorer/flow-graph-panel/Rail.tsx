@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
+  BotIcon,
   CircleAlertIcon,
   FileInputIcon,
-  FlaskConicalIcon,
   Footprints,
   SettingsIcon,
   SlidersHorizontalIcon,
@@ -33,7 +33,7 @@ const RAIL_ITEMS: {
   { tab: "stepdetails", label: "Step Details", icon: Footprints },
   { tab: "parameters", label: "Parameters", icon: VariableIcon },
   { tab: "runinput", label: "Run Input", icon: FileInputIcon },
-  { tab: "sim", label: "Sim", icon: FlaskConicalIcon },
+  { tab: "sim", label: "Simulate", icon: BotIcon },
   { tab: "stepresults", label: "Step Results", icon: TerminalSquareIcon },
   { tab: "problems", label: "Problems", icon: CircleAlertIcon },
 ];

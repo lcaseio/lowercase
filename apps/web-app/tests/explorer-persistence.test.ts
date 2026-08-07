@@ -36,9 +36,10 @@ const SAMPLE_DOCKVIEW = { grid: {} } as unknown as SerializedDockview;
 const SAMPLE_PANELS: FlowGraphPanelsState = {
   "flow-graph-v1": {
     selectedParamHashes: { a: "h1" },
-    rightPanelTab: "runinput",
+    sidePanelTab: "runinput",
     runId: "run-1",
     selectedStepId: null,
+    simDraft: { reuse: ["step-1"] },
   },
 };
 const SAMPLE_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
@@ -55,9 +56,10 @@ const OTHER_DOCKVIEW = {
 const OTHER_PANELS: FlowGraphPanelsState = {
   "flow-graph-v2": {
     selectedParamHashes: {},
-    rightPanelTab: null,
+    sidePanelTab: null,
     runId: "run-2",
     selectedStepId: null,
+    simDraft: null,
   },
 };
 const OTHER_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
