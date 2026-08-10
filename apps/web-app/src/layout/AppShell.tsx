@@ -11,20 +11,7 @@ import {
   SettingsIcon,
   RocketIcon,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -44,55 +31,39 @@ export function AppShell() {
   const location = useLocation();
 
   return (
+    // Tooltip provider stays even though the rail itself no longer needs it
+    // (label is always visible now) -- Rail.tsx in both the flow-graph-panel
+    // and event-graph-panel directories rely on this app-root provider as
+    // their own Tooltip's Radix context ancestor.
     <TooltipProvider>
-      <SidebarProvider>
-        <Sidebar
-          collapsible="icon"
-          className="border-r-neutral-200 dark:border-r-neutral-800"
-        >
-          <SidebarHeader className="flex-row items-center justify-between">
-            <span className="font-bold text-md px-2 group-data-[collapsible=icon]:hidden">
-              lowercase
-            </span>
-            <SidebarTrigger />
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navItems.map((item) => {
-                    const isActive =
-                      item.to === "/"
-                        ? location.pathname === "/"
-                        : location.pathname.startsWith(item.to);
-                    return (
-                      <SidebarMenuItem key={item.to}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          tooltip={item.label}
-                          className="[&>svg]:size-5 mt-1"
-                        >
-                          <Link to={item.to}>
-                            <item.icon />
-                            <span>{item.label}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter></SidebarFooter>
-        </Sidebar>
-        <SidebarInset className="h-screen overflow-hidden flex flex-col">
-          <div className="flex-1 min-h-0 overflow-auto">
-            <Outlet />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="h-screen flex">
+        <nav className="w-16 shrink-0 flex flex-col items-center gap-1 py-2 border-r border-r-neutral-200 dark:border-r-neutral-800 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive =
+              item.to === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 w-14 rounded-md py-1.5 text-[10px] leading-none transition-colors",
+                  isActive
+                    ? "text-foreground bg-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
+                )}
+              >
+                <item.icon className="size-4" />
+                <span className="truncate max-w-full">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="flex-1 min-h-0 overflow-auto">
+          <Outlet />
+        </div>
+      </div>
     </TooltipProvider>
   );
 }

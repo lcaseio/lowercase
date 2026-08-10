@@ -122,7 +122,7 @@ export function Explorer() {
             orientation="horizontal"
             className="h-full border dark:border-neutral-800"
           >
-            <ResizablePanel defaultSize="25%">
+            <ResizablePanel defaultSize="15%">
               <ExplorerTree />
             </ResizablePanel>
             <ResizableHandle withHandle />
@@ -135,7 +135,7 @@ export function Explorer() {
                 any one panel), which can change the available width enough to
                 toggle it back off -- an oscillation that shows up as flicker
                 during a continuous window resize. */}
-            <ResizablePanel defaultSize="75%" style={{ overflow: "hidden" }}>
+            <ResizablePanel defaultSize="85%" style={{ overflow: "hidden" }}>
               <DockviewReact
                 className="h-full"
                 theme={themeAbyss}
