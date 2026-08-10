@@ -2,6 +2,7 @@ import {
   BotIcon,
   ChartNoAxesGanttIcon,
   CurlyBracesIcon,
+  FileTextIcon,
   HistoryIcon,
   NetworkIcon,
   SettingsIcon,
@@ -24,6 +25,9 @@ export const SIM_ICON_CLASS = "text-violet-400";
 // matches RunToolbar.tsx's own "Events" button icon
 export const EVENT_GRAPH_ICON = ChartNoAxesGanttIcon;
 export const EVENT_GRAPH_ICON_CLASS = "text-teal-400";
+// matches this app's established artifact icon (AppShell.tsx, FlowVersionModeNav.tsx)
+export const ARTIFACT_ICON = FileTextIcon;
+export const ARTIFACT_ICON_CLASS = "text-orange-400";
 
 export function getExplorerTabIcon(
   params: OpenPanelRequest,

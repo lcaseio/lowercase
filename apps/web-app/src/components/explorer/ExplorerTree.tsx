@@ -40,6 +40,7 @@ export function ExplorerTree() {
           isExpanded={expandedFlowIds.has(flow.id)}
           onToggleExpanded={() => toggleExpanded(flow.id)}
           selectedRowId={selectedRowId}
+          onSelectRow={setSelectedRowId}
           onSelectFlow={() => {
             setSelectedRowId(`flow:${flow.id}`);
           }}

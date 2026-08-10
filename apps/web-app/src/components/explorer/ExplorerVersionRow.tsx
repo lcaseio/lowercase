@@ -15,12 +15,14 @@ import {
 } from "./explorer-tab-icons";
 import { ExplorerVersionRunList } from "./ExplorerVersionRunList";
 import { ExplorerVersionSimList } from "./ExplorerVersionSimList";
+import { ExplorerVersionArtifactList } from "./ExplorerVersionArtifactList";
 
 export function ExplorerVersionRow({
   version,
   isExpanded,
   onToggleExpanded,
   selectedRowId,
+  onSelectRow,
   onSelectVersion,
   onSelectFlowGraph,
   onSelectJsonDefinition,
@@ -31,6 +33,7 @@ export function ExplorerVersionRow({
   isExpanded: boolean;
   onToggleExpanded: () => void;
   selectedRowId: string | null;
+  onSelectRow: (rowId: string) => void;
   onSelectVersion: () => void;
   onSelectFlowGraph: () => void;
   onSelectJsonDefinition: () => void;
@@ -39,9 +42,13 @@ export function ExplorerVersionRow({
 }) {
   const [isRunsExpanded, setIsRunsExpanded] = useState(false);
   const [isSimsExpanded, setIsSimsExpanded] = useState(false);
+  const [isArtifactsExpanded, setIsArtifactsExpanded] = useState(false);
   const isSelected = selectedRowId === `version:${version.id}`;
   const isGraphSelected = selectedRowId === `flow-graph:${version.id}`;
   const isJsonSelected = selectedRowId === `json-definition:${version.id}`;
+  const isRunsSelected = selectedRowId === `runs:${version.id}`;
+  const isSimsSelected = selectedRowId === `sims:${version.id}`;
+  const isArtifactsSelected = selectedRowId === `artifacts:${version.id}`;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggleExpanded}>
@@ -51,7 +58,7 @@ export function ExplorerVersionRow({
           onSelectVersion();
         }}
         className={cn(
-          "flex items-center gap-2 pl-10 pr-2 py-0.5 text-xs cursor-pointer",
+          "flex items-center gap-2 pl-8 pr-2 py-0.5 text-xs cursor-pointer",
           isSelected ? "bg-accent" : "hover:bg-accent/40",
         )}
       >
@@ -83,10 +90,11 @@ export function ExplorerVersionRow({
       <CollapsibleContent>
         {isExpanded ? (
           <>
+            {/* flow graph */}
             <div
               onClick={onSelectFlowGraph}
               className={cn(
-                "flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer",
+                "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
                 isGraphSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
@@ -95,10 +103,11 @@ export function ExplorerVersionRow({
               />
               <span className="truncate">Flow Graph</span>
             </div>
+            {/* json definition */}
             <div
               onClick={onSelectJsonDefinition}
               className={cn(
-                "flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer",
+                "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
                 isJsonSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
@@ -107,9 +116,16 @@ export function ExplorerVersionRow({
               />
               <span className="truncate">JSON Definition</span>
             </div>
+            {/* runs */}
             <div
-              onClick={() => setIsRunsExpanded((prev) => !prev)}
-              className="flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer hover:bg-accent/40"
+              onClick={() => {
+                setIsRunsExpanded((prev) => !prev);
+                onSelectRow(`runs:${version.id}`);
+              }}
+              className={cn(
+                "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
+                isRunsSelected ? "bg-accent" : "hover:bg-accent/40",
+              )}
             >
               <div className="flex items-center gap-0.5">
                 <ChevronDownIcon
@@ -133,9 +149,17 @@ export function ExplorerVersionRow({
                 onSelectRun={onSelectRun}
               />
             ) : null}
+
+            {/* sims */}
             <div
-              onClick={() => setIsSimsExpanded((prev) => !prev)}
-              className="flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer hover:bg-accent/40"
+              onClick={() => {
+                setIsSimsExpanded((prev) => !prev);
+                onSelectRow(`sims:${version.id}`);
+              }}
+              className={cn(
+                "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
+                isSimsSelected ? "bg-accent" : "hover:bg-accent/40",
+              )}
             >
               <div className="flex items-center gap-0.5">
                 <ChevronDownIcon
@@ -158,6 +182,36 @@ export function ExplorerVersionRow({
                 selectedRowId={selectedRowId}
                 onSelectSim={onSelectSim}
               />
+            ) : null}
+            {/* artifacts */}
+            <div
+              onClick={() => {
+                setIsArtifactsExpanded((prev) => !prev);
+                onSelectRow(`artifacts:${version.id}`);
+              }}
+              className={cn(
+                "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
+                isArtifactsSelected ? "bg-accent" : "hover:bg-accent/40",
+              )}
+            >
+              <div className="flex items-center gap-0.5">
+                <ChevronDownIcon
+                  className={cn(
+                    "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                    !isArtifactsExpanded && "-rotate-90",
+                  )}
+                />
+                {isArtifactsExpanded ? (
+                  <FolderOpenIcon className="size-3.5 shrink-0" />
+                ) : (
+                  <FolderIcon className="size-3.5 shrink-0" />
+                )}
+              </div>
+              <span className="truncate">Artifacts</span>
+            </div>
+
+            {isArtifactsExpanded ? (
+              <ExplorerVersionArtifactList versionId={version.id} />
             ) : null}
           </>
         ) : null}

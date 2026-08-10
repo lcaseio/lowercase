@@ -23,6 +23,7 @@ export function ExplorerFlowRow({
   isExpanded,
   onToggleExpanded,
   selectedRowId,
+  onSelectRow,
   onSelectFlow,
   onSelectFlowSettings,
   onSelectVersion,
@@ -35,6 +36,7 @@ export function ExplorerFlowRow({
   isExpanded: boolean;
   onToggleExpanded: () => void;
   selectedRowId: string | null;
+  onSelectRow: (rowId: string) => void;
   onSelectFlow: () => void;
   onSelectFlowSettings: () => void;
   onSelectVersion: (versionId: string) => void;
@@ -89,7 +91,7 @@ export function ExplorerFlowRow({
             <div
               onClick={onSelectFlowSettings}
               className={cn(
-                "flex items-center gap-2 pl-10 pr-2 py-0.5 text-xs italic text-muted-foreground cursor-pointer",
+                "flex items-center gap-2 pl-8 pr-2 py-0.5 text-xs italic text-muted-foreground cursor-pointer",
                 isSettingsSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
@@ -99,6 +101,7 @@ export function ExplorerFlowRow({
             <ExplorerVersionList
               flowId={flow.id}
               selectedRowId={selectedRowId}
+              onSelectRow={onSelectRow}
               onSelectVersion={onSelectVersion}
               onSelectFlowGraph={onSelectFlowGraph}
               onSelectJsonDefinition={onSelectJsonDefinition}
