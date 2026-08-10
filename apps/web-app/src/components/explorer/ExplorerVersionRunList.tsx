@@ -1,6 +1,7 @@
 import type { RunListItem } from "@lcase/types";
 import { useListAllRunsQuery } from "@/redux/api/runs-api";
 import { cn } from "@/lib/utils";
+import { RUN_ICON, RUN_ICON_CLASS } from "./explorer-tab-icons";
 
 // Scoped to one flow version's runs -- a possible future "all runs across
 // every version of a flow" list would be a different component, not this
@@ -18,19 +19,19 @@ export function ExplorerVersionRunList({
 
   if (isLoading)
     return (
-      <div className="pl-20 py-1 text-xs text-muted-foreground">
+      <div className="pl-20 py-0.5 text-xs text-muted-foreground">
         Loading runs...
       </div>
     );
   if (!data?.ok)
     return (
-      <div className="pl-20 py-1 text-xs text-destructive">
+      <div className="pl-20 py-0.5 text-xs text-destructive">
         Error loading runs
       </div>
     );
   if (data.runList.length === 0)
     return (
-      <div className="pl-20 py-1 text-xs text-muted-foreground">
+      <div className="pl-20 py-0.5 text-xs text-muted-foreground">
         No runs yet.
       </div>
     );
@@ -48,18 +49,21 @@ export function ExplorerVersionRunList({
           key={run.runId}
           onClick={() => onSelectRun(run)}
           className={cn(
-            "flex items-center gap-2 pl-20 pr-2 py-1 text-xs cursor-pointer truncate",
+            "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer",
             selectedRowId === `run:${run.runId}`
               ? "bg-accent"
               : "hover:bg-accent/40",
           )}
         >
-          {run.startTime
-            ? new Date(run.startTime).toLocaleString(undefined, {
-                dateStyle: "short",
-                timeStyle: "short",
-              })
-            : "no start time"}
+          <RUN_ICON className={cn("size-3.5 shrink-0", RUN_ICON_CLASS)} />
+          <span className="truncate">
+            {run.startTime
+              ? new Date(run.startTime).toLocaleString(undefined, {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })
+              : "no start time"}
+          </span>
         </div>
       ))}
     </>
