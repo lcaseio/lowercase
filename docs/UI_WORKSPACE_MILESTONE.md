@@ -270,7 +270,7 @@ Renames the Flow Graph panel's toolbar "Sim" button to **Simulate**, and gives i
 
 **Explicitly not this PR:**
 
-- The dropdown to pick an _existing_ sim from a plain, no-run Flow Graph panel — a separate, smaller, not-yet-designed piece. Doesn't cleanly belong to PR 19/20/21 below (each of those is icons, run-selection-for-authoring, and artifacts-listing respectively) — tracked loosely under "Candidate next chunks" until it finds a real home.
+- The dropdown to pick an _existing_ sim from a plain, no-run Flow Graph panel — a separate, smaller, not-yet-designed piece. Doesn't cleanly belong to PR 19/21/22 below (icons, run-selection-for-authoring, and artifacts-listing respectively; PR 20 is an unrelated nav-rail side-track) — tracked loosely under "Candidate next chunks" until it finds a real home.
 - A generalized multi-tool graph toolbar (cursor vs. hand/pan mode, and whatever else) — named while discussing why node clicks shouldn't be overloaded here, but a real, bigger, separate idea that also touches panning, not something to build as a side effect of this feature.
 - **Attaching the freshly-authored sim to the current panel/session as a convenience** — e.g. so the run you just authored from now shows as "this run + the sim overlaid," ready to rerun with it attached, without leaving the panel. Genuinely unsure whether this is wanted: it would need to be visually unambiguous that the panel is no longer showing the plain original run, and reruns from that state would mean something different than they do today. Deferred deliberately — the plan is to live with "run it from the sim itself" for a while and decide once authoring itself feels settled, not to guess now.
 - **Visually distinguishing "this step was reused _by the run you're viewing_" from "this step will be reused _by the sim you're currently authoring_"** — with today's plain-box nodes these look identical (both just the same `↺` marker), and a real, separate bug was found and left alone on purpose: the graph's own reuse markers and the Step Results toggle are keyed off the _narrow_ `simDefinition` (only populated when this panel was opened directly with a `simId`), while the Sim tab already uses the _broader_ `activeSimDefinition` (any run that happens to have incidentally used a sim) — so an incidental run's reuse can show correctly in the Sim tab while the graph itself stays blank for it. Deliberately not fixed here: **custom node types** (already named under "Further out" below) are overdue regardless of this feature, and are the right place to actually design how run-status/reuse/authoring-draft states get shown on a node — solving it now with plain boxes would likely be thrown away once that lands.
@@ -279,7 +279,7 @@ Renames the Flow Graph panel's toolbar "Sim" button to **Simulate**, and gives i
 - **A general "what am I looking at" signal across open panels** — now scoped as its own PR, see PR 19 below.
 - **Editing an existing sim** — named, not designed. The rough idea floated: a sim might be freely editable while it has no runs of its own yet, and more locked down once it's actually been used, mirroring how a flow version becomes more fixed once it's been run. Not something to build until sims themselves feel more settled.
 
-#### PR 19 Panel/tab identity icons
+#### PR 19 Panel/tab identity icons - merged (#302)
 
 Ties each dockview panel/tab (and the tree row it came from) to the _kind_ of thing it actually is — a plain flow graph, a run, or a sim — with a small colored icon, rather than relying on tab-title text format alone. Cosmetic, but a real, already-felt pain point: today's titles distinguish these only by format (`"{version} Graph"` vs. `"{version} — {timestamp}"` vs. `"{version} — {sim.name}"`), so a run and a sim can look identical at a glance. This is PR 18's "general 'what am I looking at' signal" note, now scoped.
 
@@ -316,7 +316,25 @@ Ties each dockview panel/tab (and the tree row it came from) to the _kind_ of th
   - The chevron-to-folder gap tightened from the row's shared `gap-2` (which applies uniformly between every child, chevron/folder/text/badge alike) to a dedicated `gap-0.5` wrapper around just the chevron+folder pair — isolates that one spacing decision without touching folder-to-text spacing, applied everywhere the pairing occurs (Flow row, Version row, Runs/Sims headers).
   - `py-1` → `py-0.5` applied uniformly across every row in the tree — Flow row, Settings row, Version row, Flow Graph/JSON Definition rows, Runs/Sims headers, and the run/sim leaf rows (including their loading/error/empty-state placeholders) — for a more compact overall density.
 
-#### PR 20 Simulate from a blank Flow Graph panel
+#### PR 20 Postman-style fixed-width main nav rail
+
+A side-track, unrelated to the Explorer work above — the app's outer, top-level left navigation (`layout/AppShell.tsx`), not the Explorer tree. Today it's built on shadcn's `Sidebar` primitive (`components/ui/sidebar.tsx`) with `collapsible="icon"`: expands to `16rem`, collapses to `3rem` icon-only, state cookie-persisted, toggled via a header button or Cmd/Ctrl+B, plus a draggable resize edge and a separate mobile sheet-drawer mode. In practice this means constantly resizing/toggling a panel that should just be fixed — the actual goal, Postman-style: a permanently fixed-width rail, a little-larger icon with a tiny label underneath each, that never expands.
+
+**Design landed on, via discussion, before any implementation plan:**
+
+- **Build a small dedicated rail component, not the shadcn `Sidebar` primitive.** That primitive's whole reason for existing — collapse/resize/mobile-sheet behavior — is exactly what's being removed; fighting it to _not_ do those things is more work than a fixed-width rail built from scratch.
+- **Inactive items rendered muted** (dimmed, e.g. `text-muted-foreground`), active/current item full color — same active-detection logic already in `AppShell.tsx` (`location.pathname`-based), just restyled.
+- **"Explorer" keeps its current label for now, deliberately not renamed to "Flows."** There's already a separate, older nav item literally labeled "Flows" (`/flows`, the pre-dockview page) — renaming "Explorer" now would put two rail items both saying "Flows" side by side. The rename only makes sense once that old page is actually retired as part of the bigger future migration (see the top of this doc), not before.
+- **Explicitly not addressing the future routing-pattern split.** Every nav item today is a real `react-router` `<Link>`/route swap; the eventual vision is that most rail items stop navigating to a different page at all and instead just change what's shown in a tree/panel (Postman's own Collections/Environments/History switch, not a page nav) — but nothing concrete needs that yet, so the rail component stays uniform for now rather than guessing an unbuilt item variant's shape.
+
+**What actually landed:**
+
+- The design above landed as planned: `AppShell.tsx`'s `SidebarProvider`/`Sidebar`/`SidebarInset` structure replaced with a plain fixed-width (`w-16`) flex `<nav>`, each item a `<Link>` rendering a slightly-larger icon with its label always visible underneath, muted (`text-muted-foreground`) when inactive and full-color/background when active — same `isActive` computation as before, untouched.
+- `<TooltipProvider>` deliberately kept in `AppShell.tsx` even though the rail itself no longer uses tooltips (the label is always visible now, unlike the old collapsed-icon-only state) — it's the only place that provider is mounted in the app, and both the Flow Graph and Event Graph panels' own `Rail.tsx` components rely on it as their `Tooltip`'s Radix context ancestor. Confirmed still working after the change.
+- `components/ui/sidebar.tsx` deleted outright (directly superseded), along with `components/ui/sheet.tsx` and `hooks/use-mobile.ts` — both confirmed to have no consumer left anywhere once `sidebar.tsx`'s mobile-drawer behavior was gone.
+- Icon size tuned down slightly from the plan's initial `size-6` to `size-4` once seen in the browser — "a little larger" than the old `size-5` ended up meaning smaller than first guessed, not bigger.
+
+#### PR 21 Simulate from a blank Flow Graph panel
 
 Preliminary — genuinely not settled, needs more poking at before a real plan. The problem: Simulate on a plain, no-run Flow Graph panel currently just says "Open a run to simulate from it," since authoring needs a real parent run and there's no concept yet of attaching one to a panel that hasn't run anything itself.
 
@@ -327,7 +345,7 @@ Two candidate mechanisms floated, not decided between and open to iteration:
 
 Which of these (or both) is right, and how "apply immediately vs. preview first" should work for either, is genuinely open. Needs its own discussion pass before planning.
 
-#### PR 21 Artifacts — first piece: list per-version artifacts in the tree
+#### PR 22 Artifacts — first piece: list per-version artifacts in the tree
 
 First piece only, not the whole migration. Adds an "Artifacts" node under each Version, sibling to Runs and Sims, expanding to list that version's user-made artifacts — matching the existing Runs/Sims list pattern already built (PR 14/15). Larger artifact-mode pieces (creation/editing, whatever else the old mode's version had) exist and will likely follow, but aren't scoped here — this first piece is deliberately kept the same small shape as Runs/Sims rather than trying to bring the rest along with it.
 
@@ -336,7 +354,7 @@ First piece only, not the whole migration. Adds an "Artifacts" node under each V
 The following aren't sequenced relative to each other yet — recorded now as a checkpoint of the direction, not a plan to follow in this order. Each still needs its own informal discussion pass before a real implementation plan, same as every PR above did.
 
 - **A generic "open in its own dockview panel" capability** — surfaced while scoping PR 17's Event Details tab, whose existing "open in main tab" button has nothing to route to in the new UI yet. Some future targets for this will be real artifacts (stable identity, could plausibly get their own panel kind like `json-definition` has); an event's raw payload is the opposite case, arbitrary content with no persistent identity at all. Likely two related but distinct needs under one button, not scoped yet.
-- **A dropdown/picker to select an _existing_ sim from a plain, no-run Flow Graph panel** — surfaced while scoping PR 18's Simulate work. Separate from PR 20's run-selection-for-authoring (that's about attaching a run to author _from_; this is about picking an already-saved sim to view/run). Not scoped yet.
+- **A dropdown/picker to select an _existing_ sim from a plain, no-run Flow Graph panel** — surfaced while scoping PR 18's Simulate work. Separate from PR 21's run-selection-for-authoring (that's about attaching a run to author _from_; this is about picking an already-saved sim to view/run). Not scoped yet.
 
 ### Further out, after the above
 
