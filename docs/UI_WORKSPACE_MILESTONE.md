@@ -238,7 +238,7 @@ Gives the EventGraph panel its own internal rail/side-panel, the piece PR 16 nam
 - `EventDetails.tsx`'s field list went through two layouts before landing: a CSS Grid (`grid-cols-[auto_minmax(0,1fr)]`, each field a `Fragment` contributing two direct grid-item children so a shared `auto` column could size itself to the widest label across every row) fixed the original flex version's inconsistent-per-row label width, but was superseded by a simpler stacked label-above-value layout — side panels are horizontally tight and vertically cheap (they scroll), so optimizing for wrap-width beat optimizing for column alignment. The Fragment-per-field structure is left over from the grid version; harmless in the stacked layout (no grid algorithm cares about direct-childness there), not required by it.
 - `explorer-persistence.ts`'s two near-identical dockview-gated reads (`flowGraphPanels`, `eventGraphPanels`) were pulled into one `readGatedPanelState<T>()` helper once the second copy made the duplication concrete — a third keyed field won't need the check re-written.
 
-#### PR 18 Simulate — author a sim from a run
+#### PR 18 Simulate — author a sim from a run - merged (#301)
 
 Renames the Flow Graph panel's toolbar "Sim" button to **Simulate**, and gives it an actual authoring flow — today it only pulls up a mostly-static sidebar. v1 is scoped to exactly what sims already support: a single base run (`parentRunId`) plus a `reuse` list of step ids, no individual output mocking yet.
 
@@ -270,25 +270,73 @@ Renames the Flow Graph panel's toolbar "Sim" button to **Simulate**, and gives i
 
 **Explicitly not this PR:**
 
-- The dropdown to pick an _existing_ sim from a plain, no-run Flow Graph panel — a separate, smaller, not-yet-designed piece, tracked in PR 19 below.
+- The dropdown to pick an _existing_ sim from a plain, no-run Flow Graph panel — a separate, smaller, not-yet-designed piece. Doesn't cleanly belong to PR 19/20/21 below (each of those is icons, run-selection-for-authoring, and artifacts-listing respectively) — tracked loosely under "Candidate next chunks" until it finds a real home.
 - A generalized multi-tool graph toolbar (cursor vs. hand/pan mode, and whatever else) — named while discussing why node clicks shouldn't be overloaded here, but a real, bigger, separate idea that also touches panning, not something to build as a side effect of this feature.
 - **Attaching the freshly-authored sim to the current panel/session as a convenience** — e.g. so the run you just authored from now shows as "this run + the sim overlaid," ready to rerun with it attached, without leaving the panel. Genuinely unsure whether this is wanted: it would need to be visually unambiguous that the panel is no longer showing the plain original run, and reruns from that state would mean something different than they do today. Deferred deliberately — the plan is to live with "run it from the sim itself" for a while and decide once authoring itself feels settled, not to guess now.
 - **Visually distinguishing "this step was reused _by the run you're viewing_" from "this step will be reused _by the sim you're currently authoring_"** — with today's plain-box nodes these look identical (both just the same `↺` marker), and a real, separate bug was found and left alone on purpose: the graph's own reuse markers and the Step Results toggle are keyed off the _narrow_ `simDefinition` (only populated when this panel was opened directly with a `simId`), while the Sim tab already uses the _broader_ `activeSimDefinition` (any run that happens to have incidentally used a sim) — so an incidental run's reuse can show correctly in the Sim tab while the graph itself stays blank for it. Deliberately not fixed here: **custom node types** (already named under "Further out" below) are overdue regardless of this feature, and are the right place to actually design how run-status/reuse/authoring-draft states get shown on a node — solving it now with plain boxes would likely be thrown away once that lands.
 - **Simulate's behavior on a plain, no-run Flow Graph panel** — deliberately left as just "open the tab" (which itself says "Open a run to simulate from it."), not designed further. Doing more here implies some notion of attaching/creating a run for a flow that hasn't been run yet, which doesn't exist as a concept anywhere in this app yet — needs its own dedicated thinking or PR before Simulate's behavior in that specific state can be meaningfully decided, not something to guess at as a side effect of this one.
 - **The side panel needs more specificity across the three viewing contexts** (a sim opened directly, a run that incidentally used one, a plain flow graph) — flagged as real during review, not dug into. Exact shape not known yet.
-- **A general "what am I looking at" signal across open panels** — today's dockview tab titles distinguish a plain version, a run, and a sim only by _text format_ (`"{version} Graph"` vs. `"{version} — {timestamp}"` vs. `"{version} — {sim.name}"`), no color or icon at all, so at a glance a sim and a run can look identical. Confirmed feasible, not built: `dockview-core` supports a `tabComponent` (same shape as the existing `components` content map, but for the tab itself), which could render a small icon per panel kind using the same identity info (`versionId`/`runId`/`simId`) already known at the exact point each tab gets opened (`ExplorerTree.tsx`'s three `openOrFocusPanel` call sites). Bigger than one PR — named so it isn't lost, not scoped.
+- **A general "what am I looking at" signal across open panels** — now scoped as its own PR, see PR 19 below.
 - **Editing an existing sim** — named, not designed. The rough idea floated: a sim might be freely editable while it has no runs of its own yet, and more locked down once it's actually been used, mirroring how a flow version becomes more fixed once it's been run. Not something to build until sims themselves feel more settled.
 
-#### PR 19 Other stuff like sim selection, artifact list, artifact creation/editing.
+#### PR 19 Panel/tab identity icons
 
-This is not planned much, just writing this down - picking a sim from a flow graph is not yet implemented, though viewing sims is. Artifacts have also not been migrated over.
+Ties each dockview panel/tab (and the tree row it came from) to the _kind_ of thing it actually is — a plain flow graph, a run, or a sim — with a small colored icon, rather than relying on tab-title text format alone. Cosmetic, but a real, already-felt pain point: today's titles distinguish these only by format (`"{version} Graph"` vs. `"{version} — {timestamp}"` vs. `"{version} — {sim.name}"`), so a run and a sim can look identical at a glance. This is PR 18's "general 'what am I looking at' signal" note, now scoped.
+
+**Design landed on, via discussion, before any implementation plan:**
+
+- **Icon reflects the entity kind a panel was opened as, fixed at open time — never the panel's current/live state.** A plain flow-graph panel keeps its flow-graph icon even after you run something from inside it; a run-opened panel keeps its run icon even if that run incidentally used a sim; a sim-opened panel keeps its sim icon. Simpler than tracking "what's currently applied" live, and matches the same fixed-at-creation identity model panel ids already use (`explorerPanelId()`).
+- **Explicitly not showing an in-progress sim draft as its own marker** — not yet, at least.
+- **Deliberately narrower than a full breadcrumb/status system.** The goal here is just tying a dockview panel concretely back to the tree item it represents. Fuller status signaling (a sim applied to a run, which run, etc.) stays a separate, later, more detailed idea.
+- **Verified**: tree rows for Flow Graph/JSON Definition already have their own leaf-level icons (`NetworkIcon`/`CurlyBracesIcon`, `ExplorerVersionRow.tsx`), but individual run/sim rows have _no_ icon today — `HistoryIcon`/`BotIcon` currently sit only on the "Runs"/"Sims" _group-header_ rows. Decision: move those two icons down to each individual run/sim row (the actual leaf identity), and give the group headers a plain, undifferentiated folder icon instead — mirroring the convention from VS Code (and its file-icon theme extensions): containers get a generic folder glyph, only leaf items get a distinguishing icon. Concretely, the Runs/Sims headers get lucide's `Folder`/`FolderOpen` pair, switching with their own existing `isRunsExpanded`/`isSimsExpanded` state — same open/closed-folder convention VS Code uses.
+- **Color, deliberately not tuned carefully — structure over polish for v1, adjustable later via a one-line `className` change per icon:** flow-graph (plain) = `text-blue-400`, json-definition = `text-yellow-400` (kept distinct from the `amber-600/700` already used for warnings elsewhere), sim = `text-violet-400`, run = `text-rose-400`. Deliberately avoided colors already carrying a different meaning in this app: red/amber-600+ (destructive/warning), green (the Run button's own action color), cyan (problems-count/eval badges). Single class per icon, no separate light-mode variant — this app's light mode hasn't had a real pass yet (dark mode is the primary dev target), so that tuning is deferred along with the rest of the eventual light-mode work.
+- **`OpenPanelRequest`'s `"flow-graph"` variant gets a real discriminated sub-field, not optional fields.** Verified via `ExplorerTabContent.tsx`: `kind` already means "which component renders this panel," and plain/run/sim all render the exact same `FlowGraphPanelContent` today — so splitting `kind` itself into three variants would conflate two different axes (which renderer vs. which identity). Instead, `kind: "flow-graph"` stays a single variant, and its `runId?`/`simId?` optional fields become a proper nested union:
+  ```ts
+  | {
+      kind: "flow-graph";
+      label: string;
+      versionId: string;
+      openedAs:
+        | { type: "plain" }
+        | { type: "run"; runId: string }
+        | { type: "sim"; simId: string };
+    }
+  ```
+  Named `openedAs` (not `subject`/`entity`) specifically to name the _behavior_ — fixed at open time — not just the data shape. Leaves room for a genuinely future, separate idea (e.g. a context-menu action opening just the event graph for a specific run) as a new `kind` value later, orthogonal to `openedAs`.
+- **No persistence version bump for this shape change.** The persisted dockview layout embeds each panel's `params`, so existing sessions have old-shaped (`{runId?, simId?}`) params on disk. Explicitly decided not to bump `explorer-persistence.ts`'s envelope version to invalidate them — this app has exactly one user (solo dev, alpha stage), so a manual `localStorage`/`sessionStorage` clear is an acceptable one-time fix if old panels render oddly after this ships, rather than adding version-bump churn this early.
+- **Mechanism**: `dockview-core`'s `tabComponent` (parallel to the existing `components` content map, but for the tab itself), fed the same identity info already known at each of `ExplorerTree.tsx`'s three `openOrFocusPanel` call sites via `openedAs`. Confirmed greenfield — no `tabComponents` prop is registered on `DockviewReact` today, so this is new wiring, not extending an existing pattern.
+
+**What actually landed, plus what changed from the plan once it was actually in the browser:**
+
+- The design above landed as planned: `explorer-panels.ts`'s `openedAs` union, `explorer-tab-icons.ts` (icon+color constants plus `getExplorerTabIcon()`), `ExplorerTab.tsx` (wraps dockview's own `DockviewDefaultTab` with a colored icon prefix, rather than reimplementing its title/close/drag handling), tree-row icon relocation and coloring, and the Runs/Sims group headers becoming a plain open/closed `Folder`/`FolderOpen` glyph.
+- **One real gap found only once wired up in the browser, not caught during planning**: registering `tabComponents={{ [EXPLORER_PANEL_COMPONENT]: ExplorerTab }}` on `DockviewReact` did nothing visible — dockview requires each individual panel to opt into a tab renderer via its own `tabComponent: string` field at `addPanel()` time (`PanelOptions.tabComponent?`), and `openOrFocusPanel()`'s `addPanel()` call never set one, so every panel kept using dockview's built-in default tab regardless of what was registered in the map. Fixed by switching to `defaultTabComponent={ExplorerTab}` instead — the fallback used for any panel with no `tabComponent` set, which fits better anyway since every panel in this app is meant to use the same tab renderer; no per-`addPanel()`-call wiring needed.
+- **Event Graph given an icon too, extending past the original scope.** The design explicitly called this out of scope (no tree-row analog, since it opens from a Flow Graph panel's own toolbar, not the tree) — revisited after seeing every other tab colored and the Event Graph tab left plain. It mirrors its own toolbar button's icon (`ChartNoAxesGanttIcon`, from `RunToolbar.tsx`) with a new color (`text-teal-400`, chosen fresh — distinct from every color already in use anywhere in the app, semantic or not).
+- **A visual-consistency pass across the whole tree, done after the initial implementation, at the user's request:**
+  - Folder icons (open/closed, mirroring `isExpanded`) extended to every expandable row, not just the Runs/Sims headers — the top-level Flow row and the Version row both gained the same `Folder`/`FolderOpen` treatment, so every collapsible container in the tree now follows the same VS Code-style convention, not just the two that originally needed it for the leaf-icon relocation.
+  - The chevron-to-folder gap tightened from the row's shared `gap-2` (which applies uniformly between every child, chevron/folder/text/badge alike) to a dedicated `gap-0.5` wrapper around just the chevron+folder pair — isolates that one spacing decision without touching folder-to-text spacing, applied everywhere the pairing occurs (Flow row, Version row, Runs/Sims headers).
+  - `py-1` → `py-0.5` applied uniformly across every row in the tree — Flow row, Settings row, Version row, Flow Graph/JSON Definition rows, Runs/Sims headers, and the run/sim leaf rows (including their loading/error/empty-state placeholders) — for a more compact overall density.
+
+#### PR 20 Simulate from a blank Flow Graph panel
+
+Preliminary — genuinely not settled, needs more poking at before a real plan. The problem: Simulate on a plain, no-run Flow Graph panel currently just says "Open a run to simulate from it," since authoring needs a real parent run and there's no concept yet of attaching one to a panel that hasn't run anything itself.
+
+Two candidate mechanisms floated, not decided between and open to iteration:
+
+1. **Drag a run from the tree onto a blank Flow Graph panel** to load it.
+2. **A "select a run" button in the Simulate tab** that arms a tree-click-selection mode — clicking a run in the tree while armed applies it, either immediately or via some preview step first (not decided which). A plain dropdown was considered and rejected: doesn't scale once a flow version has hundreds of runs.
+
+Which of these (or both) is right, and how "apply immediately vs. preview first" should work for either, is genuinely open. Needs its own discussion pass before planning.
+
+#### PR 21 Artifacts — first piece: list per-version artifacts in the tree
+
+First piece only, not the whole migration. Adds an "Artifacts" node under each Version, sibling to Runs and Sims, expanding to list that version's user-made artifacts — matching the existing Runs/Sims list pattern already built (PR 14/15). Larger artifact-mode pieces (creation/editing, whatever else the old mode's version had) exist and will likely follow, but aren't scoped here — this first piece is deliberately kept the same small shape as Runs/Sims rather than trying to bring the rest along with it.
 
 ### Candidate next chunks, order genuinely undecided — captured now while context allows, not a committed sequence
 
 The following aren't sequenced relative to each other yet — recorded now as a checkpoint of the direction, not a plan to follow in this order. Each still needs its own informal discussion pass before a real implementation plan, same as every PR above did.
 
-- **Artifacts mode's transition to the new UI** — flagged as needing its own discussion pass, not scoped at all yet.
 - **A generic "open in its own dockview panel" capability** — surfaced while scoping PR 17's Event Details tab, whose existing "open in main tab" button has nothing to route to in the new UI yet. Some future targets for this will be real artifacts (stable identity, could plausibly get their own panel kind like `json-definition` has); an event's raw payload is the opposite case, arbitrary content with no persistent identity at all. Likely two related but distinct needs under one button, not scoped yet.
+- **A dropdown/picker to select an _existing_ sim from a plain, no-run Flow Graph panel** — surfaced while scoping PR 18's Simulate work. Separate from PR 20's run-selection-for-authoring (that's about attaching a run to author _from_; this is about picking an already-saved sim to view/run). Not scoped yet.
 
 ### Further out, after the above
 

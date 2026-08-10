@@ -34,7 +34,12 @@ describe("explorerPanelId", () => {
       explorerPanelId({ kind: "json-definition", label: "x", versionId: "v1" }),
     ).toBe("json-definition-v1");
     expect(
-      explorerPanelId({ kind: "flow-graph", label: "x", versionId: "v1" }),
+      explorerPanelId({
+        kind: "flow-graph",
+        label: "x",
+        versionId: "v1",
+        openedAs: { type: "plain" },
+      }),
     ).toBe("flow-graph-v1");
   });
 
@@ -43,11 +48,13 @@ describe("explorerPanelId", () => {
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
+      openedAs: { type: "plain" },
     });
     const b = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v2",
+      openedAs: { type: "plain" },
     });
     expect(a).not.toBe(b);
   });
@@ -57,12 +64,13 @@ describe("explorerPanelId", () => {
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
+      openedAs: { type: "plain" },
     });
     const runSpecific = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      runId: "r1",
+      openedAs: { type: "run", runId: "r1" },
     });
     expect(runSpecific).not.toBe(plain);
   });
@@ -72,13 +80,13 @@ describe("explorerPanelId", () => {
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      runId: "r1",
+      openedAs: { type: "run", runId: "r1" },
     });
     const b = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      runId: "r2",
+      openedAs: { type: "run", runId: "r2" },
     });
     expect(a).not.toBe(b);
   });
@@ -88,18 +96,19 @@ describe("explorerPanelId", () => {
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
+      openedAs: { type: "plain" },
     });
     const runSpecific = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      runId: "r1",
+      openedAs: { type: "run", runId: "r1" },
     });
     const simSpecific = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      simId: "s1",
+      openedAs: { type: "sim", simId: "s1" },
     });
     expect(simSpecific).not.toBe(plain);
     expect(simSpecific).not.toBe(runSpecific);
@@ -110,13 +119,13 @@ describe("explorerPanelId", () => {
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      simId: "s1",
+      openedAs: { type: "sim", simId: "s1" },
     });
     const b = explorerPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
-      simId: "s2",
+      openedAs: { type: "sim", simId: "s2" },
     });
     expect(a).not.toBe(b);
   });
@@ -136,6 +145,7 @@ describe("openOrFocusPanel", () => {
       kind: "flow-graph",
       label: "Version 1 Graph",
       versionId: "v1",
+      openedAs: { type: "plain" },
     };
 
     openOrFocusPanel(api as never, req);
@@ -153,6 +163,7 @@ describe("openOrFocusPanel", () => {
       kind: "flow-graph",
       label: "Version 1 Graph",
       versionId: "v1",
+      openedAs: { type: "plain" },
     };
     const existing = fakePanel(req, "Version 1 Graph");
     const api = fakeApi(existing);
@@ -168,6 +179,7 @@ describe("openOrFocusPanel", () => {
       kind: "flow-graph",
       label: "Version 1 Graph",
       versionId: "v1",
+      openedAs: { type: "plain" },
     };
     const existing = fakePanel(req, "Version 1 Graph");
     const api = fakeApi(existing);

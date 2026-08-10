@@ -22,7 +22,9 @@ export function ExplorerTabContent({
         <FlowGraphPanelContent
           versionId={params.versionId}
           panelId={api.id}
-          simId={params.simId}
+          simId={
+            params.openedAs.type === "sim" ? params.openedAs.simId : undefined
+          }
         />
       );
     case "event-graph":

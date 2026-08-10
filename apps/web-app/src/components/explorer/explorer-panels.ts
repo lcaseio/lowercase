@@ -12,8 +12,13 @@ export type OpenPanelRequest =
       kind: "flow-graph";
       label: string;
       versionId: string;
-      runId?: string;
-      simId?: string;
+      // fixed at open time, never re-derived from live state -- see
+      // PR 19 in docs/UI_WORKSPACE_MILESTONE.md for why this is a real
+      // discriminated union rather than optional runId?/simId? fields.
+      openedAs:
+        | { type: "plain" }
+        | { type: "run"; runId: string }
+        | { type: "sim"; simId: string };
     }
   // opened by a Flow Graph panel's own toolbar, not the tree -- but a
   // singleton, not per-source-panel: it follows whichever Flow Graph panel
@@ -29,10 +34,13 @@ function contentId(req: OpenPanelRequest): string {
       return req.flowId;
     case "json-definition":
       return req.versionId;
-    case "flow-graph":
-      if (req.simId) return `${req.versionId}-sim-${req.simId}`;
-      if (req.runId) return `${req.versionId}-${req.runId}`;
+    case "flow-graph": {
+      const { openedAs } = req;
+      if (openedAs.type === "sim")
+        return `${req.versionId}-sim-${openedAs.simId}`;
+      if (openedAs.type === "run") return `${req.versionId}-${openedAs.runId}`;
       return req.versionId;
+    }
     // "singleton" here, not something more decorated -- explorerPanelId()
     // already prefixes every id with the kind, so this alone resolves to
     // "event-graph-singleton", unambiguous even if some other panel kind

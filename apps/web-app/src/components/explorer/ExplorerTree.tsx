@@ -62,6 +62,7 @@ export function ExplorerTree() {
               kind: "flow-graph",
               label: `${version.versionLabel ?? `Version ${version.sequence}`} Graph`,
               versionId: version.id,
+              openedAs: { type: "plain" },
             });
           }}
           onSelectJsonDefinition={(version) => {
@@ -87,7 +88,7 @@ export function ExplorerTree() {
               kind: "flow-graph" as const,
               label,
               versionId: version.id,
-              runId: run.runId,
+              openedAs: { type: "run" as const, runId: run.runId },
             };
             dispatch(
               runSelected({ panelId: explorerPanelId(req), runId: run.runId }),
@@ -101,7 +102,7 @@ export function ExplorerTree() {
               kind: "flow-graph",
               label: `${version.versionLabel ?? `Version ${version.sequence}`} — ${sim.name}`,
               versionId: version.id,
-              simId: sim.id,
+              openedAs: { type: "sim", simId: sim.id },
             });
           }}
         />

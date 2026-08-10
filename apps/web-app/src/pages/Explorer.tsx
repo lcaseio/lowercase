@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/resizable";
 import { ExplorerTree } from "@/components/explorer/ExplorerTree";
 import { ExplorerTabContent } from "@/components/explorer/ExplorerTabContent";
+import { ExplorerTab } from "@/components/explorer/ExplorerTab";
 import { ExplorerWatermark } from "@/components/explorer/ExplorerWatermark";
 import { DockviewApiContext } from "@/components/explorer/explorer-dockview-context";
 import { EXPLORER_PANEL_COMPONENT } from "@/components/explorer/explorer-panels";
@@ -139,6 +140,7 @@ export function Explorer() {
                 className="h-full"
                 theme={themeAbyss}
                 components={{ [EXPLORER_PANEL_COMPONENT]: ExplorerTabContent }}
+                defaultTabComponent={ExplorerTab}
                 watermarkComponent={ExplorerWatermark}
                 onReady={(event) => setDockviewApi(event.api)}
               />

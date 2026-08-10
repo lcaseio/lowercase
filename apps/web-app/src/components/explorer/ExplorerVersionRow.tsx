@@ -1,18 +1,18 @@
 import { useState } from "react";
 import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
-import {
-  BotIcon,
-  ChevronDownIcon,
-  CurlyBracesIcon,
-  HistoryIcon,
-  NetworkIcon,
-} from "lucide-react";
+import { ChevronDownIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  FLOW_GRAPH_ICON,
+  FLOW_GRAPH_ICON_CLASS,
+  JSON_DEFINITION_ICON,
+  JSON_DEFINITION_ICON_CLASS,
+} from "./explorer-tab-icons";
 import { ExplorerVersionRunList } from "./ExplorerVersionRunList";
 import { ExplorerVersionSimList } from "./ExplorerVersionSimList";
 
@@ -51,21 +51,28 @@ export function ExplorerVersionRow({
           onSelectVersion();
         }}
         className={cn(
-          "flex items-center gap-2 pl-10 pr-2 py-1 text-xs cursor-pointer",
+          "flex items-center gap-2 pl-10 pr-2 py-0.5 text-xs cursor-pointer",
           isSelected ? "bg-accent" : "hover:bg-accent/40",
         )}
       >
-        <CollapsibleTrigger
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0"
-        >
-          <ChevronDownIcon
-            className={cn(
-              "size-4 text-muted-foreground transition-transform duration-200",
-              !isExpanded && "-rotate-90",
-            )}
-          />
-        </CollapsibleTrigger>
+        <div className="flex items-center gap-0.5">
+          <CollapsibleTrigger
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0"
+          >
+            <ChevronDownIcon
+              className={cn(
+                "size-4 text-muted-foreground transition-transform duration-200",
+                !isExpanded && "-rotate-90",
+              )}
+            />
+          </CollapsibleTrigger>
+          {isExpanded ? (
+            <FolderOpenIcon className="size-3.5 shrink-0" />
+          ) : (
+            <FolderIcon className="size-3.5 shrink-0" />
+          )}
+        </div>
         <span className="truncate">
           {version.versionLabel ?? `Version ${version.sequence}`}
         </span>
@@ -79,34 +86,44 @@ export function ExplorerVersionRow({
             <div
               onClick={onSelectFlowGraph}
               className={cn(
-                "flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer",
+                "flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer",
                 isGraphSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
-              <NetworkIcon className="size-3.5 shrink-0" />
+              <FLOW_GRAPH_ICON
+                className={cn("size-3.5 shrink-0", FLOW_GRAPH_ICON_CLASS)}
+              />
               <span className="truncate">Flow Graph</span>
             </div>
             <div
               onClick={onSelectJsonDefinition}
               className={cn(
-                "flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer",
+                "flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer",
                 isJsonSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
-              <CurlyBracesIcon className="size-3.5 shrink-0" />
+              <JSON_DEFINITION_ICON
+                className={cn("size-3.5 shrink-0", JSON_DEFINITION_ICON_CLASS)}
+              />
               <span className="truncate">JSON Definition</span>
             </div>
             <div
               onClick={() => setIsRunsExpanded((prev) => !prev)}
-              className="flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer hover:bg-accent/40"
+              className="flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer hover:bg-accent/40"
             >
-              <ChevronDownIcon
-                className={cn(
-                  "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
-                  !isRunsExpanded && "-rotate-90",
+              <div className="flex items-center gap-0.5">
+                <ChevronDownIcon
+                  className={cn(
+                    "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                    !isRunsExpanded && "-rotate-90",
+                  )}
+                />
+                {isRunsExpanded ? (
+                  <FolderOpenIcon className="size-3.5 shrink-0" />
+                ) : (
+                  <FolderIcon className="size-3.5 shrink-0" />
                 )}
-              />
-              <HistoryIcon className="size-3.5 shrink-0" />
+              </div>
               <span className="truncate">Runs</span>
             </div>
             {isRunsExpanded ? (
@@ -118,15 +135,21 @@ export function ExplorerVersionRow({
             ) : null}
             <div
               onClick={() => setIsSimsExpanded((prev) => !prev)}
-              className="flex items-center gap-2 pl-16 pr-2 py-1 text-xs cursor-pointer hover:bg-accent/40"
+              className="flex items-center gap-2 pl-16 pr-2 py-0.5 text-xs cursor-pointer hover:bg-accent/40"
             >
-              <ChevronDownIcon
-                className={cn(
-                  "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
-                  !isSimsExpanded && "-rotate-90",
+              <div className="flex items-center gap-0.5">
+                <ChevronDownIcon
+                  className={cn(
+                    "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                    !isSimsExpanded && "-rotate-90",
+                  )}
+                />
+                {isSimsExpanded ? (
+                  <FolderOpenIcon className="size-3.5 shrink-0" />
+                ) : (
+                  <FolderIcon className="size-3.5 shrink-0" />
                 )}
-              />
-              <BotIcon className="size-3.5 shrink-0" />
+              </div>
               <span className="truncate">Sims</span>
             </div>
             {isSimsExpanded ? (

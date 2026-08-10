@@ -4,7 +4,12 @@ import type {
   RunListItem,
   SimListItem,
 } from "@lcase/types";
-import { ChevronDownIcon, SettingsIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  SettingsIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -49,21 +54,28 @@ export function ExplorerFlowRow({
           onSelectFlow();
         }}
         className={cn(
-          "flex items-center gap-2 px-2 py-1 text-xs cursor-pointer",
+          "flex items-center gap-2 px-2 py-0.5 text-xs cursor-pointer",
           isSelected ? "bg-accent" : "hover:bg-accent/40",
         )}
       >
-        <CollapsibleTrigger
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0"
-        >
-          <ChevronDownIcon
-            className={cn(
-              "size-4 text-muted-foreground transition-transform duration-200",
-              !isExpanded && "-rotate-90",
-            )}
-          />
-        </CollapsibleTrigger>
+        <div className="flex items-center gap-0.5">
+          <CollapsibleTrigger
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0"
+          >
+            <ChevronDownIcon
+              className={cn(
+                "size-4 text-muted-foreground transition-transform duration-200",
+                !isExpanded && "-rotate-90",
+              )}
+            />
+          </CollapsibleTrigger>
+          {isExpanded ? (
+            <FolderOpenIcon className="size-3.5 shrink-0" />
+          ) : (
+            <FolderIcon className="size-3.5 shrink-0" />
+          )}
+        </div>
         <span className="truncate">{flow.name}</span>
         {flow.kind === "eval" ? (
           <span className="text-xs font-normal rounded px-1.5 py-0.5 bg-cyan-900 text-cyan-100 shrink-0">
@@ -77,7 +89,7 @@ export function ExplorerFlowRow({
             <div
               onClick={onSelectFlowSettings}
               className={cn(
-                "flex items-center gap-2 pl-10 pr-2 py-1 text-xs italic text-muted-foreground cursor-pointer",
+                "flex items-center gap-2 pl-10 pr-2 py-0.5 text-xs italic text-muted-foreground cursor-pointer",
                 isSettingsSelected ? "bg-accent" : "hover:bg-accent/40",
               )}
             >
