@@ -107,13 +107,14 @@ export function ExplorerTree() {
               openedAs: { type: "sim", simId: sim.id },
             });
           }}
-          onSelectArtifact={(item) => {
+          onSelectArtifact={(item, versionId) => {
             setSelectedRowId(`artifact:${item.artifact.hash}`);
             if (!api) return;
             openOrFocusPanel(api, {
               kind: "artifact",
               label: titleFor(item),
               hash: item.artifact.hash,
+              versionId,
             });
           }}
         />

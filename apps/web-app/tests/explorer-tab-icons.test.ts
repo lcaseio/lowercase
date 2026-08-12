@@ -79,6 +79,7 @@ describe("getExplorerTabIcon", () => {
       kind: "artifact",
       label: "x",
       hash: "h1",
+      versionId: "v1",
     });
     expect(icon?.Icon).toBe(ARTIFACT_ICON);
     expect(icon?.className).toBe(ARTIFACT_ICON_CLASS);

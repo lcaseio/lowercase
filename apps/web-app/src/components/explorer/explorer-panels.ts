@@ -27,7 +27,11 @@ export type OpenPanelRequest =
   // `initialTrackedPanelId` is a one-shot bootstrap hint, not identity --
   // used once on first mount, never read again (see that file for why).
   | { kind: "event-graph"; label: string; initialTrackedPanelId?: string }
-  | { kind: "artifact"; label: string; hash: string };
+  // versionId is a query-scoping field only (metadata's only fetch path is
+  // scoped by flowVersionId), not part of this panel's identity -- the same
+  // artifact opened from anywhere still resolves to one panel, see
+  // contentId() below.
+  | { kind: "artifact"; label: string; hash: string; versionId: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {

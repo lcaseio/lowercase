@@ -1,6 +1,7 @@
 import type { SerializedDockview } from "dockview-react";
 import type { FlowGraphPanelsState } from "./slices/flow-graph-panels-slice";
 import type { EventGraphPanelsState } from "./slices/event-graph-panels-slice";
+import type { ArtifactPanelsState } from "./slices/artifact-panels-slice";
 
 // workspace id hardcoded for now -- see UI_STATE_RESEARCH.md's
 // workspace-switching notes for why this is still the right seam to leave in
@@ -19,12 +20,14 @@ type LoadedExplorerState = {
   dockview: SerializedDockview | null;
   flowGraphPanels: FlowGraphPanelsState | null;
   eventGraphPanels: EventGraphPanelsState | null;
+  artifactPanels: ArtifactPanelsState | null;
 };
 
 const EMPTY_LOADED_STATE: LoadedExplorerState = {
   dockview: null,
   flowGraphPanels: null,
   eventGraphPanels: null,
+  artifactPanels: null,
 };
 
 // Shared shape for every keyed-panel-state field (flowGraphPanels,
@@ -90,7 +93,12 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
       : null;
 
   const panelState = p.panelState as
-    { flowGraphPanels?: unknown; eventGraphPanels?: unknown } | undefined;
+    | {
+        flowGraphPanels?: unknown;
+        eventGraphPanels?: unknown;
+        artifactPanels?: unknown;
+      }
+    | undefined;
   const flowGraphPanels = readGatedPanelState<FlowGraphPanelsState>(
     dockview,
     panelState?.flowGraphPanels,
@@ -99,8 +107,12 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
     dockview,
     panelState?.eventGraphPanels,
   );
+  const artifactPanels = readGatedPanelState<ArtifactPanelsState>(
+    dockview,
+    panelState?.artifactPanels,
+  );
 
-  return { dockview, flowGraphPanels, eventGraphPanels };
+  return { dockview, flowGraphPanels, eventGraphPanels, artifactPanels };
 }
 
 // tab-local sessionStorage wins first -- same-tab continuity across both
@@ -134,6 +146,7 @@ export function savePersistedExplorerState(
     dockview: SerializedDockview;
     flowGraphPanels: FlowGraphPanelsState;
     eventGraphPanels: EventGraphPanelsState;
+    artifactPanels: ArtifactPanelsState;
   },
   storages: ExplorerStorages = {
     session: window.sessionStorage,
@@ -146,6 +159,7 @@ export function savePersistedExplorerState(
     panelState: {
       flowGraphPanels: snapshot.flowGraphPanels,
       eventGraphPanels: snapshot.eventGraphPanels,
+      artifactPanels: snapshot.artifactPanels,
     },
   });
   try {

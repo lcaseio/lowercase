@@ -46,7 +46,7 @@ export function ExplorerFlowRow({
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
   onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
   onSelectSim: (version: FlowVersionRecord, sim: SimListItem["sim"]) => void;
-  onSelectArtifact: (item: ArtifactListItem) => void;
+  onSelectArtifact: (item: ArtifactListItem, versionId: string) => void;
 }) {
   const isSelected = selectedRowId === `flow:${flow.id}`;
   const isSettingsSelected = selectedRowId === `flow-settings:${flow.id}`;

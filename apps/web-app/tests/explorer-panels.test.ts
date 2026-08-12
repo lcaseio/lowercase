@@ -138,9 +138,14 @@ describe("explorerPanelId", () => {
   });
 
   it("derives an artifact request's id from its hash", () => {
-    expect(explorerPanelId({ kind: "artifact", label: "x", hash: "h1" })).toBe(
-      "artifact-h1",
-    );
+    expect(
+      explorerPanelId({
+        kind: "artifact",
+        label: "x",
+        hash: "h1",
+        versionId: "v1",
+      }),
+    ).toBe("artifact-h1");
   });
 });
 
@@ -273,6 +278,7 @@ describe("openOrFocusPanel", () => {
       kind: "artifact",
       label: "notes.md",
       hash: "h1",
+      versionId: "v1",
     };
 
     openOrFocusPanel(api as never, req);
