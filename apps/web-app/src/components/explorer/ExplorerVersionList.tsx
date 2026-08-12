@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
+import type {
+  ArtifactListItem,
+  FlowVersionRecord,
+  RunListItem,
+  SimListItem,
+} from "@lcase/types";
 import { useGetFlowVersionsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { ExplorerVersionRow } from "./ExplorerVersionRow";
@@ -13,6 +18,7 @@ export function ExplorerVersionList({
   onSelectJsonDefinition,
   onSelectRun,
   onSelectSim,
+  onSelectArtifact,
 }: {
   flowId: string;
   selectedRowId: string | null;
@@ -22,6 +28,7 @@ export function ExplorerVersionList({
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
   onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
   onSelectSim: (version: FlowVersionRecord, sim: SimListItem["sim"]) => void;
+  onSelectArtifact: (item: ArtifactListItem) => void;
 }) {
   const { data, error, isLoading } = useGetFlowVersionsQuery(flowId);
   const showLoading = useDelayedLoading(isLoading);
@@ -72,6 +79,7 @@ export function ExplorerVersionList({
           onSelectJsonDefinition={() => onSelectJsonDefinition(version)}
           onSelectRun={(run) => onSelectRun(version, run)}
           onSelectSim={(sim) => onSelectSim(version, sim)}
+          onSelectArtifact={onSelectArtifact}
         />
       ))}
     </>

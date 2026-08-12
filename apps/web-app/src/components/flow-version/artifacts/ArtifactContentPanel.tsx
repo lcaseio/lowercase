@@ -2,15 +2,17 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetArtifactQuery } from "@/redux/api/artifacts-api";
 import { CodeEditor } from "@/components/CodeEditor";
 import { artifactFormatToLanguage } from "@/lib/ref-resolution";
+import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 
 export function ArtifactContentPanel({ hash }: { hash: string | null }) {
   const artifact = useGetArtifactQuery(hash ? { hash } : skipToken);
+  const showLoading = useDelayedLoading(artifact.isLoading);
 
   if (!hash) {
     return <div className="p-4">Select an artifact to view it</div>;
   }
   if (artifact.isLoading) {
-    return <div className="p-4">Loading artifact...</div>;
+    return showLoading ? <div className="p-4">Loading artifact...</div> : null;
   }
   if (!artifact.data) {
     return <div className="p-4">No artifact data</div>;

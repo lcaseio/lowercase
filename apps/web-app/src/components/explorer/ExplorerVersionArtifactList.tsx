@@ -2,24 +2,22 @@ import type { ArtifactListItem } from "@lcase/types";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { cn } from "@/lib/utils";
 import { ARTIFACT_ICON, ARTIFACT_ICON_CLASS } from "./explorer-tab-icons";
-
-function titleFor(item: ArtifactListItem) {
-  return (
-    item.artifact.label ||
-    item.artifact.filename ||
-    `${item.artifact.hash.slice(0, 10)}...`
-  );
-}
+import { titleFor } from "./artifact-title";
 
 // Scoped to one flow version's own curated artifacts -- no flow-wide
 // "shared" artifacts included (no way to create more than one version of a
 // flow yet, so that distinction has no real case to serve today). Rows are
-// deliberately static: no click-to-open yet, since there's no dockview
-// panel kind for artifacts -- a separate, larger piece.
+// clickable for json/text/markdown artifacts (opens a Monaco viewer panel);
+// bytes-format ones stay inert -- the system doesn't support binary content
+// end-to-end yet, so there's nothing real to view.
 export function ExplorerVersionArtifactList({
   versionId,
+  selectedRowId,
+  onSelectArtifact,
 }: {
   versionId: string;
+  selectedRowId: string | null;
+  onSelectArtifact: (item: ArtifactListItem) => void;
 }) {
   const { data, isLoading } = useListArtifactsQuery({
     flowVersionId: versionId,
@@ -52,17 +50,26 @@ export function ExplorerVersionArtifactList({
 
   return (
     <>
-      {artifacts.map((item) => (
-        <div
-          key={item.artifact.hash}
-          className="flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs"
-        >
-          <ARTIFACT_ICON
-            className={cn("size-3.5 shrink-0", ARTIFACT_ICON_CLASS)}
-          />
-          <span className="truncate">{titleFor(item)}</span>
-        </div>
-      ))}
+      {artifacts.map((item) => {
+        const isClickable = item.artifact.format !== "bytes";
+        const isSelected = selectedRowId === `artifact:${item.artifact.hash}`;
+        return (
+          <div
+            key={item.artifact.hash}
+            onClick={isClickable ? () => onSelectArtifact(item) : undefined}
+            className={cn(
+              "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs",
+              isClickable && "cursor-pointer",
+              isClickable && (isSelected ? "bg-accent" : "hover:bg-accent/40"),
+            )}
+          >
+            <ARTIFACT_ICON
+              className={cn("size-3.5 shrink-0", ARTIFACT_ICON_CLASS)}
+            />
+            <span className="truncate">{titleFor(item)}</span>
+          </div>
+        );
+      })}
     </>
   );
 }

@@ -136,6 +136,12 @@ describe("explorerPanelId", () => {
     expect(a).toBe(b);
     expect(a).toBe("event-graph-singleton");
   });
+
+  it("derives an artifact request's id from its hash", () => {
+    expect(explorerPanelId({ kind: "artifact", label: "x", hash: "h1" })).toBe(
+      "artifact-h1",
+    );
+  });
 });
 
 describe("openOrFocusPanel", () => {
@@ -259,5 +265,23 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).not.toHaveBeenCalled();
     expect(existing.api.setActive).toHaveBeenCalledOnce();
+  });
+
+  it("adds a new artifact panel with the derived id/component/title/params", () => {
+    const api = fakeApi(undefined);
+    const req: OpenPanelRequest = {
+      kind: "artifact",
+      label: "notes.md",
+      hash: "h1",
+    };
+
+    openOrFocusPanel(api as never, req);
+
+    expect(api.addPanel).toHaveBeenCalledWith({
+      id: "artifact-h1",
+      component: EXPLORER_PANEL_COMPONENT,
+      title: "notes.md",
+      params: req,
+    });
   });
 });

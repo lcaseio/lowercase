@@ -11,6 +11,8 @@ import {
   SIM_ICON_CLASS,
   EVENT_GRAPH_ICON,
   EVENT_GRAPH_ICON_CLASS,
+  ARTIFACT_ICON,
+  ARTIFACT_ICON_CLASS,
 } from "@/components/explorer/explorer-tab-icons";
 
 describe("getExplorerTabIcon", () => {
@@ -70,5 +72,15 @@ describe("getExplorerTabIcon", () => {
     const icon = getExplorerTabIcon({ kind: "event-graph", label: "x" });
     expect(icon?.Icon).toBe(EVENT_GRAPH_ICON);
     expect(icon?.className).toBe(EVENT_GRAPH_ICON_CLASS);
+  });
+
+  it("returns the artifact icon+color for artifact", () => {
+    const icon = getExplorerTabIcon({
+      kind: "artifact",
+      label: "x",
+      hash: "h1",
+    });
+    expect(icon?.Icon).toBe(ARTIFACT_ICON);
+    expect(icon?.className).toBe(ARTIFACT_ICON_CLASS);
   });
 });

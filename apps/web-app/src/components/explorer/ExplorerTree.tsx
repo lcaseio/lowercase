@@ -5,6 +5,7 @@ import { useAppDispatch } from "@/redux/typed-hooks";
 import { runSelected } from "@/redux/slices/flow-graph-panels-slice";
 import { useDockviewApi } from "./explorer-dockview-context";
 import { explorerPanelId, openOrFocusPanel } from "./explorer-panels";
+import { titleFor } from "./artifact-title";
 import { ExplorerFlowRow } from "./ExplorerFlowRow";
 
 export function ExplorerTree() {
@@ -104,6 +105,15 @@ export function ExplorerTree() {
               label: `${version.versionLabel ?? `Version ${version.sequence}`} — ${sim.name}`,
               versionId: version.id,
               openedAs: { type: "sim", simId: sim.id },
+            });
+          }}
+          onSelectArtifact={(item) => {
+            setSelectedRowId(`artifact:${item.artifact.hash}`);
+            if (!api) return;
+            openOrFocusPanel(api, {
+              kind: "artifact",
+              label: titleFor(item),
+              hash: item.artifact.hash,
             });
           }}
         />

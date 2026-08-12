@@ -52,5 +52,7 @@ export function getExplorerTabIcon(
     // the tree) -- future may add tree context menu to open or key shortcut
     case "event-graph":
       return { Icon: EVENT_GRAPH_ICON, className: EVENT_GRAPH_ICON_CLASS };
+    case "artifact":
+      return { Icon: ARTIFACT_ICON, className: ARTIFACT_ICON_CLASS };
   }
 }

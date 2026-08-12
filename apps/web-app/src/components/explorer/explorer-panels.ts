@@ -26,7 +26,8 @@ export type OpenPanelRequest =
   // it has no target-specific identity of its own to carry here.
   // `initialTrackedPanelId` is a one-shot bootstrap hint, not identity --
   // used once on first mount, never read again (see that file for why).
-  | { kind: "event-graph"; label: string; initialTrackedPanelId?: string };
+  | { kind: "event-graph"; label: string; initialTrackedPanelId?: string }
+  | { kind: "artifact"; label: string; hash: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
@@ -47,9 +48,10 @@ function contentId(req: OpenPanelRequest): string {
     // later also wants a singleton and reuses this same literal.
     case "event-graph":
       return "singleton";
+    case "artifact":
+      return req.hash;
   }
 }
-
 // distinct per kind+content, unlike the old slice's kind-only id -- lets two
 // different versions' flow-graphs coexist as separate panels, while a plain
 // click on the same content still resolves to the same id and gets deduped.
