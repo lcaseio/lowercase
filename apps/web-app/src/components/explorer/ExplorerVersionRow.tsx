@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { FlowVersionRecord, RunListItem, SimListItem } from "@lcase/types";
+import type {
+  ArtifactListItem,
+  FlowVersionRecord,
+  RunListItem,
+  SimListItem,
+} from "@lcase/types";
 import { ChevronDownIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +33,7 @@ export function ExplorerVersionRow({
   onSelectJsonDefinition,
   onSelectRun,
   onSelectSim,
+  onSelectArtifact,
 }: {
   version: FlowVersionRecord;
   isExpanded: boolean;
@@ -39,6 +45,7 @@ export function ExplorerVersionRow({
   onSelectJsonDefinition: () => void;
   onSelectRun: (run: RunListItem) => void;
   onSelectSim: (sim: SimListItem["sim"]) => void;
+  onSelectArtifact: (item: ArtifactListItem) => void;
 }) {
   const [isRunsExpanded, setIsRunsExpanded] = useState(false);
   const [isSimsExpanded, setIsSimsExpanded] = useState(false);
@@ -211,7 +218,11 @@ export function ExplorerVersionRow({
             </div>
 
             {isArtifactsExpanded ? (
-              <ExplorerVersionArtifactList versionId={version.id} />
+              <ExplorerVersionArtifactList
+                versionId={version.id}
+                selectedRowId={selectedRowId}
+                onSelectArtifact={onSelectArtifact}
+              />
             ) : null}
           </>
         ) : null}

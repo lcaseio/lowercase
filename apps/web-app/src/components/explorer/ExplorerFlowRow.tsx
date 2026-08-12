@@ -1,4 +1,5 @@
 import type {
+  ArtifactListItem,
   FlowRecord,
   FlowVersionRecord,
   RunListItem,
@@ -31,6 +32,7 @@ export function ExplorerFlowRow({
   onSelectJsonDefinition,
   onSelectRun,
   onSelectSim,
+  onSelectArtifact,
 }: {
   flow: FlowRecord;
   isExpanded: boolean;
@@ -44,6 +46,7 @@ export function ExplorerFlowRow({
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
   onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
   onSelectSim: (version: FlowVersionRecord, sim: SimListItem["sim"]) => void;
+  onSelectArtifact: (item: ArtifactListItem) => void;
 }) {
   const isSelected = selectedRowId === `flow:${flow.id}`;
   const isSettingsSelected = selectedRowId === `flow-settings:${flow.id}`;
@@ -107,6 +110,7 @@ export function ExplorerFlowRow({
               onSelectJsonDefinition={onSelectJsonDefinition}
               onSelectRun={onSelectRun}
               onSelectSim={onSelectSim}
+              onSelectArtifact={onSelectArtifact}
             />
           </>
         ) : null}

@@ -1,6 +1,21 @@
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { useRef, useState } from "react";
 import { useTheme } from "@/contexts/use-theme";
+import { useDelayedLoading } from "@/hooks/use-delayed-loading";
+
+// Passed as Editor's own `loading` node -- only ever mounted while Monaco's
+// own bundle/worker is initializing (a separate phase from any data fetch
+// the caller already resolved before rendering <CodeEditor>), so "isLoading"
+// is trivially always true for as long as this exists: it unmounts the
+// instant Monaco becomes ready. useDelayedLoading(true) then means "don't
+// show anything for the first 200ms" -- if Monaco's already ready by then,
+// this unmounts before the timeout ever fires, and nothing renders at all.
+function MonacoLoadingFallback() {
+  const showLoading = useDelayedLoading(true);
+  return showLoading ? (
+    <div className="p-4 text-sm text-muted-foreground">Loading editor...</div>
+  ) : null;
+}
 
 type Props = {
   value: string;
@@ -52,6 +67,7 @@ export function CodeEditor({
       value={value}
       onChange={(value) => onChange?.(value ?? "")}
       theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
+      loading={<MonacoLoadingFallback />}
       onMount={autoHeight ? handleMount : undefined}
       options={{
         readOnly,

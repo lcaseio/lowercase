@@ -4,6 +4,7 @@ import { ExplorerFlowSettingsContent } from "./ExplorerFlowSettingsContent";
 import { ExplorerJsonDefinitionContent } from "./ExplorerJsonDefinitionContent";
 import { Content as FlowGraphPanelContent } from "./flow-graph-panel/Content";
 import { Content as EventGraphPanelContent } from "./event-graph-panel/Content";
+import { ArtifactContentPanel } from "@/components/flow-version/artifacts/ArtifactContentPanel";
 
 // registered as dockview's "explorer-tab" component (see explorer-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is
@@ -33,6 +34,8 @@ export function ExplorerTabContent({
           initialTrackedPanelId={params.initialTrackedPanelId}
         />
       );
+    case "artifact":
+      return <ArtifactContentPanel hash={params.hash} />;
     default: {
       const _exhaustive: never = params;
       return _exhaustive;
