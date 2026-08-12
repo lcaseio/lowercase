@@ -86,6 +86,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: null,
       flowGraphPanels: null,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -99,6 +100,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: null,
       flowGraphPanels: null,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -110,6 +112,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: null,
       flowGraphPanels: null,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -131,6 +134,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: null,
       flowGraphPanels: null,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -149,6 +153,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: SAMPLE_DOCKVIEW,
       flowGraphPanels: SAMPLE_PANELS,
       eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      artifactPanels: null,
     });
   });
 
@@ -167,6 +172,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: SAMPLE_DOCKVIEW,
       flowGraphPanels: null,
       eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+      artifactPanels: null,
     });
   });
 
@@ -185,6 +191,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: SAMPLE_DOCKVIEW,
       flowGraphPanels: SAMPLE_PANELS,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -202,6 +209,7 @@ describe("loadPersistedExplorerState", () => {
       dockview: null,
       flowGraphPanels: null,
       eventGraphPanels: null,
+      artifactPanels: null,
     });
   });
 
@@ -227,6 +235,7 @@ describe("loadPersistedExplorerState", () => {
         dockview: SAMPLE_DOCKVIEW,
         flowGraphPanels: SAMPLE_PANELS,
         eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        artifactPanels: null,
       });
     });
 
@@ -245,6 +254,7 @@ describe("loadPersistedExplorerState", () => {
         dockview: OTHER_DOCKVIEW,
         flowGraphPanels: OTHER_PANELS,
         eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        artifactPanels: null,
       });
     });
 
@@ -271,6 +281,7 @@ describe("loadPersistedExplorerState", () => {
         dockview: OTHER_DOCKVIEW,
         flowGraphPanels: OTHER_PANELS,
         eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
+        artifactPanels: null,
       });
     });
 
@@ -293,9 +304,10 @@ describe("loadPersistedExplorerState", () => {
       expect(loadPersistedExplorerState({ session, local })).toEqual({
         dockview: null, // stays null, not patched from local's dockview
         // also null (dockview-depends-on rule), not patched from local's
-        // flowGraphPanels/eventGraphPanels either
+        // flowGraphPanels/eventGraphPanels/artifactPanels either
         flowGraphPanels: null,
         eventGraphPanels: null,
+        artifactPanels: null,
       });
     });
   });
@@ -310,6 +322,7 @@ describe("savePersistedExplorerState", () => {
         dockview: SAMPLE_DOCKVIEW,
         flowGraphPanels: SAMPLE_PANELS,
         eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+        artifactPanels: {},
       },
       { session, local },
     );
@@ -324,6 +337,7 @@ describe("savePersistedExplorerState", () => {
         panelState: {
           flowGraphPanels: SAMPLE_PANELS,
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+          artifactPanels: {},
         },
       });
     }
@@ -338,6 +352,7 @@ describe("savePersistedExplorerState", () => {
           dockview: SAMPLE_DOCKVIEW,
           flowGraphPanels: SAMPLE_PANELS,
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+          artifactPanels: {},
         },
         { session: brokenSession, local },
       ),
@@ -352,6 +367,7 @@ describe("savePersistedExplorerState", () => {
           dockview: SAMPLE_DOCKVIEW,
           flowGraphPanels: SAMPLE_PANELS,
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
+          artifactPanels: {},
         },
         { session: throwingStorage(), local: throwingStorage() },
       ),

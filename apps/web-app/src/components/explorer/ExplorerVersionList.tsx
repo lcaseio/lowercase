@@ -28,7 +28,7 @@ export function ExplorerVersionList({
   onSelectJsonDefinition: (version: FlowVersionRecord) => void;
   onSelectRun: (version: FlowVersionRecord, run: RunListItem) => void;
   onSelectSim: (version: FlowVersionRecord, sim: SimListItem["sim"]) => void;
-  onSelectArtifact: (item: ArtifactListItem) => void;
+  onSelectArtifact: (item: ArtifactListItem, versionId: string) => void;
 }) {
   const { data, error, isLoading } = useGetFlowVersionsQuery(flowId);
   const showLoading = useDelayedLoading(isLoading);

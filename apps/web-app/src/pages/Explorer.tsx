@@ -29,6 +29,7 @@ export function Explorer() {
   const dispatch = useAppDispatch();
   const flowGraphPanelsState = useAppSelector((s) => s.flowGraphPanels);
   const eventGraphPanelsState = useAppSelector((s) => s.eventGraphPanels);
+  const artifactPanelsState = useAppSelector((s) => s.artifactPanels);
 
   // owned by whichever component holds the live dockviewApi, not specific to
   // this page -- deletes a panel's keyed Redux state on intentional removal
@@ -57,10 +58,16 @@ export function Explorer() {
         dockview: dockviewApi.toJSON(),
         flowGraphPanels: flowGraphPanelsState,
         eventGraphPanels: eventGraphPanelsState,
+        artifactPanels: artifactPanelsState,
       });
       isDirtyRef.current = false;
     };
-  }, [dockviewApi, flowGraphPanelsState, eventGraphPanelsState]);
+  }, [
+    dockviewApi,
+    flowGraphPanelsState,
+    eventGraphPanelsState,
+    artifactPanelsState,
+  ]);
 
   const debouncedWrite = useDebouncedCallback(
     () => writeSnapshotRef.current(),
@@ -108,7 +115,13 @@ export function Explorer() {
   useEffect(() => {
     if (!dockviewApi) return;
     scheduleWrite();
-  }, [dockviewApi, flowGraphPanelsState, eventGraphPanelsState, scheduleWrite]);
+  }, [
+    dockviewApi,
+    flowGraphPanelsState,
+    eventGraphPanelsState,
+    artifactPanelsState,
+    scheduleWrite,
+  ]);
 
   return (
     <div className="h-full flex flex-col  dark:bg-neutral-850">

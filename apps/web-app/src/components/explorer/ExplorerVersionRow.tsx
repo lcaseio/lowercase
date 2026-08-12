@@ -45,7 +45,7 @@ export function ExplorerVersionRow({
   onSelectJsonDefinition: () => void;
   onSelectRun: (run: RunListItem) => void;
   onSelectSim: (sim: SimListItem["sim"]) => void;
-  onSelectArtifact: (item: ArtifactListItem) => void;
+  onSelectArtifact: (item: ArtifactListItem, versionId: string) => void;
 }) {
   const [isRunsExpanded, setIsRunsExpanded] = useState(false);
   const [isSimsExpanded, setIsSimsExpanded] = useState(false);

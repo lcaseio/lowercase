@@ -6,10 +6,10 @@ import { titleFor } from "./artifact-title";
 
 // Scoped to one flow version's own curated artifacts -- no flow-wide
 // "shared" artifacts included (no way to create more than one version of a
-// flow yet, so that distinction has no real case to serve today). Rows are
-// clickable for json/text/markdown artifacts (opens a Monaco viewer panel);
-// bytes-format ones stay inert -- the system doesn't support binary content
-// end-to-end yet, so there's nothing real to view.
+// flow yet, so that distinction has no real case to serve today). Every row
+// is clickable, including bytes-format ones -- PR 22 kept those inert since
+// there was nothing to view, but PR 23's metadata tab gives them something
+// real to show even without a content preview.
 export function ExplorerVersionArtifactList({
   versionId,
   selectedRowId,
@@ -17,7 +17,7 @@ export function ExplorerVersionArtifactList({
 }: {
   versionId: string;
   selectedRowId: string | null;
-  onSelectArtifact: (item: ArtifactListItem) => void;
+  onSelectArtifact: (item: ArtifactListItem, versionId: string) => void;
 }) {
   const { data, isLoading } = useListArtifactsQuery({
     flowVersionId: versionId,
@@ -51,16 +51,14 @@ export function ExplorerVersionArtifactList({
   return (
     <>
       {artifacts.map((item) => {
-        const isClickable = item.artifact.format !== "bytes";
         const isSelected = selectedRowId === `artifact:${item.artifact.hash}`;
         return (
           <div
             key={item.artifact.hash}
-            onClick={isClickable ? () => onSelectArtifact(item) : undefined}
+            onClick={() => onSelectArtifact(item, versionId)}
             className={cn(
-              "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs",
-              isClickable && "cursor-pointer",
-              isClickable && (isSelected ? "bg-accent" : "hover:bg-accent/40"),
+              "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer",
+              isSelected ? "bg-accent" : "hover:bg-accent/40",
             )}
           >
             <ARTIFACT_ICON
