@@ -31,7 +31,11 @@ export type OpenPanelRequest =
   // scoped by flowVersionId), not part of this panel's identity -- the same
   // artifact opened from anywhere still resolves to one panel, see
   // contentId() below.
-  | { kind: "artifact"; label: string; hash: string; versionId: string };
+  | { kind: "artifact"; label: string; hash: string; versionId: string }
+  // one panel per version -- contentId returning versionId alone gives this
+  // for free via the same mechanism json-definition/flow-graph's plain
+  // variant already use, no new dedup logic needed.
+  | { kind: "artifact-authoring"; label: string; versionId: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
@@ -54,6 +58,8 @@ function contentId(req: OpenPanelRequest): string {
       return "singleton";
     case "artifact":
       return req.hash;
+    case "artifact-authoring":
+      return req.versionId;
   }
 }
 // distinct per kind+content, unlike the old slice's kind-only id -- lets two

@@ -2,6 +2,7 @@ import {
   BotIcon,
   ChartNoAxesGanttIcon,
   CurlyBracesIcon,
+  FilePlusIcon,
   FileTextIcon,
   HistoryIcon,
   NetworkIcon,
@@ -28,6 +29,8 @@ export const EVENT_GRAPH_ICON_CLASS = "text-teal-400";
 // matches this app's established artifact icon (AppShell.tsx, FlowVersionModeNav.tsx)
 export const ARTIFACT_ICON = FileTextIcon;
 export const ARTIFACT_ICON_CLASS = "text-orange-400";
+export const ARTIFACT_AUTHORING_ICON = FilePlusIcon;
+export const ARTIFACT_AUTHORING_ICON_CLASS = "text-lime-400";
 
 export function getExplorerTabIcon(
   params: OpenPanelRequest,
@@ -54,5 +57,10 @@ export function getExplorerTabIcon(
       return { Icon: EVENT_GRAPH_ICON, className: EVENT_GRAPH_ICON_CLASS };
     case "artifact":
       return { Icon: ARTIFACT_ICON, className: ARTIFACT_ICON_CLASS };
+    case "artifact-authoring":
+      return {
+        Icon: ARTIFACT_AUTHORING_ICON,
+        className: ARTIFACT_AUTHORING_ICON_CLASS,
+      };
   }
 }

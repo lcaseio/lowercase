@@ -13,6 +13,8 @@ import {
   EVENT_GRAPH_ICON_CLASS,
   ARTIFACT_ICON,
   ARTIFACT_ICON_CLASS,
+  ARTIFACT_AUTHORING_ICON,
+  ARTIFACT_AUTHORING_ICON_CLASS,
 } from "@/components/explorer/explorer-tab-icons";
 
 describe("getExplorerTabIcon", () => {
@@ -83,5 +85,15 @@ describe("getExplorerTabIcon", () => {
     });
     expect(icon?.Icon).toBe(ARTIFACT_ICON);
     expect(icon?.className).toBe(ARTIFACT_ICON_CLASS);
+  });
+
+  it("returns the artifact-authoring icon+color for artifact-authoring", () => {
+    const icon = getExplorerTabIcon({
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    });
+    expect(icon?.Icon).toBe(ARTIFACT_AUTHORING_ICON);
+    expect(icon?.className).toBe(ARTIFACT_AUTHORING_ICON_CLASS);
   });
 });

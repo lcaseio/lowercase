@@ -30,6 +30,9 @@ export function Explorer() {
   const flowGraphPanelsState = useAppSelector((s) => s.flowGraphPanels);
   const eventGraphPanelsState = useAppSelector((s) => s.eventGraphPanels);
   const artifactPanelsState = useAppSelector((s) => s.artifactPanels);
+  const artifactAuthoringPanelsState = useAppSelector(
+    (s) => s.artifactAuthoringPanels,
+  );
 
   // owned by whichever component holds the live dockviewApi, not specific to
   // this page -- deletes a panel's keyed Redux state on intentional removal
@@ -59,6 +62,7 @@ export function Explorer() {
         flowGraphPanels: flowGraphPanelsState,
         eventGraphPanels: eventGraphPanelsState,
         artifactPanels: artifactPanelsState,
+        artifactAuthoringPanels: artifactAuthoringPanelsState,
       });
       isDirtyRef.current = false;
     };
@@ -67,6 +71,7 @@ export function Explorer() {
     flowGraphPanelsState,
     eventGraphPanelsState,
     artifactPanelsState,
+    artifactAuthoringPanelsState,
   ]);
 
   const debouncedWrite = useDebouncedCallback(
@@ -120,6 +125,7 @@ export function Explorer() {
     flowGraphPanelsState,
     eventGraphPanelsState,
     artifactPanelsState,
+    artifactAuthoringPanelsState,
     scheduleWrite,
   ]);
 

@@ -147,6 +147,35 @@ describe("explorerPanelId", () => {
       }),
     ).toBe("artifact-h1");
   });
+
+  it("gives every artifact-authoring request for the same version the same id -- one draft per version", () => {
+    const a = explorerPanelId({
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    });
+    const b = explorerPanelId({
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    });
+    expect(a).toBe(b);
+    expect(a).toBe("artifact-authoring-v1");
+  });
+
+  it("gives different versions' artifact-authoring requests different ids", () => {
+    const a = explorerPanelId({
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    });
+    const b = explorerPanelId({
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v2",
+    });
+    expect(a).not.toBe(b);
+  });
 });
 
 describe("openOrFocusPanel", () => {
@@ -289,5 +318,38 @@ describe("openOrFocusPanel", () => {
       title: "notes.md",
       params: req,
     });
+  });
+
+  it("adds a new artifact-authoring panel with the derived id/component/title/params", () => {
+    const api = fakeApi(undefined);
+    const req: OpenPanelRequest = {
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    };
+
+    openOrFocusPanel(api as never, req);
+
+    expect(api.addPanel).toHaveBeenCalledWith({
+      id: "artifact-authoring-v1",
+      component: EXPLORER_PANEL_COMPONENT,
+      title: "New Artifact",
+      params: req,
+    });
+  });
+
+  it("refocuses an existing artifact-authoring panel for the same version instead of opening a second draft", () => {
+    const req: OpenPanelRequest = {
+      kind: "artifact-authoring",
+      label: "New Artifact",
+      versionId: "v1",
+    };
+    const existing = fakePanel(req, "New Artifact");
+    const api = fakeApi(existing);
+
+    openOrFocusPanel(api as never, req);
+
+    expect(api.addPanel).not.toHaveBeenCalled();
+    expect(existing.api.setActive).toHaveBeenCalledOnce();
   });
 });
