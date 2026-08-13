@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { ArtifactUpdateMetadata } from "@lcase/types";
+import type {
+  ArtifactIndex,
+  ArtifactListItem,
+  ArtifactUpdateMetadata,
+  GetArtifactsReq,
+} from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import {
@@ -8,6 +13,7 @@ import {
   useUpdateArtifactMetadataMutation,
 } from "@/redux/api/artifacts-api";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
+import type { AppDispatch } from "@/redux/store";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import {
   artifactMetadataSaved,
@@ -20,6 +26,31 @@ import {
   updateDraftLabel,
   type ArtifactSidePanelTab,
 } from "@/redux/slices/artifact-panels-slice";
+
+// Updates a hash's entry in a cached listArtifacts result if present, else
+// inserts one -- needed because a save can make an artifact newly belong to
+// a `curated: "true"`-scoped cache entry it wasn't in before (see
+// handleSave below for why this gets called for two different cache keys).
+function patchArtifactCache(
+  dispatch: AppDispatch,
+  args: GetArtifactsReq,
+  hash: string,
+  artifact: ArtifactIndex,
+  associations: ArtifactListItem["associations"],
+) {
+  dispatch(
+    artifactsApi.util.updateQueryData("listArtifacts", args, (list) => {
+      if (!list.ok) return;
+      const existing = list.value.find((i) => i.artifact.hash === hash);
+      if (existing) {
+        existing.artifact = artifact;
+        existing.associations = associations;
+      } else {
+        list.value.push({ artifact, associations });
+      }
+    }),
+  );
+}
 
 // All the data-fetching, Redux read/write, and derived state the artifact
 // panel needs -- Content.tsx composes JSX from this, mirroring
@@ -45,8 +76,18 @@ export function useArtifactPanel(
   const flowDef = versionData?.ok ? versionData.value.definition : null;
   const version = versionData?.ok ? versionData.value.version : null;
 
+  // `hash` finds this exact artifact regardless of its own flowVersionId/
+  // curated columns -- a step's run output/export never gets those set at
+  // all (the worker writes it with no metadata), so filtering by
+  // flowVersionId alone, curated or not, can never find it. flowVersionId
+  // is still passed alongside -- not for row-selection (hash already
+  // pins that down), but to scope which paramCurations come back attached,
+  // so Edit still pre-checks the right boxes for this version. The
+  // curated-scoped list other components rely on (the params picker,
+  // ExplorerTree's artifact list) is a *different* cache entry; see
+  // patchArtifactCache below for why handleSave patches both.
   const { data: artifactsData, isLoading: isArtifactsLoading } =
-    useListArtifactsQuery({ flowVersionId: versionId, curated: "true" });
+    useListArtifactsQuery({ hash, flowVersionId: versionId });
 
   const [updateMetadata, { isLoading: isSaving }] =
     useUpdateArtifactMetadataMutation();
@@ -114,32 +155,38 @@ export function useArtifactPanel(
     try {
       const result = await updateMetadata({ hash, metadata }).unwrap();
       if (result.ok) {
-        // patches the cached artifact list with this PATCH response, so
-        // other consumers of that same cache (the tree's own artifact list)
-        // show the new label/associations right away instead of lagging
-        // until the invalidatesTags refetch below completes.
-        dispatch(
-          artifactsApi.util.updateQueryData(
-            "listArtifacts",
-            { flowVersionId: versionId, curated: "true" },
-            (list) => {
-              if (!list.ok) return;
-              const cachedItem = list.value.find(
-                (i) => i.artifact.hash === hash,
-              );
-              if (!cachedItem) return;
-              cachedItem.artifact = result.value;
-              cachedItem.associations = {
-                flowId: metadata.flowId ?? undefined,
-                flowVersionId: versionId,
-                curated: true,
-                paramCurations: draft.curatedParamNames.map((paramName) => ({
-                  flowVersionId: versionId,
-                  paramName,
-                })),
-              };
-            },
-          ),
+        const associations: ArtifactListItem["associations"] = {
+          flowId: metadata.flowId ?? undefined,
+          flowVersionId: versionId,
+          // updateArtifactMetadata always sets curated: true server-side
+          // (prisma-artifact-repository.ts), regardless of whether
+          // paramCurations is empty -- curation is one-way, so this is
+          // never wrong to assume here.
+          curated: true,
+          paramCurations: draft.curatedParamNames.map((paramName) => ({
+            flowVersionId: versionId,
+            paramName,
+          })),
+        };
+        // Patches two cache entries, not one -- this panel's own hash-scoped
+        // lookup (above) and the curated-scoped list other components rely
+        // on (the params picker's candidates, ExplorerTree's artifact list)
+        // are different cache entries. Both need the optimistic update; the
+        // curated-scoped one especially, since a first-time curation won't
+        // already have an entry there to find.
+        patchArtifactCache(
+          dispatch,
+          { hash, flowVersionId: versionId },
+          hash,
+          result.value,
+          associations,
+        );
+        patchArtifactCache(
+          dispatch,
+          { flowVersionId: versionId, curated: "true" },
+          hash,
+          result.value,
+          associations,
         );
         dispatch(artifactMetadataSaved({ panelId }));
       } else {

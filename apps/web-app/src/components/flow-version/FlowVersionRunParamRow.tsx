@@ -56,6 +56,11 @@ type Props = {
   // no provider, and old-mode's FlowVersionRun.tsx page has none. Rendered
   // alongside the existing Preview/Show-usages buttons.
   extra?: React.ReactNode;
+  // Preferred over onOpenInMainPanel for Preview when present -- opens the
+  // real artifact panel (metadata + content) instead of flattening to
+  // inline text. Same dockview-only constraint as `extra` above; old-mode
+  // never passes this.
+  onOpenArtifact?: (hash: string, label: string) => void;
 };
 
 // rendere a param row and its selection logic
@@ -73,6 +78,7 @@ export function FlowVersionRunParamRow({
   curatedArtifacts,
   curatedOnly,
   extra,
+  onOpenArtifact,
 }: Props) {
   const [triggerGetArtifact, { isFetching }] = useLazyGetArtifactQuery();
 
@@ -101,12 +107,24 @@ export function FlowVersionRunParamRow({
   );
   const canPreview =
     selectedArtifact && selectedArtifact.artifact.format !== "bytes";
+  // The artifact panel (ArtifactContentPanel) already handles `bytes`
+  // gracefully -- "binary artifact, preview not supported" plus real
+  // metadata -- so the bytes exclusion only applies to the old inline-text
+  // fallback, not this route.
+  const canOpenArtifact = onOpenArtifact
+    ? Boolean(selectedArtifact)
+    : canPreview;
 
   const paramRefs = findParamRefs(refs, name);
   const canShowUsages = canPreview && paramRefs.length > 0;
 
   async function handlePreview() {
-    if (!selectedHash || !onOpenInMainPanel) return;
+    if (!selectedHash) return;
+    if (onOpenArtifact) {
+      onOpenArtifact(selectedHash, `Param "${name}"`);
+      return;
+    }
+    if (!onOpenInMainPanel) return;
     const result = await triggerGetArtifact({ hash: selectedHash });
     if (!result.data?.ok) return;
     const data = result.data;
@@ -192,12 +210,12 @@ export function FlowVersionRunParamRow({
             </SelectContent>
           </Select>
         )}
-        {onOpenInMainPanel && (
+        {(onOpenInMainPanel || onOpenArtifact) && (
           <Button
             variant="ghost"
             size="icon"
             className="size-8 shrink-0"
-            disabled={!canPreview || isFetching}
+            disabled={!canOpenArtifact || isFetching}
             onClick={handlePreview}
             title="Preview artifact content"
           >

@@ -15,6 +15,10 @@ type Props = {
   stepRunInfo: StepRunInfo | undefined;
   artifactsByHash: Record<string, ParamArtifactContent>;
   onOpenInMainPanel: OpenInMainPanel;
+  // Preferred over onOpenInMainPanel when present -- opens the real
+  // artifact panel by hash instead of fetching content just to flatten it
+  // to inline text (the artifact panel does its own fetching).
+  onOpenArtifact?: (hash: string, label: string) => void;
 };
 
 // display the outputs and exports of a panel, resolving artifact content
@@ -24,6 +28,7 @@ export function StepOutputExportsPanel({
   stepRunInfo,
   artifactsByHash,
   onOpenInMainPanel,
+  onOpenArtifact,
 }: Props) {
   const [triggerGetArtifact, { isFetching }] = useLazyGetArtifactQuery();
 
@@ -36,6 +41,10 @@ export function StepOutputExportsPanel({
   }
 
   async function openHash(title: string, hash: string) {
+    if (onOpenArtifact) {
+      onOpenArtifact(hash, title);
+      return;
+    }
     const result = await triggerGetArtifact({ hash });
     if (!result.data?.ok || result.data.format === "bytes") return;
     const data = result.data;
