@@ -40,6 +40,7 @@ export const artifactsApi = createApi({
                 ? { flowVersionId: args.flowVersionId }
                 : {}),
               ...(args.curated ? { curated: args.curated } : {}),
+              ...(args.hash ? { hash: args.hash } : {}),
             }
           : undefined,
       }),

@@ -22,6 +22,7 @@ type Props = {
   versionId: string;
   panelId: string;
   curatedArtifacts: ArtifactListItem[];
+  onOpenArtifact: (hash: string, label: string) => void;
 };
 
 export function ParamsTab({
@@ -37,6 +38,7 @@ export function ParamsTab({
   versionId,
   panelId,
   curatedArtifacts,
+  onOpenArtifact,
 }: Props) {
   const [createDialogParam, setCreateDialogParam] = useState<string | null>(
     null,
@@ -79,6 +81,7 @@ export function ParamsTab({
           versionId={versionId}
           curatedArtifacts={curatedArtifacts}
           curatedOnly={!readOnly}
+          onOpenArtifact={onOpenArtifact}
           extra={
             !readOnly ? (
               <Button

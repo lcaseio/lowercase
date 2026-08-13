@@ -6,6 +6,7 @@ export type GetArtifactsReq = {
   flowId?: string;
   flowVersionId?: string;
   curated?: string;
+  hash?: string;
 };
 
 export type GetArtifactsRes = Result<ArtifactListItem[], string>;

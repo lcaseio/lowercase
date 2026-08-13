@@ -65,7 +65,7 @@ export function MetadataTab({
 
         <InputField
           label="Label"
-          value={draft ? draft.label : artifact.label}
+          value={draft ? draft.label : (artifact.label ?? "")}
           onChange={isEditing ? onLabelChange : undefined}
         />
         <SwitchField

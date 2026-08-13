@@ -6,12 +6,13 @@ export const listArtifactsRoute = async (app: FastifyInstance) => {
     "/",
     async (req, reply): Promise<GetArtifactsRes> => {
       try {
-        const { flowId, flowVersionId, curated } = req.query;
+        const { flowId, flowVersionId, curated, hash } = req.query;
         const artifacts = await app.services.artifact.listArtifacts({
           flowId,
           flowVersionId,
           curated:
             curated === "true" ? true : curated === "false" ? false : undefined,
+          hash,
         });
         return { ok: true, value: artifacts };
       } catch (e) {

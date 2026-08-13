@@ -26,6 +26,12 @@ type Props = {
   onOpenInMainPanel: OpenInMainPanel;
   isReused?: boolean;
   onToggleReused?: () => void;
+  // Preferred over onOpenInMainPanel for StepOutputExportsPanel specifically
+  // -- routes a real artifact hash into the artifact panel instead of
+  // flattening to inline text. Not forwarded to StepFieldResolutionPanel/
+  // StepReferencesPanel, which have no hash to route (deferred, see
+  // docs/UI_WORKSPACE_MILESTONE.md's PR 27 entry).
+  onOpenArtifact?: (hash: string, label: string) => void;
 };
 
 type SubTab = "outputExports" | "fieldResolution" | "references";
@@ -48,6 +54,7 @@ export function StepResultsTab({
   onOpenInMainPanel,
   isReused,
   onToggleReused,
+  onOpenArtifact,
 }: Props) {
   const [subTab, setSubTab] = useState<SubTab>("outputExports");
   const [artifactsByHash, setArtifactsByHash] = useState<
@@ -166,6 +173,7 @@ export function StepResultsTab({
             stepRunInfo={info}
             artifactsByHash={artifactsByHash}
             onOpenInMainPanel={onOpenInMainPanel}
+            onOpenArtifact={onOpenArtifact}
           />
         </TabsContent>
         <TabsContent value="fieldResolution">

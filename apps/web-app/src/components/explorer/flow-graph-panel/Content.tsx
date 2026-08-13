@@ -65,6 +65,7 @@ export function Content({
     paramsLoading,
     paramsError,
     curatedArtifacts,
+    handleOpenArtifact,
   } = useFlowGraphPanel(versionId, panelId, simId, runOpened);
 
   // Below this point, nothing yet requires flowDef/version to be non-null
@@ -111,6 +112,7 @@ export function Content({
             versionId={versionId}
             panelId={panelId}
             curatedArtifacts={curatedArtifacts}
+            onOpenArtifact={handleOpenArtifact}
           />
         );
       case "sim":
@@ -139,6 +141,7 @@ export function Content({
             runId={runId}
             isReused={isReusedForSelectedStep}
             onToggleReused={onToggleReuse}
+            onOpenArtifact={handleOpenArtifact}
           />
         );
       case "settings":

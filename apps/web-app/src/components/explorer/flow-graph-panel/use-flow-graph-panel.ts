@@ -282,6 +282,17 @@ export function useFlowGraphPanel(
     dispatch(simDraftStarted({ panelId }));
   };
 
+  // Routes a real CAS artifact (a step's run output/export, a run param's
+  // selected artifact) into the existing artifact panel kind instead of the
+  // old page-only inline-text preview -- label is caller-supplied context
+  // (e.g. `Step "x" output`), not derived from the artifact itself, since
+  // callers already compute a better title than the artifact's own
+  // filename/label would give.
+  const handleOpenArtifact = (hash: string, label: string) => {
+    if (!dockviewApi) return;
+    openOrFocusPanel(dockviewApi, { kind: "artifact", label, hash, versionId });
+  };
+
   // Dispatched on both explicit cancel and after a successful save -- same
   // "stop authoring" meaning either way, matching the reducer's own name.
   const handleDraftEnded = () => {
@@ -318,6 +329,7 @@ export function useFlowGraphPanel(
     handleOpenEventGraph,
     handleOpenSimulate,
     handleOpenParams,
+    handleOpenArtifact,
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,

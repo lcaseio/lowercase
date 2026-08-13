@@ -283,6 +283,75 @@ describe("PrismaArtifactRepository", () => {
         items.every((item) => item.associations.paramCurations.length === 0),
       ).toBe(true);
     });
+
+    it("filters by hash, finding an artifact with no flowId/flowVersionId/curated association at all -- the exact shape a worker-produced run output/export has", async () => {
+      // writeArtifact with no metadata is exactly what the worker does when
+      // storing a step's output/export -- flowId/flowVersionId/curated all
+      // stay unset, so a flowVersionId-scoped filter alone could never find
+      // this row, curated or not.
+      await repository.writeArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.writeArtifact({
+        hash: "b".repeat(64),
+        time: "2026-01-01T00:00:00.000Z",
+        format: "json",
+      });
+
+      const byHash = await repository.listArtifacts({ hash: "a".repeat(64) });
+      expect(byHash.map((item) => item.artifact.hash)).toEqual([
+        "a".repeat(64),
+      ]);
+    });
+
+    it("hash takes over row-selection entirely, ignoring flowId/curated even when they're also present in the filter", async () => {
+      const { flow } = await createFlowAndVersion();
+      await repository.writeArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+
+      const items = await repository.listArtifacts({
+        hash: "a".repeat(64),
+        flowId: flow.id, // this artifact has no association with `flow` at all
+        curated: true, // and it's not curated either
+      });
+      expect(items.map((item) => item.artifact.hash)).toEqual(["a".repeat(64)]);
+    });
+
+    it("hash filter still scopes paramCurations by flowVersionId when both are given", async () => {
+      const { flowVersion } = await createFlowAndVersion();
+      await repository.writeArtifact({
+        hash: "a".repeat(64),
+        time: "2025-01-01T00:00:00.000Z",
+        format: "json",
+      });
+      await repository.updateMetadata("a".repeat(64), {
+        flowVersionId: flowVersion.id,
+        paramCurations: ["weatherApiKey"],
+      });
+
+      const withVersion = await repository.listArtifacts({
+        hash: "a".repeat(64),
+        flowVersionId: flowVersion.id,
+      });
+      expect(withVersion[0]?.associations.paramCurations).toEqual([
+        { flowVersionId: flowVersion.id, paramName: "weatherApiKey" },
+      ]);
+
+      const withoutVersion = await repository.listArtifacts({
+        hash: "a".repeat(64),
+      });
+      expect(withoutVersion[0]?.associations.paramCurations).toEqual([]);
+    });
+
+    it("hash for an artifact that doesn't exist returns an empty list, not an error", async () => {
+      const items = await repository.listArtifacts({ hash: "c".repeat(64) });
+      expect(items).toEqual([]);
+    });
   });
 
   it("lists artifact hashes newest first", async () => {

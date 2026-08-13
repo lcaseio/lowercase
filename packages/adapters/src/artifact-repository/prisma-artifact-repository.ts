@@ -115,8 +115,19 @@ export class PrismaArtifactRepository implements ArtifactRepositoryPort {
   async listArtifacts(
     filter?: ArtifactListFilter,
   ): Promise<ArtifactListItem[]> {
+    // `hash`, when given, takes over row-selection entirely -- finds this
+    // exact artifact regardless of its own flowId/flowVersionId/curated
+    // columns (a worker-produced artifact never has those set). flowId/
+    // curated are ignored for row-selection in that case; flowVersionId
+    // still independently scopes which paramCurations get included below,
+    // same as always.
+    const where = filter?.hash
+      ? { hash: filter.hash }
+      : filter
+        ? definedFields(filter)
+        : undefined;
     const rows = await this.db.artifact.findMany({
-      where: filter ? definedFields(filter) : undefined,
+      where,
       orderBy: [{ time: "desc" }, { hash: "desc" }],
       include: {
         paramCurations: filter?.flowVersionId
