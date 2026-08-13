@@ -76,6 +76,21 @@ export const flowGraphPanelsSlice = createSlice({
     ) => {
       ensurePanel(state, action.payload.panelId).runId = action.payload.runId;
     },
+    // replaces selectedParamHashes wholesale, unlike paramHashSet's
+    // per-name writes -- used to seed a run-opened panel's params from that
+    // run's actual resolved manifest (useGetRunParamsQuery), a one-shot
+    // "here's the real record" write rather than an incremental user edit.
+    paramsSeeded: (
+      state,
+      action: PayloadAction<{
+        panelId: string;
+        hashes: Record<string, string>;
+      }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).selectedParamHashes = {
+        ...action.payload.hashes,
+      };
+    },
     stepSelected: (
       state,
       action: PayloadAction<{ panelId: string; stepId: string }>,
@@ -120,6 +135,7 @@ export const flowGraphPanelsSlice = createSlice({
 
 export const {
   paramHashSet,
+  paramsSeeded,
   sidePanelTabSet,
   runSubmitted,
   runSelected,

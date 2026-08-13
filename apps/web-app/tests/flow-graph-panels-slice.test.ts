@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   flowGraphPanelsSlice,
   paramHashSet,
+  paramsSeeded,
   sidePanelTabSet,
   runSubmitted,
   stepSelected,
@@ -46,6 +47,37 @@ describe("flowGraphPanelsSlice", () => {
         paramHashSet({ panelId: "flow-graph-v1", name: "a" }),
       );
       expect(state["flow-graph-v1"].selectedParamHashes).toEqual({});
+    });
+  });
+
+  describe("paramsSeeded", () => {
+    it("creates a panel entry lazily and sets selectedParamHashes wholesale", () => {
+      const state = reducer(
+        {},
+        paramsSeeded({
+          panelId: "flow-graph-v1",
+          hashes: { a: "h1", b: "h2" },
+        }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        selectedParamHashes: { a: "h1", b: "h2" },
+      });
+    });
+
+    it("replaces the whole map rather than merging with what was there before", () => {
+      let state = reducer(
+        {},
+        paramsSeeded({
+          panelId: "flow-graph-v1",
+          hashes: { a: "h1", b: "h2" },
+        }),
+      );
+      state = reducer(
+        state,
+        paramsSeeded({ panelId: "flow-graph-v1", hashes: { c: "h3" } }),
+      );
+      expect(state["flow-graph-v1"].selectedParamHashes).toEqual({ c: "h3" });
     });
   });
 

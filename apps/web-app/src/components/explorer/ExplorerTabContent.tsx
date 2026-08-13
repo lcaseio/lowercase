@@ -27,6 +27,7 @@ export function ExplorerTabContent({
           simId={
             params.openedAs.type === "sim" ? params.openedAs.simId : undefined
           }
+          runOpened={params.openedAs.type === "run"}
         />
       );
     case "event-graph":

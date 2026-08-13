@@ -37,6 +37,11 @@ type Props = {
   onOpenInMainPanel?: OpenInMainPanel;
   flowDef: FlowDefinition | null;
   refs: Ref[];
+  // static display, no Select -- used for a run-opened panel, where the
+  // param is that run's actual historical record, not something to edit.
+  // Old-mode's caller (FlowVersionRunParamsPanel.tsx) never passes this,
+  // so it stays false there and old-mode is unaffected.
+  readOnly?: boolean;
 };
 
 // rendere a param row and its selection logic
@@ -49,6 +54,7 @@ export function FlowVersionRunParamRow({
   onOpenInMainPanel,
   flowDef,
   refs,
+  readOnly,
 }: Props) {
   const [triggerGetArtifact, { isFetching }] = useLazyGetArtifactQuery();
 
@@ -107,34 +113,45 @@ export function FlowVersionRunParamRow({
       </div>
 
       <div className="flex items-center gap-1">
-        <Select
-          onValueChange={(value) => {
-            onChange(name, value === UNSET_VALUE ? undefined : value);
-          }}
-          value={selectedHash ?? UNSET_VALUE}
-        >
-          <SelectTrigger className="w-60">
-            <SelectValue placeholder="Select an artifact" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>{name}</SelectLabel>
-              <SelectItem value={UNSET_VALUE}>
-                {isOptional ? "No artifact selected" : "Select an artifact"}
-              </SelectItem>
-              {!hasSelectedArtifactInList && selectedHash ? (
-                <SelectItem value={selectedHash}>
-                  {`Selected artifact unavailable or incompatible: ${selectedHash}`}
+        {readOnly ? (
+          <div className="w-60 truncate text-sm" title={selectedHash}>
+            {selectedArtifact
+              ? artifactLabel(selectedArtifact.artifact)
+              : (selectedHash ?? "No artifact")}
+          </div>
+        ) : (
+          <Select
+            onValueChange={(value) => {
+              onChange(name, value === UNSET_VALUE ? undefined : value);
+            }}
+            value={selectedHash ?? UNSET_VALUE}
+          >
+            <SelectTrigger className="w-60">
+              <SelectValue placeholder="Select an artifact" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>{name}</SelectLabel>
+                <SelectItem value={UNSET_VALUE}>
+                  {isOptional ? "No artifact selected" : "Select an artifact"}
                 </SelectItem>
-              ) : null}
-              {compatibleArtifacts.map((item) => (
-                <SelectItem key={item.artifact.hash} value={item.artifact.hash}>
-                  {artifactLabel(item.artifact)}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+                {!hasSelectedArtifactInList && selectedHash ? (
+                  <SelectItem value={selectedHash}>
+                    {`Selected artifact unavailable or incompatible: ${selectedHash}`}
+                  </SelectItem>
+                ) : null}
+                {compatibleArtifacts.map((item) => (
+                  <SelectItem
+                    key={item.artifact.hash}
+                    value={item.artifact.hash}
+                  >
+                    {artifactLabel(item.artifact)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        )}
         {onOpenInMainPanel && (
           <Button
             variant="ghost"

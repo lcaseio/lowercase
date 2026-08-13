@@ -22,10 +22,12 @@ export function Content({
   versionId,
   panelId,
   simId,
+  runOpened,
 }: {
   versionId: string;
   panelId: string;
   simId?: string;
+  runOpened?: boolean;
 }) {
   const {
     showLoading,
@@ -60,7 +62,9 @@ export function Content({
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,
-  } = useFlowGraphPanel(versionId, panelId, simId);
+    paramsLoading,
+    paramsError,
+  } = useFlowGraphPanel(versionId, panelId, simId, runOpened);
 
   // Below this point, nothing yet requires flowDef/version to be non-null
   // -- so while isLoading is true but hasn't crossed showLoading's delay
@@ -100,6 +104,9 @@ export function Content({
             selectedParamHashes={selectedParamHashes}
             onParamChange={handleParamChange}
             missingRequiredParams={missingRequiredParams}
+            readOnly={runOpened}
+            paramsLoading={paramsLoading}
+            paramsError={paramsError}
           />
         );
       case "sim":
@@ -149,6 +156,7 @@ export function Content({
       onOpenSim={handleOpenSimulate}
       onOpenEventGraph={handleOpenEventGraph}
       onRun={handleRun}
+      isRerun={runOpened}
     />
   );
 
