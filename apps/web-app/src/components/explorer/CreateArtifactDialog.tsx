@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
-import type { ArtifactIndex, ArtifactUpdateMetadata } from "@lcase/types";
+import type {
+  ArtifactIndex,
+  ArtifactUpdateMetadata,
+  FlowParamContentType,
+} from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import {
   Dialog,
@@ -19,6 +23,7 @@ import {
   useCreateArtifactMutation,
 } from "@/redux/api/artifacts-api";
 import { useAppDispatch } from "@/redux/typed-hooks";
+import { paramHashSet } from "@/redux/slices/flow-graph-panels-slice";
 import { detectFileFormat } from "@/lib/detect-file-format";
 import { formatBytes } from "@/lib/format-bytes";
 import { useDockviewApi } from "./explorer-dockview-context";
@@ -27,10 +32,27 @@ import { titleFor } from "./artifact-title";
 import { TextCursorIcon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 
+// narrows the file picker's own filter to just the target param's declared
+// type, when arriving via the Run Input picker's create-shortcut -- a soft
+// hint only (drag-and-drop or "all files" can bypass it), so handleFileChange
+// still verifies the actual picked file below.
+const CONTENT_TYPE_ACCEPT: Record<FlowParamContentType, string> = {
+  "application/json": ".json,application/json",
+  "text/plain": ".txt,text/plain",
+  "text/markdown": ".md,text/markdown",
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   versionId: string;
+  // pre-checks this param in the curation field on fresh open -- set by the
+  // Run Input picker's create-shortcut (PR 26), unset for the tree's plain
+  // "+" entry point.
+  initialCuratedParamName?: string;
+  // where to auto-select the created artifact's hash, if this dialog was
+  // opened from a specific param's create-shortcut rather than the tree.
+  returnTo?: { panelId: string; paramName: string };
 };
 
 // "Upload a file" stays entirely in this dialog -- small enough that a
@@ -38,7 +60,13 @@ type Props = {
 // docs/UI_WORKSPACE_MILESTONE.md). "Create" instead closes this and
 // opens a real panel (needs Monaco, needs real room) -- see
 // artifact-authoring-panel/Content.tsx.
-export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
+export function CreateArtifactDialog({
+  open,
+  onOpenChange,
+  versionId,
+  initialCuratedParamName,
+  returnTo,
+}: Props) {
   const [step, setStep] = useState<"choose" | "upload">("choose");
   const dispatch = useAppDispatch();
   const dockviewApi = useDockviewApi();
@@ -47,6 +75,9 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
   const { data: versionData } = useGetFlowVersionDefQuery(versionId);
   const flowDef = versionData?.ok ? versionData.value.definition : null;
   const version = versionData?.ok ? versionData.value.version : null;
+  const targetParamDef = returnTo
+    ? flowDef?.params?.[returnTo.paramName]
+    : undefined;
 
   const [createArtifact, { isLoading: isSaving }] = useCreateArtifactMutation();
   const [file, setFile] = useState<File | null>(null);
@@ -63,7 +94,9 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
     setSaveError(null);
     setLabel("");
     setShare(false);
-    setCuratedParamNames([]);
+    setCuratedParamNames(
+      initialCuratedParamName ? [initialCuratedParamName] : [],
+    );
   };
 
   // Reset only when a fresh open begins, never on close -- resetting on
@@ -85,6 +118,7 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId,
+      returnTo,
     });
     onOpenChange(false);
   }
@@ -97,10 +131,25 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
       setPickError(null);
       return;
     }
-    if (detectFileFormat(picked) === "bytes") {
+    const pickedFormat = detectFileFormat(picked);
+    if (pickedFormat === "bytes") {
       setFile(null);
       const message =
         "Unsupported file type -- only JSON, text, and Markdown files are supported right now.";
+      setPickError(message);
+      toast.error(message, { position: "top-center" });
+      e.target.value = "";
+      return;
+    }
+    if (
+      targetParamDef &&
+      !isArtifactCompatible(
+        { contentType: picked.type, format: pickedFormat } as ArtifactIndex,
+        targetParamDef.type,
+      )
+    ) {
+      setFile(null);
+      const message = `This file doesn't match the required type for "${returnTo?.paramName}". Try a different file.`;
       setPickError(message);
       toast.error(message, { position: "top-center" });
       e.target.value = "";
@@ -126,11 +175,18 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
   async function handleSave() {
     if (!file || !version) return;
     setSaveError(null);
+    // Filtered here, not pruned as curatedParamNames changes -- picking a
+    // different file and back should leave a previously-checked param
+    // still checked, so only what's *currently* compatible (the same set
+    // CuratedParamsField is already rendering checkboxes for) gets sent.
+    const validCuratedParamNames = curatedParamNames.filter(
+      (name) => compatibleParams && name in compatibleParams,
+    );
     const metadata: ArtifactUpdateMetadata = {
       label: label.trim() ? label.trim() : null,
       flowId: share ? version.flowId : null,
       flowVersionId: versionId,
-      paramCurations: curatedParamNames,
+      paramCurations: validCuratedParamNames,
     };
     try {
       const result = await createArtifact({
@@ -143,7 +199,7 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
           flowId: metadata.flowId ?? undefined,
           flowVersionId: versionId,
           curated: true,
-          paramCurations: curatedParamNames.map((paramName) => ({
+          paramCurations: validCuratedParamNames.map((paramName) => ({
             flowVersionId: versionId,
             paramName,
           })),
@@ -165,6 +221,19 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
             hash: result.value.hash,
             versionId,
           });
+        }
+        if (
+          returnTo &&
+          targetParamDef &&
+          isArtifactCompatible(result.value, targetParamDef.type)
+        ) {
+          dispatch(
+            paramHashSet({
+              panelId: returnTo.panelId,
+              name: returnTo.paramName,
+              hash: result.value.hash,
+            }),
+          );
         }
         toast.success(
           `Created artifact "${titleFor({ artifact: result.value, associations })}"`,
@@ -215,7 +284,11 @@ export function CreateArtifactDialog({ open, onOpenChange, versionId }: Props) {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json,.txt,.md,application/json,text/plain,text/markdown"
+              accept={
+                targetParamDef
+                  ? CONTENT_TYPE_ACCEPT[targetParamDef.type]
+                  : ".json,.txt,.md,application/json,text/plain,text/markdown"
+              }
               onChange={handleFileChange}
               className="hidden"
             />

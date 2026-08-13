@@ -35,7 +35,17 @@ export type OpenPanelRequest =
   // one panel per version -- contentId returning versionId alone gives this
   // for free via the same mechanism json-definition/flow-graph's plain
   // variant already use, no new dedup logic needed.
-  | { kind: "artifact-authoring"; label: string; versionId: string };
+  | {
+      kind: "artifact-authoring";
+      label: string;
+      versionId: string;
+      // set only by the Run Input picker's create-shortcut (PR 26) -- rides
+      // along on refocus via updateParameters below, doesn't affect this
+      // panel's identity (contentId still keys on versionId alone), so a
+      // second create-shortcut click for the same version just retargets
+      // the existing singleton panel rather than opening a new one.
+      returnTo?: { panelId: string; paramName: string };
+    };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {

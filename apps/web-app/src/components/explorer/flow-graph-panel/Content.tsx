@@ -64,6 +64,7 @@ export function Content({
     handleDraftEnded,
     paramsLoading,
     paramsError,
+    curatedArtifacts,
   } = useFlowGraphPanel(versionId, panelId, simId, runOpened);
 
   // Below this point, nothing yet requires flowDef/version to be non-null
@@ -107,6 +108,9 @@ export function Content({
             readOnly={runOpened}
             paramsLoading={paramsLoading}
             paramsError={paramsError}
+            versionId={versionId}
+            panelId={panelId}
+            curatedArtifacts={curatedArtifacts}
           />
         );
       case "sim":

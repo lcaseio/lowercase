@@ -24,10 +24,12 @@ export function Content({
   versionId,
   panelId,
   onClose,
+  returnTo,
 }: {
   versionId: string;
   panelId: string;
   onClose: () => void;
+  returnTo?: { panelId: string; paramName: string };
 }) {
   const {
     isLoading,
@@ -47,7 +49,7 @@ export function Content({
     handleToggleParam,
     handleCancel,
     handleSave,
-  } = useArtifactAuthoringPanel(versionId, panelId, onClose);
+  } = useArtifactAuthoringPanel(versionId, panelId, onClose, returnTo);
 
   const debouncedContentChange = useDebouncedCallback(handleContentChange, 250);
 
@@ -80,7 +82,11 @@ export function Content({
             label="Content Type"
             value={contentType}
             options={CONTENT_TYPE_OPTIONS}
-            onChange={handleContentTypeChange}
+            // Locked while returnTo is set: the type is already derived
+            // from the target param's declared type (see
+            // use-artifact-authoring-panel.ts), and SelectField disables
+            // itself whenever no onChange is passed.
+            onChange={returnTo ? undefined : handleContentTypeChange}
           />
           <InputField
             label="Label"

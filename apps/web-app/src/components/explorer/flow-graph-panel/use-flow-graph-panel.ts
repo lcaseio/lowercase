@@ -61,6 +61,10 @@ export function useFlowGraphPanel(
     useGetFlowVersionDefQuery(versionId);
   const showLoading = useDelayedLoading(isLoading);
   const { data: artifactsData } = useListArtifactsQuery();
+  const { data: curatedArtifactsData } = useListArtifactsQuery({
+    flowVersionId: versionId,
+    curated: "true",
+  });
   const dockviewApi = useDockviewApi();
   const { data: simDefData } = useGetSimQuery(simId ? { simId } : skipToken);
   const [requestRun] = useRequestRunMutation();
@@ -99,19 +103,26 @@ export function useFlowGraphPanel(
     }
   }, [simId, simDefinition, runId, panelId, dispatch]);
 
-  // Only fetched for a run-opened panel -- runId is already non-null from
-  // mount here (seeded by ExplorerTree.tsx's onSelectRun before this panel
-  // even opens), so unlike the sim effect above, `runId === null` can't
-  // serve as the "not yet seeded" gate; a local ref does instead.
+  // Fetched for a run-opened panel OR a sim-opened one -- runId is already
+  // non-null from mount for the run case (seeded by ExplorerTree.tsx's
+  // onSelectRun before this panel even opens) and one render later for the
+  // sim case (seeded by the effect above, from the sim's parentRunId), so
+  // unlike that effect, `runId === null` can't serve as the "not yet
+  // seeded" gate here; a local ref does instead. Sims stay editable after
+  // seeding (readOnly only reflects runOpened, unchanged) -- this only
+  // widens *when* seeding happens, not whether it stays editable after.
+  const shouldSeedParams = runOpened || Boolean(simId);
   const { data: runParamsData, isLoading: isRunParamsLoading } =
-    useGetRunParamsQuery(runOpened && runId ? { runId } : skipToken);
-  const paramsLoading = useDelayedLoading(runOpened && isRunParamsLoading);
-  const paramsError = runOpened && runParamsData?.ok === false;
+    useGetRunParamsQuery(shouldSeedParams && runId ? { runId } : skipToken);
+  const paramsLoading = useDelayedLoading(
+    shouldSeedParams && isRunParamsLoading,
+  );
+  const paramsError = shouldSeedParams && runParamsData?.ok === false;
 
   const hasSeededRunParams = useRef(false);
   useEffect(() => {
     if (
-      runOpened &&
+      shouldSeedParams &&
       runId &&
       runParamsData?.ok &&
       !hasSeededRunParams.current
@@ -119,7 +130,7 @@ export function useFlowGraphPanel(
       hasSeededRunParams.current = true;
       dispatch(paramsSeeded({ panelId, hashes: runParamsData.value }));
     }
-  }, [runOpened, runId, runParamsData, panelId, dispatch]);
+  }, [shouldSeedParams, runId, runParamsData, panelId, dispatch]);
 
   const hasError = Boolean(error) || data?.ok === false;
   useEffect(() => {
@@ -132,6 +143,9 @@ export function useFlowGraphPanel(
   const version = data?.ok ? data.value.version : null;
   const flowAnalysis = useFlowAnalysis(flowDef);
   const artifacts = artifactsData?.ok ? artifactsData.value : [];
+  const curatedArtifacts = curatedArtifactsData?.ok
+    ? curatedArtifactsData.value
+    : [];
   const problems = flowAnalysis?.flowAnalysis.problems ?? [];
 
   // stable across renders unless flowDef itself changes -- otherwise a fresh
@@ -310,5 +324,6 @@ export function useFlowGraphPanel(
     runOpened,
     paramsLoading,
     paramsError,
+    curatedArtifacts,
   };
 }

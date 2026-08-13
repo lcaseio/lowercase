@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ArtifactIndex, ArtifactUpdateMetadata } from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
@@ -19,6 +19,7 @@ import {
   setAuthoringShare,
   toggleAuthoringParam,
 } from "@/redux/slices/artifact-authoring-panels-slice";
+import { paramHashSet } from "@/redux/slices/flow-graph-panels-slice";
 import { toast } from "sonner";
 
 // All the data-fetching, Redux read/write, and derived state the artifact
@@ -30,6 +31,7 @@ export function useArtifactAuthoringPanel(
   versionId: string,
   panelId: string,
   onClose: () => void,
+  returnTo?: { panelId: string; paramName: string },
 ) {
   const dispatch = useAppDispatch();
   const dockviewApi = useDockviewApi();
@@ -46,6 +48,39 @@ export function useArtifactAuthoringPanel(
   } = useGetFlowVersionDefQuery(versionId);
   const flowDef = versionData?.ok ? versionData.value.definition : null;
   const version = versionData?.ok ? versionData.value.version : null;
+  const returnToParamDef = returnTo
+    ? flowDef?.params?.[returnTo.paramName]
+    : undefined;
+
+  // Applies returnTo's param whenever it changes to a genuinely different
+  // target -- pre-checks it in curation and derives contentType from its
+  // declared type (so the created artifact is actually compatible with it
+  // by construction, rather than defaulting to JSON and failing server-side
+  // validation). Needed as an effect, not just at first render, because
+  // refocusing an already-open singleton panel (this one, per version)
+  // doesn't get a natural open/close transition to reset against, unlike
+  // CreateArtifactDialog's prevOpen-tracked reset -- and flowDef itself
+  // arrives async, so returnToParamDef isn't available on the very first
+  // render anyway.
+  const lastAppliedReturnTo = useRef<string | null>(null);
+  useEffect(() => {
+    if (!returnTo || !returnToParamDef) return;
+    const key = `${returnTo.panelId}:${returnTo.paramName}`;
+    if (lastAppliedReturnTo.current === key) return;
+    lastAppliedReturnTo.current = key;
+    if (!curatedParamNames.includes(returnTo.paramName)) {
+      dispatch(
+        toggleAuthoringParam({
+          panelId,
+          paramName: returnTo.paramName,
+          checked: true,
+        }),
+      );
+    }
+    dispatch(
+      setAuthoringContentType({ panelId, contentType: returnToParamDef.type }),
+    );
+  }, [returnTo, returnToParamDef, curatedParamNames, panelId, dispatch]);
 
   const [createArtifact, { isLoading: isSaving }] = useCreateArtifactMutation();
 
@@ -122,11 +157,20 @@ export function useArtifactAuthoringPanel(
     }
 
     setSaveError(null);
+    // Filtered here, not pruned as curatedParamNames changes -- switching
+    // content type away and back should leave a previously-checked param
+    // still checked, so only what's *currently* compatible (the same set
+    // CuratedParamsField is already rendering checkboxes for) gets sent,
+    // rather than mutating the underlying selection on every content-type
+    // change.
+    const validCuratedParamNames = curatedParamNames.filter(
+      (name) => compatibleParams && name in compatibleParams,
+    );
     const metadata: ArtifactUpdateMetadata = {
       label: label.trim() ? label.trim() : null,
       flowId: share ? version.flowId : null,
       flowVersionId: versionId,
-      paramCurations: curatedParamNames,
+      paramCurations: validCuratedParamNames,
     };
     try {
       const result = await createArtifact({
@@ -140,7 +184,7 @@ export function useArtifactAuthoringPanel(
           flowId: metadata.flowId ?? undefined,
           flowVersionId: versionId,
           curated: true,
-          paramCurations: curatedParamNames.map((paramName) => ({
+          paramCurations: validCuratedParamNames.map((paramName) => ({
             flowVersionId: versionId,
             paramName,
           })),
@@ -162,6 +206,19 @@ export function useArtifactAuthoringPanel(
             hash: result.value.hash,
             versionId,
           });
+        }
+        if (
+          returnTo &&
+          returnToParamDef &&
+          isArtifactCompatible(result.value, returnToParamDef.type)
+        ) {
+          dispatch(
+            paramHashSet({
+              panelId: returnTo.panelId,
+              name: returnTo.paramName,
+              hash: result.value.hash,
+            }),
+          );
         }
         toast.success(
           `Created artifact "${titleFor({ artifact: result.value, associations })}"`,
