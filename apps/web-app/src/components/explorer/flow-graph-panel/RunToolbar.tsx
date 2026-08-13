@@ -16,6 +16,7 @@ type Props = {
   onOpenSim: () => void;
   onOpenEventGraph: () => void;
   onRun: () => void;
+  isRerun?: boolean;
 };
 
 // bottom-center floating toolbar over the graph canvas (via FlowGraph's
@@ -35,6 +36,7 @@ export function RunToolbar({
   onOpenSim,
   onOpenEventGraph,
   onRun,
+  isRerun,
 }: Props) {
   return (
     <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
@@ -93,7 +95,7 @@ export function RunToolbar({
         disabled={runDisabled}
       >
         <PlayIcon className="size-4" />
-        Run
+        {isRerun ? "Rerun" : "Run"}
       </Button>
     </div>
   );

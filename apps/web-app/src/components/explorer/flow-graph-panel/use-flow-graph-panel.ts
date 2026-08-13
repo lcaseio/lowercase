@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { skipToken } from "@reduxjs/toolkit/query";
 import type { Node } from "@xyflow/react";
@@ -6,12 +6,14 @@ import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import {
   useGetRunDetailQuery,
+  useGetRunParamsQuery,
   useRequestRunMutation,
 } from "@/redux/api/runs-api";
 import { useGetSimQuery } from "@/redux/api/sims-api";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import {
   paramHashSet,
+  paramsSeeded,
   sidePanelTabSet,
   runSubmitted,
   runSelected,
@@ -53,6 +55,7 @@ export function useFlowGraphPanel(
   versionId: string,
   panelId: string,
   simId?: string,
+  runOpened = false,
 ) {
   const { data, error, isLoading, refetch } =
     useGetFlowVersionDefQuery(versionId);
@@ -95,6 +98,28 @@ export function useFlowGraphPanel(
       dispatch(runSelected({ panelId, runId: simDefinition.spec.parentRunId }));
     }
   }, [simId, simDefinition, runId, panelId, dispatch]);
+
+  // Only fetched for a run-opened panel -- runId is already non-null from
+  // mount here (seeded by ExplorerTree.tsx's onSelectRun before this panel
+  // even opens), so unlike the sim effect above, `runId === null` can't
+  // serve as the "not yet seeded" gate; a local ref does instead.
+  const { data: runParamsData, isLoading: isRunParamsLoading } =
+    useGetRunParamsQuery(runOpened && runId ? { runId } : skipToken);
+  const paramsLoading = useDelayedLoading(runOpened && isRunParamsLoading);
+  const paramsError = runOpened && runParamsData?.ok === false;
+
+  const hasSeededRunParams = useRef(false);
+  useEffect(() => {
+    if (
+      runOpened &&
+      runId &&
+      runParamsData?.ok &&
+      !hasSeededRunParams.current
+    ) {
+      hasSeededRunParams.current = true;
+      dispatch(paramsSeeded({ panelId, hashes: runParamsData.value }));
+    }
+  }, [runOpened, runId, runParamsData, panelId, dispatch]);
 
   const hasError = Boolean(error) || data?.ok === false;
   useEffect(() => {
@@ -282,5 +307,8 @@ export function useFlowGraphPanel(
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,
+    runOpened,
+    paramsLoading,
+    paramsError,
   };
 }
