@@ -50,6 +50,7 @@ export function ExplorerTabContent({
           versionId={params.versionId}
           panelId={api.id}
           onClose={() => api.close()}
+          returnTo={params.returnTo}
         />
       );
     default: {

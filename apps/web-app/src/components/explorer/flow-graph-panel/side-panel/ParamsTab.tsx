@@ -1,9 +1,13 @@
+import { useState } from "react";
 import type {
   ArtifactListItem,
   FlowDefinition,
   FlowParamDefinition,
 } from "@lcase/types";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 import { FlowVersionRunParamRow } from "@/components/flow-version/FlowVersionRunParamRow";
+import { CreateArtifactDialog } from "../../CreateArtifactDialog";
 
 type Props = {
   flowDef: FlowDefinition;
@@ -15,6 +19,9 @@ type Props = {
   readOnly?: boolean;
   paramsLoading?: boolean;
   paramsError?: boolean;
+  versionId: string;
+  panelId: string;
+  curatedArtifacts: ArtifactListItem[];
 };
 
 export function ParamsTab({
@@ -27,7 +34,13 @@ export function ParamsTab({
   readOnly,
   paramsLoading,
   paramsError,
+  versionId,
+  panelId,
+  curatedArtifacts,
 }: Props) {
+  const [createDialogParam, setCreateDialogParam] = useState<string | null>(
+    null,
+  );
   if (Object.keys(params).length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
@@ -63,6 +76,22 @@ export function ParamsTab({
           flowDef={flowDef}
           refs={[]}
           readOnly={readOnly}
+          versionId={versionId}
+          curatedArtifacts={curatedArtifacts}
+          curatedOnly={!readOnly}
+          extra={
+            !readOnly ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                title="Create a new artifact for this param"
+                onClick={() => setCreateDialogParam(name)}
+              >
+                <PlusIcon className="size-3.5" />
+              </Button>
+            ) : undefined
+          }
         />
       ))}
       {!readOnly && missingRequiredParams.length > 0 ? (
@@ -70,6 +99,17 @@ export function ParamsTab({
           Select artifacts for all required params before running.
         </p>
       ) : null}
+      <CreateArtifactDialog
+        open={createDialogParam !== null}
+        onOpenChange={(open) => !open && setCreateDialogParam(null)}
+        versionId={versionId}
+        initialCuratedParamName={createDialogParam ?? undefined}
+        returnTo={
+          createDialogParam
+            ? { panelId, paramName: createDialogParam }
+            : undefined
+        }
+      />
     </div>
   );
 }

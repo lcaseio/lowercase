@@ -54,7 +54,7 @@ export function Content({
   if (!sidePanelTab) {
     return (
       <div className="flex h-full">
-        <div className="flex-1">{viewer}</div>
+        <div className="flex-1 min-w-0">{viewer}</div>
         <Rail activeTab={sidePanelTab} onSelectTab={handleSelectSidePanelTab} />
       </div>
     );
@@ -62,7 +62,9 @@ export function Content({
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="h-full">
-      <ResizablePanel defaultSize="70%">{viewer}</ResizablePanel>
+      <ResizablePanel defaultSize="70%" className="min-w-0">
+        {viewer}
+      </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="30%" minSize="15%">
         <div className="flex h-full">

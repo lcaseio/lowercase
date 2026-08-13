@@ -42,6 +42,20 @@ type Props = {
   // Old-mode's caller (FlowVersionRunParamsPanel.tsx) never passes this,
   // so it stays false there and old-mode is unaffected.
   readOnly?: boolean;
+  // Below: all optional, all unused by old-mode's caller -- additive,
+  // zero-touch for FlowVersionRunParamsPanel.tsx (PR 26).
+  versionId?: string;
+  curatedArtifacts?: ArtifactListItem[];
+  // when true, the Select's offered candidates come from curatedArtifacts
+  // (filtered further by this param's own paramCurations) instead of every
+  // content-type-compatible artifact -- never broadens back out to "all
+  // compatible" as a fallback.
+  curatedOnly?: boolean;
+  // dockview-specific content (the create-artifact shortcut) has to live
+  // outside this shared component entirely -- useDockviewApi() throws with
+  // no provider, and old-mode's FlowVersionRun.tsx page has none. Rendered
+  // alongside the existing Preview/Show-usages buttons.
+  extra?: React.ReactNode;
 };
 
 // rendere a param row and its selection logic
@@ -55,6 +69,10 @@ export function FlowVersionRunParamRow({
   flowDef,
   refs,
   readOnly,
+  versionId,
+  curatedArtifacts,
+  curatedOnly,
+  extra,
 }: Props) {
   const [triggerGetArtifact, { isFetching }] = useLazyGetArtifactQuery();
 
@@ -62,11 +80,23 @@ export function FlowVersionRunParamRow({
   const compatibleArtifacts = artifacts.filter((item) =>
     isArtifactCompatible(item.artifact, definition.type),
   );
-  const hasSelectedArtifactInList =
-    selectedHash === undefined ||
-    compatibleArtifacts.some((item) => item.artifact.hash === selectedHash);
+  const candidateArtifacts = curatedOnly
+    ? (curatedArtifacts ?? []).filter(
+        (item) =>
+          isArtifactCompatible(item.artifact, definition.type) &&
+          item.associations.paramCurations.some(
+            (pc) => pc.flowVersionId === versionId && pc.paramName === name,
+          ),
+      )
+    : compatibleArtifacts;
 
   const selectedArtifact = artifacts.find(
+    (item) => item.artifact.hash === selectedHash,
+  );
+  const selectedIsCompatible =
+    selectedArtifact &&
+    isArtifactCompatible(selectedArtifact.artifact, definition.type);
+  const selectedInCandidates = candidateArtifacts.some(
     (item) => item.artifact.hash === selectedHash,
   );
   const canPreview =
@@ -106,7 +136,7 @@ export function FlowVersionRunParamRow({
   return (
     <div className="flex flex-col gap-1.5">
       <div>
-        <div className="font-medium">{name}</div>
+        <div className="font-medium text-xs">{name}</div>
         <div className="text-xs text-slate-600 dark:text-slate-300">
           {definition.type} • {isOptional ? "optional" : "required"}
         </div>
@@ -114,7 +144,7 @@ export function FlowVersionRunParamRow({
 
       <div className="flex items-center gap-1">
         {readOnly ? (
-          <div className="w-60 truncate text-sm" title={selectedHash}>
+          <div className="w-60 truncate text-xs" title={selectedHash}>
             {selectedArtifact
               ? artifactLabel(selectedArtifact.artifact)
               : (selectedHash ?? "No artifact")}
@@ -126,24 +156,34 @@ export function FlowVersionRunParamRow({
             }}
             value={selectedHash ?? UNSET_VALUE}
           >
-            <SelectTrigger className="w-60">
+            <SelectTrigger className="w-60 text-xs">
               <SelectValue placeholder="Select an artifact" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-xs">
               <SelectGroup>
-                <SelectLabel>{name}</SelectLabel>
-                <SelectItem value={UNSET_VALUE}>
+                <SelectLabel className="text-sky-500">{name}</SelectLabel>
+                <SelectItem
+                  value={UNSET_VALUE}
+                  className="text-muted-foreground"
+                >
                   {isOptional ? "No artifact selected" : "Select an artifact"}
                 </SelectItem>
-                {!hasSelectedArtifactInList && selectedHash ? (
-                  <SelectItem value={selectedHash}>
-                    {`Selected artifact unavailable or incompatible: ${selectedHash}`}
-                  </SelectItem>
+                {selectedHash && !selectedInCandidates ? (
+                  selectedIsCompatible && selectedArtifact ? (
+                    <SelectItem value={selectedHash} className="text-xs">
+                      {`${artifactLabel(selectedArtifact.artifact)} (not curated)`}
+                    </SelectItem>
+                  ) : (
+                    <SelectItem value={selectedHash}>
+                      {`Selected artifact unavailable or incompatible: ${selectedHash}`}
+                    </SelectItem>
+                  )
                 ) : null}
-                {compatibleArtifacts.map((item) => (
+                {candidateArtifacts.map((item) => (
                   <SelectItem
                     key={item.artifact.hash}
                     value={item.artifact.hash}
+                    className="text-xs"
                   >
                     {artifactLabel(item.artifact)}
                   </SelectItem>
@@ -176,6 +216,7 @@ export function FlowVersionRunParamRow({
             <ListTreeIcon className="size-3.5" />
           </Button>
         )}
+        {extra}
       </div>
     </div>
   );
