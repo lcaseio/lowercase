@@ -16,7 +16,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { EVENT_GRAPH_SINGLETON_ID } from "../explorer-panels";
+import { EVENT_GRAPH_SINGLETON_ID, openOrFocusPanel } from "../explorer-panels";
+import { useDockviewApi } from "../explorer-dockview-context";
 import { useTrackedFlowGraphPanel } from "./use-tracked-flow-graph-panel";
 import { Rail } from "./Rail";
 import { SidePanel, type EventGraphSidePanelTab } from "./SidePanel";
@@ -30,6 +31,7 @@ export function Content({
   initialTrackedPanelId?: string;
 }) {
   const { runId, versionId } = useTrackedFlowGraphPanel(initialTrackedPanelId);
+  const dockviewApi = useDockviewApi();
   const dispatch = useAppDispatch();
   const { selectedEventId, sidePanelTab } = useAppSelector((s) =>
     selectEventGraphPanelState(s, EVENT_GRAPH_SINGLETON_ID),
@@ -109,6 +111,20 @@ export function Content({
     );
   };
 
+  // Opens (or focuses) a new event-payload panel keyed by {runId, eventId}
+  // -- closes over the already-in-scope runId so EventDetails.tsx only
+  // ever needs to pass (eventId, label), mirroring handleOpenArtifact's
+  // closure-over-versionId shape in the Flow Graph panel (PR 27).
+  const handleOpenEventPayload = (eventId: string, label: string) => {
+    if (!dockviewApi || !runId) return;
+    openOrFocusPanel(dockviewApi, {
+      kind: "event-payload",
+      label,
+      runId,
+      eventId,
+    });
+  };
+
   const graph = (
     <EventGraph
       events={events}
@@ -142,6 +158,7 @@ export function Content({
                     activeTab={sidePanelTab}
                     onClose={handleCloseSidePanel}
                     event={selectedEvent}
+                    onOpenEventPayload={handleOpenEventPayload}
                     eventIndex={
                       selectedEventIndex >= 0
                         ? String(selectedEventIndex + 1)

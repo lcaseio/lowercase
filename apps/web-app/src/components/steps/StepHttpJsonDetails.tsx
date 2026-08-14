@@ -9,12 +9,14 @@ type Props = {
   step: StepHttpJson;
   stepId: string;
   onOpenInMainPanel: OpenInMainPanel;
+  onNavigateToDefinition?: (path: string[]) => void;
 };
 
 export function StepHttpJsonDetails({
   step,
   stepId,
   onOpenInMainPanel,
+  onNavigateToDefinition,
 }: Props) {
   return (
     <div className="flex flex-col gap-3 mt-3">
@@ -30,12 +32,18 @@ export function StepHttpJsonDetails({
         onOpen={(displayValue) =>
           onOpenInMainPanel(`Step "${stepId}" - body`, displayValue, "json")
         }
+        onNavigate={
+          onNavigateToDefinition
+            ? () => onNavigateToDefinition(["steps", stepId, "body"])
+            : undefined
+        }
       />
       <ExportsField
         label="Exports"
         stepId={stepId}
         value={step.exports}
         onOpenInMainPanel={onOpenInMainPanel}
+        onNavigateToDefinition={onNavigateToDefinition}
       />
     </div>
   );

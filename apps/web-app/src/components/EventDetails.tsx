@@ -75,10 +75,15 @@ export function EventDetails({
   event,
   index,
   onOpenInMainPanel,
+  onOpenEventPayload,
 }: {
   event: AnyEvent | null;
   index?: string;
   onOpenInMainPanel?: OpenInMainPanel;
+  // Preferred over onOpenInMainPanel when present -- opens the real
+  // event-payload panel (self-fetching, survives a reload) instead of
+  // flattening to inline text. Old-mode's callers never pass this.
+  onOpenEventPayload?: (eventId: string, label: string) => void;
 }) {
   if (!event)
     return (
@@ -88,6 +93,10 @@ export function EventDetails({
     );
 
   async function openEvent(title: string, event: AnyEvent) {
+    if (onOpenEventPayload) {
+      onOpenEventPayload(event.id, title);
+      return;
+    }
     if (onOpenInMainPanel === undefined) return;
     onOpenInMainPanel(title, JSON.stringify(event, null, 2), "json");
   }

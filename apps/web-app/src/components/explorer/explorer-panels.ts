@@ -7,7 +7,19 @@ export const EXPLORER_PANEL_COMPONENT = "explorer-tab";
 // expand) -- only their fixed leaf children do.
 export type OpenPanelRequest =
   | { kind: "flow-settings"; label: string; flowId: string }
-  | { kind: "json-definition"; label: string; versionId: string }
+  | {
+      kind: "json-definition";
+      label: string;
+      versionId: string;
+      // one-shot navigate command, not part of this panel's identity --
+      // revealAt (a fresh Date.now() per click) rides along on refocus via
+      // updateParameters below, same as artifact-authoring's returnTo, but
+      // also has to guarantee two clicks are never shallowEqual-identical
+      // even when they target the same path, or the second click's refocus
+      // would silently no-op. See PR 28 in docs/UI_WORKSPACE_MILESTONE.md.
+      revealPath?: string[];
+      revealAt?: number;
+    }
   | {
       kind: "flow-graph";
       label: string;
@@ -45,7 +57,12 @@ export type OpenPanelRequest =
       // second create-shortcut click for the same version just retargets
       // the existing singleton panel rather than opening a new one.
       returnTo?: { panelId: string; paramName: string };
-    };
+    }
+  // runId is part of identity, not just a query scope -- lets the panel
+  // re-fetch this run's events itself (see use-run-events-with-status.ts's
+  // pattern) so it survives a reload instead of depending on whatever's
+  // already buffered in the events slice.
+  | { kind: "event-payload"; label: string; runId: string; eventId: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
@@ -70,6 +87,8 @@ function contentId(req: OpenPanelRequest): string {
       return req.hash;
     case "artifact-authoring":
       return req.versionId;
+    case "event-payload":
+      return `${req.runId}-${req.eventId}`;
   }
 }
 // distinct per kind+content, unlike the old slice's kind-only id -- lets two

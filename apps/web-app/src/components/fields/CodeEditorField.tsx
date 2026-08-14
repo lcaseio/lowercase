@@ -8,6 +8,11 @@ type Props = {
   value?: unknown;
   language?: "json" | "markdown" | "plaintext";
   onOpen?: (displayValue: string) => void;
+  // Preferred over onOpen when present -- navigates to this field's source
+  // location in the json-definition panel instead of flattening to inline
+  // text. Takes no arguments since the caller's closure already knows the
+  // exact path (see StepHttpJsonDetails/ExportsField).
+  onNavigate?: () => void;
 };
 
 export function CodeEditorField({
@@ -15,6 +20,7 @@ export function CodeEditorField({
   value,
   language = "json",
   onOpen,
+  onNavigate,
 }: Props) {
   if (value === undefined) return null;
 
@@ -27,12 +33,12 @@ export function CodeEditorField({
       className="[&>[data-slot=field-label]]:flex-none"
     >
       <FieldLabel className="w-20 shrink-0">{label}</FieldLabel>
-      {onOpen && (
+      {(onOpen || onNavigate) && (
         <Button
           variant="ghost"
           size="icon"
           className="size-5 shrink-0"
-          onClick={() => onOpen(displayValue)}
+          onClick={() => (onNavigate ? onNavigate() : onOpen?.(displayValue))}
         >
           <Maximize2Icon className="size-3.5" />
         </Button>

@@ -6,6 +6,7 @@ import { Content as FlowGraphPanelContent } from "./flow-graph-panel/Content";
 import { Content as EventGraphPanelContent } from "./event-graph-panel/Content";
 import { Content as ArtifactPanelContent } from "./artifact-panel/Content";
 import { Content as ArtifactAuthoringPanelContent } from "./artifact-authoring-panel/Content";
+import { Content as EventPayloadPanelContent } from "./event-payload-panel/Content";
 
 // registered as dockview's "explorer-tab" component (see explorer-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is
@@ -18,7 +19,13 @@ export function ExplorerTabContent({
     case "flow-settings":
       return <ExplorerFlowSettingsContent flowId={params.flowId} />;
     case "json-definition":
-      return <ExplorerJsonDefinitionContent versionId={params.versionId} />;
+      return (
+        <ExplorerJsonDefinitionContent
+          versionId={params.versionId}
+          revealPath={params.revealPath}
+          revealAt={params.revealAt}
+        />
+      );
     case "flow-graph":
       return (
         <FlowGraphPanelContent
@@ -51,6 +58,13 @@ export function ExplorerTabContent({
           panelId={api.id}
           onClose={() => api.close()}
           returnTo={params.returnTo}
+        />
+      );
+    case "event-payload":
+      return (
+        <EventPayloadPanelContent
+          runId={params.runId}
+          eventId={params.eventId}
         />
       );
     default: {
