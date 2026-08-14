@@ -293,6 +293,22 @@ export function useFlowGraphPanel(
     openOrFocusPanel(dockviewApi, { kind: "artifact", label, hash, versionId });
   };
 
+  // Navigates the existing json-definition panel to a spot inside this
+  // version's own definition (a step's body, an export's schema, etc.)
+  // instead of opening an isolated content panel -- see PR 28 in
+  // docs/UI_WORKSPACE_MILESTONE.md. revealAt is a fresh timestamp per call
+  // so repeated clicks to the same path still re-trigger the reveal.
+  const handleRevealInDefinition = (path: string[]) => {
+    if (!dockviewApi || !version) return;
+    openOrFocusPanel(dockviewApi, {
+      kind: "json-definition",
+      label: `${version.versionLabel ?? `Version ${version.sequence}`} JSON`,
+      versionId,
+      revealPath: path,
+      revealAt: Date.now(),
+    });
+  };
+
   // Dispatched on both explicit cancel and after a successful save -- same
   // "stop authoring" meaning either way, matching the reducer's own name.
   const handleDraftEnded = () => {
@@ -330,6 +346,7 @@ export function useFlowGraphPanel(
     handleOpenSimulate,
     handleOpenParams,
     handleOpenArtifact,
+    handleRevealInDefinition,
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,

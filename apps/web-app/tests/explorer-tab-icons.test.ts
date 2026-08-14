@@ -15,6 +15,8 @@ import {
   ARTIFACT_ICON_CLASS,
   ARTIFACT_AUTHORING_ICON,
   ARTIFACT_AUTHORING_ICON_CLASS,
+  EVENT_PAYLOAD_ICON,
+  EVENT_PAYLOAD_ICON_CLASS,
 } from "@/components/explorer/explorer-tab-icons";
 
 describe("getExplorerTabIcon", () => {
@@ -95,5 +97,16 @@ describe("getExplorerTabIcon", () => {
     });
     expect(icon?.Icon).toBe(ARTIFACT_AUTHORING_ICON);
     expect(icon?.className).toBe(ARTIFACT_AUTHORING_ICON_CLASS);
+  });
+
+  it("returns the event-payload icon+color for event-payload", () => {
+    const icon = getExplorerTabIcon({
+      kind: "event-payload",
+      label: "x",
+      runId: "r1",
+      eventId: "e1",
+    });
+    expect(icon?.Icon).toBe(EVENT_PAYLOAD_ICON);
+    expect(icon?.className).toBe(EVENT_PAYLOAD_ICON_CLASS);
   });
 });

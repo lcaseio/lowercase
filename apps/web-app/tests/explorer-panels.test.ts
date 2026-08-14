@@ -176,6 +176,40 @@ describe("explorerPanelId", () => {
     });
     expect(a).not.toBe(b);
   });
+
+  it("derives an event-payload request's id from runId + eventId together", () => {
+    expect(
+      explorerPanelId({
+        kind: "event-payload",
+        label: "x",
+        runId: "r1",
+        eventId: "e1",
+      }),
+    ).toBe("event-payload-r1-e1");
+  });
+
+  it("gives event-payload requests distinct ids when either runId or eventId differs", () => {
+    const base = explorerPanelId({
+      kind: "event-payload",
+      label: "x",
+      runId: "r1",
+      eventId: "e1",
+    });
+    const differentRun = explorerPanelId({
+      kind: "event-payload",
+      label: "x",
+      runId: "r2",
+      eventId: "e1",
+    });
+    const differentEvent = explorerPanelId({
+      kind: "event-payload",
+      label: "x",
+      runId: "r1",
+      eventId: "e2",
+    });
+    expect(base).not.toBe(differentRun);
+    expect(base).not.toBe(differentEvent);
+  });
 });
 
 describe("openOrFocusPanel", () => {
@@ -250,6 +284,34 @@ describe("openOrFocusPanel", () => {
     expect(existing.api.updateParameters).toHaveBeenCalledWith(newReq);
     expect(existing.api.setTitle).toHaveBeenCalledWith("Flow A (renamed)");
     expect(existing.api.setActive).toHaveBeenCalledOnce();
+  });
+
+  it("re-triggers a refocus even when revealPath is the exact same array reference, since revealAt alone is what defeats shallowEqual -- otherwise a second click to the same spot could silently no-op", () => {
+    // shallowEqual compares nested values by reference, not deep equality --
+    // sharing one revealPath array reference across both requests isolates
+    // that revealAt (not just "any new array literal") is what guarantees
+    // this keeps working regardless of how a caller constructs revealPath.
+    const sharedRevealPath = ["steps", "s1", "body"];
+    const oldReq: OpenPanelRequest = {
+      kind: "json-definition",
+      label: "Version 1 JSON",
+      versionId: "v1",
+      revealPath: sharedRevealPath,
+      revealAt: 1000,
+    };
+    const existing = fakePanel(oldReq, "Version 1 JSON");
+    const api = fakeApi(existing);
+
+    const newReq: OpenPanelRequest = {
+      kind: "json-definition",
+      label: "Version 1 JSON",
+      versionId: "v1",
+      revealPath: sharedRevealPath,
+      revealAt: 2000,
+    };
+    openOrFocusPanel(api as never, newReq);
+
+    expect(existing.api.updateParameters).toHaveBeenCalledWith(newReq);
   });
 
   it("passes position through to addPanel when creating a brand-new panel", () => {

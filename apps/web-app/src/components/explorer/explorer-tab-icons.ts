@@ -31,6 +31,10 @@ export const ARTIFACT_ICON = FileTextIcon;
 export const ARTIFACT_ICON_CLASS = "text-orange-400";
 export const ARTIFACT_AUTHORING_ICON = FilePlusIcon;
 export const ARTIFACT_AUTHORING_ICON_CLASS = "text-lime-400";
+// JSON content like json-definition, but a distinct color -- this is a raw
+// event's own payload, not a flow version's definition.
+export const EVENT_PAYLOAD_ICON = CurlyBracesIcon;
+export const EVENT_PAYLOAD_ICON_CLASS = "text-cyan-400";
 
 export function getExplorerTabIcon(
   params: OpenPanelRequest,
@@ -62,5 +66,9 @@ export function getExplorerTabIcon(
         Icon: ARTIFACT_AUTHORING_ICON,
         className: ARTIFACT_AUTHORING_ICON_CLASS,
       };
+    // no tree-row analog (opened from inside the Event Graph panel's own
+    // content, not the tree) -- same reasoning as event-graph above.
+    case "event-payload":
+      return { Icon: EVENT_PAYLOAD_ICON, className: EVENT_PAYLOAD_ICON_CLASS };
   }
 }

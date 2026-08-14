@@ -14,13 +14,26 @@ type Props = {
   onClose: () => void;
   event: AnyEvent | null;
   eventIndex?: string;
+  onOpenEventPayload: (eventId: string, label: string) => void;
 };
 
-export function SidePanel({ activeTab, onClose, event, eventIndex }: Props) {
+export function SidePanel({
+  activeTab,
+  onClose,
+  event,
+  eventIndex,
+  onOpenEventPayload,
+}: Props) {
   function renderTab() {
     switch (activeTab) {
       case "eventdetails":
-        return <EventDetailsTab event={event} index={eventIndex} />;
+        return (
+          <EventDetailsTab
+            event={event}
+            index={eventIndex}
+            onOpenEventPayload={onOpenEventPayload}
+          />
+        );
       default: {
         const _exhaustive: never = activeTab;
         return _exhaustive;

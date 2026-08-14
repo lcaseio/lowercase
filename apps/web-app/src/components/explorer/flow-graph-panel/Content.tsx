@@ -66,6 +66,7 @@ export function Content({
     paramsError,
     curatedArtifacts,
     handleOpenArtifact,
+    handleRevealInDefinition,
   } = useFlowGraphPanel(versionId, panelId, simId, runOpened);
 
   // Below this point, nothing yet requires flowDef/version to be non-null
@@ -129,7 +130,13 @@ export function Content({
       case "parameters":
         return <ParametersTab params={params} />;
       case "stepdetails":
-        return <StepDetailsTab stepId={selectedStepId} flowDef={flowDef} />;
+        return (
+          <StepDetailsTab
+            stepId={selectedStepId}
+            flowDef={flowDef}
+            onNavigateToDefinition={handleRevealInDefinition}
+          />
+        );
       case "stepresults":
         return (
           <StepResultsTab

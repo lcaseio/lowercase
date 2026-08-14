@@ -15,6 +15,7 @@ type Props = {
   stepId: string;
   value?: Record<string, ExportDeclaration>;
   onOpenInMainPanel: OpenInMainPanel;
+  onNavigateToDefinition?: (path: string[]) => void;
 };
 
 export function ExportsField({
@@ -22,6 +23,7 @@ export function ExportsField({
   stepId,
   value,
   onOpenInMainPanel,
+  onNavigateToDefinition,
 }: Props) {
   const entries = value ? Object.entries(value) : [];
   if (entries.length === 0) return null;
@@ -55,6 +57,18 @@ export function ExportsField({
                     displayValue,
                     "json",
                   )
+                }
+                onNavigate={
+                  onNavigateToDefinition
+                    ? () =>
+                        onNavigateToDefinition([
+                          "steps",
+                          stepId,
+                          "exports",
+                          name,
+                          "schema",
+                        ])
+                    : undefined
                 }
               />
               <EvalContextField

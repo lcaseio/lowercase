@@ -8,9 +8,15 @@ type Props = {
   flowDef: FlowDefinition | null;
   stepId: string | null;
   onOpenInMainPanel: OpenInMainPanel;
+  onNavigateToDefinition?: (path: string[]) => void;
 };
 
-export function StepDetails({ stepId, flowDef, onOpenInMainPanel }: Props) {
+export function StepDetails({
+  stepId,
+  flowDef,
+  onOpenInMainPanel,
+  onNavigateToDefinition,
+}: Props) {
   if (!stepId || !flowDef) return <p>Select a stepid / flow definition</p>;
   const step = flowDef.steps[stepId];
   if (!step) return <p>Select a valid stepId</p>;
@@ -22,6 +28,7 @@ export function StepDetails({ stepId, flowDef, onOpenInMainPanel }: Props) {
           step={step}
           stepId={stepId}
           onOpenInMainPanel={onOpenInMainPanel}
+          onNavigateToDefinition={onNavigateToDefinition}
         />
       );
     case "parallel":

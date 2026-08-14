@@ -30,6 +30,10 @@ type Props = {
   autoHeight?: boolean;
   minHeight?: number;
   maxHeight?: number;
+  // Hands the caller the mounted Monaco editor instance -- for anything
+  // beyond display, e.g. programmatic reveal/selection (see
+  // ExplorerJsonDefinitionContent.tsx's revealPath handling).
+  onMount?: (editor: Parameters<OnMount>[0]) => void;
 };
 
 export function CodeEditor({
@@ -41,6 +45,7 @@ export function CodeEditor({
   autoHeight = false,
   minHeight = 40,
   maxHeight = 240,
+  onMount,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [contentHeight, setContentHeight] = useState(minHeight);
@@ -56,8 +61,11 @@ export function CodeEditor({
 
   const handleMount: OnMount = (editor) => {
     editorRef.current = editor;
-    syncHeight();
-    editor.onDidContentSizeChange(syncHeight);
+    if (autoHeight) {
+      syncHeight();
+      editor.onDidContentSizeChange(syncHeight);
+    }
+    onMount?.(editor);
   };
 
   return (
@@ -68,7 +76,7 @@ export function CodeEditor({
       onChange={(value) => onChange?.(value ?? "")}
       theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
       loading={<MonacoLoadingFallback />}
-      onMount={autoHeight ? handleMount : undefined}
+      onMount={autoHeight || onMount ? handleMount : undefined}
       options={{
         readOnly,
         minimap: { enabled: false },
