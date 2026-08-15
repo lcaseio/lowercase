@@ -21,8 +21,10 @@ import {
   simDraftStarted,
   simDraftReuseToggled,
   simDraftEnded,
+  layoutDirectionSet,
   selectFlowGraphPanelState,
   type SimDraftState,
+  type LayoutDirection,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
@@ -70,8 +72,14 @@ export function useFlowGraphPanel(
   const [requestRun] = useRequestRunMutation();
 
   const dispatch = useAppDispatch();
-  const { selectedParamHashes, sidePanelTab, runId, selectedStepId, simDraft } =
-    useAppSelector((state) => selectFlowGraphPanelState(state, panelId));
+  const {
+    selectedParamHashes,
+    sidePanelTab,
+    runId,
+    selectedStepId,
+    simDraft,
+    layoutDirection,
+  } = useAppSelector((state) => selectFlowGraphPanelState(state, panelId));
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const simDefinition = simDefData?.ok ? simDefData.value : null;
 
@@ -141,7 +149,7 @@ export function useFlowGraphPanel(
 
   const flowDef = data?.ok ? data.value.definition : null;
   const version = data?.ok ? data.value.version : null;
-  const flowAnalysis = useFlowAnalysis(flowDef);
+  const flowAnalysis = useFlowAnalysis(flowDef, layoutDirection);
   const artifacts = artifactsData?.ok ? artifactsData.value : [];
   const curatedArtifacts = curatedArtifactsData?.ok
     ? curatedArtifactsData.value
@@ -315,6 +323,10 @@ export function useFlowGraphPanel(
     dispatch(simDraftEnded({ panelId }));
   };
 
+  const handleSetLayoutDirection = (direction: LayoutDirection) => {
+    dispatch(layoutDirectionSet({ panelId, direction }));
+  };
+
   return {
     showLoading,
     hasError,
@@ -350,6 +362,8 @@ export function useFlowGraphPanel(
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,
+    layoutDirection,
+    handleSetLayoutDirection,
     runOpened,
     paramsLoading,
     paramsError,

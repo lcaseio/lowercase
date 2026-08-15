@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.1.1",
     "@lcase/flow-analysis": "workspace:*",
     "@lcase/json-ref-binder": "workspace:*",
     "@lcase/specs": "workspace:*",

@@ -8,21 +8,12 @@ import {
   ReactFlow,
   type Edge,
   type Node,
+  type Position,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
 import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
-
-// same graphLayout-based rendering as FlowEditPanel, but taking a flowDef
-// directly instead of fetching by route param -- FlowTree's replacement for
-// spike purposes. Likely to get replaced again once the real flow-view
-// component exists.
-function calcPosition(row: number, nodes: number, distance: number) {
-  const offsetAmount = Math.floor(nodes / 2);
-  const offsetRow = row - offsetAmount;
-  return offsetRow * distance;
-}
 
 // Set via inline style, not a Tailwind className: @xyflow/react/dist/style.css
 // sets `border` on `.react-flow__node-default` as plain, un-layered CSS, which
@@ -51,7 +42,10 @@ function statusNodeStyle(status: StepStatus | undefined): {
 
 type Props = {
   flowDef: FlowDefinition;
-  layout: string[][] | null;
+  layout: Record<
+    string,
+    { x: number; y: number; sourcePosition: Position; targetPosition: Position }
+  > | null;
   outEdges: OutEdges;
   onNodeClickHandler?: (node: Node) => void;
   stepRunInfo?: Record<string, StepRunInfo>;
@@ -71,61 +65,65 @@ export function FlowGraph({
 }: Props) {
   const { resolvedTheme } = useTheme();
 
-  const result = useMemo(() => {
+  const graph = useMemo(() => {
     if (!layout) return { nodes: [], edges: [] };
 
-    const newNodes: Node[] = [];
-    const newEdges: Edge[] = [];
+    const graphNodes: Node[] = [];
+    const graphEdges: Edge[] = [];
+    for (const [node, layoutData] of Object.entries(layout)) {
+      const { x, y, sourcePosition, targetPosition } = layoutData;
+      const status = stepRunInfo?.[node]?.status;
+      const { className, style } = statusNodeStyle(status);
+      const reusedPrefix = reusedStepIds?.includes(node) ? "↺ " : "";
 
-    for (let row = 0; row < layout.length; row++) {
-      for (let col = 0; col < layout[row].length; col++) {
-        const node = layout[row][col];
-        const x = calcPosition(col, layout[row].length, 250);
-        const status = stepRunInfo?.[node]?.status;
-        const { className, style } = statusNodeStyle(status);
-        const reusedPrefix = reusedStepIds?.includes(node) ? "↺ " : "";
+      const graphNode: Node = {
+        id: node,
+        position: { x, y },
+        sourcePosition,
+        targetPosition,
+        data: {
+          label: `${reusedPrefix}${node}: ${flowDef.steps[node]?.type}`,
+          status,
+        },
+        ...(className ? { className } : {}),
+        ...(style ? { style } : {}),
+      };
+      graphNodes.push(graphNode);
 
-        const newNode: Node = {
-          id: node,
-          position: { x, y: 150 * row },
-          data: {
-            label: `${reusedPrefix}${node}: ${flowDef.steps[node]?.type}`,
-            status,
-          },
-          ...(className ? { className } : {}),
-          ...(style ? { style } : {}),
-        };
-        newNodes.push(newNode);
-
-        if (outEdges[node]) {
-          for (const edge of outEdges[node]) {
-            // a branch step can route multiple distinct cases to the same
-            // next step -- startStepId-endStepId alone collides for those,
-            // since it ignores which case each edge represents. caseValue
-            // (or isDefault for the mandatory fallback) is what's actually
-            // unique per edge; gate ("always"/"onSuccess"/"onFailure") is a
-            // different concept and was never a case identifier.
-            const branchCase =
-              edge.caseValue ?? (edge.isDefault ? "default" : undefined);
-            const newEdge: Edge = {
-              id: `${edge.startStepId}-${edge.endStepId}-${branchCase ?? edge.gate}`,
-              source: edge.startStepId,
-              target: edge.endStepId,
-              label: branchCase ?? edge.gate,
-            };
-            newEdges.push(newEdge);
-          }
+      if (outEdges[node]) {
+        // a branch step can route multiple distinct cases to the same next
+        // step -- drawing one edge per case would visually overlap (React
+        // Flow has no built-in way to spread edges that share both
+        // endpoints apart), so edges to the same target are combined into
+        // one, with each case/gate joined into a single label instead.
+        const labelsByTarget = new Map<string, string[]>();
+        for (const edge of outEdges[node]) {
+          const branchCase =
+            edge.caseValue ?? (edge.isDefault ? "default" : undefined);
+          const label = branchCase ?? edge.gate;
+          const labels = labelsByTarget.get(edge.endStepId) ?? [];
+          labels.push(label);
+          labelsByTarget.set(edge.endStepId, labels);
+        }
+        for (const [target, labels] of labelsByTarget) {
+          const graphEdge: Edge = {
+            id: `${node}-${target}`,
+            source: node,
+            target,
+            label: labels.join(" / "),
+          };
+          graphEdges.push(graphEdge);
         }
       }
     }
-    return { nodes: newNodes, edges: newEdges };
+    return { nodes: graphNodes, edges: graphEdges };
   }, [flowDef, layout, outEdges, stepRunInfo, reusedStepIds]);
 
   return (
     <div className="h-full w-full rounded-xl">
       <ReactFlow
-        nodes={result.nodes}
-        edges={result.edges}
+        nodes={graph.nodes}
+        edges={graph.edges}
         colorMode={resolvedTheme}
         onNodeClick={
           onNodeClickHandler
