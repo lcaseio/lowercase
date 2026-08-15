@@ -22,9 +22,11 @@ import {
   simDraftReuseToggled,
   simDraftEnded,
   layoutDirectionSet,
+  viewportChanged,
   selectFlowGraphPanelState,
   type SimDraftState,
   type LayoutDirection,
+  type FlowGraphViewport,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
@@ -79,6 +81,7 @@ export function useFlowGraphPanel(
     selectedStepId,
     simDraft,
     layoutDirection,
+    viewport,
   } = useAppSelector((state) => selectFlowGraphPanelState(state, panelId));
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const simDefinition = simDefData?.ok ? simDefData.value : null;
@@ -327,6 +330,10 @@ export function useFlowGraphPanel(
     dispatch(layoutDirectionSet({ panelId, direction }));
   };
 
+  const handleViewportChange = (viewport: FlowGraphViewport) => {
+    dispatch(viewportChanged({ panelId, viewport }));
+  };
+
   return {
     showLoading,
     hasError,
@@ -364,6 +371,8 @@ export function useFlowGraphPanel(
     handleDraftEnded,
     layoutDirection,
     handleSetLayoutDirection,
+    viewport,
+    handleViewportChange,
     runOpened,
     paramsLoading,
     paramsError,

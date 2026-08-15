@@ -5,8 +5,8 @@ import {
   FilePlusIcon,
   FileTextIcon,
   HistoryIcon,
-  NetworkIcon,
   SettingsIcon,
+  WorkflowIcon,
   type LucideIcon,
 } from "lucide-react";
 import type { OpenPanelRequest } from "./explorer-panels";
@@ -15,7 +15,7 @@ import type { OpenPanelRequest } from "./explorer-panels";
 // already knows statically which one it is) and getExplorerTabIcon below
 // (the only place that needs to derive one dynamically, since one tab
 // component is registered for every panel).
-export const FLOW_GRAPH_ICON = NetworkIcon;
+export const FLOW_GRAPH_ICON = WorkflowIcon;
 export const FLOW_GRAPH_ICON_CLASS = "text-blue-400";
 export const JSON_DEFINITION_ICON = CurlyBracesIcon;
 export const JSON_DEFINITION_ICON_CLASS = "text-yellow-400";

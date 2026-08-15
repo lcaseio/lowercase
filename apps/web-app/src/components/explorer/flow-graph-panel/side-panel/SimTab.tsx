@@ -26,7 +26,8 @@ export function SimTab({
     if (!runId) {
       return (
         <div className="text-sm text-muted-foreground">
-          Open a run to simulate from it.
+          No run loaded yet. Run this flow to simulate from it once it finishes,
+          or open one of its past runs from the tree instead.
         </div>
       );
     }

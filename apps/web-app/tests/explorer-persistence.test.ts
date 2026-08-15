@@ -41,6 +41,7 @@ const SAMPLE_PANELS: FlowGraphPanelsState = {
     selectedStepId: null,
     simDraft: { reuse: ["step-1"] },
     layoutDirection: "TB",
+    viewport: null,
   },
 };
 const SAMPLE_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
@@ -62,6 +63,7 @@ const OTHER_PANELS: FlowGraphPanelsState = {
     selectedStepId: null,
     simDraft: null,
     layoutDirection: "TB",
+    viewport: null,
   },
 };
 const OTHER_EVENT_GRAPH_PANELS: EventGraphPanelsState = {

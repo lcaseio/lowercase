@@ -1,13 +1,23 @@
+import { useReactFlow } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import {
-  BotIcon,
-  ChartNoAxesGanttIcon,
   FileInputIcon,
   PlayIcon,
   NetworkIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+  MaximizeIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LayoutDirection } from "@/redux/slices/flow-graph-panels-slice";
+import { FIT_VIEW_OPTIONS } from "@/lib/flow-graph-layout";
+
+import {
+  EVENT_GRAPH_ICON,
+  EVENT_GRAPH_ICON_CLASS,
+  SIM_ICON,
+  SIM_ICON_CLASS,
+} from "../explorer-tab-icons";
 
 type Props = {
   hasParams: boolean;
@@ -44,93 +54,117 @@ export function RunToolbar({
   layoutDirection,
   onSetLayoutDirection,
 }: Props) {
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+
   return (
-    <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
-      <Button
-        variant="ghost"
-        size="sm"
-        className={cn(
-          "cursor-pointer text-xs",
-          layoutDirection === "TB"
-            ? "bg-accent text-accent-foreground"
-            : "text-muted-foreground",
-        )}
-        onClick={() => onSetLayoutDirection("TB")}
-        title="Vertical layout"
-      >
-        <NetworkIcon className="size-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className={cn(
-          "cursor-pointer text-xs",
-          layoutDirection === "LR"
-            ? "bg-accent text-accent-foreground"
-            : "text-muted-foreground",
-        )}
-        onClick={() => onSetLayoutDirection("LR")}
-        title="Horizontal layout"
-      >
-        <NetworkIcon className="size-4 rotate-270" />
-      </Button>
-      {showSimulate && (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
         <Button
           variant="ghost"
-          size="sm"
-          className="cursor-pointer text-xs text-muted-foreground "
-          onClick={onOpenSim}
-          title="Simulate"
+          size="xs"
+          className="cursor-pointer text-xs text-muted-foreground"
+          onClick={() => zoomIn()}
+          title="Zoom in"
         >
-          <BotIcon className="size-4" />
-          Simulate
+          <ZoomInIcon className="size-4" />
         </Button>
-      )}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="cursor-pointer text-xs text-muted-foreground "
-        onClick={onOpenEventGraph}
-        title="Open event graph"
-      >
-        <ChartNoAxesGanttIcon className="size-4" />
-        Events
-      </Button>
-      {hasParams ? (
         <Button
           variant="ghost"
-          size="sm"
+          size="xs"
+          className="cursor-pointer text-xs text-muted-foreground"
+          onClick={() => zoomOut()}
+          title="Zoom out"
+        >
+          <ZoomOutIcon className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="xs"
+          className="cursor-pointer text-xs text-muted-foreground"
+          onClick={() => fitView(FIT_VIEW_OPTIONS)}
+          title="Fit view"
+        >
+          <MaximizeIcon className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="xs"
           className={cn(
-            "cursor-pointer",
-            paramsHasUnsetRequired
-              ? " text-xs text-amber-700 dark:text-amber-400 dark:bg-amber-900 hover:dark:bg-amber-800"
-              : " text-xs text-muted-foreground",
+            "cursor-pointer text-xs",
+            layoutDirection === "TB"
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground",
           )}
-          onClick={onOpenParams}
-          title="Set params"
+          onClick={() => onSetLayoutDirection("TB")}
+          title="Vertical layout"
         >
-          <FileInputIcon className="size-4" />
-          Run Input
+          <NetworkIcon className="size-4" />
         </Button>
-      ) : (
-        // reserved empty slot, same footprint as the button above, so Run's
-        // position doesn't shift depending on whether this flow has params
-        <div
-          className="h-8 w-[88px] shrink-0"
-          aria-hidden="true"
-          data-testid="params-slot-empty"
-        />
-      )}
-      <Button
-        variant="outline"
-        size="sm"
-        className="cursor-pointer bg-green-200 dark:bg-green-900"
-        onClick={onRun}
-        disabled={runDisabled}
-      >
-        <PlayIcon className="size-4" />
-        {isRerun ? "Rerun" : "Run"}
-      </Button>
+
+        <Button
+          variant="ghost"
+          size="xs"
+          className={cn(
+            "cursor-pointer text-xs",
+            layoutDirection === "LR"
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground",
+          )}
+          onClick={() => onSetLayoutDirection("LR")}
+          title="Horizontal layout"
+        >
+          <NetworkIcon className="size-4 rotate-270" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
+        {showSimulate && (
+          <Button
+            variant="ghost"
+            size="xs"
+            className="cursor-pointer text-xs text-muted-foreground "
+            onClick={onOpenSim}
+            title="Simulate"
+          >
+            <SIM_ICON className={cn(SIM_ICON_CLASS, "size-4")} />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="xs"
+          className="cursor-pointer text-xs text-muted-foreground "
+          onClick={onOpenEventGraph}
+          title="Open event graph"
+        >
+          <EVENT_GRAPH_ICON className={cn(EVENT_GRAPH_ICON_CLASS, "size-4")} />
+        </Button>
+        {hasParams && (
+          <Button
+            variant="ghost"
+            size="xs"
+            className={cn(
+              "cursor-pointer",
+              paramsHasUnsetRequired
+                ? " text-xs text-amber-700 dark:text-amber-400 dark:bg-amber-900 hover:dark:bg-amber-800"
+                : " text-xs text-muted-foreground",
+            )}
+            onClick={onOpenParams}
+            title="Set params"
+          >
+            <FileInputIcon className="size-4" />
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          size="xs"
+          className="cursor-pointer bg-green-200 dark:bg-green-900 hover:bg-green-100 hover:dark:bg-green-800"
+
+          onClick={onRun}
+          disabled={runDisabled}
+        >
+          <PlayIcon className="size-4" />
+          {isRerun ? "Rerun" : "Run"}
+        </Button>
+      </div>
     </div>
   );
 }

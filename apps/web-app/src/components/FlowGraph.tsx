@@ -9,11 +9,13 @@ import {
   type Edge,
   type Node,
   type Position,
+  type Viewport,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
 import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
+import { FIT_VIEW_OPTIONS } from "@/lib/flow-graph-layout";
 
 // Set via inline style, not a Tailwind className: @xyflow/react/dist/style.css
 // sets `border` on `.react-flow__node-default` as plain, un-layered CSS, which
@@ -50,6 +52,8 @@ type Props = {
   onNodeClickHandler?: (node: Node) => void;
   stepRunInfo?: Record<string, StepRunInfo>;
   reusedStepIds?: string[];
+  viewport?: Viewport | null;
+  onViewportChange?: (viewport: Viewport) => void;
   toolbar?: ReactNode;
   authoringBar?: ReactNode;
 };
@@ -60,6 +64,8 @@ export function FlowGraph({
   onNodeClickHandler,
   stepRunInfo,
   reusedStepIds,
+  viewport,
+  onViewportChange,
   toolbar,
   authoringBar,
 }: Props) {
@@ -119,6 +125,16 @@ export function FlowGraph({
     return { nodes: graphNodes, edges: graphEdges };
   }, [flowDef, layout, outEdges, stepRunInfo, reusedStepIds]);
 
+  // A saved viewport (persisted per-panel, see flow-graph-panels-slice.ts)
+  // needs no container measurement at all -- restoring it directly sidesteps
+  // the fitView-against-a-not-yet-visible-container bug entirely. Only a
+  // genuinely first-ever open (no saved viewport yet) falls back to fitView;
+  // defaultViewport and fitView are mutually exclusive per React Flow's own
+  // docs, so exactly one of the two is ever passed.
+  const viewportProps = viewport
+    ? { defaultViewport: viewport }
+    : { fitView: true, fitViewOptions: FIT_VIEW_OPTIONS };
+
   return (
     <div className="h-full w-full rounded-xl">
       <ReactFlow
@@ -130,10 +146,16 @@ export function FlowGraph({
             ? (_event, node) => onNodeClickHandler(node)
             : undefined
         }
-        fitView
-        fitViewOptions={{ padding: 0.5 }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        onMoveEnd={
+          onViewportChange
+            ? (_event, nextViewport) => onViewportChange(nextViewport)
+            : undefined
+        }
+        {...viewportProps}
       >
-        <Controls />
+        {!toolbar && <Controls />}
         {authoringBar && <Panel position="top-center">{authoringBar}</Panel>}
         {toolbar && <Panel position="bottom-center">{toolbar}</Panel>}
       </ReactFlow>
