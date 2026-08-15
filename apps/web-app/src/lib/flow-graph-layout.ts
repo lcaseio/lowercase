@@ -3,6 +3,13 @@ import { Position } from "@xyflow/react";
 import type { FlowAnalysis } from "@lcase/types";
 
 export type LayoutDirection = "TB" | "LR";
+
+// Shared between FlowGraph.tsx's auto-fit and RunToolbar's manual Fit View
+// button, so the two can never drift apart. Lives here, not in
+// FlowGraph.tsx, since exporting a plain constant alongside a component
+// breaks this repo's react-refresh/only-export-components lint rule.
+export const FIT_VIEW_OPTIONS = { padding: 0.5 };
+
 export type NodePositions = Record<
   string,
   { x: number; y: number; sourcePosition: Position; targetPosition: Position }

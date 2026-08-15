@@ -10,6 +10,7 @@ import {
   simDraftReuseToggled,
   simDraftEnded,
   layoutDirectionSet,
+  viewportChanged,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
@@ -24,6 +25,7 @@ const DEFAULT_PANEL_STATE = {
   selectedStepId: null,
   simDraft: null,
   layoutDirection: "TB",
+  viewport: null,
 };
 
 describe("flowGraphPanelsSlice", () => {
@@ -205,6 +207,47 @@ describe("flowGraphPanelsSlice", () => {
         layoutDirectionSet({ panelId: "flow-graph-v1", direction: "TB" }),
       );
       expect(state["flow-graph-v1"].layoutDirection).toBe("TB");
+    });
+  });
+
+  describe("viewportChanged", () => {
+    it("defaults to null for a panel with no entry yet", () => {
+      const state = { flowGraphPanels: {} } as unknown as RootState;
+      expect(
+        selectFlowGraphPanelState(state, "flow-graph-v1").viewport,
+      ).toBeNull();
+    });
+
+    it("creates a panel entry lazily and sets the viewport", () => {
+      const state = reducer(
+        {},
+        viewportChanged({
+          panelId: "flow-graph-v1",
+          viewport: { x: 10, y: 20, zoom: 1.5 },
+        }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        viewport: { x: 10, y: 20, zoom: 1.5 },
+      });
+    });
+
+    it("overwrites an existing viewport on an already-created entry", () => {
+      let state = reducer(
+        {},
+        viewportChanged({
+          panelId: "flow-graph-v1",
+          viewport: { x: 10, y: 20, zoom: 1.5 },
+        }),
+      );
+      state = reducer(
+        state,
+        viewportChanged({
+          panelId: "flow-graph-v1",
+          viewport: { x: 0, y: 0, zoom: 1 },
+        }),
+      );
+      expect(state["flow-graph-v1"].viewport).toEqual({ x: 0, y: 0, zoom: 1 });
     });
   });
 

@@ -64,6 +64,8 @@ export function Content({
     handleDraftEnded,
     layoutDirection,
     handleSetLayoutDirection,
+    viewport,
+    handleViewportChange,
     paramsLoading,
     paramsError,
     curatedArtifacts,
@@ -185,6 +187,8 @@ export function Content({
       outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
       stepRunInfo={stepRunInfo}
       reusedStepIds={reusedStepIds}
+      viewport={viewport}
+      onViewportChange={handleViewportChange}
       toolbar={toolbar}
       authoringBar={
         simDraft && (

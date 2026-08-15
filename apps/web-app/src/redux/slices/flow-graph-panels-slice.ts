@@ -5,6 +5,7 @@ import { panelRemoved } from "./panel-lifecycle-actions";
 
 export type SimDraftState = { reuse: string[] };
 export type LayoutDirection = "TB" | "LR";
+export type FlowGraphViewport = { x: number; y: number; zoom: number };
 
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
@@ -13,6 +14,7 @@ export type FlowGraphPanelState = {
   selectedStepId: string | null;
   simDraft: SimDraftState | null;
   layoutDirection: LayoutDirection;
+  viewport: FlowGraphViewport | null;
 };
 
 export type FlowGraphPanelsState = Record<string, FlowGraphPanelState>;
@@ -24,6 +26,7 @@ const DEFAULT_PANEL_STATE: FlowGraphPanelState = {
   selectedStepId: null,
   simDraft: null,
   layoutDirection: "TB",
+  viewport: null,
 };
 
 const initialState: FlowGraphPanelsState = {};
@@ -131,6 +134,13 @@ export const flowGraphPanelsSlice = createSlice({
       ensurePanel(state, action.payload.panelId).layoutDirection =
         action.payload.direction;
     },
+    viewportChanged: (
+      state,
+      action: PayloadAction<{ panelId: string; viewport: FlowGraphViewport }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).viewport =
+        action.payload.viewport;
+    },
   },
   // panelRemoved is shared across every keyed-by-panelId slice (see
   // panel-lifecycle-actions.ts) -- dispatched once from a central listener
@@ -154,6 +164,7 @@ export const {
   simDraftReuseToggled,
   simDraftEnded,
   layoutDirectionSet,
+  viewportChanged,
 } = flowGraphPanelsSlice.actions;
 
 export const selectFlowGraphPanelState = (
