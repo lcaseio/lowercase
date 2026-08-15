@@ -4,8 +4,10 @@ import {
   ChartNoAxesGanttIcon,
   FileInputIcon,
   PlayIcon,
+  NetworkIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { LayoutDirection } from "@/redux/slices/flow-graph-panels-slice";
 
 type Props = {
   hasParams: boolean;
@@ -17,6 +19,8 @@ type Props = {
   onOpenEventGraph: () => void;
   onRun: () => void;
   isRerun?: boolean;
+  layoutDirection: LayoutDirection;
+  onSetLayoutDirection: (direction: LayoutDirection) => void;
 };
 
 // bottom-center floating toolbar over the graph canvas (via FlowGraph's
@@ -37,9 +41,39 @@ export function RunToolbar({
   onOpenEventGraph,
   onRun,
   isRerun,
+  layoutDirection,
+  onSetLayoutDirection,
 }: Props) {
   return (
     <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "cursor-pointer text-xs",
+          layoutDirection === "TB"
+            ? "bg-accent text-accent-foreground"
+            : "text-muted-foreground",
+        )}
+        onClick={() => onSetLayoutDirection("TB")}
+        title="Vertical layout"
+      >
+        <NetworkIcon className="size-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "cursor-pointer text-xs",
+          layoutDirection === "LR"
+            ? "bg-accent text-accent-foreground"
+            : "text-muted-foreground",
+        )}
+        onClick={() => onSetLayoutDirection("LR")}
+        title="Horizontal layout"
+      >
+        <NetworkIcon className="size-4 rotate-270" />
+      </Button>
       {showSimulate && (
         <Button
           variant="ghost"

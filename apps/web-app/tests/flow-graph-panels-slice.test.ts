@@ -9,6 +9,7 @@ import {
   simDraftStarted,
   simDraftReuseToggled,
   simDraftEnded,
+  layoutDirectionSet,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
@@ -22,6 +23,7 @@ const DEFAULT_PANEL_STATE = {
   runId: null,
   selectedStepId: null,
   simDraft: null,
+  layoutDirection: "TB",
 };
 
 describe("flowGraphPanelsSlice", () => {
@@ -171,6 +173,38 @@ describe("flowGraphPanelsSlice", () => {
       );
       state = reducer(state, simDraftEnded({ panelId: "flow-graph-v1" }));
       expect(state["flow-graph-v1"].simDraft).toBeNull();
+    });
+  });
+
+  describe("layoutDirectionSet", () => {
+    it("defaults to TB for a panel with no entry yet", () => {
+      const state = { flowGraphPanels: {} } as unknown as RootState;
+      expect(
+        selectFlowGraphPanelState(state, "flow-graph-v1").layoutDirection,
+      ).toBe("TB");
+    });
+
+    it("creates a panel entry lazily and sets the direction", () => {
+      const state = reducer(
+        {},
+        layoutDirectionSet({ panelId: "flow-graph-v1", direction: "LR" }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        layoutDirection: "LR",
+      });
+    });
+
+    it("switches back and forth on an existing entry", () => {
+      let state = reducer(
+        {},
+        layoutDirectionSet({ panelId: "flow-graph-v1", direction: "LR" }),
+      );
+      state = reducer(
+        state,
+        layoutDirectionSet({ panelId: "flow-graph-v1", direction: "TB" }),
+      );
+      expect(state["flow-graph-v1"].layoutDirection).toBe("TB");
     });
   });
 

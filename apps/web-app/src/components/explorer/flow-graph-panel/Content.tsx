@@ -62,6 +62,8 @@ export function Content({
     handleSelectSidePanelTab,
     handleStartAuthoring,
     handleDraftEnded,
+    layoutDirection,
+    handleSetLayoutDirection,
     paramsLoading,
     paramsError,
     curatedArtifacts,
@@ -171,6 +173,8 @@ export function Content({
       onOpenEventGraph={handleOpenEventGraph}
       onRun={handleRun}
       isRerun={runOpened}
+      layoutDirection={layoutDirection}
+      onSetLayoutDirection={handleSetLayoutDirection}
     />
   );
 

@@ -1,13 +1,15 @@
 import { useMemo } from "react";
-import {
-  analyzeFlow,
-  analyzeRefs,
-  graphLayout,
-  toposort,
-} from "@lcase/flow-analysis";
+import { analyzeFlow, analyzeRefs, toposort } from "@lcase/flow-analysis";
 import type { FlowDefinition } from "@lcase/types";
+import {
+  computeDagreLayout,
+  type LayoutDirection,
+} from "@/lib/flow-graph-layout";
 
-export function useFlowAnalysis(flowDef: FlowDefinition | null) {
+export function useFlowAnalysis(
+  flowDef: FlowDefinition | null,
+  direction: LayoutDirection = "TB",
+) {
   return useMemo(() => {
     if (!flowDef) return null;
 
@@ -15,6 +17,6 @@ export function useFlowAnalysis(flowDef: FlowDefinition | null) {
     fa = analyzeRefs(flowDef, fa);
     fa.toposort = toposort(fa);
 
-    return { flowAnalysis: fa, layout: graphLayout(fa) };
-  }, [flowDef]);
+    return { flowAnalysis: fa, layout: computeDagreLayout(fa, direction) };
+  }, [flowDef, direction]);
 }
