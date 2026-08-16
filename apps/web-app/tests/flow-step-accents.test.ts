@@ -50,9 +50,7 @@ describe("edgeHandleId()", () => {
     expect(edgeHandleId(edge({ type: "control", gate: "onSuccess" }))).toBe(
       "onSuccess",
     );
-    expect(edgeHandleId(edge({ type: "join", gate: "always" }))).toBe(
-      "always",
-    );
+    expect(edgeHandleId(edge({ type: "join", gate: "always" }))).toBe("always");
   });
 });
 
@@ -199,9 +197,9 @@ describe("getEdgeStyle()", () => {
 describe("isEdgeAnimating()", () => {
   it("never animates an edge that isn't taken at all", () => {
     const onSuccess = edge({ type: "control", gate: "onSuccess" });
-    expect(
-      isEdgeAnimating(onSuccess, runInfo("running"), "httpjson"),
-    ).toBe(false);
+    expect(isEdgeAnimating(onSuccess, runInfo("running"), "httpjson")).toBe(
+      false,
+    );
     expect(isEdgeAnimating(onSuccess, undefined, "httpjson")).toBe(false);
   });
 
@@ -216,19 +214,17 @@ describe("isEdgeAnimating()", () => {
       target: { status: "completed" as const },
     };
     expect(isEdgeAnimating(onSuccess, runningTarget, "httpjson")).toBe(true);
-    expect(isEdgeAnimating(onSuccess, finishedTarget, "httpjson")).toBe(
-      false,
-    );
-    expect(getEdgeStyle(onSuccess, finishedTarget, "httpjson").strokeDasharray).toBe(
-      TAKEN_EDGE_DASH,
-    );
+    expect(isEdgeAnimating(onSuccess, finishedTarget, "httpjson")).toBe(false);
+    expect(
+      getEdgeStyle(onSuccess, finishedTarget, "httpjson").strokeDasharray,
+    ).toBe(TAKEN_EDGE_DASH);
   });
 
   it("join's inbound edge: animates while the *source* (reporting step) is running, not the target -- the join's own status never resolves, so using it here would animate forever", () => {
     const fromTask = edge({ type: "join", endStepId: "merge" });
-    expect(
-      isEdgeAnimating(fromTask, runInfo("running"), "httpjson"),
-    ).toBe(true);
+    expect(isEdgeAnimating(fromTask, runInfo("running"), "httpjson")).toBe(
+      true,
+    );
     // Even if the join itself (target) looks perpetually "running" -- the
     // known engine gap -- the source having finished stops the animation.
     const sourceFinishedTargetStuck = {
@@ -243,7 +239,11 @@ describe("isEdgeAnimating()", () => {
   it("join's own outbound edge (workaround): animates while the next target is running, mirroring the same target-based check isEdgeTaken already uses for it", () => {
     const toNext = edge({ type: "control", gate: "onSuccess" });
     expect(
-      isEdgeAnimating(toNext, { target: { status: "running" as const } }, "join"),
+      isEdgeAnimating(
+        toNext,
+        { target: { status: "running" as const } },
+        "join",
+      ),
     ).toBe(true);
     expect(
       isEdgeAnimating(
