@@ -153,8 +153,9 @@ describe("computeDagreLayout()", () => {
     expect(lr.a.targetPosition).toBe(Position.Left);
   });
 
-  it("sizes non-httpjson nodes at the flat default regardless of out-edge count", () => {
-    // "a" has 2 out-edges (to b and c) but is a "parallel" step, not httpjson
+  it("sizes nodes with no custom accent (e.g. parallel) at the flat default regardless of out-edge count", () => {
+    // "a" has 2 out-edges (to b and c) but is a "parallel" step, which has
+    // no entry in FLOW_STEP_ACCENTS
     const tb = computeDagreLayout(buildFixture(), "TB", buildFlowDef())!;
     expect(tb.a.width).toBe(200);
     expect(tb.a.height).toBe(50);
@@ -192,5 +193,30 @@ describe("computeDagreLayout()", () => {
     expect(lr.e.width).toBe(100);
     expect(lr.d.height).toBe(66); // 46 + (1 - 1) * 15 + 20
     expect(lr.g.height).toBe(50); // 0 out-edges -> plain default, no anchor
+  });
+
+  it("grows an mcp node's size (TB) with the same formula as httpjson -- confirms sizeForNode keys off accent presence, not a hardcoded step type", () => {
+    // "e" has 2 out-edges in the fixture, same shape mcp shares with httpjson
+    const flowDef = buildFlowDef({
+      e: {
+        type: "mcp",
+        url: "https://example.com",
+        transport: "http",
+        feature: { primitive: "tool", name: "example" },
+      },
+    });
+    const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
+    expect(tb.e.width).toBe(145); // 100 + (2 - 1) * 45, same as httpjson
+    expect(tb.e.height).toBe(64);
+  });
+
+  it("sizes a join node's single out-edge like httpjson's 1-out-edge case (no width growth)", () => {
+    // "d" has exactly 1 out-edge in the fixture (its own `next`)
+    const flowDef = buildFlowDef({
+      d: { type: "join", steps: ["b", "c"], next: "e" },
+    });
+    const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
+    expect(tb.d.width).toBe(100); // 1 out-edge -> no width growth
+    expect(tb.d.height).toBe(64); // still >= 1 out-edge -> same clearance
   });
 });

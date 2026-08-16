@@ -38,18 +38,21 @@ export type FlowStepNodeData = {
 
 type FlowStepNodeType = Node<FlowStepNodeData>;
 
-// "control" edges are httpjson's own on.success/on.failure wiring -- the
-// only two gates that model applies to. A step can also gain an edge from
-// being listed in a join's `steps` (type "join", gate "always", added by
-// addJoinEdges) or a parallel's `steps` -- neither is a real success/failure
-// branch, so label those with their own edge type instead of guessing.
+// "control" edges are the real success/failure branches: httpjson/mcp's own
+// on.success/on.failure wiring (addCapEdges), and -- the same shape --
+// join's single `next` edge (addJoinEdges always emits it as
+// onSuccess; a join either completes and takes it, or fails and doesn't).
+// A step can also gain an edge from being listed in a join's `steps` (type
+// "join", gate "always") or a parallel's `steps` -- neither of those is a
+// real success/failure branch, so label those with their own edge type
+// instead of guessing.
 function edgeLabel(edge: FlowAnalysisEdge): string {
   if (edge.type !== "control") return edge.type;
   return edge.gate === "onSuccess" ? "success" : "failure";
 }
 
-// One shared shell for every step type with a custom node -- only httpjson
-// today (see flow-step-accents.ts). Read-only: no fields/content, no
+// One shared shell for every step type with a custom node (httpjson, mcp,
+// join -- see flow-step-accents.ts). Read-only: no fields/content, no
 // collapse, nodesConnectable={false} already disables dragging new
 // connections from these handles (FlowGraph.tsx).
 //
@@ -175,7 +178,7 @@ export function FlowStepNode({
           )}
           {status === "running" && (
             <LoaderCircleIcon
-              className="h-2.5 w-2.5 animate-spin text-white"
+              className="h-2.5 w-2.5 animate-spin text-neutral-950"
               strokeWidth={3}
             />
           )}

@@ -1,6 +1,11 @@
 import dagre from "@dagrejs/dagre";
 import { Position } from "@xyflow/react";
-import type { FlowAnalysis, FlowDefinition } from "@lcase/types";
+import type {
+  FlowAnalysis,
+  FlowDefinition,
+  StepDefinition,
+} from "@lcase/types";
+import { getFlowStepAccent } from "@/components/flow-graph-nodes/flow-step-accents";
 
 export type LayoutDirection = "TB" | "LR";
 
@@ -23,11 +28,11 @@ export type NodePositions = Record<
 >;
 
 // Plain, fixed-size default for every step type that has no custom node yet
-// -- still true for everything except httpjson (see sizeForNode below).
+// -- still true for branch/parallel (see sizeForNode below).
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 50;
 
-// httpjson's custom node needs far less width than a plain default box --
+// A custom FlowStepNode needs far less width than a plain default box --
 // no field content, just a header strip + short id, so a narrower base
 // reads better. Kept separate from NODE_WIDTH so this doesn't ripple into
 // dagre's spacing assumptions for the other, still-plain-box step types.
@@ -35,14 +40,16 @@ const NODE_HEIGHT = 50;
 // (that margin works out to exactly half this value, regardless of edge
 // count -- the growth added for extra handles only widens the gap between
 // them, not the margin outside them).
-const HTTPJSON_NODE_WIDTH = 100;
+const CUSTOM_NODE_WIDTH = 100;
 
-// Only httpjson's node varies its size today, growing along whichever axis
-// its real (wired) out-edges spread their handles along -- one handle per
-// entry in outEdges[node], up to 2 (onSuccess/onFailure). Feeding dagre a
-// size that doesn't match the node's actual rendered box is exactly the
-// dagre+React-Flow gotcha this file used to warn about generically; this
-// keeps the two in lockstep by construction instead of by convention.
+// Every step type with a custom node (flow-step-accents.ts's
+// FLOW_STEP_ACCENTS) varies its size, growing along whichever axis its real
+// (wired) out-edges spread their handles along -- one handle per entry in
+// outEdges[node] (up to 2 for httpjson/mcp's onSuccess/onFailure, exactly 1
+// for join's next). Feeding dagre a size that doesn't match the node's
+// actual rendered box is exactly the dagre+React-Flow gotcha this file used
+// to warn about generically; this keeps the two in lockstep by construction
+// instead of by convention.
 // Exported so FlowStepNode.tsx can space its rendered <Handle>s using the
 // exact same unit dagre sized the node's growth with -- same drift-avoidance
 // reasoning as FIT_VIEW_OPTIONS above. Wide enough that TB's flat (unrotated)
@@ -77,11 +84,11 @@ export const LR_TARGET_HANDLE_TOP = 30;
 const TB_LABEL_CLEARANCE = 14;
 
 function sizeForNode(
-  stepType: string | undefined,
+  stepType: StepDefinition["type"] | undefined,
   outEdgeCount: number,
   direction: LayoutDirection,
 ): { width: number; height: number } {
-  if (stepType !== "httpjson") {
+  if (!getFlowStepAccent(stepType)) {
     return { width: NODE_WIDTH, height: NODE_HEIGHT };
   }
   if (direction === "LR") {
@@ -91,11 +98,11 @@ function sizeForNode(
           (outEdgeCount - 1) * LR_EDGE_SPACING +
           LR_BOTTOM_MARGIN
         : NODE_HEIGHT;
-    return { width: HTTPJSON_NODE_WIDTH, height };
+    return { width: CUSTOM_NODE_WIDTH, height };
   }
   const growth = Math.max(0, outEdgeCount - 1) * HANDLE_SPACING;
   const height = NODE_HEIGHT + (outEdgeCount > 0 ? TB_LABEL_CLEARANCE : 0);
-  return { width: HTTPJSON_NODE_WIDTH + growth, height };
+  return { width: CUSTOM_NODE_WIDTH + growth, height };
 }
 
 // Mirrors graphLayout()'s own early-out (packages/flow-analysis) -- no

@@ -6,13 +6,15 @@ export type FlowStepAccent = {
   colorClassName: string;
 };
 
-// Only httpjson has a custom node so far (mcp is functionally semi-dead,
-// branch/join/parallel keep rendering as plain default nodes) -- add an
-// entry here when a step type gets its own FlowStepNode variant.
+// branch/parallel still render as plain default nodes (their own unbounded
+// out-edge cardinality is a separate design question) -- add an entry here
+// when a step type gets its own FlowStepNode variant.
 const FLOW_STEP_ACCENTS: Partial<
   Record<StepDefinition["type"], FlowStepAccent>
 > = {
   httpjson: { label: "httpjson", colorClassName: "bg-sky-800" },
+  mcp: { label: "mcp", colorClassName: "bg-lime-800" },
+  join: { label: "join", colorClassName: "bg-amber-800" },
 };
 
 export function getFlowStepAccent(
@@ -28,19 +30,28 @@ export function getFlowStepAccent(
 export const GATE_SUCCESS_COLOR = "#34d399";
 export const GATE_FAILURE_COLOR = "#d3344a";
 
+// The literal Tailwind design token behind join's own bg-amber-800 header
+// strip (see FLOW_STEP_ACCENTS above), not a hand-picked hex guess -- using
+// the CSS var directly means this can never drift from what the join node's
+// own header actually renders, the same reasoning as GATE_SUCCESS_COLOR/
+// GATE_FAILURE_COLOR being shared constants instead of re-typed per callsite.
+export const JOIN_EDGE_COLOR = "var(--color-amber-800, #92400e)";
+
 // Shared so the handle color (FlowStepNode.tsx) and the edge line color
 // (FlowGraph.tsx) that leaves it can't drift apart from each other.
 //
 // Only "control" edges (httpjson/mcp's own on.success/on.failure wiring,
 // packages/flow-analysis's addCapEdges) are genuinely conditional on
-// success/failure. Other edge types can also leave an httpjson step --
-// notably "join" edges (gate "always", from addJoinEdges) when that step is
-// also listed as one of a join's inputs, which isn't part of the on-field
-// model at all. Treating "always" as "not onSuccess, therefore failure"
-// colored those edges/handles red for no real reason. Returns undefined for
-// anything that isn't a real success/failure branch, so callers fall back
-// to their default (unstyled) color instead of a wrong one.
+// success/failure. "join" edges (gate "always", from addJoinEdges) -- a step
+// listed as one of a join's inputs -- aren't part of that on-field model at
+// all (treating "always" as "not onSuccess, therefore failure" used to color
+// those edges/handles red for no real reason), but they always lead into a
+// join specifically, so they get the join accent's own color instead of
+// falling back to plain/undefined -- ties an edge visually to the kind of
+// step it's feeding into. Any other edge type (e.g. "parallel") still
+// returns undefined, so callers fall back to their default (unstyled) color.
 export function getGateColor(edge: Edge): string | undefined {
+  if (edge.type === "join") return JOIN_EDGE_COLOR;
   if (edge.type !== "control") return undefined;
   return edge.gate === "onSuccess" ? GATE_SUCCESS_COLOR : GATE_FAILURE_COLOR;
 }
