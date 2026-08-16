@@ -24,7 +24,7 @@ import {
 
 // Stable identity across renders -- React Flow re-measures/warns if the
 // nodeTypes object passed to <ReactFlow> changes on every render.
-const nodeTypes = { flowStepHttpJson: FlowStepNode };
+const nodeTypes = { flowStep: FlowStepNode };
 
 // Set via inline style, not a Tailwind className: @xyflow/react/dist/style.css
 // sets `border` on `.react-flow__node-default` as plain, un-layered CSS, which
@@ -89,7 +89,7 @@ export function FlowGraph({
       const graphNode: Node = accent
         ? {
             id: node,
-            type: "flowStepHttpJson",
+            type: "flowStep",
             position: { x, y },
             sourcePosition,
             targetPosition,
