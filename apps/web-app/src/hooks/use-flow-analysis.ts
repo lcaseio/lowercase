@@ -17,6 +17,9 @@ export function useFlowAnalysis(
     fa = analyzeRefs(flowDef, fa);
     fa.toposort = toposort(fa);
 
-    return { flowAnalysis: fa, layout: computeDagreLayout(fa, direction) };
+    return {
+      flowAnalysis: fa,
+      layout: computeDagreLayout(fa, direction, flowDef),
+    };
   }, [flowDef, direction]);
 }

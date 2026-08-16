@@ -8,14 +8,23 @@ import {
   ReactFlow,
   type Edge,
   type Node,
-  type Position,
   type Viewport,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
 import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
-import { FIT_VIEW_OPTIONS } from "@/lib/flow-graph-layout";
+import { FIT_VIEW_OPTIONS, type NodePositions } from "@/lib/flow-graph-layout";
+import { FlowStepNode } from "@/components/flow-graph-nodes/FlowStepNode";
+import {
+  getEdgeStyle,
+  getFlowStepAccent,
+  getStatusBorderColor,
+} from "@/components/flow-graph-nodes/flow-step-accents";
+
+// Stable identity across renders -- React Flow re-measures/warns if the
+// nodeTypes object passed to <ReactFlow> changes on every render.
+const nodeTypes = { flowStepHttpJson: FlowStepNode };
 
 // Set via inline style, not a Tailwind className: @xyflow/react/dist/style.css
 // sets `border` on `.react-flow__node-default` as plain, un-layered CSS, which
@@ -26,32 +35,22 @@ function statusNodeStyle(status: StepStatus | undefined): {
   className?: string;
   style?: { border: string };
 } {
-  switch (status) {
-    case "running":
-      return {
-        className: "animate-step-pulse",
-        style: { border: "2px solid var(--color-amber-500, #f59e0b)" },
-      };
-    case "completed":
-      return { style: { border: "2px solid #34d399" } };
-    case "failed":
-      return { style: { border: "2px solid #d3344a" } };
-    case "initialized":
-    default:
-      return {};
-  }
+  const color = getStatusBorderColor(status);
+  if (!color) return {};
+  return {
+    ...(status === "running" ? { className: "animate-step-pulse" } : {}),
+    style: { border: `2px solid ${color}` },
+  };
 }
 
 type Props = {
   flowDef: FlowDefinition;
-  layout: Record<
-    string,
-    { x: number; y: number; sourcePosition: Position; targetPosition: Position }
-  > | null;
+  layout: NodePositions | null;
   outEdges: OutEdges;
   onNodeClickHandler?: (node: Node) => void;
   stepRunInfo?: Record<string, StepRunInfo>;
   reusedStepIds?: string[];
+  selectedStepId?: string | null;
   viewport?: Viewport | null;
   onViewportChange?: (viewport: Viewport) => void;
   toolbar?: ReactNode;
@@ -64,6 +63,7 @@ export function FlowGraph({
   onNodeClickHandler,
   stepRunInfo,
   reusedStepIds,
+  selectedStepId,
   viewport,
   onViewportChange,
   toolbar,
@@ -77,26 +77,70 @@ export function FlowGraph({
     const graphNodes: Node[] = [];
     const graphEdges: Edge[] = [];
     for (const [node, layoutData] of Object.entries(layout)) {
-      const { x, y, sourcePosition, targetPosition } = layoutData;
+      const { x, y, width, height, sourcePosition, targetPosition } =
+        layoutData;
       const status = stepRunInfo?.[node]?.status;
       const { className, style } = statusNodeStyle(status);
-      const reusedPrefix = reusedStepIds?.includes(node) ? "↺ " : "";
+      const reused = reusedStepIds?.includes(node) ?? false;
+      const stepType = flowDef.steps[node]?.type;
+      const accent = getFlowStepAccent(stepType);
+      const nodeOutEdges = outEdges[node] ?? [];
 
-      const graphNode: Node = {
-        id: node,
-        position: { x, y },
-        sourcePosition,
-        targetPosition,
-        data: {
-          label: `${reusedPrefix}${node}: ${flowDef.steps[node]?.type}`,
-          status,
-        },
-        ...(className ? { className } : {}),
-        ...(style ? { style } : {}),
-      };
+      const graphNode: Node = accent
+        ? {
+            id: node,
+            type: "flowStepHttpJson",
+            position: { x, y },
+            sourcePosition,
+            targetPosition,
+            selected: node === selectedStepId,
+            data: {
+              label: node,
+              status,
+              reused,
+              accent,
+              outEdges: nodeOutEdges,
+              sourcePosition,
+              targetPosition,
+              isStart: node === flowDef.start,
+            },
+            // Status border lives inside FlowStepNode.tsx itself now, not
+            // here -- this Node-level style/className hack only ever
+            // existed because default nodes give us no other way in; a
+            // custom node can just render its own border matching its own
+            // actual (rounded) shape instead.
+            style: { width, height },
+          }
+        : {
+            id: node,
+            position: { x, y },
+            sourcePosition,
+            targetPosition,
+            data: {
+              label: `${reused ? "↺ " : ""}${node}: ${stepType}`,
+              status,
+            },
+            ...(className ? { className } : {}),
+            ...(style ? { style } : {}),
+          };
       graphNodes.push(graphNode);
 
-      if (outEdges[node]) {
+      if (accent) {
+        // Real per-output handle per wired edge -- no merge-by-target here,
+        // that workaround only exists for step types without named source
+        // handles to disambiguate a shared source point. No edge label
+        // either: the label now lives on the node next to its handle
+        // (FlowStepNode.tsx), not floating on the wire.
+        for (const edge of nodeOutEdges) {
+          graphEdges.push({
+            id: `${node}-${edge.endStepId}-${edge.gate}`,
+            source: node,
+            target: edge.endStepId,
+            sourceHandle: edge.gate,
+            style: getEdgeStyle(edge, status),
+          });
+        }
+      } else if (outEdges[node]) {
         // a branch step can route multiple distinct cases to the same next
         // step -- drawing one edge per case would visually overlap (React
         // Flow has no built-in way to spread edges that share both
@@ -123,7 +167,7 @@ export function FlowGraph({
       }
     }
     return { nodes: graphNodes, edges: graphEdges };
-  }, [flowDef, layout, outEdges, stepRunInfo, reusedStepIds]);
+  }, [flowDef, layout, outEdges, stepRunInfo, reusedStepIds, selectedStepId]);
 
   // A saved viewport (persisted per-panel, see flow-graph-panels-slice.ts)
   // needs no container measurement at all -- restoring it directly sidesteps
@@ -140,6 +184,7 @@ export function FlowGraph({
       <ReactFlow
         nodes={graph.nodes}
         edges={graph.edges}
+        nodeTypes={nodeTypes}
         colorMode={resolvedTheme}
         onNodeClick={
           onNodeClickHandler
