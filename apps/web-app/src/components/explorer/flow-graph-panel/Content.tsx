@@ -187,6 +187,7 @@ export function Content({
       outEdges={flowAnalysis?.flowAnalysis.outEdges ?? {}}
       stepRunInfo={stepRunInfo}
       reusedStepIds={reusedStepIds}
+      selectedStepId={selectedStepId}
       viewport={viewport}
       onViewportChange={handleViewportChange}
       toolbar={toolbar}
