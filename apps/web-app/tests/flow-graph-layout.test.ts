@@ -7,10 +7,12 @@ import type {
   StepDefinition,
 } from "@lcase/types";
 
-// None of the nodes in buildFixture() are httpjson, so sizing stays at the
-// flat default -- these tests aren't about custom-node sizing, just layout.
-// sizeForNode() only branches on "httpjson", so a plain non-httpjson filler
-// type is enough here.
+// Every real step type now has a FLOW_STEP_ACCENTS entry (httpjson, mcp,
+// join, branch, parallel), so this "parallel" filler is itself custom-sized
+// like any other -- the tests below that aren't specifically about sizing
+// only check rank order/existence/handle positions, none of which depend on
+// exact width/height, so that's fine. Tests that ARE about sizing override
+// specific nodes' step types directly (see "grows an ... node's size" below).
 function buildFlowDef(
   overrides: Record<string, StepDefinition> = {},
 ): FlowDefinition {
@@ -153,12 +155,16 @@ describe("computeDagreLayout()", () => {
     expect(lr.a.targetPosition).toBe(Position.Left);
   });
 
-  it("sizes nodes with no custom accent (e.g. parallel) at the flat default regardless of out-edge count", () => {
-    // "a" has 2 out-edges (to b and c) but is a "parallel" step, which has
-    // no entry in FLOW_STEP_ACCENTS
-    const tb = computeDagreLayout(buildFixture(), "TB", buildFlowDef())!;
-    expect(tb.a.width).toBe(200);
-    expect(tb.a.height).toBe(50);
+  it("sizes a node with no step definition at all (undefined type) at the flat default", () => {
+    // Every real step type has an accent now, so the only way left to
+    // exercise sizeForNode's fallback branch is a node flow-analysis knows
+    // about but the flow definition doesn't -- flowDef.steps[node]?.type
+    // resolves to undefined, same as a malformed/incomplete flow def would.
+    const flowDef = buildFlowDef();
+    delete flowDef.steps.g;
+    const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
+    expect(tb.g.width).toBe(200);
+    expect(tb.g.height).toBe(50);
   });
 
   it("grows an httpjson node's width (TB) with its real out-edge count, and its height by a flat clearance whenever it has at least one", () => {
@@ -218,5 +224,26 @@ describe("computeDagreLayout()", () => {
     const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
     expect(tb.d.width).toBe(100); // 1 out-edge -> no width growth
     expect(tb.d.height).toBe(64); // still >= 1 out-edge -> same clearance
+  });
+
+  it("grows a branch node's size (TB) with the same formula as httpjson -- branch's unbounded cardinality still uses the same sizing, no special-casing this PR", () => {
+    // "e" has 2 out-edges in the fixture, same shape a branch with a case
+    // and a default would produce
+    const flowDef = buildFlowDef({
+      e: { type: "branch", value: "$.foo", cases: { ok: "f" }, default: "g" },
+    });
+    const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
+    expect(tb.e.width).toBe(145); // 100 + (2 - 1) * 45, same as httpjson
+    expect(tb.e.height).toBe(64);
+  });
+
+  it("grows a parallel node's size (TB) with the same formula as httpjson", () => {
+    // "a" has 2 out-edges in the fixture (to b and c)
+    const flowDef = buildFlowDef({
+      a: { type: "parallel", steps: ["b", "c"] },
+    });
+    const tb = computeDagreLayout(buildFixture(), "TB", flowDef)!;
+    expect(tb.a.width).toBe(145); // 100 + (2 - 1) * 45, same as httpjson
+    expect(tb.a.height).toBe(64);
   });
 });

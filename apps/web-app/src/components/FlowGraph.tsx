@@ -17,9 +17,11 @@ import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
 import { FIT_VIEW_OPTIONS, type NodePositions } from "@/lib/flow-graph-layout";
 import { FlowStepNode } from "@/components/flow-graph-nodes/FlowStepNode";
 import {
+  edgeHandleId,
   getEdgeStyle,
   getFlowStepAccent,
   getStatusBorderColor,
+  isEdgeAnimating,
 } from "@/components/flow-graph-nodes/flow-step-accents";
 
 // Stable identity across renders -- React Flow re-measures/warns if the
@@ -133,11 +135,12 @@ export function FlowGraph({
         // (FlowStepNode.tsx), not floating on the wire.
         for (const edge of nodeOutEdges) {
           graphEdges.push({
-            id: `${node}-${edge.endStepId}-${edge.gate}`,
+            id: `${node}-${edge.endStepId}-${edgeHandleId(edge)}`,
             source: node,
             target: edge.endStepId,
-            sourceHandle: edge.gate,
-            style: getEdgeStyle(edge, status),
+            sourceHandle: edgeHandleId(edge),
+            style: getEdgeStyle(edge, stepRunInfo, stepType),
+            animated: isEdgeAnimating(edge, stepRunInfo, stepType),
           });
         }
       } else if (outEdges[node]) {

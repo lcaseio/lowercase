@@ -1,20 +1,25 @@
 import type { Edge, StepDefinition } from "@lcase/types";
-import type { StepStatus } from "@/hooks/use-step-run-info";
+import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
 
 export type FlowStepAccent = {
   label: string;
   colorClassName: string;
 };
 
-// branch/parallel still render as plain default nodes (their own unbounded
-// out-edge cardinality is a separate design question) -- add an entry here
-// when a step type gets its own FlowStepNode variant.
+// Every FlowDefinition step type has an entry -- add here (plus wiring in
+// edgeHandleId/edgeLabel/getEdgeStyle below if the edge shape is new) when a
+// step type gets its own FlowStepNode variant.
 const FLOW_STEP_ACCENTS: Partial<
   Record<StepDefinition["type"], FlowStepAccent>
 > = {
-  httpjson: { label: "httpjson", colorClassName: "bg-sky-800" },
+  httpjson: { label: "httpjson", colorClassName: "bg-teal-800" },
   mcp: { label: "mcp", colorClassName: "bg-lime-800" },
-  join: { label: "join", colorClassName: "bg-amber-800" },
+  join: { label: "join", colorClassName: "bg-fuchsia-800" },
+  branch: { label: "branch", colorClassName: "bg-blue-800" },
+  // Pink isn't claimed anywhere else in this palette -- purple was
+  // considered but the reuse badge already uses violet, and a dark-enough
+  // yellow for white-text contrast tends to read as olive/brown.
+  parallel: { label: "parallel", colorClassName: "bg-pink-800" },
 };
 
 export function getFlowStepAccent(
@@ -23,65 +28,221 @@ export function getFlowStepAccent(
   return type ? FLOW_STEP_ACCENTS[type] : undefined;
 }
 
-// Same green/red already used for step/run status elsewhere (FlowGraph.tsx's
-// statusNodeStyle, EventGraph.tsx, EvalScoreChart.tsx) -- shared here too so
-// a gate's handle color can't drift from what "success"/"failure" already
-// look like everywhere else.
+// Edge color communicates the *kind of condition* governing whether an edge
+// fires, not which step type is at either end -- parallel's edges are the
+// exact same "always taken, not really a condition" kind of edge as join's
+// inbound ones, so they share one story rather than each getting a bespoke
+// per-type color. Four conditions, four colors:
+//   - conditionally success (control onSuccess, and join's own outbound
+//     `next` edge -- it only fires if the join actually succeeded)
+//   - conditionally failure (control onFailure)
+//   - conditionally something else, arbitrary (branch's case/default edges
+//     -- a case value isn't inherently good or bad, and neither is default,
+//     just "nothing else matched")
+//   - unconditional / always taken once reached (parallel's fan-out edges,
+//     and join's *inbound* edges -- structural membership, not a real
+//     decision point)
 export const GATE_SUCCESS_COLOR = "#34d399";
 export const GATE_FAILURE_COLOR = "#d3344a";
-
-// The literal Tailwind design token behind join's own bg-amber-800 header
-// strip (see FLOW_STEP_ACCENTS above), not a hand-picked hex guess -- using
-// the CSS var directly means this can never drift from what the join node's
-// own header actually renders, the same reasoning as GATE_SUCCESS_COLOR/
-// GATE_FAILURE_COLOR being shared constants instead of re-typed per callsite.
-export const JOIN_EDGE_COLOR = "var(--color-amber-800, #92400e)";
+// A case value isn't inherently good or bad, and neither is default --
+// both currently share one color rather than being distinguished from each
+// other, on the theory that the case/default *label* already carries that
+// distinction (FlowStepNode.tsx renders the real value next to the handle),
+// so the color's job is just "this is a conditional-but-not-success/failure
+// branch," not which specific one.
+export const BRANCH_CASE_COLOR = "var(--color-flow-conditional)";
+export const BRANCH_DEFAULT_COLOR = "var(--color-flow-conditional)";
+// Warm neutral, not the flat gray React Flow's default edge stroke already
+// uses -- that default was never chosen to sit next to a saturated green/
+// red, and reads heavier/duller than either. Deliberately not tied to any
+// step's own header color -- this is an edge-condition color, not a
+// step-type color, the reasoning that moved join's inbound edges away from
+// matching its header in the first place.
+export const UNCONDITIONAL_EDGE_COLOR = "var(--color-stone-500, #a8a29e)";
 
 // Shared so the handle color (FlowStepNode.tsx) and the edge line color
 // (FlowGraph.tsx) that leaves it can't drift apart from each other.
-//
-// Only "control" edges (httpjson/mcp's own on.success/on.failure wiring,
-// packages/flow-analysis's addCapEdges) are genuinely conditional on
-// success/failure. "join" edges (gate "always", from addJoinEdges) -- a step
-// listed as one of a join's inputs -- aren't part of that on-field model at
-// all (treating "always" as "not onSuccess, therefore failure" used to color
-// those edges/handles red for no real reason), but they always lead into a
-// join specifically, so they get the join accent's own color instead of
-// falling back to plain/undefined -- ties an edge visually to the kind of
-// step it's feeding into. Any other edge type (e.g. "parallel") still
-// returns undefined, so callers fall back to their default (unstyled) color.
 export function getGateColor(edge: Edge): string | undefined {
-  if (edge.type === "join") return JOIN_EDGE_COLOR;
+  if (edge.type === "parallel" || edge.type === "join") {
+    return UNCONDITIONAL_EDGE_COLOR;
+  }
+  if (edge.type === "branch") {
+    return edge.isDefault ? BRANCH_DEFAULT_COLOR : BRANCH_CASE_COLOR;
+  }
   if (edge.type !== "control") return undefined;
   return edge.gate === "onSuccess" ? GATE_SUCCESS_COLOR : GATE_FAILURE_COLOR;
 }
 
-// A completed/failed node's border and its own onSuccess/onFailure edge
-// share the same green/red -- fine on its own, but the two edges out of a
-// node with both wired otherwise look identical regardless of which one a
-// run actually took. There's no separate "which edge fired" data to track
-// though: for a control edge, the gate and the source step's resolved
-// status are the same fact (completed took onSuccess, failed took
-// onFailure, if wired). So the taken edge gets bolder, its untaken sibling
-// fades -- only once status has actually resolved; while running or absent,
-// neither edge is "confirmed" yet, so both keep today's plain gate color.
-const TAKEN_EDGE_STROKE_WIDTH = 3;
-const UNTAKEN_EDGE_OPACITY = 0.35;
+// `edge.gate` is only unique enough to key a handle/edge id when a node has
+// at most one edge per gate value, true for control edges (onSuccess/
+// onFailure, addCapEdges) and join's own outbound edge (always "onSuccess",
+// addJoinEdges) -- but addBranchEdges/addParallelEdges both set gate:
+// "always" on *every* edge they produce, so a branch with several cases or a
+// parallel with several branches would collide every handle on the same id.
+// caseValue is unique per branch.cases entry by construction (it's a Record
+// key), plus exactly one isDefault edge, so "default" as its sentinel is
+// always safe. Parallel has no case-like field; endStepId is the only
+// naturally-distinguishing property per entry (a flow listing the same
+// target twice in one parallel would be a degenerate, pointless case, not
+// something worth defending against here -- branch's own "two cases share a
+// target" overlap is an already-accepted, unfixed quirk elsewhere).
+// Exported so FlowGraph.tsx's `sourceHandle` and FlowStepNode.tsx's
+// `<Handle id>` can't drift apart on what a given edge's id is.
+export function edgeHandleId(edge: Edge): string {
+  if (edge.type === "branch") return edge.caseValue ?? "default";
+  if (edge.type === "parallel") return edge.endStepId;
+  return edge.gate;
+}
+
+// Parallel has nothing meaningful to label -- which step runs next is
+// already fully conveyed by the edge existing, so it returns null rather
+// than a redundant "parallel" repeated under every handle. Branch shows the
+// real case value (or "default"), mirroring FlowGraph.tsx's own non-accent
+// branch-label logic exactly, instead of the unhelpful literal "branch" a
+// naive type-name fallback would show for every case. Join's outbound edge,
+// and any other join-typed edge, still just shows its own type name -- the
+// only label they've ever needed.
+export function edgeLabel(edge: Edge): string | null {
+  if (edge.type === "parallel") return null;
+  if (edge.type === "branch") {
+    return edge.caseValue ?? (edge.isDefault ? "default" : edge.gate);
+  }
+  if (edge.type !== "control") return edge.type;
+  return edge.gate === "onSuccess" ? "success" : "failure";
+}
+
+// "Taken" is a dashed + thicker line; everything else is thin and solid --
+// deliberately not using opacity at all: dash answers "did this happen"
+// immediately, width reinforces it, and opacity would only add a third,
+// unnecessary axis rather than a clearer signal.
+//
+// What "taken" means is a different question per edge type -- covering all
+// four (packages/types EdgeType) explicitly, not just the ones a run can
+// resolve on the source step's own status:
+//   - control (httpjson/mcp's on.success/on.failure, AND join's own
+//     outbound `next` edge -- addJoinEdges emits that one as a real control
+//     edge): taken once the *source* resolved, matching the gate.
+//   - branch: taken once the *source* resolved, matching StepRunInfo's
+//     matchedCase (a real case string, or null when the default fired).
+//   - parallel: taken once the *target* has started (anything past
+//     "initialized") -- the only one of these needing the target's status,
+//     since parallel's own status says nothing about which branches have
+//     actually kicked off.
+//   - join (inbound edges only -- a step listed in a join's `steps`): taken
+//     once the *source* step has started (anything past "initialized"),
+//     mirroring parallel's own rule exactly -- both are "unconditional,
+//     always taken once reached" edges (see the color comment above), not
+//     a resolved-vs-not distinction the way control/branch need.
+// Exported (not just module-private) so tests can assert relationships
+// between these instead of hardcoding literal values that go stale every
+// time one gets tuned live in the browser.
+export const TAKEN_EDGE_STROKE_WIDTH = 4;
+export const UNTAKEN_EDGE_STROKE_WIDTH = 2;
+// Static (non-animated) dash pattern -- long dashes with a short gap so it
+// reads as "mostly solid, but obviously dashed" rather than a fine dotted
+// line, which would compete with the width difference instead of
+// reinforcing it.
+export const TAKEN_EDGE_DASH = "10 4";
+
+function isEdgeTaken(
+  edge: Edge,
+  stepRunInfo: Record<string, StepRunInfo> | undefined,
+  sourceStepType: StepDefinition["type"] | undefined,
+): boolean {
+  if (edge.type === "parallel") {
+    const targetStatus = stepRunInfo?.[edge.endStepId]?.status;
+    return targetStatus !== undefined && targetStatus !== "initialized";
+  }
+
+  if (edge.type === "join") {
+    const sourceStatus = stepRunInfo?.[edge.startStepId]?.status;
+    return sourceStatus !== undefined && sourceStatus !== "initialized";
+  }
+
+  if (edge.type === "control" && sourceStepType === "join") {
+    // Interim workaround for a known engine gap (docs/todo.md): a join's
+    // own status essentially never reaches stepRunInfo (the completedSteps
+    // diff that would emit it lives in the wrong planner -- see the todo
+    // entry for the full trace), so checking the join's own resolved status
+    // like every other control edge below never works. Its outbound `next`
+    // edge only ever gets planned once the join actually succeeds
+    // (planControlEdge), so the *target* having started is a reliable-enough
+    // stand-in for "the join succeeded and took this edge" -- not exact:
+    // if `next` also has some other real inbound edge (reachable a second
+    // way), this can read "taken" even when that other edge is what
+    // actually fired. Drop this branch once the engine emits real join
+    // lifecycle events and go back to checking the join's own status.
+    const targetStatus = stepRunInfo?.[edge.endStepId]?.status;
+    return targetStatus !== undefined && targetStatus !== "initialized";
+  }
+
+  const sourceInfo = stepRunInfo?.[edge.startStepId];
+  const resolved =
+    sourceInfo?.status === "completed" || sourceInfo?.status === "failed";
+  if (!resolved) return false;
+
+  if (edge.type === "branch") {
+    return edge.isDefault
+      ? sourceInfo?.matchedCase === null
+      : edge.caseValue === sourceInfo?.matchedCase;
+  }
+
+  // control
+  return (
+    (sourceInfo?.status === "completed" && edge.gate === "onSuccess") ||
+    (sourceInfo?.status === "failed" && edge.gate === "onFailure")
+  );
+}
 
 export function getEdgeStyle(
   edge: Edge,
-  sourceStatus: StepStatus | undefined,
-): { stroke?: string; strokeWidth?: number; opacity?: number } {
+  stepRunInfo: Record<string, StepRunInfo> | undefined,
+  sourceStepType: StepDefinition["type"] | undefined,
+): {
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+} {
   const stroke = getGateColor(edge);
-  const resolved = sourceStatus === "completed" || sourceStatus === "failed";
-  if (edge.type !== "control" || !stroke || !resolved) return { stroke };
+  return isEdgeTaken(edge, stepRunInfo, sourceStepType)
+    ? {
+        stroke,
+        strokeWidth: TAKEN_EDGE_STROKE_WIDTH,
+        strokeDasharray: TAKEN_EDGE_DASH,
+      }
+    : { stroke, strokeWidth: UNTAKEN_EDGE_STROKE_WIDTH };
+}
 
-  const taken =
-    (sourceStatus === "completed" && edge.gate === "onSuccess") ||
-    (sourceStatus === "failed" && edge.gate === "onFailure");
-  return taken
-    ? { stroke, strokeWidth: TAKEN_EDGE_STROKE_WIDTH }
-    : { stroke, opacity: UNTAKEN_EDGE_OPACITY };
+// A taken edge is either "done" (static dash) or "still happening" (dash
+// animates, via React Flow's own `animated` edge flag -- it drives a moving
+// stroke-dashoffset in @xyflow/react's base CSS, layering on top of
+// whatever strokeDasharray is already set inline above, since inline style
+// always wins over its class-based default dasharray, but its `animation`
+// property isn't something we're overriding). Never true for an edge that
+// isn't taken at all, and never true once a historical/finished run has
+// nothing left in a "running" state -- the dashed line still shows which
+// path was taken, it just stops moving.
+//
+// Which step's "running" status counts as "still happening" mirrors
+// isEdgeTaken's own per-type source-vs-target choice, not a blanket
+// "check the target" rule -- for a join's *inbound* edges specifically, the
+// target (the join itself) is the one whose status never reliably resolves
+// (the same engine gap isEdgeTaken already works around for join's
+// *outbound* edge), so checking it here would animate forever, long after
+// the reporting step actually finished. Every other type's target is a
+// regular step with reliable status, so that's the right place to look.
+export function isEdgeAnimating(
+  edge: Edge,
+  stepRunInfo: Record<string, StepRunInfo> | undefined,
+  sourceStepType: StepDefinition["type"] | undefined,
+): boolean {
+  if (!isEdgeTaken(edge, stepRunInfo, sourceStepType)) return false;
+
+  if (edge.type === "join") {
+    return stepRunInfo?.[edge.startStepId]?.status === "running";
+  }
+
+  return stepRunInfo?.[edge.endStepId]?.status === "running";
 }
 
 // Same amber already used for a running step's outline (FlowGraph.tsx's
@@ -93,7 +254,7 @@ export const STATUS_RUNNING_COLOR = "var(--color-amber-500, #f59e0b)";
 // gate colors already claim -- blue is the conventional "this is selected"
 // color in most editors, so it reads as a distinct kind of signal rather
 // than competing with either of those for the same visual meaning.
-export const SELECTION_RING_COLOR = "#3b82f6";
+export const SELECTION_RING_COLOR = "#43779e";
 
 // A neutral, deliberately quieter hue than the semantic status/gate/
 // selection colors above -- reuse is informational, not a judgment call the

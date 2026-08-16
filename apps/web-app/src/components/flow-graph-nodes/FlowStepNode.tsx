@@ -17,6 +17,8 @@ import {
 } from "@/lib/flow-graph-layout";
 import { cn } from "@/lib/utils";
 import {
+  edgeHandleId,
+  edgeLabel,
   getGateColor,
   getStatusBorderColor,
   REUSE_BADGE_COLOR,
@@ -37,19 +39,6 @@ export type FlowStepNodeData = {
 };
 
 type FlowStepNodeType = Node<FlowStepNodeData>;
-
-// "control" edges are the real success/failure branches: httpjson/mcp's own
-// on.success/on.failure wiring (addCapEdges), and -- the same shape --
-// join's single `next` edge (addJoinEdges always emits it as
-// onSuccess; a join either completes and takes it, or fails and doesn't).
-// A step can also gain an edge from being listed in a join's `steps` (type
-// "join", gate "always") or a parallel's `steps` -- neither of those is a
-// real success/failure branch, so label those with their own edge type
-// instead of guessing.
-function edgeLabel(edge: FlowAnalysisEdge): string {
-  if (edge.type !== "control") return edge.type;
-  return edge.gate === "onSuccess" ? "success" : "failure";
-}
 
 // One shared shell for every step type with a custom node (httpjson, mcp,
 // join -- see flow-step-accents.ts). Read-only: no fields/content, no
@@ -165,20 +154,20 @@ export function FlowStepNode({
           gate-colored edges, unlike the border it replaces. */}
       {statusColor && (
         <div
-          className="absolute -bottom-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border-2"
+          className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2"
           style={{ background: statusColor, borderColor: "var(--color-card)" }}
         >
           {status === "completed" && (
             // White reads poorly against the green badge specifically --
             // dark instead, unlike the other two icons.
-            <CheckIcon className="h-2.5 w-2.5 text-black" strokeWidth={3} />
+            <CheckIcon className="h-3 w-3 text-black" strokeWidth={3} />
           )}
           {status === "failed" && (
-            <XIcon className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+            <XIcon className="h-3 w-3 text-white" strokeWidth={3} />
           )}
           {status === "running" && (
             <LoaderCircleIcon
-              className="h-2.5 w-2.5 animate-spin text-neutral-950"
+              className="h-3 w-3 animate-spin  text-amber-950"
               strokeWidth={3}
             />
           )}
@@ -191,13 +180,13 @@ export function FlowStepNode({
           that used to live inline in the label. */}
       {reused && (
         <div
-          className="absolute -bottom-1.5 -left-1.5 flex h-4 w-4 items-center justify-center rounded-full border-2"
+          className="absolute -bottom-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2"
           style={{
             background: REUSE_BADGE_COLOR,
             borderColor: "var(--color-card)",
           }}
         >
-          <SIM_ICON className="h-2.5 w-2.5 text-violet-300" strokeWidth={3} />
+          <SIM_ICON className="h-3 w-3 text-violet-300" strokeWidth={3} />
         </div>
       )}
 
@@ -228,11 +217,12 @@ export function FlowStepNode({
         const centeredOffset =
           (index - (outEdges.length - 1) / 2) * HANDLE_SPACING;
         const topAnchoredOffset = LR_EDGES_TOP_OFFSET + index * LR_EDGE_SPACING;
+        const label = edgeLabel(edge);
         return (
-          <Fragment key={edge.gate}>
+          <Fragment key={edgeHandleId(edge)}>
             <Handle
               type="source"
-              id={edge.gate}
+              id={edgeHandleId(edge)}
               position={sourcePosition}
               style={{
                 background: getGateColor(edge),
@@ -241,28 +231,30 @@ export function FlowStepNode({
                   : { top: topAnchoredOffset }),
               }}
             />
-            <span
-              className="absolute whitespace-nowrap text-[10px]"
-              style={
-                alongLeft
-                  ? {
-                      // Flat/unrotated -- rotating this looked bad once
-                      // actually seen. Only 2 labels max (success/failure),
-                      // centered under their own handle; HANDLE_SPACING is
-                      // wide enough that the two don't collide.
-                      left: `calc(50% + ${centeredOffset}px)`,
-                      bottom: 4,
-                      transform: "translateX(-50%)",
-                    }
-                  : {
-                      top: topAnchoredOffset,
-                      right: 6,
-                      transform: "translateY(-50%)",
-                    }
-              }
-            >
-              {edgeLabel(edge)}
-            </span>
+            {label && (
+              <span
+                className="absolute whitespace-nowrap text-[10px]"
+                style={
+                  alongLeft
+                    ? {
+                        // Flat/unrotated -- rotating this looked bad once
+                        // actually seen. Only 2 labels max (success/failure),
+                        // centered under their own handle; HANDLE_SPACING is
+                        // wide enough that the two don't collide.
+                        left: `calc(50% + ${centeredOffset}px)`,
+                        bottom: 4,
+                        transform: "translateX(-50%)",
+                      }
+                    : {
+                        top: topAnchoredOffset,
+                        right: 6,
+                        transform: "translateY(-50%)",
+                      }
+                }
+              >
+                {label}
+              </span>
+            )}
           </Fragment>
         );
       })}
