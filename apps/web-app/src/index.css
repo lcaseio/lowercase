@@ -44,6 +44,12 @@
   --panel-subtle: oklch(0.93 0 0);
   --event-completed: oklch(0.77 0.15 163.22);
   --event-failed: oklch(0.58 0.18 0.06);
+  /* flow graph colors */
+  --flow-success: oklab(77.29599999999999% -0.14697 0.04422);
+  --flow-failure: oklab(57.597% 0.18401 0.06181);
+  --flow-conditional: oklch(64.936% 0.15729 244.532);
+  --flow-default-conditional: oklch(60.606% 0.21287 268.687);
+  --flow-branch: oklch(44.3% 0.11 240.79);
 }
 
 .dark {
@@ -86,6 +92,13 @@
 @theme inline {
   --color-event-completed: var(--event-completed);
   --color-event-failed: var(--event-failed);
+
+  --color-flow-success: var(--flow-success);
+  --color-flow-failure: var(--flow-failure);
+  --color-flow-conditional: var(--flow-conditional);
+  --color-flow-default-conditional: var(--flow-default-conditional);
+  --color-flow-branch: var(--flow-branch);
+
   --radius: var(--radius);
   --color-panel-subtle: var(--panel-subtle);
   --color-background: var(--background);

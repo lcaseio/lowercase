@@ -134,7 +134,19 @@ export function computeDagreLayout(
     }
   }
 
-  dagre.layout(g);
+  // dagre's crossing-reduction sweeps (lib/order) find a 0-crossing order on
+  // the very first pass for a plain fan-out (initOrder's DFS already
+  // preserves our outEdges declaration order on a from-scratch layout), but
+  // then keep sweeping for up to 4 more tied iterations and take whichever
+  // *later* tied layout comes out, not the earliest -- so a node's children
+  // can end up visibly reordered from how we declared them for no actual
+  // crossing-count benefit. disableOptimalOrderHeuristic skips those sweeps
+  // entirely, keeping initOrder's result (which does match declared order).
+  // Global toggle, not scoped to fan-outs specifically -- trading away
+  // dagre's crossing minimization everywhere, including genuinely tangled
+  // parts of a larger graph where it'd otherwise help. Trying this against
+  // real flows to see whether that trade is worth it.
+  dagre.layout(g, { disableOptimalOrderHeuristic: true });
 
   // Default (plain-box) nodes render their connection handles at
   // sourcePosition/targetPosition, defaulting to Bottom/Top -- fine for a
