@@ -34,6 +34,10 @@ type Props = {
   // beyond display, e.g. programmatic reveal/selection (see
   // ExplorerJsonDefinitionContent.tsx's revealPath handling).
   onMount?: (editor: Parameters<OnMount>[0]) => void;
+  fontSize?: number;
+  lineHeight?: number;
+  folding?: boolean;
+  lineNumbersMinChars?: number;
 };
 
 export function CodeEditor({
@@ -45,6 +49,10 @@ export function CodeEditor({
   autoHeight = false,
   minHeight = 40,
   maxHeight = 240,
+  fontSize = 13,
+  lineHeight = 1.5,
+  folding = true,
+  lineNumbersMinChars = 5,
   onMount,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -81,8 +89,11 @@ export function CodeEditor({
         readOnly,
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
-        fontSize: 13,
+        fontSize,
         wordWrap: "on",
+        lineNumbersMinChars,
+        folding,
+        lineHeight,
       }}
     />
   );

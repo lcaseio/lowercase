@@ -12,10 +12,10 @@ export function HeadersField({ label, value }: Props) {
 
   return (
     <Field
-      orientation="horizontal"
+      orientation="vertical"
       className="[&>[data-slot=field-label]]:flex-none items-start"
     >
-      <FieldLabel className="w-20 shrink-0">{label}</FieldLabel>
+      <FieldLabel className="shrink-0 text-xs">{label}</FieldLabel>
       <div className="flex-1 flex flex-col gap-2 mr-3">
         <div className="flex flex-row gap-2">
           <span className="flex-1 text-xs text-muted-foreground">Key</span>
@@ -23,8 +23,16 @@ export function HeadersField({ label, value }: Props) {
         </div>
         {entries.map(([key, headerValue]) => (
           <div key={key} className="flex flex-row gap-2">
-            <Input value={key} readOnly className="flex-1" />
-            <Input value={headerValue} readOnly className="flex-2" />
+            <Input
+              value={key}
+              readOnly
+              className="flex-1 h-6 pl-2 md:text-xs border-0"
+            />
+            <Input
+              value={headerValue}
+              readOnly
+              className="flex-2 h-6 pl-2 md:text-xs border-0"
+            />
           </div>
         ))}
       </div>

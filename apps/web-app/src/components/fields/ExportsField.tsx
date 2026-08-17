@@ -30,17 +30,17 @@ export function ExportsField({
 
   return (
     <div className="flex flex-col gap-1 mt-2">
-      <h4 className="text-sm font-semibold text-muted-foreground">{label}</h4>
+      <h4 className="text-xs font-bold">{label}</h4>
       <Accordion
         type="multiple"
-        className="rounded-md border-0 px-3 dark:bg-neutral-825"
+        className="rounded-md border-0 px-3 dark:bg-neutral-750"
       >
         {entries.map(([name, exportDecl]) => (
           <AccordionItem key={name} value={name}>
             <AccordionTrigger>
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-1">
                 {name}
-                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+                <span className="rounded bg-muted px-1.5 text-xs font-normal text-muted-foreground">
                   {exportDecl.type}
                 </span>
               </span>

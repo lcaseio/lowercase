@@ -48,7 +48,7 @@ export function MetadataTab({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col gap-2">
         <IdentityField label="Hash" value={artifact.hash} />
         <IdentityField
           label="Time"
@@ -68,6 +68,7 @@ export function MetadataTab({
           value={draft ? draft.label : (artifact.label ?? "")}
           onChange={isEditing ? onLabelChange : undefined}
         />
+
         <SwitchField
           label="Share"
           value={draft ? draft.share : !!associations.flowId}

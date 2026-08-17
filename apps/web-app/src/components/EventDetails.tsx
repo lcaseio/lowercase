@@ -101,8 +101,8 @@ export function EventDetails({
     onOpenInMainPanel(title, JSON.stringify(event, null, 2), "json");
   }
   return (
-    <div className="event-expanded text-sm mt-1 font-mono text-start rounded-xl mb-2 ">
-      <p className="mb-2 text-md">
+    <div className="event-expanded text-sm font-mono text-start rounded-xl mb-2 ">
+      <p className="flex flex-row justify-between  text-xs font-bold">
         {index && "#" + index + " "}
         {event.type}
         <Button
@@ -148,7 +148,7 @@ export function EventDetails({
               <div
                 className={getFieldColor(key) + " text-xs whitespace-nowrap"}
               >
-                [{key}]
+                {key}
               </div>
               <div
                 className={getFieldColor(key) + " text-xs wrap-break-word mb-2"}
@@ -160,13 +160,17 @@ export function EventDetails({
         })}
       </div>
 
-      <p className="mt-3 mb-2 text-md">[data]</p>
+      <p className="mt-3 mb-2 text-md">data</p>
       <CodeEditor
         key={event.id}
         value={JSON.stringify(event.data, null, 2)}
         language="json"
         readOnly
         autoHeight
+        folding={false}
+        fontSize={10}
+        lineHeight={1.25}
+        lineNumbersMinChars={3}
       />
       <pre className="flex flex-col text-start text-xs dark:text-sky-200 text-sky-700">
         {}

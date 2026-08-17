@@ -26,7 +26,9 @@ export function CuratedParamsField({
       orientation="horizontal"
       className="[&>[data-slot=field-label]]:flex-none items-start"
     >
-      <FieldLabel className="w-20 shrink-0 mt-2">{label}</FieldLabel>
+      <FieldLabel className="w-15 shrink-0 mt-2 text-xs font-bold">
+        {label}
+      </FieldLabel>
       <div className="flex-1 flex flex-col gap-2 mr-3">
         {entries.map((paramName) => (
           <div key={paramName} className="flex items-center gap-2">

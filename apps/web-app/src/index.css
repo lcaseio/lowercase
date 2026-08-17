@@ -137,6 +137,7 @@
   --color-neutral-825: oklch(25.3% 0 0);
   --color-neutral-850: oklch(24.4% 0 0);
   --color-neutral-875: oklch(22.8% 0 0);
+  --color-neutral-750: oklch(29.5% 0 0);
 }
 
 @layer base {

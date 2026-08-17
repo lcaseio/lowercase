@@ -2,6 +2,8 @@ import type { FlowDefinition } from "@lcase/types";
 import { StepHttpJsonDetails } from "./StepHttpJsonDetails";
 import { StepParallelDetails } from "./StepParallelDetails";
 import { StepJoinDetails } from "./StepJoinDetails";
+import { StepBranchDetails } from "./StepBranchDetails";
+import { StepMcpDetails } from "./StepMcpDetails";
 import type { OpenInMainPanel } from "../MainPanelTypes";
 
 type Props = {
@@ -35,7 +37,9 @@ export function StepDetails({
       return <StepParallelDetails step={step} />;
     case "join":
       return <StepJoinDetails step={step} />;
-    default:
-      return <p>No details view for step type "{step.type}" yet</p>;
+    case "branch":
+      return <StepBranchDetails step={step} />;
+    case "mcp":
+      return <StepMcpDetails step={step} />;
   }
 }
