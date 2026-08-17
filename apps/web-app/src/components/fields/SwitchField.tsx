@@ -15,7 +15,7 @@ export function SwitchField({ label, value, onChange, description }: Props) {
       orientation="horizontal"
       className="[&>[data-slot=field-label]]:flex-none"
     >
-      <FieldLabel htmlFor={label} className="w-20 shrink-0">
+      <FieldLabel htmlFor={label} className="w-15 shrink-0 text-xs">
         {label}
       </FieldLabel>
       {description && <FieldDescription>{description}</FieldDescription>}

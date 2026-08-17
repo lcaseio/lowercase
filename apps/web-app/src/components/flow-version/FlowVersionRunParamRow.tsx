@@ -156,13 +156,21 @@ export function FlowVersionRunParamRow({
       <div>
         <div className="font-medium text-xs">{name}</div>
         <div className="text-xs text-slate-600 dark:text-slate-300">
-          {definition.type} • {isOptional ? "optional" : "required"}
+          {definition.type} •{" "}
+          {isOptional ? (
+            "optional"
+          ) : (
+            <span className="text-amber-500">required</span>
+          )}
         </div>
       </div>
 
       <div className="flex items-center gap-1">
         {readOnly ? (
-          <div className="w-60 truncate text-xs" title={selectedHash}>
+          <div
+            className="w-60 truncate text-xs text-amber-200"
+            title={selectedHash}
+          >
             {selectedArtifact
               ? artifactLabel(selectedArtifact.artifact)
               : (selectedHash ?? "No artifact")}
@@ -174,12 +182,14 @@ export function FlowVersionRunParamRow({
             }}
             value={selectedHash ?? UNSET_VALUE}
           >
-            <SelectTrigger className="w-60 text-xs">
+            <SelectTrigger className="w-60 text-xs max-w-45 min-w-0" size="sm">
               <SelectValue placeholder="Select an artifact" />
             </SelectTrigger>
-            <SelectContent className="text-xs">
+            <SelectContent className="text-xs m-0 p-0 ">
               <SelectGroup>
-                <SelectLabel className="text-sky-500">{name}</SelectLabel>
+                <SelectLabel className="text-neutral-300 font-bold">
+                  {name}
+                </SelectLabel>
                 <SelectItem
                   value={UNSET_VALUE}
                   className="text-muted-foreground"
@@ -188,7 +198,10 @@ export function FlowVersionRunParamRow({
                 </SelectItem>
                 {selectedHash && !selectedInCandidates ? (
                   selectedIsCompatible && selectedArtifact ? (
-                    <SelectItem value={selectedHash} className="text-xs">
+                    <SelectItem
+                      value={selectedHash}
+                      className="text-xs text-neutral-300"
+                    >
                       {`${artifactLabel(selectedArtifact.artifact)} (not curated)`}
                     </SelectItem>
                   ) : (
@@ -201,7 +214,7 @@ export function FlowVersionRunParamRow({
                   <SelectItem
                     key={item.artifact.hash}
                     value={item.artifact.hash}
-                    className="text-xs"
+                    className="text-xs text-neutral-200"
                   >
                     {artifactLabel(item.artifact)}
                   </SelectItem>

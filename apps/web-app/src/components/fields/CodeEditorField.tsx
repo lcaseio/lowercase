@@ -28,23 +28,30 @@ export function CodeEditorField({
     typeof value === "string" ? value : JSON.stringify(value, null, 2);
 
   return (
-    <Field
-      orientation="horizontal"
-      className="[&>[data-slot=field-label]]:flex-none"
-    >
-      <FieldLabel className="w-20 shrink-0">{label}</FieldLabel>
-      {(onOpen || onNavigate) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-5 shrink-0"
-          onClick={() => (onNavigate ? onNavigate() : onOpen?.(displayValue))}
-        >
-          <Maximize2Icon className="size-3.5" />
-        </Button>
-      )}
+    <Field orientation="vertical">
+      <div className="flex flex-row justify-between">
+        <FieldLabel className="w-20 shrink-0 text-xs">{label}</FieldLabel>
+        {(onOpen || onNavigate) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6 shrink-0 cursor-pointer"
+            onClick={() => (onNavigate ? onNavigate() : onOpen?.(displayValue))}
+          >
+            <Maximize2Icon className="size-3.5" />
+          </Button>
+        )}
+      </div>
       <div className="flex-1 overflow-hidden rounded-md border dark:border-neutral-700 mr-3">
-        <CodeEditor value={displayValue} language={language} readOnly />
+        <CodeEditor
+          value={displayValue}
+          language={language}
+          fontSize={10}
+          lineNumbersMinChars={2}
+          folding={false}
+          lineHeight={1.2}
+          readOnly
+        />
       </div>
     </Field>
   );

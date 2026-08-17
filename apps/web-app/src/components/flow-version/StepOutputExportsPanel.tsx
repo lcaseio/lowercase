@@ -34,7 +34,7 @@ export function StepOutputExportsPanel({
 
   if (!stepRunInfo || stepRunInfo.status === "initialized") {
     return (
-      <p className="mt-3 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground">
         Step "{stepId}" hasn't run in this run yet.
       </p>
     );
@@ -65,6 +65,10 @@ export function StepOutputExportsPanel({
         language={artifactFormatToLanguage(artifact.format)}
         readOnly
         autoHeight
+        folding={false}
+        fontSize={10}
+        lineHeight={1.25}
+        lineNumbersMinChars={3}
       />
     );
   }
@@ -76,7 +80,7 @@ export function StepOutputExportsPanel({
   const exportEntries = Object.entries(stepRunInfo.exportHashes ?? {});
 
   return (
-    <div className="flex flex-col gap-3 mt-3">
+    <div className="flex flex-col gap-3">
       {stepRunInfo.status === "running" ? (
         <p className="text-sm text-muted-foreground">Step is running…</p>
       ) : null}
@@ -94,7 +98,7 @@ export function StepOutputExportsPanel({
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <span className="text-sm">Output</span>
+              <span className="text-xs font-bold">Output</span>
               <span className="text-xs font-mono">
                 &nbsp;{truncateHash(stepRunInfo.outputHash)}
               </span>
@@ -117,13 +121,13 @@ export function StepOutputExportsPanel({
       ) : null}
 
       {exportEntries.length > 0 ? (
-        <div className="flex flex-col gap-3">
-          <span className="text-sm font-medium">Exports</span>
+        <div className="flex flex-col mt-1 mb-0">
+          <span className="text-xs font-bold">Exports</span>
           {exportEntries.map(([name, hash]) => (
             <div key={name} className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <span className="text-sm">{name}</span>
+                  <span className="text-xs font-medium">{name}</span>
                   <span className="text-xs font-mono">
                     &nbsp;{truncateHash(hash)}
                   </span>

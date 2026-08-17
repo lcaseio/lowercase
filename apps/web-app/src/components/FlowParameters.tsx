@@ -1,5 +1,5 @@
 import type { FlowParamDefinition } from "@lcase/types";
-import { Field, FieldLabel } from "./ui/field";
+import { Field } from "./ui/field";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 
@@ -8,7 +8,7 @@ type Props = {
   value?: Record<string, FlowParamDefinition>;
 };
 
-export function FlowParameters({ label, value }: Props) {
+export function FlowParameters({ value }: Props) {
   const entries = value ? Object.entries(value) : [];
   if (entries.length === 0) return null;
 
@@ -17,7 +17,6 @@ export function FlowParameters({ label, value }: Props) {
       orientation="horizontal"
       className="[&>[data-slot=field-label]]:flex-none items-start"
     >
-      <FieldLabel className="w-20 shrink-0 mt-2">{label}</FieldLabel>
       <div className="flex-1 flex flex-col gap-2 mr-3">
         <div className="flex flex-row gap-2">
           <span className="flex-1 text-xs text-muted-foreground">Name</span>
@@ -27,9 +26,17 @@ export function FlowParameters({ label, value }: Props) {
           </span>
         </div>
         {entries.map(([paramName, paramDef]) => (
-          <div key={paramName} className="flex flex-row gap-2">
-            <Input value={paramName} readOnly className="flex-1" />
-            <Input value={paramDef.type} readOnly className="flex-1" />
+          <div key={paramName} className="flex flex-row gap-1 text-neutral-200">
+            <Input
+              value={paramName}
+              readOnly
+              className="flex-1  border-0 md:text-xs pl-1 h-5"
+            />
+            <Input
+              value={paramDef.type}
+              readOnly
+              className="flex-1 h-5  border-0 md:text-xs"
+            />
             <div className="w-16 shrink-0 flex items-center justify-center">
               <Checkbox
                 checked={!!paramDef.optional}

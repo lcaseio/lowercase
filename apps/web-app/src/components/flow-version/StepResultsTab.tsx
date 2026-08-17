@@ -141,31 +141,41 @@ export function StepResultsTab({
       ))}
 
       <div className="flex items-center justify-between gap-2">
-        <h2>{stepId}</h2>
+        <h2 className="text-xs font-bold">{stepId}</h2>
         {effectiveIsReused !== undefined && (
           <div className="flex items-center space-x-2">
-            <Label htmlFor={stepId}>Reuse</Label>
+            <Label htmlFor={stepId} className="text-xs">
+              Reuse
+            </Label>
             <Switch
               checked={effectiveIsReused}
               onCheckedChange={onToggleReused}
               disabled={!onToggleReused}
               size="default"
               id={stepId}
-              className="data-[state=checked]:bg-sky-600 dark:data-[state=checked]:bg-sky-300"
+              className="data-[state=checked]:bg-violet-600 dark:data-[state=checked]:bg-violet-400"
             />
           </div>
         )}
       </div>
-      <div className="text-md text-muted-foreground">
+      <div className="text-xs text-muted-foreground">
         Status: {formatStatus(info?.status) ?? "unknown"}
-        {info?.matchedCase ? ` (case: ${info.matchedCase})` : null}
+        {info?.matchedCase !== undefined
+          ? ` (case: ${info.matchedCase ?? "default"})`
+          : null}
       </div>
 
       <Tabs value={subTab} onValueChange={(v) => setSubTab(v as SubTab)}>
         <TabsList variant="default">
-          <TabsTrigger value="outputExports">Output & Exports</TabsTrigger>
-          <TabsTrigger value="fieldResolution">Field Resolution</TabsTrigger>
-          <TabsTrigger value="references">References</TabsTrigger>
+          <TabsTrigger value="outputExports" className="text-xs">
+            Output
+          </TabsTrigger>
+          <TabsTrigger value="fieldResolution" className="text-xs">
+            Fields
+          </TabsTrigger>
+          <TabsTrigger value="references" className="text-xs">
+            Refs
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="outputExports">
           <StepOutputExportsPanel

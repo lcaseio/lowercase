@@ -19,10 +19,11 @@ export function InputField({
   if (value === undefined) return null;
   return (
     <Field
-      orientation="horizontal"
-      className="[&>[data-slot=field-label]]:flex-none"
+      orientation="vertical"
+      className="gap-1 "
+      // className="[&>[data-slot=field-label]]:flex-none"
     >
-      <FieldLabel htmlFor={label} className="w-20 shrink-0">
+      <FieldLabel htmlFor={label} className="shrink-0 text-neutral-400 text-xs">
         {label}
       </FieldLabel>
       {description && <FieldDescription>{description}</FieldDescription>}
@@ -33,7 +34,7 @@ export function InputField({
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         readOnly={!onChange}
-        className="flex-1 mr-3"
+        className="flex-1 md:text-xs py-1 px-2 border-0 truncate"
       />
     </Field>
   );

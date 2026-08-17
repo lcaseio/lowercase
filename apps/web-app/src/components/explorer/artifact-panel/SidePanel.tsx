@@ -32,7 +32,7 @@ export function SidePanel({ activeTab, onClose, children }: Props) {
           <XIcon className="size-4" />
         </Button>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto p-3">{children}</div>
+      <div className="flex-1 min-h-0 overflow-auto p-1">{children}</div>
     </div>
   );
 }
