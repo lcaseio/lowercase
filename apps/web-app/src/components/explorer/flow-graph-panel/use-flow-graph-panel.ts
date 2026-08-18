@@ -31,6 +31,7 @@ import {
 import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
+import { useFlowGraphReplay } from "@/hooks/use-flow-graph-replay";
 import { useDockviewApi } from "../explorer-dockview-context";
 import { openOrFocusPanel } from "../explorer-panels";
 import type { SidePanelTab } from "./SidePanel";
@@ -179,11 +180,41 @@ export function useFlowGraphPanel(
   const runInFlight =
     runId !== null &&
     !events.some((e) => e.type === "run.completed" || e.type === "run.failed");
+
+  // Replay only makes sense once a run is actually done -- reusing
+  // runInFlight (already computed directly from the in-hand events array)
+  // rather than a separate RunRecord.status fetch: no new query, and no
+  // propagation lag between the event stream finishing and a SQL
+  // projection catching up. Also unavailable during sim authoring -- see
+  // showSimulate below for the symmetric direction.
+  const replayAvailable = runId !== null && !runInFlight && simDraft === null;
+  const {
+    replay,
+    replaySpeed,
+    effectiveStepRunInfo,
+    handleTogglePlayPause,
+    handleCancelReplay,
+    handleSetReplaySpeed,
+  } = useFlowGraphReplay(
+    panelId,
+    events,
+    stepIds,
+    stepRunInfo,
+    replayAvailable,
+  );
+
   // Authoring blocks Run outright rather than defining what a rerun (or
   // reopening this same panel at a different run) mid-draft would mean --
-  // authoring has to be finished or explicitly cancelled first.
+  // authoring has to be finished or explicitly cancelled first. Replaying
+  // blocks it for the same "don't let two modes fight" reason: starting a
+  // brand-new run while an old run's replay is still animating over its
+  // (about to be stale) graph state would be a real collision, not just a
+  // visual mismatch.
   const runDisabled =
-    missingRequiredParams.length > 0 || runInFlight || simDraft !== null;
+    missingRequiredParams.length > 0 ||
+    runInFlight ||
+    simDraft !== null ||
+    replay !== null;
 
   // Only set while still looking at the sim's own parent run -- stops
   // applying the moment you run something new from this panel, since the
@@ -281,8 +312,14 @@ export function useFlowGraphPanel(
   // button. Not gated on an existing incidental sim (activeSimDefinition):
   // chaining a new draft off a sim-derived run is allowed, same as any
   // other run. Unreachable at all once a direct simId is set --
-  // showSimulate={!simId} hides this button in that case.
+  // showSimulate={!simId} hides this button in that case. Also unreachable
+  // while replay is active -- symmetric with replayAvailable excluding
+  // simDraft above: the two features would otherwise fight over the same
+  // stepRunInfo/reuse-overlay rendering with no designed interaction
+  // between them (a real future direction -- snapshotting a replayed
+  // moment into a sim -- but not this guard's job to build).
   const handleOpenSimulate = () => {
+    if (replay) return;
     handleSelectSidePanelTab("sim");
     if (runId && !simDraft) {
       dispatch(simDraftStarted({ panelId }));
@@ -290,6 +327,7 @@ export function useFlowGraphPanel(
   };
 
   const handleStartAuthoring = () => {
+    if (replay) return;
     dispatch(simDraftStarted({ panelId }));
   };
 
@@ -345,7 +383,13 @@ export function useFlowGraphPanel(
     problems,
     params,
     missingRequiredParams,
-    stepRunInfo,
+    stepRunInfo: effectiveStepRunInfo,
+    replay,
+    replaySpeed,
+    replayAvailable,
+    handleTogglePlayPause,
+    handleCancelReplay,
+    handleSetReplaySpeed,
     selectedParamHashes,
     sidePanelTab,
     runId,

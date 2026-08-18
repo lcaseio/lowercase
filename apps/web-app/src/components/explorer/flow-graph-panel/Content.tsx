@@ -41,6 +41,12 @@ export function Content({
     params,
     missingRequiredParams,
     stepRunInfo,
+    replay,
+    replaySpeed,
+    replayAvailable,
+    handleTogglePlayPause,
+    handleCancelReplay,
+    handleSetReplaySpeed,
     selectedParamHashes,
     sidePanelTab,
     runId,
@@ -168,7 +174,7 @@ export function Content({
     <RunToolbar
       hasParams={Object.keys(params).length > 0}
       paramsHasUnsetRequired={missingRequiredParams.length > 0}
-      showSimulate={!simId}
+      showSimulate={!simId && !replay}
       runDisabled={runDisabled}
       onOpenParams={handleOpenParams}
       onOpenSim={handleOpenSimulate}
@@ -177,6 +183,12 @@ export function Content({
       isRerun={runOpened}
       layoutDirection={layoutDirection}
       onSetLayoutDirection={handleSetLayoutDirection}
+      replayAvailable={replayAvailable}
+      replay={replay}
+      replaySpeed={replaySpeed}
+      onTogglePlayPause={handleTogglePlayPause}
+      onCancelReplay={handleCancelReplay}
+      onSetReplaySpeed={handleSetReplaySpeed}
     />
   );
 

@@ -142,7 +142,7 @@ export const UNTAKEN_EDGE_STROKE_WIDTH = 2;
 // reads as "mostly solid, but obviously dashed" rather than a fine dotted
 // line, which would compete with the width difference instead of
 // reinforcing it.
-export const TAKEN_EDGE_DASH = "10 4";
+export const TAKEN_EDGE_DASH = "6 4";
 
 function isEdgeTaken(
   edge: Edge,
@@ -194,6 +194,21 @@ function isEdgeTaken(
   );
 }
 
+// A taken edge is either "done" (frozen dash) or "still happening" (dash
+// animates) -- see isEdgeAnimating below for which. Deliberately controlled
+// via animationPlayState, not React Flow's own `animated` edge flag: that
+// flag toggles the `.animated` CSS class on/off entirely, which means the
+// underlying `animation` (and its stroke-dashoffset) gets removed outright
+// when an edge stops -- snapping stroke-dashoffset back to its resting
+// value instantly, wherever the animation happened to be mid-cycle.
+// animationPlayState: "paused" instead freezes the animation exactly where
+// it was, no snap. getEdgeStyle's caller (FlowGraph.tsx) should always pass
+// `animated: true` for a taken edge regardless of whether it's currently
+// running or paused -- the CSS class needs to stay present either way for
+// animationPlayState to have anything to pause. An *untaken* edge must
+// never get `animated: true`: with no animationPlayState override, the
+// class's own default `stroke-dasharray: 5` would kick in and dash a line
+// that's supposed to read as solid/not-taken.
 export function getEdgeStyle(
   edge: Edge,
   stepRunInfo: Record<string, StepRunInfo> | undefined,
@@ -202,26 +217,26 @@ export function getEdgeStyle(
   stroke?: string;
   strokeWidth?: number;
   strokeDasharray?: string;
+  animationPlayState?: "running" | "paused";
 } {
   const stroke = getGateColor(edge);
-  return isEdgeTaken(edge, stepRunInfo, sourceStepType)
-    ? {
-        stroke,
-        strokeWidth: TAKEN_EDGE_STROKE_WIDTH,
-        strokeDasharray: TAKEN_EDGE_DASH,
-      }
-    : { stroke, strokeWidth: UNTAKEN_EDGE_STROKE_WIDTH };
+  if (!isEdgeTaken(edge, stepRunInfo, sourceStepType)) {
+    return { stroke, strokeWidth: UNTAKEN_EDGE_STROKE_WIDTH };
+  }
+  return {
+    stroke,
+    strokeWidth: TAKEN_EDGE_STROKE_WIDTH,
+    strokeDasharray: TAKEN_EDGE_DASH,
+    animationPlayState: isEdgeAnimating(edge, stepRunInfo, sourceStepType)
+      ? "running"
+      : "paused",
+  };
 }
 
-// A taken edge is either "done" (static dash) or "still happening" (dash
-// animates, via React Flow's own `animated` edge flag -- it drives a moving
-// stroke-dashoffset in @xyflow/react's base CSS, layering on top of
-// whatever strokeDasharray is already set inline above, since inline style
-// always wins over its class-based default dasharray, but its `animation`
-// property isn't something we're overriding). Never true for an edge that
-// isn't taken at all, and never true once a historical/finished run has
-// nothing left in a "running" state -- the dashed line still shows which
-// path was taken, it just stops moving.
+// Never true for an edge that isn't taken at all, and never true once a
+// historical/finished run has nothing left in a "running" state -- the
+// dashed line still shows which path was taken, it just stops moving (see
+// getEdgeStyle above for how "stops" avoids a visual jump).
 //
 // Which step's "running" status counts as "still happening" mirrors
 // isEdgeTaken's own per-type source-vs-target choice, not a blanket

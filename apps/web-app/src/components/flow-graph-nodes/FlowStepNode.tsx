@@ -160,7 +160,7 @@ export function FlowStepNode({
           {status === "completed" && (
             // White reads poorly against the green badge specifically --
             // dark instead, unlike the other two icons.
-            <CheckIcon className="h-3 w-3 text-black" strokeWidth={3} />
+            <CheckIcon className="h-3 w-3 text-green-900" strokeWidth={5} />
           )}
           {status === "failed" && (
             <XIcon className="h-3 w-3 text-white" strokeWidth={3} />
@@ -168,7 +168,7 @@ export function FlowStepNode({
           {status === "running" && (
             <LoaderCircleIcon
               className="h-3 w-3 animate-spin  text-amber-950"
-              strokeWidth={3}
+              strokeWidth={5}
             />
           )}
         </div>
