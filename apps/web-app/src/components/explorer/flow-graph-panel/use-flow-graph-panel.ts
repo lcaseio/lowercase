@@ -345,7 +345,7 @@ export function useFlowGraphPanel(
   // Navigates the existing json-definition panel to a spot inside this
   // version's own definition (a step's body, an export's schema, etc.)
   // instead of opening an isolated content panel -- see PR 28 in
-  // docs/UI_WORKSPACE_MILESTONE.md. revealAt is a fresh timestamp per call
+  // docs/milestones/ui-workspace/MILESTONE.md. revealAt is a fresh timestamp per call
   // so repeated clicks to the same path still re-trigger the reveal.
   const handleRevealInDefinition = (path: string[]) => {
     if (!dockviewApi || !version) return;

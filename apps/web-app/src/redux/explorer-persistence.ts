@@ -4,7 +4,7 @@ import type { EventGraphPanelsState } from "./slices/event-graph-panels-slice";
 import type { ArtifactPanelsState } from "./slices/artifact-panels-slice";
 import type { ArtifactAuthoringPanelsState } from "./slices/artifact-authoring-panels-slice";
 
-// workspace id hardcoded for now -- see UI_STATE_RESEARCH.md's
+// workspace id hardcoded for now -- see docs/milestones/ui-workspace/research/state-management.md's
 // workspace-switching notes for why this is still the right seam to leave in
 // place even with only one implicit workspace today
 const STORAGE_KEY = "explorer-workspace:default";
@@ -60,7 +60,7 @@ function readGatedPanelState<T>(
 // real LoadedExplorerState, not a signal to fall back to the next source.
 // Deliberately shallow validation (typeof checks, not a schema validator) --
 // proportionate for low-stakes local UI state. dockview's own tree shape is
-// not validated at all here; see UI_WORKSPACE_MILESTONE.md's PR 7 entry for
+// not validated at all here; see docs/milestones/ui-workspace/MILESTONE.md's PR 7 entry for
 // why that's deferred.
 function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
   let raw: string | null;

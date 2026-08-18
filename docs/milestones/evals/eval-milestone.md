@@ -6,7 +6,7 @@ GitHub Milestone: https://github.com/lcaseio/lowercase/milestone/9
 
 This milestone proves the engine's intended experimentation loop end-to-end for the first time: run a flow, judge its output, store the score, and compare results — treating measurement as a first-class part of the system rather than something inferred after the fact from logs.
 
-Background research that fed into this scope: [docs/EVAL_RESEARCH.md](./EVAL_RESEARCH.md).
+Background research that fed into this scope: [eval-research.md](./eval-research.md).
 
 ## Scope
 

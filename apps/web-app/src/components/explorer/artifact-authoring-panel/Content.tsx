@@ -18,7 +18,7 @@ const CONTENT_TYPE_OPTIONS = [
 
 // Fixed two-section layout, deliberately not a resizable
 // ResizablePanelGroup and no Rail (see PR 24 in
-// docs/UI_WORKSPACE_MILESTONE.md) -- there's no view/edit toggle to switch
+// docs/milestones/ui-workspace/MILESTONE.md) -- there's no view/edit toggle to switch
 // between here, so the Rail's whole reason to exist doesn't apply.
 export function Content({
   versionId,

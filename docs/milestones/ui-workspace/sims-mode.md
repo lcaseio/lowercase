@@ -1,6 +1,6 @@
 # Sims mode — design narrative
 
-Full design history for Sims mode: reuse decisions, the state-machine corrections, and every placement decision made along the way. Extracted from `docs/UI_WORKSPACE_MILESTONE.md` to keep that doc scannable; summarized there with a link back here.
+Full design history for Sims mode: reuse decisions, the state-machine corrections, and every placement decision made along the way. Extracted from `docs/milestones/ui-workspace/MILESTONE.md` to keep that doc scannable; summarized there with a link back here.
 
 **Reuse target correction, settled in discussion**: this does _not_ reuse the old `RunnerSimSelector`/`Sims.tsx`/`CreateSim.tsx`/`ViewSim.tsx`/`SimsFlowView` components (as this doc previously assumed) — those are old-UI pieces bound for their own redesign, and today's step-reuse selection there is genuinely blind (toggles a step by ID/color on the static flow-def graph, with zero visibility into the parent run's actual output/exports). Instead, this reuses the _new_ flow-version-workspace pieces Run History just built: `FlowVersionRunHistoryList`, `useRunEventsWithStatus`, `FlowGraph`+`stepRunInfo`, `StepResultsTab` — the same "reuse is not the goal" distinction applies app-wide, delineating old components not worth carrying forward vs. new workspace pieces actively being built and reused hard.
 
