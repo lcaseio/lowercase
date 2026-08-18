@@ -16,7 +16,7 @@ export type OpenPanelRequest =
       // updateParameters below, same as artifact-authoring's returnTo, but
       // also has to guarantee two clicks are never shallowEqual-identical
       // even when they target the same path, or the second click's refocus
-      // would silently no-op. See PR 28 in docs/UI_WORKSPACE_MILESTONE.md.
+      // would silently no-op. See PR 28 in docs/milestones/ui-workspace/MILESTONE.md.
       revealPath?: string[];
       revealAt?: number;
     }
@@ -25,7 +25,7 @@ export type OpenPanelRequest =
       label: string;
       versionId: string;
       // fixed at open time, never re-derived from live state -- see
-      // PR 19 in docs/UI_WORKSPACE_MILESTONE.md for why this is a real
+      // PR 19 in docs/milestones/ui-workspace/MILESTONE.md for why this is a real
       // discriminated union rather than optional runId?/simId? fields.
       openedAs:
         | { type: "plain" }

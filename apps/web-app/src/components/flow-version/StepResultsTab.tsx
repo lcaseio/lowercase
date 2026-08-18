@@ -30,7 +30,7 @@ type Props = {
   // -- routes a real artifact hash into the artifact panel instead of
   // flattening to inline text. Not forwarded to StepFieldResolutionPanel/
   // StepReferencesPanel, which have no hash to route (deferred, see
-  // docs/UI_WORKSPACE_MILESTONE.md's PR 27 entry).
+  // docs/milestones/ui-workspace/MILESTONE.md's PR 27 entry).
   onOpenArtifact?: (hash: string, label: string) => void;
 };
 
