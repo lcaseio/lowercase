@@ -7,6 +7,15 @@ export type SimDraftState = { reuse: string[] };
 export type LayoutDirection = "TB" | "LR";
 export type FlowGraphViewport = { x: number; y: number; zoom: number };
 
+export type ReplayStatus = "playing" | "paused";
+export type ReplaySpeed = 0.25 | 0.5 | 1 | 2;
+// cutoffTime is epoch ms, not the ISO string CloudEvent.time uses -- callers
+// convert once at the boundary (use-flow-graph-replay.ts), never here.
+export type ReplayState = {
+  status: ReplayStatus;
+  cutoffTime: number;
+};
+
 export type FlowGraphPanelState = {
   selectedParamHashes: Record<string, string>;
   sidePanelTab: SidePanelTab | null;
@@ -15,6 +24,17 @@ export type FlowGraphPanelState = {
   simDraft: SimDraftState | null;
   layoutDirection: LayoutDirection;
   viewport: FlowGraphViewport | null;
+  // null means idle (not replaying) -- a rehydrated "playing" status is
+  // never written back as-is; see replayStarted/replayResumed below for why
+  // a cold mount can never land on an auto-resuming clock.
+  replay: ReplayState | null;
+  // Deliberately its own top-level field, not nested inside ReplayState --
+  // a speed chosen before pressing Play needs somewhere to live while
+  // replay is still null, and persists across separate replay sessions on
+  // the same panel (picking 2x once means it stays 2x next time you press
+  // Play, not reset to a default) -- the opposite of ReplayState itself,
+  // which is fully thrown away between sessions.
+  replaySpeed: ReplaySpeed;
 };
 
 export type FlowGraphPanelsState = Record<string, FlowGraphPanelState>;
@@ -27,6 +47,8 @@ const DEFAULT_PANEL_STATE: FlowGraphPanelState = {
   simDraft: null,
   layoutDirection: "TB",
   viewport: null,
+  replay: null,
+  replaySpeed: 1,
 };
 
 const initialState: FlowGraphPanelsState = {};
@@ -141,6 +163,58 @@ export const flowGraphPanelsSlice = createSlice({
       ensurePanel(state, action.payload.panelId).viewport =
         action.payload.viewport;
     },
+    // Always starts a fresh play from startCutoffTime (the caller passes
+    // the run's own first event time) -- resuming from a pause goes through
+    // replayResumed instead, never this one, so a fresh play never needs to
+    // branch on whatever replay happened to already be set. Doesn't touch
+    // replaySpeed at all -- whatever speed was already chosen (before or
+    // during a previous session) carries straight into this one.
+    replayStarted: (
+      state,
+      action: PayloadAction<{ panelId: string; startCutoffTime: number }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).replay = {
+        status: "playing",
+        cutoffTime: action.payload.startCutoffTime,
+      };
+    },
+    replayPaused: (state, action: PayloadAction<{ panelId: string }>) => {
+      const panel = ensurePanel(state, action.payload.panelId);
+      if (!panel.replay) return;
+      panel.replay.status = "paused";
+    },
+    replayResumed: (state, action: PayloadAction<{ panelId: string }>) => {
+      const panel = ensurePanel(state, action.payload.panelId);
+      if (!panel.replay) return;
+      panel.replay.status = "playing";
+    },
+    // dispatched both for an explicit Cancel and once the clock's own
+    // onFinished fires -- same "stop replaying, land on the normal view"
+    // meaning either way, mirroring simDraftEnded's precedent above.
+    replayEnded: (state, action: PayloadAction<{ panelId: string }>) => {
+      ensurePanel(state, action.payload.panelId).replay = null;
+    },
+    // Deliberately works whether idle or actively replaying -- choosing a
+    // speed ahead of time (before ever pressing Play) is the whole point,
+    // not just a mid-playback adjustment. No guard on `replay` existing.
+    replaySpeedSet: (
+      state,
+      action: PayloadAction<{ panelId: string; speed: ReplaySpeed }>,
+    ) => {
+      ensurePanel(state, action.payload.panelId).replaySpeed =
+        action.payload.speed;
+    },
+    // dispatched at up to frame rate while playing -- the clock hook skips
+    // calling this at all for a frame that didn't cross a new event, so
+    // this itself never needs its own no-op check beyond replay existing.
+    replayTicked: (
+      state,
+      action: PayloadAction<{ panelId: string; cutoffTime: number }>,
+    ) => {
+      const panel = ensurePanel(state, action.payload.panelId);
+      if (!panel.replay) return;
+      panel.replay.cutoffTime = action.payload.cutoffTime;
+    },
   },
   // panelRemoved is shared across every keyed-by-panelId slice (see
   // panel-lifecycle-actions.ts) -- dispatched once from a central listener
@@ -165,6 +239,12 @@ export const {
   simDraftEnded,
   layoutDirectionSet,
   viewportChanged,
+  replayStarted,
+  replayPaused,
+  replayResumed,
+  replayEnded,
+  replaySpeedSet,
+  replayTicked,
 } = flowGraphPanelsSlice.actions;
 
 export const selectFlowGraphPanelState = (

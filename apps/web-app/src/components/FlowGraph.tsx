@@ -21,7 +21,6 @@ import {
   getEdgeStyle,
   getFlowStepAccent,
   getStatusBorderColor,
-  isEdgeAnimating,
 } from "@/components/flow-graph-nodes/flow-step-accents";
 
 // Stable identity across renders -- React Flow re-measures/warns if the
@@ -134,13 +133,18 @@ export function FlowGraph({
         // either: the label now lives on the node next to its handle
         // (FlowStepNode.tsx), not floating on the wire.
         for (const edge of nodeOutEdges) {
+          const style = getEdgeStyle(edge, stepRunInfo, stepType);
           graphEdges.push({
             id: `${node}-${edge.endStepId}-${edgeHandleId(edge)}`,
             source: node,
             target: edge.endStepId,
             sourceHandle: edgeHandleId(edge),
-            style: getEdgeStyle(edge, stepRunInfo, stepType),
-            animated: isEdgeAnimating(edge, stepRunInfo, stepType),
+            style,
+            // Always true for a taken edge (running or paused), never for
+            // an untaken one -- see getEdgeStyle's own comment for why:
+            // animationPlayState (in style) is what actually controls
+            // whether it's visibly moving, not this flag.
+            animated: style.animationPlayState !== undefined,
           });
         }
       } else if (outEdges[node]) {

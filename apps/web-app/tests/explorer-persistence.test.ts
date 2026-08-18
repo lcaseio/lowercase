@@ -42,6 +42,8 @@ const SAMPLE_PANELS: FlowGraphPanelsState = {
     simDraft: { reuse: ["step-1"] },
     layoutDirection: "TB",
     viewport: null,
+    replay: null,
+    replaySpeed: 1,
   },
 };
 const SAMPLE_EVENT_GRAPH_PANELS: EventGraphPanelsState = {
@@ -64,6 +66,8 @@ const OTHER_PANELS: FlowGraphPanelsState = {
     simDraft: null,
     layoutDirection: "TB",
     viewport: null,
+    replay: null,
+    replaySpeed: 1,
   },
 };
 const OTHER_EVENT_GRAPH_PANELS: EventGraphPanelsState = {

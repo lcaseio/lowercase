@@ -194,6 +194,38 @@ describe("getEdgeStyle()", () => {
   });
 });
 
+describe("getEdgeStyle()'s animationPlayState", () => {
+  it("is undefined for an untaken edge -- never animated at all", () => {
+    const onSuccess = edge({ type: "control", gate: "onSuccess" });
+    expect(
+      getEdgeStyle(onSuccess, runInfo("running"), "httpjson")
+        .animationPlayState,
+    ).toBeUndefined();
+  });
+
+  it("is 'running' for a taken edge whose target is still running", () => {
+    const onSuccess = edge({ type: "control", gate: "onSuccess" });
+    const runningTarget = {
+      source: { status: "completed" as const },
+      target: { status: "running" as const },
+    };
+    expect(
+      getEdgeStyle(onSuccess, runningTarget, "httpjson").animationPlayState,
+    ).toBe("running");
+  });
+
+  it("is 'paused' (not undefined) for a taken edge whose target has already finished -- frozen in place, not un-animated", () => {
+    const onSuccess = edge({ type: "control", gate: "onSuccess" });
+    const finishedTarget = {
+      source: { status: "completed" as const },
+      target: { status: "completed" as const },
+    };
+    expect(
+      getEdgeStyle(onSuccess, finishedTarget, "httpjson").animationPlayState,
+    ).toBe("paused");
+  });
+});
+
 describe("isEdgeAnimating()", () => {
   it("never animates an edge that isn't taken at all", () => {
     const onSuccess = edge({ type: "control", gate: "onSuccess" });

@@ -11,6 +11,12 @@ import {
   simDraftEnded,
   layoutDirectionSet,
   viewportChanged,
+  replayStarted,
+  replayPaused,
+  replayResumed,
+  replayEnded,
+  replaySpeedSet,
+  replayTicked,
   selectFlowGraphPanelState,
 } from "@/redux/slices/flow-graph-panels-slice";
 import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
@@ -26,6 +32,8 @@ const DEFAULT_PANEL_STATE = {
   simDraft: null,
   layoutDirection: "TB",
   viewport: null,
+  replay: null,
+  replaySpeed: 1,
 };
 
 describe("flowGraphPanelsSlice", () => {
@@ -248,6 +256,160 @@ describe("flowGraphPanelsSlice", () => {
         }),
       );
       expect(state["flow-graph-v1"].viewport).toEqual({ x: 0, y: 0, zoom: 1 });
+    });
+  });
+
+  describe("replayStarted", () => {
+    it("creates a panel entry lazily and starts playing at the given cutoff", () => {
+      const state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        replay: { status: "playing", cutoffTime: 1000 },
+      });
+    });
+
+    it("overwrites any prior replay state's status/cutoffTime, but leaves a previously-chosen speed alone -- speed is chosen ahead of time and persists across sessions, not reset per play", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(
+        state,
+        replaySpeedSet({ panelId: "flow-graph-v1", speed: 2 }),
+      );
+      state = reducer(
+        state,
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 5000 }),
+      );
+      expect(state["flow-graph-v1"].replay).toEqual({
+        status: "playing",
+        cutoffTime: 5000,
+      });
+      expect(state["flow-graph-v1"].replaySpeed).toBe(2);
+    });
+  });
+
+  describe("replayPaused / replayResumed", () => {
+    it("flips status to paused, keeping cutoffTime", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(
+        state,
+        replayTicked({ panelId: "flow-graph-v1", cutoffTime: 1500 }),
+      );
+      state = reducer(state, replayPaused({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"].replay).toEqual({
+        status: "paused",
+        cutoffTime: 1500,
+      });
+    });
+
+    it("flips status back to playing on resume, keeping cutoffTime", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(state, replayPaused({ panelId: "flow-graph-v1" }));
+      state = reducer(state, replayResumed({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"].replay).toEqual({
+        status: "playing",
+        cutoffTime: 1000,
+      });
+    });
+
+    it("no-ops when there's no replay in progress", () => {
+      let state = reducer({}, replayPaused({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"]).toEqual(DEFAULT_PANEL_STATE);
+      state = reducer({}, replayResumed({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"]).toEqual(DEFAULT_PANEL_STATE);
+    });
+  });
+
+  describe("replayEnded", () => {
+    it("clears replay back to null from playing", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(state, replayEnded({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"].replay).toBeNull();
+    });
+
+    it("clears replay back to null from paused", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(state, replayPaused({ panelId: "flow-graph-v1" }));
+      state = reducer(state, replayEnded({ panelId: "flow-graph-v1" }));
+      expect(state["flow-graph-v1"].replay).toBeNull();
+    });
+  });
+
+  describe("replaySpeedSet", () => {
+    it("creates a panel entry lazily and sets replaySpeed while idle -- choosing a speed ahead of time is the whole point, not just a no-op", () => {
+      const state = reducer(
+        {},
+        replaySpeedSet({ panelId: "flow-graph-v1", speed: 2 }),
+      );
+      expect(state["flow-graph-v1"]).toEqual({
+        ...DEFAULT_PANEL_STATE,
+        replaySpeed: 2,
+      });
+    });
+
+    it("supports the 0.25x option", () => {
+      const state = reducer(
+        {},
+        replaySpeedSet({ panelId: "flow-graph-v1", speed: 0.25 }),
+      );
+      expect(state["flow-graph-v1"].replaySpeed).toBe(0.25);
+    });
+
+    it("updates speed on an active replay too, leaving status/cutoffTime alone", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(
+        state,
+        replaySpeedSet({ panelId: "flow-graph-v1", speed: 0.5 }),
+      );
+      expect(state["flow-graph-v1"].replay).toEqual({
+        status: "playing",
+        cutoffTime: 1000,
+      });
+      expect(state["flow-graph-v1"].replaySpeed).toBe(0.5);
+    });
+  });
+
+  describe("replayTicked", () => {
+    it("no-ops when there's no replay in progress", () => {
+      const state = reducer(
+        {},
+        replayTicked({ panelId: "flow-graph-v1", cutoffTime: 2000 }),
+      );
+      expect(state["flow-graph-v1"]).toEqual(DEFAULT_PANEL_STATE);
+    });
+
+    it("updates cutoffTime on an active replay, leaving status alone", () => {
+      let state = reducer(
+        {},
+        replayStarted({ panelId: "flow-graph-v1", startCutoffTime: 1000 }),
+      );
+      state = reducer(
+        state,
+        replayTicked({ panelId: "flow-graph-v1", cutoffTime: 1800 }),
+      );
+      expect(state["flow-graph-v1"].replay).toEqual({
+        status: "playing",
+        cutoffTime: 1800,
+      });
     });
   });
 
