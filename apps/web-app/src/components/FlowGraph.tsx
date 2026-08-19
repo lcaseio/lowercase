@@ -200,6 +200,7 @@ export function FlowGraph({
         }
         nodesDraggable={false}
         nodesConnectable={false}
+        panActivationKeyCode={null}
         onMoveEnd={
           onViewportChange
             ? (_event, nextViewport) => onViewportChange(nextViewport)

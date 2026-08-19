@@ -1,8 +1,8 @@
 # UI Workspace Milestone — Arc: Flow authoring (PR 38)
 
-Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md) (PR 37).
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md) (PR 37). Continues in [`code-editor-spacebar-bug.md`](./code-editor-spacebar-bug.md) (PR 39) — a standalone infrastructure fix, not a continuation of this arc's own narrative, but surfaced while testing PR 38.
 
-## PR 38 - Basic flow authoring in the modern dockview UI, from the tree - in progress
+## PR 38 - Basic flow authoring in the modern dockview UI, from the tree - merged (#321)
 
 Today's Explorer/dockview UI has no way to create a flow at all — the only path in is uploading a flow definition file, and only through the old page-based UI. Re-sequenced up from "least important" once that gap became clear (see `MILESTONE.md`'s `Next up`/`Not yet scoped` sections).
 
@@ -12,7 +12,7 @@ Context already settled in earlier notes, not being re-derived here:
 
 - Full drag/drop visual editing stays explicitly off the table for this PR (see memory `project_visual_flow_editor_vision`) — what's wanted is a deliberately minimal "flow creation" story, modeled directly on the artifact authoring flow's own two paths (PR 24: a "+" entry point opens a dialog with two choices — upload a file, handled entirely inside the dialog; or author in place, which closes the dialog and opens a real dockview panel). This turned out to still include a live JSON-driven graph preview (below) — that part is cheap enough via existing pipeline reuse that it's worth including now, not deferred with the rest of the visual-editor idea.
 - Always exactly one flow + one flow version per creation — no real versioning story attempted here. Version creation itself is allowed to be superficial; having _a_ story for it matters more than it being good yet.
-- PR 41 (pruning old pages) is gated mostly on this PR landing first — a fair amount of the old page-based UI only still exists because there's no other way to create a flow yet.
+- PR 42 (pruning old pages) is gated mostly on this PR landing first — a fair amount of the old page-based UI only still exists because there's no other way to create a flow yet.
 
 **Entry point and the two paths, both funneling into one editable authoring panel.** A `+ New Flow` entry above the tree opens a dialog with two choices, mirroring PR 24's artifact-creation dialog shape:
 
@@ -25,7 +25,7 @@ Both paths land in the _same_ editable authoring panel, unlike PR 24's artifacts
 
 - `parseFlow` (`@lcase/specs`, pure Zod `safeParse`) plus `useFlowAnalysis` (`src/hooks/use-flow-analysis.ts`) — the _exact same hook_ already powering the real Flow Graph panel's own Problems tab (`use-flow-graph-panel.ts:156`) — run entirely client-side against the draft text on every change, no persisted version needed. `fa.problems` feeds the existing `ProblemsTab`/`FlowProblemsList` components unmodified.
 - `<FlowGraph>` takes a plain `flowDef` prop, not a versionId, so the same `useFlowAnalysis` output (`layout`, `outEdges`) renders a live preview with zero `stepRunInfo` (nothing's run yet).
-- The old `src/components/AddJsonFlow.tsx` (bare textarea, no problems display, no preview) is the prototype this PR properly replaces — not reused, just noted as a pruning candidate for PR 41's list later. No strict pruning policy decided (batch vs. as-found) — doesn't matter enough to settle now.
+- The old `src/components/AddJsonFlow.tsx` (bare textarea, no problems display, no preview) is the prototype this PR properly replaces — not reused, just noted as a pruning candidate for PR 42's list later. No strict pruning policy decided (batch vs. as-found) — doesn't matter enough to settle now.
 
 **Preview is its own real dockview panel, not embedded** — deliberately, for two reasons: the Flow Graph side already has its own side-panel element (even a reduced, read-only-for-now one, at minimum Problems) rather than fitting cleanly into the authoring panel's own split; and this is explicitly viewed as the first concrete step toward the long-parked visual-editor vision (see memory `project_visual_flow_editor_vision`) — a JSON panel and a flow-graph panel, kept in sync, is the real shape that vision would eventually take, even though only JSON→graph sync is built in this PR (graph→JSON, i.e., editable side-panel fields writing back into the JSON, is a separately-named future direction below).
 
