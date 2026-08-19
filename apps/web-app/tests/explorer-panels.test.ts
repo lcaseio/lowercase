@@ -137,6 +137,29 @@ describe("explorerPanelId", () => {
     expect(a).toBe("event-graph-singleton");
   });
 
+  it("gives every flow-authoring request the same id regardless of label -- it's a singleton, no real id exists for an unsaved draft", () => {
+    const a = explorerPanelId({ kind: "flow-authoring", label: "New Flow" });
+    const b = explorerPanelId({
+      kind: "flow-authoring",
+      label: "Something else",
+    });
+    expect(a).toBe(b);
+    expect(a).toBe("flow-authoring-singleton");
+  });
+
+  it("gives every flow-authoring-preview request the same id regardless of label -- a second singleton, 1:1 with flow-authoring", () => {
+    const a = explorerPanelId({
+      kind: "flow-authoring-preview",
+      label: "Preview",
+    });
+    const b = explorerPanelId({
+      kind: "flow-authoring-preview",
+      label: "Something else",
+    });
+    expect(a).toBe(b);
+    expect(a).toBe("flow-authoring-preview-singleton");
+  });
+
   it("derives an artifact request's id from its hash", () => {
     expect(
       explorerPanelId({

@@ -7,6 +7,8 @@ import { Content as EventGraphPanelContent } from "./event-graph-panel/Content";
 import { Content as ArtifactPanelContent } from "./artifact-panel/Content";
 import { Content as ArtifactAuthoringPanelContent } from "./artifact-authoring-panel/Content";
 import { Content as EventPayloadPanelContent } from "./event-payload-panel/Content";
+import { Content as FlowAuthoringPanelContent } from "./flow-authoring-panel/Content";
+import { Content as FlowAuthoringPreviewPanelContent } from "./flow-authoring-preview-panel/Content";
 
 // registered as dockview's "explorer-tab" component (see explorer-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is
@@ -67,6 +69,15 @@ export function ExplorerTabContent({
           eventId={params.eventId}
         />
       );
+    case "flow-authoring":
+      return (
+        <FlowAuthoringPanelContent
+          panelId={api.id}
+          onClose={() => api.close()}
+        />
+      );
+    case "flow-authoring-preview":
+      return <FlowAuthoringPreviewPanelContent />;
     default: {
       const _exhaustive: never = params;
       return _exhaustive;

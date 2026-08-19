@@ -1,4 +1,3 @@
-import { useReactFlow } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,10 +12,6 @@ import {
   PauseIcon,
   XIcon,
   ChevronUpIcon,
-  NetworkIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
-  MaximizeIcon,
   TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,7 +20,7 @@ import type {
   ReplayState,
   ReplaySpeed,
 } from "@/redux/slices/flow-graph-panels-slice";
-import { FIT_VIEW_OPTIONS } from "@/lib/flow-graph-layout";
+import { GraphViewControls } from "./GraphViewControls";
 
 import {
   EVENT_GRAPH_ICON,
@@ -83,68 +78,12 @@ export function RunToolbar({
   onCancelReplay,
   onSetReplaySpeed,
 }: Props) {
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
-
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
-        <Button
-          variant="ghost"
-          size="xs"
-          className="cursor-pointer text-xs text-muted-foreground"
-          onClick={() => zoomIn()}
-          title="Zoom in"
-        >
-          <ZoomInIcon className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="xs"
-          className="cursor-pointer text-xs text-muted-foreground"
-          onClick={() => zoomOut()}
-          title="Zoom out"
-        >
-          <ZoomOutIcon className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="xs"
-          className="cursor-pointer text-xs text-muted-foreground"
-          onClick={() => fitView(FIT_VIEW_OPTIONS)}
-          title="Fit view"
-        >
-          <MaximizeIcon className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="xs"
-          className={cn(
-            "cursor-pointer text-xs",
-            layoutDirection === "TB"
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground",
-          )}
-          onClick={() => onSetLayoutDirection("TB")}
-          title="Vertical layout"
-        >
-          <NetworkIcon className="size-4" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="xs"
-          className={cn(
-            "cursor-pointer text-xs",
-            layoutDirection === "LR"
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground",
-          )}
-          onClick={() => onSetLayoutDirection("LR")}
-          title="Horizontal layout"
-        >
-          <NetworkIcon className="size-4 rotate-270" />
-        </Button>
-      </div>
+      <GraphViewControls
+        layoutDirection={layoutDirection}
+        onSetLayoutDirection={onSetLayoutDirection}
+      />
       <div className="flex items-center gap-1 rounded-lg  bg-background/50 dark:bg-neutral-800 p-1 shadow-md backdrop-blur">
         {/* Fused "split button": Play/Pause plus an adjoining speed sliver,
             so a speed can be picked *before* pressing Play, not only

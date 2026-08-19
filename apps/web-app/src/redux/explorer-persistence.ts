@@ -3,6 +3,7 @@ import type { FlowGraphPanelsState } from "./slices/flow-graph-panels-slice";
 import type { EventGraphPanelsState } from "./slices/event-graph-panels-slice";
 import type { ArtifactPanelsState } from "./slices/artifact-panels-slice";
 import type { ArtifactAuthoringPanelsState } from "./slices/artifact-authoring-panels-slice";
+import type { FlowAuthoringPanelsState } from "./slices/flow-authoring-panels-slice";
 
 // workspace id hardcoded for now -- see docs/milestones/ui-workspace/research/state-management.md's
 // workspace-switching notes for why this is still the right seam to leave in
@@ -23,6 +24,7 @@ type LoadedExplorerState = {
   eventGraphPanels: EventGraphPanelsState | null;
   artifactPanels: ArtifactPanelsState | null;
   artifactAuthoringPanels: ArtifactAuthoringPanelsState | null;
+  flowAuthoringPanels: FlowAuthoringPanelsState | null;
 };
 
 const EMPTY_LOADED_STATE: LoadedExplorerState = {
@@ -31,6 +33,7 @@ const EMPTY_LOADED_STATE: LoadedExplorerState = {
   eventGraphPanels: null,
   artifactPanels: null,
   artifactAuthoringPanels: null,
+  flowAuthoringPanels: null,
 };
 
 // Shared shape for every keyed-panel-state field (flowGraphPanels,
@@ -101,6 +104,7 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
         eventGraphPanels?: unknown;
         artifactPanels?: unknown;
         artifactAuthoringPanels?: unknown;
+        flowAuthoringPanels?: unknown;
       }
     | undefined;
   const flowGraphPanels = readGatedPanelState<FlowGraphPanelsState>(
@@ -120,6 +124,10 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
       dockview,
       panelState?.artifactAuthoringPanels,
     );
+  const flowAuthoringPanels = readGatedPanelState<FlowAuthoringPanelsState>(
+    dockview,
+    panelState?.flowAuthoringPanels,
+  );
 
   return {
     dockview,
@@ -127,6 +135,7 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
     eventGraphPanels,
     artifactPanels,
     artifactAuthoringPanels,
+    flowAuthoringPanels,
   };
 }
 
@@ -163,6 +172,7 @@ export function savePersistedExplorerState(
     eventGraphPanels: EventGraphPanelsState;
     artifactPanels: ArtifactPanelsState;
     artifactAuthoringPanels: ArtifactAuthoringPanelsState;
+    flowAuthoringPanels: FlowAuthoringPanelsState;
   },
   storages: ExplorerStorages = {
     session: window.sessionStorage,
@@ -177,6 +187,7 @@ export function savePersistedExplorerState(
       eventGraphPanels: snapshot.eventGraphPanels,
       artifactPanels: snapshot.artifactPanels,
       artifactAuthoringPanels: snapshot.artifactAuthoringPanels,
+      flowAuthoringPanels: snapshot.flowAuthoringPanels,
     },
   });
   try {

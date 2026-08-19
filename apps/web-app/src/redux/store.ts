@@ -20,6 +20,7 @@ import { flowGraphPanelsSlice } from "./slices/flow-graph-panels-slice";
 import { eventGraphPanelsSlice } from "./slices/event-graph-panels-slice";
 import { artifactPanelsSlice } from "./slices/artifact-panels-slice";
 import { artifactAuthoringPanelsSlice } from "./slices/artifact-authoring-panels-slice";
+import { flowAuthoringPanelsSlice } from "./slices/flow-authoring-panels-slice";
 import { loadPersistedExplorerState } from "./explorer-persistence";
 
 // reducers are separated out to type RootState independently of store,
@@ -40,6 +41,7 @@ export const rootReducer = combineReducers({
   eventGraphPanels: eventGraphPanelsSlice.reducer,
   artifactPanels: artifactPanelsSlice.reducer,
   artifactAuthoringPanels: artifactAuthoringPanelsSlice.reducer,
+  flowAuthoringPanels: flowAuthoringPanelsSlice.reducer,
   [flowsApi.reducerPath]: flowsApi.reducer,
   [runsApi.reducerPath]: runsApi.reducer,
   [simsApi.reducerPath]: simsApi.reducer,
@@ -62,6 +64,8 @@ export const store = configureStore({
     artifactPanels: persistedExplorerState.artifactPanels ?? undefined,
     artifactAuthoringPanels:
       persistedExplorerState.artifactAuthoringPanels ?? undefined,
+    flowAuthoringPanels:
+      persistedExplorerState.flowAuthoringPanels ?? undefined,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
