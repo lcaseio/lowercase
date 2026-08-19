@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { EventGraph } from "@/components/EventGraph";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
+import { filterEventsUpTo } from "@/hooks/use-flow-graph-replay";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { useGetRunDetailQuery } from "@/redux/api/runs-api";
 import { useGetSimQuery } from "@/redux/api/sims-api";
@@ -30,7 +31,9 @@ export function Content({
 }: {
   initialTrackedPanelId?: string;
 }) {
-  const { runId, versionId } = useTrackedFlowGraphPanel(initialTrackedPanelId);
+  const { runId, versionId, replay } = useTrackedFlowGraphPanel(
+    initialTrackedPanelId,
+  );
   const dockviewApi = useDockviewApi();
   const dispatch = useAppDispatch();
   const { selectedEventId, sidePanelTab } = useAppSelector((s) =>
@@ -87,6 +90,10 @@ export function Content({
   })();
 
   const { events } = useRunEventsWithStatus(runId, []);
+  const displayedEvents = useMemo(
+    () => filterEventsUpTo(events, replay?.cutoffTime ?? null),
+    [events, replay?.cutoffTime],
+  );
   const selectedEventIndex = events.findIndex((e) => e.id === selectedEventId);
   const selectedEvent =
     selectedEventIndex >= 0 ? events[selectedEventIndex] : null;
@@ -127,7 +134,7 @@ export function Content({
 
   const graph = (
     <EventGraph
-      events={events}
+      events={displayedEvents}
       selectedEventId={selectedEventId}
       onEventClick={handleEventClick}
     />

@@ -74,7 +74,8 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 | 33  | Flow graph — branch/parallel node handling                                            | merged (#316) | `arcs/flow-graph-visual-rework.md`     |                                     |
 | 34  | Flow graph — branch step details + side-panel field visual polish                     | merged (#317) | `arcs/flow-graph-visual-rework.md`     |                                     |
 | 35  | Flow graph — replay                                                                   | merged (#318) | `arcs/replay.md`                       | PR 16 (EventGraph singleton design) |
-| 36  | Documentation reorganization                                                          | in progress   | `arcs/documentation-reorganization.md` |                                     |
+| 36  | Documentation reorganization                                                          | merged (#319) | `arcs/documentation-reorganization.md` |                                     |
+| 37  | Sync the EventGraph panel with Flow Graph replay                                      | in progress   | `arcs/replay.md`                       | PR 35 (Replay)                      |
 
 ## Next up
 

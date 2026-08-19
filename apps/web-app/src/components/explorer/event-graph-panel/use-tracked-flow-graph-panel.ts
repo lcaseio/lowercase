@@ -7,15 +7,25 @@ import {
   trackedPanelSet,
   snapshotSet,
 } from "@/redux/slices/event-graph-panels-slice";
+import type { ReplayState } from "@/redux/slices/flow-graph-panels-slice";
 import { useDockviewApi } from "../explorer-dockview-context";
 import {
   EVENT_GRAPH_SINGLETON_ID,
   type OpenPanelRequest,
 } from "../explorer-panels";
 
-export type TrackedFlowGraphPanel = {
+export type FlowGraphPanelSnapshot = {
   runId: string | null;
   versionId: string | null;
+};
+
+// replay is deliberately *not* part of the frozen snapshot -- it's a live
+// read that goes stale-to-null the instant the tracked panel actually
+// closes (flowGraphPanels[trackedPanelId] gets deleted wholesale by the
+// shared panelRemoved reducer), which is exactly the desired "snap to full
+// history" behavior once there's no driving panel left to replay from.
+export type TrackedFlowGraphPanel = FlowGraphPanelSnapshot & {
+  replay: ReplayState | null;
 };
 
 // Follows whichever Flow Graph panel most recently had dockview focus,
@@ -74,6 +84,10 @@ export function useTrackedFlowGraphPanel(
     trackedPanelId ? selectFlowGraphPanelState(s, trackedPanelId).runId : null,
   );
 
+  const liveReplay = useAppSelector((s) =>
+    trackedPanelId ? selectFlowGraphPanelState(s, trackedPanelId).replay : null,
+  );
+
   // Mirrors {runId, versionId} continuously while trackedPanelId is set --
   // including while it's legitimately blank (focused on a not-yet-run
   // panel) -- and simply stops being updated the moment tracking stops,
@@ -84,7 +98,7 @@ export function useTrackedFlowGraphPanel(
   // an effect that exists only to copy one piece of state into another is
   // exactly the anti-pattern react-hooks/set-state-in-effect flags. Seeded
   // from Redux once at mount, same as trackedPanelId above.
-  const [snapshot, setSnapshot] = useState<TrackedFlowGraphPanel>(
+  const [snapshot, setSnapshot] = useState<FlowGraphPanelSnapshot>(
     () => persisted.snapshot,
   );
   // Deliberately *not* seeded from Redux -- pure bookkeeping for the
@@ -115,5 +129,5 @@ export function useTrackedFlowGraphPanel(
     );
   }, [snapshot, dispatch]);
 
-  return snapshot;
+  return { ...snapshot, replay: liveReplay };
 }

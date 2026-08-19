@@ -1,6 +1,6 @@
-# UI Workspace Milestone — Arc: Replay (PR 35)
+# UI Workspace Milestone — Arc: Replay (PRs 35, 37)
 
-Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md). Continues in [`documentation-reorganization.md`](./documentation-reorganization.md) (PR 36).
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md). Continues in [`documentation-reorganization.md`](./documentation-reorganization.md) (PR 36) — but PR 37 below returns to this arc rather than living there, since it's PR 35's own deferred stretch goal, not a continuation of the docs-reorg thread.
 
 ## PR 35 - Flow graph — replay - merged (#318)
 
@@ -48,3 +48,40 @@ Shipped as designed: the idle/playing/paused state machine, the formula-based `u
 - Found and partially fixed a real, pre-existing, unrelated bug (the flow graph's "marching ants" edge animation jitter) while using replay to inspect edges closely — full trace in `docs/todo.md`; not a replay bug, deliberately not chased further than the one shipped fix.
 - EventGraph coordination stayed a stretch goal, not built — design already recorded above, untouched.
 - Two related-but-distinct ideas surfaced and logged in `docs/todo.md` instead of built: a "clear run"/"revert to original run" pair of buttons for resetting a panel's run state without closing/reopening it, and a separate breadcrumb idea for showing what's currently being looked at.
+
+## PR 37 - Sync the EventGraph panel with Flow Graph replay - in progress
+
+PR 35's own deferred stretch goal, picked back up: coordinate an already-open EventGraph panel with a Flow Graph panel's replay of the same run, instead of the EventGraph always showing the full event history regardless of replay position.
+
+### Discussion
+
+Re-verified against current code (not assumed from PR 35's carried-over sketch) before settling anything:
+
+- **`filterEventsUpTo(events, cutoffTime)` already exists**, pure and exported from `use-flow-graph-replay.ts` (built for the Flow Graph panel's own `stepRunInfo` swap) — reused directly in `event-graph-panel/Content.tsx`, not reimplemented.
+- **No new `revealedUpToTime` field is needed.** `FlowGraphPanelState.replay` (`{status, cutoffTime} | null`) already is that field.
+- **`useTrackedFlowGraphPanel` already reads the tracked panel's Redux state** (`selectFlowGraphPanelState(s, trackedPanelId)`) for `liveRunId` — reading `.replay` off that same object is a one-line addition, no new subscription.
+
+**The one thing PR 35 had left genuinely open — resolved differently than originally sketched.** `flowGraphPanels[panelId]` is deleted outright (`delete state[panelId]`) when a panel closes, via the shared `panelRemoved` reducer. PR 35's stretch-goal notes assumed a "freeze the partial reveal + show a restore-full button" behavior once the driving panel closes, which would require continuously mirroring the live `replay` value into `EventGraphPanelState`'s own `snapshot` _before_ the source disappears (extra Redux dispatch traffic on every revealed event, not just on the rare run/version changes the existing snapshot mechanism mirrors today). **Decided instead: no mirroring at all.** `useTrackedFlowGraphPanel` returns a plain _live_ `replay` value (not frozen, unlike `runId`/`versionId`) read straight off the tracked panel's Redux state. The moment the driving panel closes, that state is gone, `replay` naturally reads back as `null`, and the EventGraph snaps straight to showing full history — no indicator, no restore button, no extra dispatch traffic. Simpler, and an acceptable behavior change from the original sketch.
+
+**Shape of the actual change:**
+
+- `TrackedFlowGraphPanel`'s return type gains a `replay: ReplayState | null` field, live (not part of the frozen `{runId, versionId}` snapshot) — a plain additional `useAppSelector` read, same object `liveRunId` already reads from.
+- `event-graph-panel/Content.tsx`: filter `events` through `filterEventsUpTo(events, replay?.cutoffTime ?? null)` before handing to `<EventGraph>`. The existing `selectedEventId`/`selectedEvent` lookup keeps indexing into the full `events` array, not the filtered subset — a selected event whose reveal gets rewound (only possible via a fresh `replayStarted`, which resets the cutoff back near zero) can end up not currently rendered on the graph while its side-panel detail still shows; accepted as a minor edge case, not solved further, matching this milestone's existing tolerance for small edge cases in singleton-panel reuse (see PR 26's create-shortcut edge cases for precedent).
+- No new UI indicator while the driving panel is still open and actively replaying — the EventGraph visibly showing fewer/more nodes as the cutoff advances is itself the indication, same as the Flow Graph panel's own animation. Exact treatment (if any) left to live iteration, consistent with every other visual decision in this arc.
+- **Memoize the filtered array in `Content.tsx`, mirroring `use-flow-graph-replay.ts`'s own `useMemo(() => filterEventsUpTo(events, replay?.cutoffTime ?? null), [events, replay?.cutoffTime])`.** `EventGraph` itself memoizes its ECharts data on `events` by reference (`useMemo(..., [events])`); `filterEventsUpTo` allocates a fresh array via `.filter()` whenever `cutoffTime` is non-null, so an unmemoized call on every render would invalidate `EventGraph`'s internal memoization on every unrelated re-render, not just real cutoff advances.
+- **Considered and rejected: a one-time hook firing only at panel-deletion time**, capturing the tracked panel's final replay state right before it's gone, instead of a live read that snaps to `null`. Not pursued: `panelRemoved` is currently a plain `{panelId}` action, handled independently and synchronously by each slice's own delete-on-removal reducer — there's no existing mechanism for one slice's reducer to read another slice's state at delete time, so this would mean changing what `panelRemoved`'s dispatch/payload looks like, not just this feature. Worth remembering as a real mechanism if a future feature ever needs a genuine one-time action on delete beyond plain removal.
+- **A previously-untraced interaction, flagged for manual verification rather than solved blind**: `EventGraph.tsx`'s zoom control (`zoomRange`) is local component state holding a `{start, end}` _percentage_ of whatever `events`' current min/max time span happens to be, never reset when the data source changes. This already works for a live run (events only ever grow) and was never exercised for shrinking before this PR (a historical run's `events` was always the full, static list). The moment replay starts, the displayed events snap down to just the first few revealed — harmless at the default `{0,100}` zoom, but a manually-zoomed sub-range set before pressing Play could land on an empty or confusing window once the extent shrinks. Deferred to manual testing once the feature is wired up; a likely fix, if actually observed, is a small effect resetting `zoomRange` to `{0,100}` on an appropriate trigger — not designed speculatively.
+  - **Resolved after real testing: no auto-reset.** Couldn't reproduce the feared confusing/empty-window case in practice. Decided not to force a zoom reset on the user's behalf — if they want the full range back, fixing it live is easy, and forcing a reset would fight a deliberate zoom just as often as it'd help an accidental one. Zoom management here stays entirely user-controlled, as it already was before this PR.
+
+This is now scoped enough to build.
+
+### What actually landed
+
+Shipped exactly as designed: `useTrackedFlowGraphPanel`'s return type split into a frozen `FlowGraphPanelSnapshot` (`{runId, versionId}`, untouched) and a wider `TrackedFlowGraphPanel` adding a live `replay` field; `event-graph-panel/Content.tsx` filters `events` through the already-existing `filterEventsUpTo` (memoized) before handing them to `<EventGraph>`. Two files touched, no Redux slice or reducer changes.
+
+Verified live: play/pause/speed-change all sync correctly between the Flow Graph and EventGraph panels; closing the driving panel mid-replay (or mid-pause) snaps EventGraph to full history immediately, as decided.
+
+Two things found during manual testing, neither fixed here:
+
+- The feared zoom-window confusion didn't reproduce — see the resolution noted directly above.
+- A separate, real rendering stutter: continuously zooming/panning the Flow Graph with a smooth mouse motion while replay actively reveals events causes visible stutter, correlated with each revealed event. Suspected to be the same root cause as the pre-existing "marching ants" jitter (PR 35's cause 2 — the whole `graph.nodes`/`graph.edges` array rebuilding on every `stepRunInfo` change), just newly stressed by a second continuous render source; not caused by this PR's sync itself, per the user's own testing ("I bet I could have tried that before without the event graph"). Full trace in `docs/todo.md`, not duplicated here — a debugging trace, not a design decision.
