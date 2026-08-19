@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md). A meta/process PR, not UI-substance work — this is the PR that actually builds the `docs/milestones/` structure every other arc file in this directory is an example of.
 
-## PR 36 - Documentation reorganization - in progress
+## PR 36 - Documentation reorganization - merged (#319)
 
 Split this milestone doc into a repeatable per-milestone structure, before it grows past a comfortable size again.
 
