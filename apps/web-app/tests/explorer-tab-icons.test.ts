@@ -17,6 +17,10 @@ import {
   ARTIFACT_AUTHORING_ICON_CLASS,
   EVENT_PAYLOAD_ICON,
   EVENT_PAYLOAD_ICON_CLASS,
+  FLOW_AUTHORING_ICON,
+  FLOW_AUTHORING_ICON_CLASS,
+  FLOW_AUTHORING_PREVIEW_ICON,
+  FLOW_AUTHORING_PREVIEW_ICON_CLASS,
 } from "@/components/explorer/explorer-tab-icons";
 
 describe("getExplorerTabIcon", () => {
@@ -108,5 +112,23 @@ describe("getExplorerTabIcon", () => {
     });
     expect(icon?.Icon).toBe(EVENT_PAYLOAD_ICON);
     expect(icon?.className).toBe(EVENT_PAYLOAD_ICON_CLASS);
+  });
+
+  it("returns the flow-authoring icon+color for flow-authoring", () => {
+    const icon = getExplorerTabIcon({
+      kind: "flow-authoring",
+      label: "New Flow",
+    });
+    expect(icon?.Icon).toBe(FLOW_AUTHORING_ICON);
+    expect(icon?.className).toBe(FLOW_AUTHORING_ICON_CLASS);
+  });
+
+  it("returns the flow-authoring-preview icon+color for flow-authoring-preview", () => {
+    const icon = getExplorerTabIcon({
+      kind: "flow-authoring-preview",
+      label: "Preview",
+    });
+    expect(icon?.Icon).toBe(FLOW_AUTHORING_PREVIEW_ICON);
+    expect(icon?.className).toBe(FLOW_AUTHORING_PREVIEW_ICON_CLASS);
   });
 });

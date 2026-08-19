@@ -96,6 +96,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -111,6 +112,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -124,6 +126,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -147,6 +150,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -167,6 +171,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -187,6 +192,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -207,6 +213,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -226,6 +233,7 @@ describe("loadPersistedExplorerState", () => {
       eventGraphPanels: null,
       artifactPanels: null,
       artifactAuthoringPanels: null,
+      flowAuthoringPanels: null,
     });
   });
 
@@ -253,6 +261,7 @@ describe("loadPersistedExplorerState", () => {
         eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
         artifactPanels: null,
         artifactAuthoringPanels: null,
+        flowAuthoringPanels: null,
       });
     });
 
@@ -273,6 +282,7 @@ describe("loadPersistedExplorerState", () => {
         eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
         artifactPanels: null,
         artifactAuthoringPanels: null,
+        flowAuthoringPanels: null,
       });
     });
 
@@ -301,6 +311,7 @@ describe("loadPersistedExplorerState", () => {
         eventGraphPanels: OTHER_EVENT_GRAPH_PANELS,
         artifactPanels: null,
         artifactAuthoringPanels: null,
+        flowAuthoringPanels: null,
       });
     });
 
@@ -328,6 +339,7 @@ describe("loadPersistedExplorerState", () => {
         eventGraphPanels: null,
         artifactPanels: null,
         artifactAuthoringPanels: null,
+        flowAuthoringPanels: null,
       });
     });
   });
@@ -344,6 +356,7 @@ describe("savePersistedExplorerState", () => {
         eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
         artifactPanels: {},
         artifactAuthoringPanels: {},
+        flowAuthoringPanels: {},
       },
       { session, local },
     );
@@ -360,6 +373,7 @@ describe("savePersistedExplorerState", () => {
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
           artifactPanels: {},
           artifactAuthoringPanels: {},
+          flowAuthoringPanels: {},
         },
       });
     }
@@ -376,6 +390,7 @@ describe("savePersistedExplorerState", () => {
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
           artifactPanels: {},
           artifactAuthoringPanels: {},
+          flowAuthoringPanels: {},
         },
         { session: brokenSession, local },
       ),
@@ -392,6 +407,7 @@ describe("savePersistedExplorerState", () => {
           eventGraphPanels: SAMPLE_EVENT_GRAPH_PANELS,
           artifactPanels: {},
           artifactAuthoringPanels: {},
+          flowAuthoringPanels: {},
         },
         { session: throwingStorage(), local: throwingStorage() },
       ),

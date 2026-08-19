@@ -1,6 +1,6 @@
 # UI Workspace Milestone — Arc: Replay (PRs 35, 37)
 
-Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md). Continues in [`documentation-reorganization.md`](./documentation-reorganization.md) (PR 36) — but PR 37 below returns to this arc rather than living there, since it's PR 35's own deferred stretch goal, not a continuation of the docs-reorg thread.
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md). Continues in [`documentation-reorganization.md`](./documentation-reorganization.md) (PR 36) — but PR 37 below returns to this arc rather than living there, since it's PR 35's own deferred stretch goal, not a continuation of the docs-reorg thread. Continues in [`flow-authoring.md`](./flow-authoring.md) (PR 38) after PR 37 below.
 
 ## PR 35 - Flow graph — replay - merged (#318)
 
@@ -49,7 +49,7 @@ Shipped as designed: the idle/playing/paused state machine, the formula-based `u
 - EventGraph coordination stayed a stretch goal, not built — design already recorded above, untouched.
 - Two related-but-distinct ideas surfaced and logged in `docs/todo.md` instead of built: a "clear run"/"revert to original run" pair of buttons for resetting a panel's run state without closing/reopening it, and a separate breadcrumb idea for showing what's currently being looked at.
 
-## PR 37 - Sync the EventGraph panel with Flow Graph replay - in progress
+## PR 37 - Sync the EventGraph panel with Flow Graph replay - merged (#320)
 
 PR 35's own deferred stretch goal, picked back up: coordinate an already-open EventGraph panel with a Flow Graph panel's replay of the same run, instead of the EventGraph always showing the full event history regardless of replay position.
 

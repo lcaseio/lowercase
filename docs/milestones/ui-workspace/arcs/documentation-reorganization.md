@@ -1,6 +1,6 @@
 # UI Workspace Milestone — Arc: Documentation reorganization (PR 36)
 
-Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md). A meta/process PR, not UI-substance work — this is the PR that actually builds the `docs/milestones/` structure every other arc file in this directory is an example of.
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md). Continues in [`replay.md`](./replay.md) (PR 37, returning to that arc rather than this one). A meta/process PR, not UI-substance work — this is the PR that actually builds the `docs/milestones/` structure every other arc file in this directory is an example of.
 
 ## PR 36 - Documentation reorganization - merged (#319)
 

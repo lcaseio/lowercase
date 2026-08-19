@@ -62,7 +62,14 @@ export type OpenPanelRequest =
   // re-fetch this run's events itself (see use-run-events-with-status.ts's
   // pattern) so it survives a reload instead of depending on whatever's
   // already buffered in the events slice.
-  | { kind: "event-payload"; label: string; runId: string; eventId: string };
+  | { kind: "event-payload"; label: string; runId: string; eventId: string }
+  // singletons, same shape as event-graph above -- a not-yet-created flow
+  // draft has no real id to key on at all (no versionId, no flowId), unlike
+  // every other kind here. Only ever one draft at a time; re-triggering
+  // "+ New Flow" refocuses (or overwrites, for the upload path) the
+  // existing one rather than opening a second.
+  | { kind: "flow-authoring"; label: string }
+  | { kind: "flow-authoring-preview"; label: string };
 
 function contentId(req: OpenPanelRequest): string {
   switch (req.kind) {
@@ -89,6 +96,9 @@ function contentId(req: OpenPanelRequest): string {
       return req.versionId;
     case "event-payload":
       return `${req.runId}-${req.eventId}`;
+    case "flow-authoring":
+    case "flow-authoring-preview":
+      return "singleton";
   }
 }
 // distinct per kind+content, unlike the old slice's kind-only id -- lets two
@@ -100,6 +110,16 @@ export function explorerPanelId(req: OpenPanelRequest): string {
 
 export const EVENT_GRAPH_SINGLETON_ID = explorerPanelId({
   kind: "event-graph",
+  label: "",
+});
+
+export const FLOW_AUTHORING_ID = explorerPanelId({
+  kind: "flow-authoring",
+  label: "",
+});
+
+export const FLOW_AUTHORING_PREVIEW_ID = explorerPanelId({
+  kind: "flow-authoring-preview",
   label: "",
 });
 

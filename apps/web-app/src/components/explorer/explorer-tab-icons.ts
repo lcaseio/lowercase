@@ -35,6 +35,14 @@ export const ARTIFACT_AUTHORING_ICON_CLASS = "text-lime-400";
 // event's own payload, not a flow version's definition.
 export const EVENT_PAYLOAD_ICON = CurlyBracesIcon;
 export const EVENT_PAYLOAD_ICON_CLASS = "text-cyan-400";
+// JSON-first, like json-definition/event-payload, but its own color -- an
+// unsaved flow draft, not a persisted flow version's definition.
+export const FLOW_AUTHORING_ICON = CurlyBracesIcon;
+export const FLOW_AUTHORING_ICON_CLASS = "text-lime-400";
+// It is a flow graph, so reuses FLOW_GRAPH_ICON's shape -- a distinct color
+// marks it as the draft preview, not a real saved flow-graph panel.
+export const FLOW_AUTHORING_PREVIEW_ICON = WorkflowIcon;
+export const FLOW_AUTHORING_PREVIEW_ICON_CLASS = "text-lime-400";
 
 export function getExplorerTabIcon(
   params: OpenPanelRequest,
@@ -70,5 +78,15 @@ export function getExplorerTabIcon(
     // content, not the tree) -- same reasoning as event-graph above.
     case "event-payload":
       return { Icon: EVENT_PAYLOAD_ICON, className: EVENT_PAYLOAD_ICON_CLASS };
+    case "flow-authoring":
+      return {
+        Icon: FLOW_AUTHORING_ICON,
+        className: FLOW_AUTHORING_ICON_CLASS,
+      };
+    case "flow-authoring-preview":
+      return {
+        Icon: FLOW_AUTHORING_PREVIEW_ICON,
+        className: FLOW_AUTHORING_PREVIEW_ICON_CLASS,
+      };
   }
 }

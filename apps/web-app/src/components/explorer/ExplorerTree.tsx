@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PlusIcon } from "lucide-react";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { useAppDispatch } from "@/redux/typed-hooks";
@@ -7,6 +8,7 @@ import { useDockviewApi } from "./explorer-dockview-context";
 import { explorerPanelId, openOrFocusPanel } from "./explorer-panels";
 import { titleFor } from "./artifact-title";
 import { ExplorerFlowRow } from "./ExplorerFlowRow";
+import { CreateFlowDialog } from "./CreateFlowDialog";
 
 export function ExplorerTree() {
   const api = useDockviewApi();
@@ -17,6 +19,7 @@ export function ExplorerTree() {
     new Set(),
   );
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   if (isLoading) return showLoading ? <div>Loading flows...</div> : null;
   if (data?.ok === false) return <div>Error loading flows: {data.error}</div>;
@@ -33,7 +36,14 @@ export function ExplorerTree() {
 
   return (
     <div className="flex flex-col">
-      <div className="pt-3"></div>
+      <div
+        onClick={() => setDialogOpen(true)}
+        className="flex items-center gap-2 px-2 py-1.5 mt-1 text-xs cursor-pointer hover:bg-accent/40"
+      >
+        <PlusIcon className="size-3.5 shrink-0 text-lime-400" />
+        <span>New Flow</span>
+      </div>
+      <CreateFlowDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       {data.value.map(({ flow }) => (
         <ExplorerFlowRow
           key={flow.id}
