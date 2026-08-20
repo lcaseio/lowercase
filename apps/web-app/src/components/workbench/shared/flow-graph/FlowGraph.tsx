@@ -15,13 +15,13 @@ import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
 import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
 import { FIT_VIEW_OPTIONS, type NodePositions } from "@/lib/flow-graph-layout";
-import { FlowStepNode } from "@/components/flow-graph-nodes/FlowStepNode";
+import { FlowStepNode } from "@/components/workbench/shared/flow-graph/nodes/FlowStepNode";
 import {
   edgeHandleId,
   getEdgeStyle,
   getFlowStepAccent,
   getStatusBorderColor,
-} from "@/components/flow-graph-nodes/flow-step-accents";
+} from "@/components/workbench/shared/flow-graph/nodes/flow-step-accents";
 
 // Stable identity across renders -- React Flow re-measures/warns if the
 // nodeTypes object passed to <ReactFlow> changes on every render.

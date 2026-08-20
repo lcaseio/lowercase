@@ -11,7 +11,7 @@ type Props = {
   // Preferred over onOpen when present -- navigates to this field's source
   // location in the json-definition panel instead of flattening to inline
   // text. Takes no arguments since the caller's closure already knows the
-  // exact path (see StepHttpJsonDetails/ExportsField).
+  // exact path (see HttpJsonDetails/ExportsField).
   onNavigate?: () => void;
 };
 

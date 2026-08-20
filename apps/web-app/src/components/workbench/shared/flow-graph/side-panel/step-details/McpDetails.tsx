@@ -1,7 +1,7 @@
 import type { StepMcp } from "@lcase/types";
 import { InputField } from "@/components/workbench/shared/fields/InputField";
 
-export function StepMcpDetails({ step }: { step: StepMcp }) {
+export function McpDetails({ step }: { step: StepMcp }) {
   return (
     <div className="flex flex-col gap-3 mt-3">
       <InputField label="Type" value={step.type} />

@@ -1,19 +1,22 @@
-import { FlowGraph } from "@/components/FlowGraph";
+import { FlowGraph } from "@/components/workbench/shared/flow-graph/FlowGraph";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { RunToolbar } from "./RunToolbar";
-import { Rail } from "./Rail";
-import { SidePanel, type SidePanelTab } from "./SidePanel";
-import { SimAuthoringBar } from "./SimAuthoringBar";
-import { SaveSimDialog } from "./SaveSimDialog";
-import { ParamsTab } from "./side-panel/ParamsTab";
+import { RunToolbar } from "./toolbar/RunToolbar";
+import { Rail } from "@/components/workbench/shared/flow-graph/Rail";
+import {
+  SidePanel,
+  type SidePanelTab,
+} from "@/components/workbench/shared/flow-graph/SidePanel";
+import { SimAuthoringBar } from "./toolbar/SimAuthoringBar";
+import { SaveSimDialog } from "./toolbar/SaveSimDialog";
+import { RunInputTab } from "./side-panel/RunInputTab";
 import { SimTab } from "./side-panel/SimTab";
-import { ProblemsTab } from "./side-panel/ProblemsTab";
-import { ParametersTab } from "./side-panel/ParametersTab";
-import { StepDetailsTab } from "./side-panel/StepDetailsTab";
+import { ProblemsTab } from "@/components/workbench/shared/flow-graph/side-panel/ProblemsTab";
+import { ParametersTab } from "@/components/workbench/shared/flow-graph/side-panel/ParametersTab";
+import { StepDetailsTab } from "@/components/workbench/shared/flow-graph/side-panel/StepDetailsTab";
 import { StepResultsTab } from "./side-panel/StepResultsTab";
 import { SettingsTab } from "./side-panel/SettingsTab";
 import { useFlowGraphPanel } from "./use-flow-graph-panel";
@@ -110,7 +113,7 @@ export function Content({
     switch (tab) {
       case "runinput":
         return (
-          <ParamsTab
+          <RunInputTab
             flowDef={flowDef}
             params={params}
             artifacts={artifacts}

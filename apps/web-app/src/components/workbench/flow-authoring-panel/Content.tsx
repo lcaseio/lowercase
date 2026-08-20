@@ -12,10 +12,16 @@ import {
   FLOW_AUTHORING_ICON_CLASS,
   FLOW_GRAPH_ICON,
 } from "@/components/workbench/shared/tab-icons";
-import { Rail, type RailItem } from "../flow-graph-panel/Rail";
-import { SidePanel, type SidePanelTab } from "../flow-graph-panel/SidePanel";
-import { ProblemsTab } from "../flow-graph-panel/side-panel/ProblemsTab";
-import { ParametersTab } from "../flow-graph-panel/side-panel/ParametersTab";
+import {
+  Rail,
+  type RailItem,
+} from "@/components/workbench/shared/flow-graph/Rail";
+import {
+  SidePanel,
+  type SidePanelTab,
+} from "@/components/workbench/shared/flow-graph/SidePanel";
+import { ProblemsTab } from "@/components/workbench/shared/flow-graph/side-panel/ProblemsTab";
+import { ParametersTab } from "@/components/workbench/shared/flow-graph/side-panel/ParametersTab";
 import { useFlowAuthoringPanel } from "./use-flow-authoring-panel";
 
 // Only Problems and Parameters -- both pure flowDef-derived, no interaction

@@ -1,9 +1,9 @@
 import type { FlowDefinition } from "@lcase/types";
-import { StepHttpJsonDetails } from "./StepHttpJsonDetails";
-import { StepParallelDetails } from "./StepParallelDetails";
-import { StepJoinDetails } from "./StepJoinDetails";
-import { StepBranchDetails } from "./StepBranchDetails";
-import { StepMcpDetails } from "./StepMcpDetails";
+import { HttpJsonDetails } from "./HttpJsonDetails";
+import { ParallelDetails } from "./ParallelDetails";
+import { JoinDetails } from "./JoinDetails";
+import { BranchDetails } from "./BranchDetails";
+import { McpDetails } from "./McpDetails";
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
 
 type Props = {
@@ -26,7 +26,7 @@ export function StepDetails({
   switch (step.type) {
     case "httpjson":
       return (
-        <StepHttpJsonDetails
+        <HttpJsonDetails
           step={step}
           stepId={stepId}
           onOpenInMainPanel={onOpenInMainPanel}
@@ -34,12 +34,12 @@ export function StepDetails({
         />
       );
     case "parallel":
-      return <StepParallelDetails step={step} />;
+      return <ParallelDetails step={step} />;
     case "join":
-      return <StepJoinDetails step={step} />;
+      return <JoinDetails step={step} />;
     case "branch":
-      return <StepBranchDetails step={step} />;
+      return <BranchDetails step={step} />;
     case "mcp":
-      return <StepMcpDetails step={step} />;
+      return <McpDetails step={step} />;
   }
 }

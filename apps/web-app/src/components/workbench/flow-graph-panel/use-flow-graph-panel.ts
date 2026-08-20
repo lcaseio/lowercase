@@ -34,7 +34,7 @@ import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { useFlowGraphReplay } from "@/hooks/use-flow-graph-replay";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
-import type { SidePanelTab } from "./SidePanel";
+import type { SidePanelTab } from "@/components/workbench/shared/flow-graph/SidePanel";
 
 // Pure -- no React/Redux dependency, just the four inputs that decide it.
 // Priority: control-flow steps and no-selection both mean nothing to show;

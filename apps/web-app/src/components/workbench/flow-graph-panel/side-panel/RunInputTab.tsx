@@ -25,7 +25,7 @@ type Props = {
   onOpenArtifact: (hash: string, label: string) => void;
 };
 
-export function ParamsTab({
+export function RunInputTab({
   flowDef,
   params,
   artifacts,

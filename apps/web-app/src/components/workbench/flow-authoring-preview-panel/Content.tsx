@@ -1,16 +1,22 @@
 import { CircleAlertIcon, Footprints, VariableIcon } from "lucide-react";
-import { FlowGraph } from "@/components/FlowGraph";
+import { FlowGraph } from "@/components/workbench/shared/flow-graph/FlowGraph";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { GraphViewControls } from "../flow-graph-panel/GraphViewControls";
-import { Rail, type RailItem } from "../flow-graph-panel/Rail";
-import { SidePanel, type SidePanelTab } from "../flow-graph-panel/SidePanel";
-import { ProblemsTab } from "../flow-graph-panel/side-panel/ProblemsTab";
-import { ParametersTab } from "../flow-graph-panel/side-panel/ParametersTab";
-import { StepDetailsTab } from "../flow-graph-panel/side-panel/StepDetailsTab";
+import { GraphViewControls } from "@/components/workbench/shared/flow-graph/GraphViewControls";
+import {
+  Rail,
+  type RailItem,
+} from "@/components/workbench/shared/flow-graph/Rail";
+import {
+  SidePanel,
+  type SidePanelTab,
+} from "@/components/workbench/shared/flow-graph/SidePanel";
+import { ProblemsTab } from "@/components/workbench/shared/flow-graph/side-panel/ProblemsTab";
+import { ParametersTab } from "@/components/workbench/shared/flow-graph/side-panel/ParametersTab";
+import { StepDetailsTab } from "@/components/workbench/shared/flow-graph/side-panel/StepDetailsTab";
 import { useFlowAuthoringPreviewPanel } from "./use-flow-authoring-preview-panel";
 
 // Only the tabs a not-yet-saved draft can actually support: Problems and

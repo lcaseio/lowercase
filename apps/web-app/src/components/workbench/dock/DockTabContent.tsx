@@ -2,13 +2,13 @@ import type { IDockviewPanelProps } from "dockview-react";
 import type { OpenPanelRequest } from "./dock-panels";
 import { Content as FlowSettingsPanelContent } from "@/components/workbench/flow-settings-panel/Content";
 import { Content as JsonDefinitionPanelContent } from "@/components/workbench/json-definition-panel/Content";
-import { Content as FlowGraphPanelContent } from "@/components/explorer/flow-graph-panel/Content";
+import { Content as FlowGraphPanelContent } from "@/components/workbench/flow-graph-panel/Content";
 import { Content as EventGraphPanelContent } from "@/components/workbench/event-graph-panel/Content";
 import { Content as ArtifactPanelContent } from "@/components/workbench/artifact-panel/Content";
 import { Content as ArtifactAuthoringPanelContent } from "@/components/workbench/artifact-authoring-panel/Content";
 import { Content as EventPayloadPanelContent } from "@/components/workbench/event-payload-panel/Content";
-import { Content as FlowAuthoringPanelContent } from "@/components/explorer/flow-authoring-panel/Content";
-import { Content as FlowAuthoringPreviewPanelContent } from "@/components/explorer/flow-authoring-preview-panel/Content";
+import { Content as FlowAuthoringPanelContent } from "@/components/workbench/flow-authoring-panel/Content";
+import { Content as FlowAuthoringPreviewPanelContent } from "@/components/workbench/flow-authoring-preview-panel/Content";
 
 // registered as dockview's "dock-tab" component (see dock-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is

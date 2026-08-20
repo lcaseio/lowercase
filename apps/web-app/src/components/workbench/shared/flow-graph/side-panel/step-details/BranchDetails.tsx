@@ -3,7 +3,7 @@ import { InputField } from "@/components/workbench/shared/fields/InputField";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-export function StepBranchDetails({ step }: { step: StepBranch }) {
+export function BranchDetails({ step }: { step: StepBranch }) {
   const caseEntries = Object.entries(step.cases);
 
   return (

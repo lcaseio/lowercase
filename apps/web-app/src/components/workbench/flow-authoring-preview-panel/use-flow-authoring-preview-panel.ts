@@ -7,7 +7,7 @@ import {
   type LayoutDirection,
 } from "@/lib/flow-graph-layout";
 import { FLOW_AUTHORING_ID } from "@/components/workbench/dock/dock-panels";
-import type { SidePanelTab } from "../flow-graph-panel/SidePanel";
+import type { SidePanelTab } from "@/components/workbench/shared/flow-graph/SidePanel";
 
 // Reads the flow-authoring editor's own draft content by its fixed
 // singleton id -- this panel never writes it, only displays it.

@@ -12,7 +12,7 @@ type Props = {
   onNavigateToDefinition?: (path: string[]) => void;
 };
 
-export function StepHttpJsonDetails({
+export function HttpJsonDetails({
   step,
   stepId,
   onOpenInMainPanel,
