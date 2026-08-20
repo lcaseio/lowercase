@@ -8,7 +8,7 @@ Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc
 
 **Why two PRs, not one.** Originally scoped as a single PR 47 — split once it became clear it bundled a low-risk mechanical piece (renaming things, moving self-contained panel folders) with one genuinely complex, interdependent piece (`flow-graph-panel`'s internal split, which touches three panels' imports at once). Same reasoning as the PR 44/45 merge and the PR 45/46 split earlier in this arc: split when a PR contains a real, isolable decision or risk; merge when it doesn't.
 
-## PR 47 - Rename Explorer -> Workbench/Dock/FlowExplorer (foundational renames + self-contained panels) - not started
+## PR 47 - Rename Explorer -> Workbench/Dock/FlowExplorer (foundational renames + self-contained panels) - ready for review
 
 ### Discussion
 
@@ -21,20 +21,56 @@ Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc
 
 **Persistence/state-key risk, resolved as a non-issue.** Single-user local dev app, and the precedent from the last time a persistence-shape change happened was simply clearing the stored state in devtools rather than migrating it. Rename freely — `explorer-tabs-slice.ts` → `dock-tabs-slice.ts`, `explorer-persistence.ts` → `dock-persistence.ts`, whatever state/storage keys change along with them.
 
-**Tree-specific (7 files), folder `components/explorer/` stays as-is (now correctly scoped to just this):**
-`ExplorerTree.tsx` → `FlowExplorer.tsx`; `ExplorerFlowRow.tsx`, `ExplorerVersionList.tsx`, `ExplorerVersionRow.tsx`, `ExplorerVersionRunList.tsx`, `ExplorerVersionSimList.tsx`, `ExplorerVersionArtifactList.tsx` → `FlowExplorer`-prefixed equivalents. `CreateFlowDialog.tsx` stays here too — its only caller is `ExplorerTree.tsx`. These are not tree-adjacent-but-actually-something-else the way `ExplorerTab`/`ExplorerTabContent`/`ExplorerWatermark` are (below) — every one of these 8 is genuinely tree content.
+**Tree-specific, folder `components/explorer/` stays as-is (now correctly scoped to just this).** Originally scoped as a flat mechanical `Explorer`→`FlowExplorer` prefix swap across 7 files, with a deeper naming pass deferred to a hypothetical later PR. Once actually read end-to-end (all 7 files, not assumed from names), the deeper pass turned out to be small enough to just settle now rather than defer — the deferred-PR-49 idea is dropped entirely, not just postponed again.
+
+**What the files actually do, read directly rather than assumed from folder names**: `ExplorerTree.tsx` renders a list of Flows inline (no separate FlowList — there's nothing else to disambiguate a top-level list from) and maps each into `ExplorerFlowRow.tsx`, an expandable Flow row that renders a Settings row inline plus `ExplorerVersionList.tsx` (the list of Versions under that Flow). Each Version becomes an `ExplorerVersionRow.tsx` — expandable, rendering Flow Graph/JSON Definition rows inline plus three expandable sections (Runs/Sims/Artifacts), each backed by its own list component (`ExplorerVersionRunList.tsx`/`ExplorerVersionSimList.tsx`/`ExplorerVersionArtifactList.tsx`) that renders its rows inline too — symmetric with the top level: whichever nesting level is the leaf never gets a separate Row file of its own.
+
+**Resolved: a `version/` subfolder, with the `Version` prefix dropped inside it — same reasoning as `step-results/Content.tsx`.** The 5 Version-scoped files are a real, cohesive group — same size bar `toolbar/`/`step-details/`/`step-results/` were held to — and the folder itself now carries the scoping signal a filename prefix used to carry, so repeating it in the filename (`version/VersionRunList.tsx`) would be exactly the redundancy that pattern exists to avoid:
+
+```
+components/explorer/
+  FlowExplorer.tsx      (was ExplorerTree.tsx)
+  Row.tsx               (was ExplorerFlowRow.tsx)
+  CreateFlowDialog.tsx
+  version/
+    List.tsx            (was ExplorerVersionList.tsx)
+    Row.tsx             (was ExplorerVersionRow.tsx)
+    RunList.tsx         (was ExplorerVersionRunList.tsx)
+    SimList.tsx         (was ExplorerVersionSimList.tsx)
+    ArtifactList.tsx    (was ExplorerVersionArtifactList.tsx)
+```
+
+**`ExplorerFlowRow.tsx` → `Row.tsx`, not `FlowExplorerFlowRow.tsx` — same redundancy fix, one level up.** The mechanical prefix swap would have doubled "Flow" (`FlowExplorer` + `FlowRow`). Dropped for the same reason as `version/`'s prefix: it already implies a top-level row once it's sitting directly under `components/explorer/`, and "Flow" was only ever there to say "this is the flow explorer's row" — a job the folder path already does. Two files end up named `Row.tsx` (this one, and `version/Row.tsx`) — consistent with the already-accepted `Content.tsx`-in-many-folders pattern, disambiguated by path, not name.
+
+**`ExplorerVersionRunList.tsx`'s own comment — "scoped to one flow version's runs, a future wider list would be a different component" — still holds with the prefix dropped**, since `version/RunList.tsx`'s path now carries that same scoping signal the prefix used to. Carry the comment (or a shortened form of it) forward into `version/RunList.tsx` (and worth a matching one-liner in `SimList.tsx`/`ArtifactList.tsx` for the same reason) so the reasoning doesn't get lost in the rename.
 
 **Singular, not plural — `FlowExplorer`, not `FlowsExplorer`.** Matches the established convention of every real "X Explorer" tool: File **Explorer** (Windows), Object **Explorer** (SSMS), Solution/Project **Explorer** (Visual Studio), Package **Explorer** (Eclipse) — the modifier is always singular, functioning attributively (naming the _category_ of thing browsed, not counting instances), the same way "a file explorer" isn't "a files explorer" even though it browses many files.
 
-**Deferred, not decided: whether the tree's own row/list component names (`ExplorerFlowRow`, `ExplorerVersionList`, `ExplorerVersionRow`, `ExplorerVersionRunList`, `ExplorerVersionSimList`, `ExplorerVersionArtifactList`) need more than a mechanical `Explorer`→`FlowExplorer` prefix swap.** Tentatively estimated as its own later PR (49, loosely) — genuinely just an estimate, not a commitment; depends on how the renamed set actually reads once it exists. Not scoped now.
+**Flagged, not built: `FlowExplorer` may end up one of several sibling explorers someday** — a Run Explorer or Artifact Explorer rooted somewhere other than Flows, living as its own sibling under `components/` (or nested under a shared `explorer/` parent) rather than a subfolder of this one. Same treatment as the `Workspace` reservation above: named now so the current naming doesn't quietly foreclose it, nothing scoped or built toward it. `FlowExplorer`'s own internal `version/` subfolder (below) is unrelated to this — that's structure _within_ one explorer, not a sibling explorer.
 
-**Dock-specific (8 files) move to a new `components/workbench/dock/` folder**, `Dock`-prefixed where they were `Explorer`-prefixed: `ExplorerTab.tsx`/`ExplorerTabContent.tsx`/`ExplorerWatermark.tsx` → `DockTab.tsx`/`DockTabContent.tsx`/`DockWatermark.tsx`; `explorer-dockview-context.ts` → `dock-context.ts`; `explorer-panels.ts` → `dock-panels.ts`; `explorer-dockview-theme.css` → `dock-theme.css`; `explorer-persistence.ts` → `dock-persistence.ts`; `explorer-tabs-slice.ts` → `dock-tabs-slice.ts`. Despite sounding tree-adjacent by name, these are dockview/tab machinery, not tree content — that's exactly why they get `Dock`-prefixed rather than `FlowExplorer`-prefixed.
+**Dock-specific (6 files) move to a new `components/workbench/dock/` folder**, `Dock`-prefixed where they were `Explorer`-prefixed: `ExplorerTab.tsx`/`ExplorerTabContent.tsx`/`ExplorerWatermark.tsx` → `DockTab.tsx`/`DockTabContent.tsx`/`DockWatermark.tsx`; `explorer-dockview-context.ts` → `dock-context.ts`; `explorer-panels.ts` → `dock-panels.ts`; `explorer-dockview-theme.css` → `dock-theme.css`. Despite sounding tree-adjacent by name, these are dockview/tab machinery, not tree content — that's exactly why they get `Dock`-prefixed rather than `FlowExplorer`-prefixed.
+
+**Correction: `explorer-persistence.ts`/`explorer-tabs-slice.ts` are renamed but not relocated.** Every other panel-specific slice (`artifact-panels-slice.ts`, `flow-graph-panels-slice.ts`, etc.) lives in `redux/slices/`, never colocated with its component folder — `explorer-tabs-slice.ts` already follows that convention today. Moving it into `components/workbench/dock/` (as an earlier pass at this doc had it) would introduce a one-off exception with no real justification beyond "Dock feels more like infra" — not worth breaking the established layering for. Renamed in place instead: `redux/explorer-persistence.ts` → `redux/dock-persistence.ts`, `redux/slices/explorer-tabs-slice.ts` → `redux/slices/dock-tabs-slice.ts`.
 
 **Two outlier panel-content files** lose the stray `Explorer` prefix their sibling panels never had, moving to their own subfolders matching convention: `ExplorerFlowSettingsContent.tsx` → `flow-settings-panel/Content.tsx`; `ExplorerJsonDefinitionContent.tsx` → `json-definition-panel/Content.tsx`.
 
 **Cross-cutting shared utilities → `components/workbench/shared/`** (a real folder, hard invariant: only things with verified, actual multiple consumers go in it, never "this seems generalish"): `CreateArtifactDialog.tsx` (already live in `components/explorer/`, opened from both a tree row and `flow-graph-panel/side-panel/ParamsTab.tsx`), `artifact-title.ts` (same cross-cutting shape). `CodeEditor.tsx`, `MainPanelTypes.ts`, and all of `components/fields/*` land in the same `components/workbench/shared/` folder but are moved as part of PR 46 instead, not this PR — per `prune-old-pages.md`'s mechanical boundary rule, they're loose under `components/` today (not inside `components/explorer/`), so they're PR 46's job even though the destination folder is one PR 47 also populates. Confirmed via grep — `CodeEditor.tsx` alone has 7 importers spanning nearly every panel kind.
 
+**A fifth shared item, missed until PR 46 landed and this list got re-checked against the actual `components/explorer/` tree: `explorer-tab-icons.ts`** (+ its test file). Same shape as the others — its own file comment already says it's "shared by both the tree rows... and `getExplorerTabIcon`" — and its real importers span three domains: tree rows (`ExplorerVersionRow.tsx` and siblings), Dock (`ExplorerTab.tsx`), and flow-graph content outside `components/explorer/` entirely (`flow-graph-panel/RunToolbar.tsx`, `components/flow-graph-nodes/FlowStepNode.tsx`). Moves to `components/workbench/shared/tab-icons.ts`. Its one dynamic export, `getExplorerTabIcon`, is renamed to `getTabIcon` as part of the move — unlike PR 46's content-file renames (where the old export names stayed accurate regardless of file location), "Explorer" in this identifier becomes actively misleading once "Explorer" is narrowed to mean the tree specifically; the static icon constants (`FLOW_GRAPH_ICON` etc.) already don't reference "Explorer" and need no change. Its `OpenPanelRequest` type import (from `explorer-panels.ts` → `dock-panels.ts`) stays as an import from `dock/dock-panels.ts` — `shared/` depending on a `dock/` type is fine, the same direction `shared/flow-graph`'s own dependents already point.
+
 **The four self-contained panel folders move wholesale, no internal restructuring** — checked directly (file counts: `artifact-panel/` 5 files/551 lines, `artifact-authoring-panel/` 2 files/394 lines, `event-graph-panel/` 5 files/458 lines, `event-payload-panel/` 1 file/37 lines), confirmed flat with no multi-file tab content anywhere (`MetadataTab.tsx`/`EventDetailsTab.tsx` are each fully self-contained) and no cross-panel sharing pattern (checked by grep — neither authoring/preview panel reaches into its sibling's internals, unlike `flow-graph-panel`'s situation). Nothing here needs the `step-details`/`step-results`-style subfolder treatment: `artifact-panel/`, `artifact-authoring-panel/`, `event-graph-panel/`, `event-payload-panel/` just move to `components/workbench/` as-is.
+
+### What actually landed
+
+Matched the settled plan exactly — 34 files moved/renamed via `git mv`, plus 4 associated test files renamed to match (`explorer-panels.test.ts` → `dock-panels.test.ts`, `explorer-persistence.test.ts` → `dock-persistence.test.ts`, `explorer-tabs-slice.test.ts` → `dock-tabs-slice.test.ts`, `explorer-tab-icons.test.ts` → `tab-icons.test.ts`). Two nesting collisions during the move (`git mv components/explorer/artifact-panel components/workbench/artifact-panel` landed _inside_ the folder PR 46 had already created there, same for `event-graph-panel`) were caught immediately and corrected by un-nesting before anything else proceeded.
+
+**Unlike PR 46, export identifiers were renamed to match every renamed file** — `ExplorerTree`→`FlowExplorer`, `ExplorerFlowRow`→`Row`, `ExplorerVersionList`→`List`, `ExplorerVersionRow`→`Row`, `ExplorerVersionRunList`→`RunList`, `ExplorerVersionSimList`→`SimList`, `ExplorerVersionArtifactList`→`ArtifactList`, `ExplorerTab`→`DockTab`, `ExplorerTabContent`→`DockTabContent`, `ExplorerWatermark`→`DockWatermark`, `ExplorerFlowSettingsContent`/`ExplorerJsonDefinitionContent`→`Content` (both, matching the established `Content.tsx` convention, disambiguated at the import site the same way every other panel's `Content` already is: `import { Content as FlowSettingsPanelContent }`), and the page's own `Explorer()`→`Workbench()`. This is the opposite call from PR 46's content-file renames, deliberately: there, the old export names stayed accurate regardless of file location; here, "Explorer" in an identifier becomes actively misleading the moment "Explorer" is narrowed to mean the tree specifically, so the identifier itself was part of what needed fixing, not just the file path.
+
+**Found and fixed during execution, beyond the file list above, all following that same "Explorer became misleading" logic**: `dock-panels.ts`'s `explorerPanelId()`/`EXPLORER_PANEL_COMPONENT` (+ its `"explorer-tab"` dockview registration string) → `dockPanelId()`/`DOCK_TAB_COMPONENT`/`"dock-tab"`; `dock-persistence.ts`'s `ExplorerStorage(s)`, `LoadedExplorerState`, `loadPersistedExplorerState`, `savePersistedExplorerState`, and its `"explorer-workspace:default"` storage key → `DockStorage(s)`, `LoadedDockState`, `loadPersistedDockState`, `savePersistedDockState`, `"dock-workspace:default"` (covered by this doc's own already-approved "rename freely" note on state/storage keys); `dock-context.ts`'s error message ("must be used within Explorer's..." → "...Workbench's..."); several stale code comments referencing old file/identifier names (`ExplorerTree.tsx`, `ExplorerJsonDefinitionContent.tsx`, `ExplorerTree's artifact list`) updated to match.
+
+**One real, undocumented decision surfaced and resolved before executing**: the nav label "Explorer" and its `/explorer` route (`AppShell.tsx`, `App.tsx`) were never explicitly listed in this doc's scope, but point at exactly the same page this PR renames to `Workbench`. Flagged, confirmed, renamed to `/workbench`/"Workbench" — same non-issue reasoning already established for storage keys (single-user local dev app, nothing external depends on the URL).
+
+Verification: repo-root `pnpm typecheck` (25/25 clean — one real break caught and fixed, `DockTabContent.tsx`'s panel-content imports were still relative paths assuming its old sibling-folder location and needed to become `@/`-absolute, split between `components/workbench/` and `components/explorer/` depending on which panel), `pnpm lint` (26/26 clean), `pnpm test` (all packages clean, web-app's 227 tests unchanged), a stray-string sweep for old identifiers/paths/`/explorer` route references (none found), dev server boots and both `/` and `/workbench` resolve 200.
 
 ## PR 48 - `flow-graph-panel` internal split + `shared/flow-graph/` kit + its two authoring panels - not started
 
@@ -70,8 +106,6 @@ components/workbench/
     dock-context.ts
     dock-panels.ts
     dock-theme.css
-    dock-persistence.ts
-    dock-tabs-slice.ts
 
   shared/
     flow-graph/                      (PR 48)
@@ -107,6 +141,7 @@ components/workbench/
     MainPanelTypes.ts                (PR 46)
     CreateArtifactDialog.tsx         (PR 47)
     artifact-title.ts                (PR 47)
+    tab-icons.ts                     (PR 47 — was explorer-tab-icons.ts, getExplorerTabIcon renamed getTabIcon)
 
   flow-graph-panel/                  (PR 48, except side-panel content noted below)
     Content.tsx
@@ -143,15 +178,19 @@ components/workbench/
 
 components/explorer/                (PR 47 — narrowed, tree-only)
   FlowExplorer.tsx                 (was ExplorerTree.tsx)
-  FlowExplorerFlowRow.tsx
-  FlowExplorerVersionList.tsx
-  FlowExplorerVersionRow.tsx
-  FlowExplorerVersionRunList.tsx
-  FlowExplorerVersionSimList.tsx
-  FlowExplorerVersionArtifactList.tsx
+  Row.tsx                          (was ExplorerFlowRow.tsx)
   CreateFlowDialog.tsx
+  version/
+    List.tsx                        (was ExplorerVersionList.tsx)
+    Row.tsx                         (was ExplorerVersionRow.tsx)
+    RunList.tsx                     (was ExplorerVersionRunList.tsx)
+    SimList.tsx                     (was ExplorerVersionSimList.tsx)
+    ArtifactList.tsx                (was ExplorerVersionArtifactList.tsx)
 
 pages/Workbench.tsx                 (PR 47 — was pages/Explorer.tsx)
+
+redux/dock-persistence.ts           (PR 47 — was explorer-persistence.ts, renamed in place, not relocated)
+redux/slices/dock-tabs-slice.ts     (PR 47 — was explorer-tabs-slice.ts, renamed in place, not relocated)
 ```
 
 ## Sequencing

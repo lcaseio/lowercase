@@ -4,7 +4,7 @@ import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
 import { InputField } from "@/components/workbench/shared/fields/InputField";
 
-export function ExplorerFlowSettingsContent({ flowId }: { flowId: string }) {
+export function Content({ flowId }: { flowId: string }) {
   const { data, error, isLoading, refetch } = useGetFlowsQuery();
 
   const hasError = error || data?.ok === false;

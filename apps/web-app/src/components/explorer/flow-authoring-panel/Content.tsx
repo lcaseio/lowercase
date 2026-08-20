@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   FLOW_AUTHORING_ICON_CLASS,
   FLOW_GRAPH_ICON,
-} from "../explorer-tab-icons";
+} from "@/components/workbench/shared/tab-icons";
 import { Rail, type RailItem } from "../flow-graph-panel/Rail";
 import { SidePanel, type SidePanelTab } from "../flow-graph-panel/SidePanel";
 import { ProblemsTab } from "../flow-graph-panel/side-panel/ProblemsTab";

@@ -85,7 +85,7 @@ Matched the plan: all confirmed old-exclusive pages/components deleted, plus the
 
 All 9 survivor files (`StepResultsTab.tsx`'s subtree, `FlowVersionRunParamRow.tsx`, `ArtifactContentPanel.tsx`) confirmed still present and untouched. `pnpm typecheck` (repo-root) and `pnpm lint` clean; `pnpm vitest run` — all 227 tests across 18 files pass; stray-string sweep for `/spike` and `/flows` turned up nothing.
 
-## PR 46 - Rehome shared survivors out of the old flow-version/top-level component tree - ready for review
+## PR 46 - Rehome shared survivors out of the old flow-version/top-level component tree - merged (#329)
 
 Once PR 45 landed, `components/flow-version/` (and a handful of old top-level loose files/folders — `components/CodeEditor.tsx`, `EventGraph.tsx`, `EventDetails.tsx`, `FlowParameters.tsx`, `FlowProblemsList.tsx`, `MainPanelTypes.ts`, `components/steps/*`, `components/fields/*`) hold only files that are genuinely still live: `StepResultsTab.tsx`'s subtree (`StepOutputExportsPanel`, `StepFieldResolutionPanel`, `StepReferencesPanel`, `FieldResolutionRow`, `ReferenceRow`, `ArtifactHashLoader`), `FlowVersionRunParamRow.tsx`, `ArtifactContentPanel.tsx`, plus the loose files/folders just listed — all confirmed as real, load-bearing imports of the current Explorer UI in PR 45's investigation. This PR moves and renames them into their real homes, then deletes whatever's left of `components/flow-version/`.
 

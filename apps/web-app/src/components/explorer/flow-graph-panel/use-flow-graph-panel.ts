@@ -32,8 +32,8 @@ import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { useFlowGraphReplay } from "@/hooks/use-flow-graph-replay";
-import { useDockviewApi } from "../explorer-dockview-context";
-import { openOrFocusPanel } from "../explorer-panels";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
+import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
 import type { SidePanelTab } from "./SidePanel";
 
 // Pure -- no React/Redux dependency, just the four inputs that decide it.
@@ -116,7 +116,7 @@ export function useFlowGraphPanel(
   }, [simId, simDefinition, runId, panelId, dispatch]);
 
   // Fetched for a run-opened panel OR a sim-opened one -- runId is already
-  // non-null from mount for the run case (seeded by ExplorerTree.tsx's
+  // non-null from mount for the run case (seeded by FlowExplorer.tsx's
   // onSelectRun before this panel even opens) and one render later for the
   // sim case (seeded by the effect above, from the sim's parentRunId), so
   // unlike that effect, `runId === null` can't serve as the "not yet

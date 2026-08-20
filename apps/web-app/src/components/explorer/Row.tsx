@@ -17,9 +17,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ExplorerVersionList } from "./ExplorerVersionList";
+import { List } from "./version/List";
 
-export function ExplorerFlowRow({
+export function Row({
   flow,
   isExpanded,
   onToggleExpanded,
@@ -101,7 +101,7 @@ export function ExplorerFlowRow({
               <SettingsIcon className="size-3.5 shrink-0" />
               <span className="truncate">Settings</span>
             </div>
-            <ExplorerVersionList
+            <List
               flowId={flow.id}
               selectedRowId={selectedRowId}
               onSelectRow={onSelectRow}

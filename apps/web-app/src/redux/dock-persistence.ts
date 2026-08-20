@@ -8,17 +8,17 @@ import type { FlowAuthoringPanelsState } from "./slices/flow-authoring-panels-sl
 // workspace id hardcoded for now -- see docs/milestones/ui-workspace/research/state-management.md's
 // workspace-switching notes for why this is still the right seam to leave in
 // place even with only one implicit workspace today
-const STORAGE_KEY = "explorer-workspace:default";
+const STORAGE_KEY = "dock-workspace:default";
 const CURRENT_VERSION = 1;
 
 // injectable rather than a bare `localStorage`/`sessionStorage` reference --
 // this repo's vitest runs in Node, not jsdom, so there's no real global to
 // reach for in tests, and it happens to be the same seam a future
 // async/database-backed swap would use
-type ExplorerStorage = Pick<Storage, "getItem" | "setItem">;
-type ExplorerStorages = { session: ExplorerStorage; local: ExplorerStorage };
+type DockStorage = Pick<Storage, "getItem" | "setItem">;
+type DockStorages = { session: DockStorage; local: DockStorage };
 
-type LoadedExplorerState = {
+type LoadedDockState = {
   dockview: SerializedDockview | null;
   flowGraphPanels: FlowGraphPanelsState | null;
   eventGraphPanels: EventGraphPanelsState | null;
@@ -27,7 +27,7 @@ type LoadedExplorerState = {
   flowAuthoringPanels: FlowAuthoringPanelsState | null;
 };
 
-const EMPTY_LOADED_STATE: LoadedExplorerState = {
+const EMPTY_LOADED_STATE: LoadedDockState = {
   dockview: null,
   flowGraphPanels: null,
   eventGraphPanels: null,
@@ -60,12 +60,12 @@ function readGatedPanelState<T>(
 // null means this storage has nothing *usable at the envelope level*
 // (missing, corrupt, or wrong version) -- distinct from a valid envelope
 // whose individual fields might still be independently null, which is a
-// real LoadedExplorerState, not a signal to fall back to the next source.
+// real LoadedDockState, not a signal to fall back to the next source.
 // Deliberately shallow validation (typeof checks, not a schema validator) --
 // proportionate for low-stakes local UI state. dockview's own tree shape is
 // not validated at all here; see docs/milestones/ui-workspace/MILESTONE.md's PR 7 entry for
 // why that's deferred.
-function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
+function readSnapshot(storage: DockStorage): LoadedDockState | null {
   let raw: string | null;
   try {
     raw = storage.getItem(STORAGE_KEY);
@@ -140,7 +140,7 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
 }
 
 // tab-local sessionStorage wins first -- same-tab continuity across both
-// in-app navigation (Explorer unmount/remount) and a real reload, neither of
+// in-app navigation (Workbench unmount/remount) and a real reload, neither of
 // which should be able to pick up a *different* tab's edits. Only a
 // genuinely new tab (empty or unusable sessionStorage) falls back to the
 // cross-tab-shared localStorage "last known good" snapshot. The choice
@@ -148,12 +148,12 @@ function readSnapshot(storage: ExplorerStorage): LoadedExplorerState | null {
 // sessionStorage envelope is used entirely on its own terms (including
 // whatever per-field nulls it has), never patched with fields pulled from a
 // different tab's localStorage data.
-export function loadPersistedExplorerState(
-  storages: ExplorerStorages = {
+export function loadPersistedDockState(
+  storages: DockStorages = {
     session: window.sessionStorage,
     local: window.localStorage,
   },
-): LoadedExplorerState {
+): LoadedDockState {
   return (
     readSnapshot(storages.session) ??
     readSnapshot(storages.local) ??
@@ -165,7 +165,7 @@ export function loadPersistedExplorerState(
 // continuity, local to keep the cross-tab "seed a new tab" fallback fresh.
 // Each write is independent/best-effort; one storage being unavailable
 // doesn't block the other.
-export function savePersistedExplorerState(
+export function savePersistedDockState(
   snapshot: {
     dockview: SerializedDockview;
     flowGraphPanels: FlowGraphPanelsState;
@@ -174,7 +174,7 @@ export function savePersistedExplorerState(
     artifactAuthoringPanels: ArtifactAuthoringPanelsState;
     flowAuthoringPanels: FlowAuthoringPanelsState;
   },
-  storages: ExplorerStorages = {
+  storages: DockStorages = {
     session: window.sessionStorage,
     local: window.localStorage,
   },

@@ -6,11 +6,11 @@ import {
   setFlowAuthoringContent,
 } from "@/redux/slices/flow-authoring-panels-slice";
 import { useFlowDraftSnapshot } from "@/hooks/use-flow-draft-analysis";
-import { useDockviewApi } from "../explorer-dockview-context";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import {
   FLOW_AUTHORING_PREVIEW_ID,
   openOrFocusPanel,
-} from "../explorer-panels";
+} from "@/components/workbench/dock/dock-panels";
 import type { SidePanelTab } from "../flow-graph-panel/SidePanel";
 import { toast } from "sonner";
 

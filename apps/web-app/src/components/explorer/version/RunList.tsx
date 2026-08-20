@@ -1,12 +1,15 @@
 import type { RunListItem } from "@lcase/types";
 import { useListAllRunsQuery } from "@/redux/api/runs-api";
 import { cn } from "@/lib/utils";
-import { RUN_ICON, RUN_ICON_CLASS } from "./explorer-tab-icons";
+import {
+  RUN_ICON,
+  RUN_ICON_CLASS,
+} from "@/components/workbench/shared/tab-icons";
 
 // Scoped to one flow version's runs -- a possible future "all runs across
 // every version of a flow" list would be a different component, not this
 // one widened.
-export function ExplorerVersionRunList({
+export function RunList({
   versionId,
   selectedRowId,
   onSelectRun,

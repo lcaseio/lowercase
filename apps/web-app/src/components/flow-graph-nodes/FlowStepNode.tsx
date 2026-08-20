@@ -25,7 +25,7 @@ import {
   SELECTION_RING_COLOR,
   type FlowStepAccent,
 } from "./flow-step-accents";
-import { SIM_ICON } from "../explorer/explorer-tab-icons";
+import { SIM_ICON } from "@/components/workbench/shared/tab-icons";
 
 export type FlowStepNodeData = {
   label: string;

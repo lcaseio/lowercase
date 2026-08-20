@@ -1,28 +1,28 @@
 import type { IDockviewPanelProps } from "dockview-react";
-import type { OpenPanelRequest } from "./explorer-panels";
-import { ExplorerFlowSettingsContent } from "./ExplorerFlowSettingsContent";
-import { ExplorerJsonDefinitionContent } from "./ExplorerJsonDefinitionContent";
-import { Content as FlowGraphPanelContent } from "./flow-graph-panel/Content";
-import { Content as EventGraphPanelContent } from "./event-graph-panel/Content";
-import { Content as ArtifactPanelContent } from "./artifact-panel/Content";
-import { Content as ArtifactAuthoringPanelContent } from "./artifact-authoring-panel/Content";
-import { Content as EventPayloadPanelContent } from "./event-payload-panel/Content";
-import { Content as FlowAuthoringPanelContent } from "./flow-authoring-panel/Content";
-import { Content as FlowAuthoringPreviewPanelContent } from "./flow-authoring-preview-panel/Content";
+import type { OpenPanelRequest } from "./dock-panels";
+import { Content as FlowSettingsPanelContent } from "@/components/workbench/flow-settings-panel/Content";
+import { Content as JsonDefinitionPanelContent } from "@/components/workbench/json-definition-panel/Content";
+import { Content as FlowGraphPanelContent } from "@/components/explorer/flow-graph-panel/Content";
+import { Content as EventGraphPanelContent } from "@/components/workbench/event-graph-panel/Content";
+import { Content as ArtifactPanelContent } from "@/components/workbench/artifact-panel/Content";
+import { Content as ArtifactAuthoringPanelContent } from "@/components/workbench/artifact-authoring-panel/Content";
+import { Content as EventPayloadPanelContent } from "@/components/workbench/event-payload-panel/Content";
+import { Content as FlowAuthoringPanelContent } from "@/components/explorer/flow-authoring-panel/Content";
+import { Content as FlowAuthoringPreviewPanelContent } from "@/components/explorer/flow-authoring-preview-panel/Content";
 
-// registered as dockview's "explorer-tab" component (see explorer-panels.ts)
+// registered as dockview's "dock-tab" component (see dock-panels.ts)
 // -- each panel gets its own distinct id per kind+content now, so a panel is
 // never reused for different content the way the old singleton tab was.
-export function ExplorerTabContent({
+export function DockTabContent({
   params,
   api,
 }: IDockviewPanelProps<OpenPanelRequest>) {
   switch (params.kind) {
     case "flow-settings":
-      return <ExplorerFlowSettingsContent flowId={params.flowId} />;
+      return <FlowSettingsPanelContent flowId={params.flowId} />;
     case "json-definition":
       return (
-        <ExplorerJsonDefinitionContent
+        <JsonDefinitionPanelContent
           versionId={params.versionId}
           revealPath={params.revealPath}
           revealAt={params.revealAt}

@@ -4,13 +4,16 @@ import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 import { useAppDispatch } from "@/redux/typed-hooks";
 import { runSelected } from "@/redux/slices/flow-graph-panels-slice";
-import { useDockviewApi } from "./explorer-dockview-context";
-import { explorerPanelId, openOrFocusPanel } from "./explorer-panels";
-import { titleFor } from "./artifact-title";
-import { ExplorerFlowRow } from "./ExplorerFlowRow";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
+import {
+  dockPanelId,
+  openOrFocusPanel,
+} from "@/components/workbench/dock/dock-panels";
+import { titleFor } from "@/components/workbench/shared/artifact-title";
+import { Row } from "./Row";
 import { CreateFlowDialog } from "./CreateFlowDialog";
 
-export function ExplorerTree() {
+export function FlowExplorer() {
   const api = useDockviewApi();
   const dispatch = useAppDispatch();
   const { data, error, isLoading } = useGetFlowsQuery();
@@ -45,7 +48,7 @@ export function ExplorerTree() {
       </div>
       <CreateFlowDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       {data.value.map(({ flow }) => (
-        <ExplorerFlowRow
+        <Row
           key={flow.id}
           flow={flow}
           isExpanded={expandedFlowIds.has(flow.id)}
@@ -103,7 +106,7 @@ export function ExplorerTree() {
               openedAs: { type: "run" as const, runId: run.runId },
             };
             dispatch(
-              runSelected({ panelId: explorerPanelId(req), runId: run.runId }),
+              runSelected({ panelId: dockPanelId(req), runId: run.runId }),
             );
             if (api) openOrFocusPanel(api, req);
           }}

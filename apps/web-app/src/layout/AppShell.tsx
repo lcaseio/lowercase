@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const navItems = [
-  { to: "/explorer", label: "Explorer", icon: RocketIcon },
+  { to: "/workbench", label: "Workbench", icon: RocketIcon },
   { to: "/evals", label: "Evals", icon: ScaleIcon },
   { to: "/system", label: "System", icon: SettingsIcon },
 ];
