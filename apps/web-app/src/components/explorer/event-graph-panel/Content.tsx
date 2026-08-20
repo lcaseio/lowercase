@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { EventGraph } from "@/components/EventGraph";
+import { EventGraph } from "@/components/workbench/event-graph-panel/EventGraph";
 import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
 import { filterEventsUpTo } from "@/hooks/use-flow-graph-replay";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";

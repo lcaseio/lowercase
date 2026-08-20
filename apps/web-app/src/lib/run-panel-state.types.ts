@@ -1,4 +1,4 @@
-import type { MainPanelLanguage } from "@/components/MainPanelTypes";
+import type { MainPanelLanguage } from "@/components/workbench/shared/MainPanelTypes";
 
 export type FlowVersionRunMainTab = "graph" | "events" | "focused";
 export type FlowVersionRunDetailsTab =

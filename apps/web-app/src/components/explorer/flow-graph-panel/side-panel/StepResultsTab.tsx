@@ -1,6 +1,6 @@
 import type { FlowDefinition, Ref } from "@lcase/types";
 import type { StepRunInfo } from "@/hooks/use-step-run-info";
-import { StepResultsTab as StepResultsPanel } from "@/components/flow-version/StepResultsTab";
+import { StepResultsTab as StepResultsPanel } from "@/components/workbench/flow-graph-panel/side-panel/step-results/Content";
 
 // "Open in main panel" has no dockview equivalent yet -- same stubbed
 // no-op as StepDetailsTab uses. See docs/todo.md.

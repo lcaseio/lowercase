@@ -1,6 +1,6 @@
 import type { FlowVersionRecord } from "@lcase/types";
-import { IdentityField } from "@/components/fields/IdentityField";
-import { InputField } from "@/components/fields/InputField";
+import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
+import { InputField } from "@/components/workbench/shared/fields/InputField";
 
 export function SettingsTab({
   version,

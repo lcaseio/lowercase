@@ -6,7 +6,7 @@ import type {
 } from "@lcase/types";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { FlowVersionRunParamRow } from "@/components/flow-version/FlowVersionRunParamRow";
+import { FlowVersionRunParamRow } from "@/components/workbench/flow-graph-panel/side-panel/RunInputRow";
 import { CreateArtifactDialog } from "../../CreateArtifactDialog";
 
 type Props = {

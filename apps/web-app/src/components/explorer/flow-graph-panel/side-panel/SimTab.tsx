@@ -1,7 +1,7 @@
 import type { SimDefinition } from "@lcase/types";
 import { Button } from "@/components/ui/button";
-import { IdentityField } from "@/components/fields/IdentityField";
-import { InputField } from "@/components/fields/InputField";
+import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
+import { InputField } from "@/components/workbench/shared/fields/InputField";
 
 export function SimTab({
   simDefinition,

@@ -1,5 +1,5 @@
 import { CheckIcon, CircleAlertIcon, VariableIcon, XIcon } from "lucide-react";
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,

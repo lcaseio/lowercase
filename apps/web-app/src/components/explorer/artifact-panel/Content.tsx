@@ -1,4 +1,4 @@
-import { ArtifactContentPanel } from "@/components/flow-version/artifacts/ArtifactContentPanel";
+import { ArtifactContentPanel } from "@/components/workbench/artifact-panel/ArtifactContentPanel";
 import {
   ResizableHandle,
   ResizablePanel,
