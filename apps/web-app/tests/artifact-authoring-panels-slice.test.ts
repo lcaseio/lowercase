@@ -22,7 +22,7 @@ const DEFAULT_PANEL_STATE = {
 };
 
 // panelIds for two different versions -- this slice is keyed by panelId,
-// and explorerPanelId() derives that id from versionId alone for the
+// and dockPanelId() derives that id from versionId alone for the
 // artifact-authoring kind (one draft per version), so these look like real
 // ids from that scheme rather than arbitrary strings.
 const PANEL_V1 = "artifact-authoring-v1";

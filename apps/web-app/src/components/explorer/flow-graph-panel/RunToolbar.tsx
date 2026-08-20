@@ -27,7 +27,7 @@ import {
   EVENT_GRAPH_ICON_CLASS,
   SIM_ICON,
   SIM_ICON_CLASS,
-} from "../explorer-tab-icons";
+} from "@/components/workbench/shared/tab-icons";
 
 type Props = {
   hasParams: boolean;

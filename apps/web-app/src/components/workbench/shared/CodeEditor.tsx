@@ -32,7 +32,7 @@ type Props = {
   maxHeight?: number;
   // Hands the caller the mounted Monaco editor instance -- for anything
   // beyond display, e.g. programmatic reveal/selection (see
-  // ExplorerJsonDefinitionContent.tsx's revealPath handling).
+  // json-definition-panel/Content.tsx's revealPath handling).
   onMount?: (editor: Parameters<OnMount>[0]) => void;
   fontSize?: number;
   lineHeight?: number;

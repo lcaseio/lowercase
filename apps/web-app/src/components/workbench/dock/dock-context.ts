@@ -14,7 +14,7 @@ export function useDockviewApi(): DockviewApi | null {
 
   if (api === undefined)
     throw new Error(
-      "useDockviewApi must be used within Explorer's DockviewApiContext.Provider",
+      "useDockviewApi must be used within Workbench's DockviewApiContext.Provider",
     );
 
   return api;

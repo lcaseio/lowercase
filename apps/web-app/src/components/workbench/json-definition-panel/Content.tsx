@@ -5,7 +5,7 @@ import type { OnMount } from "@monaco-editor/react";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 
-export function ExplorerJsonDefinitionContent({
+export function Content({
   versionId,
   revealPath,
   revealAt,

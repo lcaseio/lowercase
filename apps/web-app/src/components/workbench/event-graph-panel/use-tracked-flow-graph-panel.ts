@@ -8,11 +8,11 @@ import {
   snapshotSet,
 } from "@/redux/slices/event-graph-panels-slice";
 import type { ReplayState } from "@/redux/slices/flow-graph-panels-slice";
-import { useDockviewApi } from "../explorer-dockview-context";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import {
   EVENT_GRAPH_SINGLETON_ID,
   type OpenPanelRequest,
-} from "../explorer-panels";
+} from "@/components/workbench/dock/dock-panels";
 
 export type FlowGraphPanelSnapshot = {
   runId: string | null;

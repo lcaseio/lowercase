@@ -3,9 +3,12 @@ import type { ArtifactListItem } from "@lcase/types";
 import { PlusIcon } from "lucide-react";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { cn } from "@/lib/utils";
-import { ARTIFACT_ICON, ARTIFACT_ICON_CLASS } from "./explorer-tab-icons";
-import { titleFor } from "./artifact-title";
-import { CreateArtifactDialog } from "./CreateArtifactDialog";
+import {
+  ARTIFACT_ICON,
+  ARTIFACT_ICON_CLASS,
+} from "@/components/workbench/shared/tab-icons";
+import { titleFor } from "@/components/workbench/shared/artifact-title";
+import { CreateArtifactDialog } from "@/components/workbench/shared/CreateArtifactDialog";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 
 // Scoped to one flow version's own curated artifacts -- no flow-wide
@@ -14,7 +17,7 @@ import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 // is clickable, including bytes-format ones -- PR 22 kept those inert since
 // there was nothing to view, but PR 23's metadata tab gives them something
 // real to show even without a content preview.
-export function ExplorerVersionArtifactList({
+export function ArtifactList({
   versionId,
   selectedRowId,
   onSelectArtifact,

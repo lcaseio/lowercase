@@ -17,8 +17,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { EVENT_GRAPH_SINGLETON_ID, openOrFocusPanel } from "../explorer-panels";
-import { useDockviewApi } from "../explorer-dockview-context";
+import {
+  EVENT_GRAPH_SINGLETON_ID,
+  openOrFocusPanel,
+} from "@/components/workbench/dock/dock-panels";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { useTrackedFlowGraphPanel } from "./use-tracked-flow-graph-panel";
 import { Rail } from "./Rail";
 import { SidePanel, type EventGraphSidePanelTab } from "./SidePanel";

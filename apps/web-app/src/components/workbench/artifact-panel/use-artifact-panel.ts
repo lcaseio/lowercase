@@ -84,7 +84,7 @@ export function useArtifactPanel(
   // pins that down), but to scope which paramCurations come back attached,
   // so Edit still pre-checks the right boxes for this version. The
   // curated-scoped list other components rely on (the params picker,
-  // ExplorerTree's artifact list) is a *different* cache entry; see
+  // FlowExplorer's artifact list) is a *different* cache entry; see
   // patchArtifactCache below for why handleSave patches both.
   const { data: artifactsData, isLoading: isArtifactsLoading } =
     useListArtifactsQuery({ hash, flowVersionId: versionId });
@@ -170,7 +170,7 @@ export function useArtifactPanel(
         };
         // Patches two cache entries, not one -- this panel's own hash-scoped
         // lookup (above) and the curated-scoped list other components rely
-        // on (the params picker's candidates, ExplorerTree's artifact list)
+        // on (the params picker's candidates, FlowExplorer's artifact list)
         // are different cache entries. Both need the optimistic update; the
         // curated-scoped one especially, since a first-time curation won't
         // already have an entry there to find.

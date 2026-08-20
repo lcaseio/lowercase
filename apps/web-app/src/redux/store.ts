@@ -14,7 +14,7 @@ import { eventGraphPanelsSlice } from "./slices/event-graph-panels-slice";
 import { artifactPanelsSlice } from "./slices/artifact-panels-slice";
 import { artifactAuthoringPanelsSlice } from "./slices/artifact-authoring-panels-slice";
 import { flowAuthoringPanelsSlice } from "./slices/flow-authoring-panels-slice";
-import { loadPersistedExplorerState } from "./explorer-persistence";
+import { loadPersistedDockState } from "./dock-persistence";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -40,18 +40,17 @@ export type RootState = ReturnType<typeof rootReducer>;
 // read synchronously at module load, before configureStore -- preloadedState
 // has to be provided at construction time, so this can't happen inside any
 // component. No dispatch happens here, so nothing can react to it.
-const persistedExplorerState = loadPersistedExplorerState();
+const persistedDockState = loadPersistedDockState();
 
 export const store = configureStore({
   reducer: rootReducer,
   preloadedState: {
-    flowGraphPanels: persistedExplorerState.flowGraphPanels ?? undefined,
-    eventGraphPanels: persistedExplorerState.eventGraphPanels ?? undefined,
-    artifactPanels: persistedExplorerState.artifactPanels ?? undefined,
+    flowGraphPanels: persistedDockState.flowGraphPanels ?? undefined,
+    eventGraphPanels: persistedDockState.eventGraphPanels ?? undefined,
+    artifactPanels: persistedDockState.artifactPanels ?? undefined,
     artifactAuthoringPanels:
-      persistedExplorerState.artifactAuthoringPanels ?? undefined,
-    flowAuthoringPanels:
-      persistedExplorerState.flowAuthoringPanels ?? undefined,
+      persistedDockState.artifactAuthoringPanels ?? undefined,
+    flowAuthoringPanels: persistedDockState.flowAuthoringPanels ?? undefined,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

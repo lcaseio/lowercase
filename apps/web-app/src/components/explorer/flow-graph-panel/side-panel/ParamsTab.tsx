@@ -7,7 +7,7 @@ import type {
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { FlowVersionRunParamRow } from "@/components/workbench/flow-graph-panel/side-panel/RunInputRow";
-import { CreateArtifactDialog } from "../../CreateArtifactDialog";
+import { CreateArtifactDialog } from "@/components/workbench/shared/CreateArtifactDialog";
 
 type Props = {
   flowDef: FlowDefinition;

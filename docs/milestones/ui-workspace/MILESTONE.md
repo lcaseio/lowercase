@@ -84,8 +84,8 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 | 43  | Prune old pages — Runner/RunDetails/Runs cluster, rescue EvaluateExportModal first            | merged (#326)    | `arcs/prune-old-pages.md`              |                                      |
 | 44  | Prune old pages — Sims/CreateSim/ViewSim + Artifacts.tsx clusters                             | merged (#327)    | `arcs/prune-old-pages.md`              |                                      |
 | 45  | Prune old pages — Flows/FlowVersion-mode-pages cluster (deletion only)                        | merged (#328)    | `arcs/prune-old-pages.md`              |                                      |
-| 46  | Rehome shared survivors out of old flow-version/top-level component tree                      | ready for review | `arcs/prune-old-pages.md`              | `arcs/workbench-naming.md`           |
-| 47  | Rename Explorer -> Workbench/Dock/FlowExplorer (foundational renames + self-contained panels) | not started      | `arcs/workbench-naming.md`             | PR 46                                |
+| 46  | Rehome shared survivors out of old flow-version/top-level component tree                      | merged (#329)    | `arcs/prune-old-pages.md`              | `arcs/workbench-naming.md`           |
+| 47  | Rename Explorer -> Workbench/Dock/FlowExplorer (foundational renames + self-contained panels) | ready for review | `arcs/workbench-naming.md`             | PR 46                                |
 | 48  | `flow-graph-panel` internal split + `shared/flow-graph/` kit + its two authoring panels       | not started      | `arcs/workbench-naming.md`             | PR 47                                |
 
 ## Next up

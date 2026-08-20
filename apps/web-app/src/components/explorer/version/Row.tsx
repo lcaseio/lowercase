@@ -17,12 +17,12 @@ import {
   FLOW_GRAPH_ICON_CLASS,
   JSON_DEFINITION_ICON,
   JSON_DEFINITION_ICON_CLASS,
-} from "./explorer-tab-icons";
-import { ExplorerVersionRunList } from "./ExplorerVersionRunList";
-import { ExplorerVersionSimList } from "./ExplorerVersionSimList";
-import { ExplorerVersionArtifactList } from "./ExplorerVersionArtifactList";
+} from "@/components/workbench/shared/tab-icons";
+import { RunList } from "./RunList";
+import { SimList } from "./SimList";
+import { ArtifactList } from "./ArtifactList";
 
-export function ExplorerVersionRow({
+export function Row({
   version,
   isExpanded,
   onToggleExpanded,
@@ -150,7 +150,7 @@ export function ExplorerVersionRow({
               <span className="truncate">Runs</span>
             </div>
             {isRunsExpanded ? (
-              <ExplorerVersionRunList
+              <RunList
                 versionId={version.id}
                 selectedRowId={selectedRowId}
                 onSelectRun={onSelectRun}
@@ -184,7 +184,7 @@ export function ExplorerVersionRow({
               <span className="truncate">Sims</span>
             </div>
             {isSimsExpanded ? (
-              <ExplorerVersionSimList
+              <SimList
                 versionId={version.id}
                 selectedRowId={selectedRowId}
                 onSelectSim={onSelectSim}
@@ -218,7 +218,7 @@ export function ExplorerVersionRow({
             </div>
 
             {isArtifactsExpanded ? (
-              <ExplorerVersionArtifactList
+              <ArtifactList
                 versionId={version.id}
                 selectedRowId={selectedRowId}
                 onSelectArtifact={onSelectArtifact}

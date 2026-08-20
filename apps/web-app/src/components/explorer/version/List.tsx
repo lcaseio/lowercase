@@ -7,9 +7,9 @@ import type {
 } from "@lcase/types";
 import { useGetFlowVersionsQuery } from "@/redux/api/flows-api";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
-import { ExplorerVersionRow } from "./ExplorerVersionRow";
+import { Row } from "./Row";
 
-export function ExplorerVersionList({
+export function List({
   flowId,
   selectedRowId,
   onSelectRow,
@@ -67,7 +67,7 @@ export function ExplorerVersionList({
   return (
     <>
       {data.value.map((version) => (
-        <ExplorerVersionRow
+        <Row
           key={version.id}
           version={version}
           isExpanded={expandedVersionIds.has(version.id)}

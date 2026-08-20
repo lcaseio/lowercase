@@ -7,9 +7,9 @@ import {
   useCreateArtifactMutation,
 } from "@/redux/api/artifacts-api";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
-import { useDockviewApi } from "../explorer-dockview-context";
-import { openOrFocusPanel } from "../explorer-panels";
-import { titleFor } from "../artifact-title";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
+import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
+import { titleFor } from "@/components/workbench/shared/artifact-title";
 import { detectAuthoredFormat } from "@/lib/detect-authored-format";
 import {
   selectArtifactAuthoringPanelState,

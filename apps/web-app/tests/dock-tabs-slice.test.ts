@@ -4,7 +4,7 @@ import {
   explorerTabsSlice,
   openOrFocusTab,
   setActiveTab,
-} from "@/redux/slices/explorer-tabs-slice";
+} from "@/redux/slices/dock-tabs-slice";
 
 const reducer = explorerTabsSlice.reducer;
 

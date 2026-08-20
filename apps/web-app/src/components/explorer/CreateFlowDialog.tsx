@@ -9,8 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/redux/typed-hooks";
 import { setFlowAuthoringContent } from "@/redux/slices/flow-authoring-panels-slice";
-import { useDockviewApi } from "./explorer-dockview-context";
-import { openOrFocusPanel, FLOW_AUTHORING_ID } from "./explorer-panels";
+import { useDockviewApi } from "@/components/workbench/dock/dock-context";
+import {
+  openOrFocusPanel,
+  FLOW_AUTHORING_ID,
+} from "@/components/workbench/dock/dock-panels";
 import { TextCursorIcon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  getExplorerTabIcon,
+  getTabIcon,
   FLOW_GRAPH_ICON,
   FLOW_GRAPH_ICON_CLASS,
   JSON_DEFINITION_ICON,
@@ -21,11 +21,11 @@ import {
   FLOW_AUTHORING_ICON_CLASS,
   FLOW_AUTHORING_PREVIEW_ICON,
   FLOW_AUTHORING_PREVIEW_ICON_CLASS,
-} from "@/components/explorer/explorer-tab-icons";
+} from "@/components/workbench/shared/tab-icons";
 
-describe("getExplorerTabIcon", () => {
+describe("getTabIcon", () => {
   it("returns the settings icon, uncolored, for flow-settings", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-settings",
       label: "x",
       flowId: "f1",
@@ -34,7 +34,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the json-definition icon+color for json-definition", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "json-definition",
       label: "x",
       versionId: "v1",
@@ -44,7 +44,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the flow-graph icon+color for a plain flow-graph panel", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -55,7 +55,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the run icon+color for a run-opened flow-graph panel", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -66,7 +66,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the sim icon+color for a sim-opened flow-graph panel", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -77,13 +77,13 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the event-graph icon+color, mirroring its toolbar button", () => {
-    const icon = getExplorerTabIcon({ kind: "event-graph", label: "x" });
+    const icon = getTabIcon({ kind: "event-graph", label: "x" });
     expect(icon?.Icon).toBe(EVENT_GRAPH_ICON);
     expect(icon?.className).toBe(EVENT_GRAPH_ICON_CLASS);
   });
 
   it("returns the artifact icon+color for artifact", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "artifact",
       label: "x",
       hash: "h1",
@@ -94,7 +94,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the artifact-authoring icon+color for artifact-authoring", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId: "v1",
@@ -104,7 +104,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the event-payload icon+color for event-payload", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "event-payload",
       label: "x",
       runId: "r1",
@@ -115,7 +115,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the flow-authoring icon+color for flow-authoring", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-authoring",
       label: "New Flow",
     });
@@ -124,7 +124,7 @@ describe("getExplorerTabIcon", () => {
   });
 
   it("returns the flow-authoring-preview icon+color for flow-authoring-preview", () => {
-    const icon = getExplorerTabIcon({
+    const icon = getTabIcon({
       kind: "flow-authoring-preview",
       label: "Preview",
     });

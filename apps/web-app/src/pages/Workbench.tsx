@@ -4,27 +4,27 @@ import "dockview-react/dist/styles/dockview.css";
 // must load after the import above -- overrides the same `.dockview-theme-abyss`
 // selector dockview's own stylesheet defines, same specificity, later source
 // order wins. See that file for why a wrapping element's inline style doesn't.
-import "./explorer-dockview-theme.css";
+import "@/components/workbench/dock/dock-theme.css";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ExplorerTree } from "@/components/explorer/ExplorerTree";
-import { ExplorerTabContent } from "@/components/explorer/ExplorerTabContent";
-import { ExplorerTab } from "@/components/explorer/ExplorerTab";
-import { ExplorerWatermark } from "@/components/explorer/ExplorerWatermark";
-import { DockviewApiContext } from "@/components/explorer/explorer-dockview-context";
-import { EXPLORER_PANEL_COMPONENT } from "@/components/explorer/explorer-panels";
+import { FlowExplorer } from "@/components/explorer/FlowExplorer";
+import { DockTabContent } from "@/components/workbench/dock/DockTabContent";
+import { DockTab } from "@/components/workbench/dock/DockTab";
+import { DockWatermark } from "@/components/workbench/dock/DockWatermark";
+import { DockviewApiContext } from "@/components/workbench/dock/dock-context";
+import { DOCK_TAB_COMPONENT } from "@/components/workbench/dock/dock-panels";
 import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
 import {
-  loadPersistedExplorerState,
-  savePersistedExplorerState,
-} from "@/redux/explorer-persistence";
+  loadPersistedDockState,
+  savePersistedDockState,
+} from "@/redux/dock-persistence";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
-export function Explorer() {
+export function Workbench() {
   const [dockviewApi, setDockviewApi] = useState<DockviewApi | null>(null);
   const dispatch = useAppDispatch();
   const flowGraphPanelsState = useAppSelector((s) => s.flowGraphPanels);
@@ -49,7 +49,7 @@ export function Explorer() {
 
   // tracks whether there's an actual pending change since the last write --
   // without this, closing a stale, long-untouched background tab (or just
-  // navigating away from an idle /explorer) unconditionally re-persists that
+  // navigating away from an idle /workbench) unconditionally re-persists that
   // tab's old state on the way out, which can stomp a *different*, more
   // recently-active tab's more current write even though nothing here
   // actually changed. Only ever write when something really did.
@@ -58,7 +58,7 @@ export function Explorer() {
   useEffect(() => {
     writeSnapshotRef.current = () => {
       if (!dockviewApi) return;
-      savePersistedExplorerState({
+      savePersistedDockState({
         dockview: dockviewApi.toJSON(),
         flowGraphPanels: flowGraphPanelsState,
         eventGraphPanels: eventGraphPanelsState,
@@ -94,7 +94,7 @@ export function Explorer() {
   // so the ordering that matters falls out of plain execution order.
   useEffect(() => {
     if (!dockviewApi) return;
-    const { dockview } = loadPersistedExplorerState();
+    const { dockview } = loadPersistedDockState();
     if (dockview) {
       dockviewApi.fromJSON(dockview, { reuseExistingPanels: false });
     }
@@ -146,7 +146,7 @@ export function Explorer() {
             className="h-full border dark:border-neutral-800"
           >
             <ResizablePanel defaultSize="15%">
-              <ExplorerTree />
+              <FlowExplorer />
             </ResizablePanel>
             <ResizableHandle withHandle />
             {/* react-resizable-panels' own Panel defaults its inner content
@@ -162,9 +162,9 @@ export function Explorer() {
               <DockviewReact
                 className="h-full"
                 theme={themeAbyss}
-                components={{ [EXPLORER_PANEL_COMPONENT]: ExplorerTabContent }}
-                defaultTabComponent={ExplorerTab}
-                watermarkComponent={ExplorerWatermark}
+                components={{ [DOCK_TAB_COMPONENT]: DockTabContent }}
+                defaultTabComponent={DockTab}
+                watermarkComponent={DockWatermark}
                 onReady={(event) => setDockviewApi(event.api)}
               />
             </ResizablePanel>

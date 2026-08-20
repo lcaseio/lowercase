@@ -6,7 +6,7 @@ import {
   computeDagreLayout,
   type LayoutDirection,
 } from "@/lib/flow-graph-layout";
-import { FLOW_AUTHORING_ID } from "../explorer-panels";
+import { FLOW_AUTHORING_ID } from "@/components/workbench/dock/dock-panels";
 import type { SidePanelTab } from "../flow-graph-panel/SidePanel";
 
 // Reads the flow-authoring editor's own draft content by its fixed

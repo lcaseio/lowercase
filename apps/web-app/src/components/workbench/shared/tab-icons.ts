@@ -9,10 +9,10 @@ import {
   WorkflowIcon,
   type LucideIcon,
 } from "lucide-react";
-import type { OpenPanelRequest } from "./explorer-panels";
+import type { OpenPanelRequest } from "@/components/workbench/dock/dock-panels";
 
 // Shared by both the tree rows (which import these directly, since each row
-// already knows statically which one it is) and getExplorerTabIcon below
+// already knows statically which one it is) and getTabIcon below
 // (the only place that needs to derive one dynamically, since one tab
 // component is registered for every panel).
 export const FLOW_GRAPH_ICON = WorkflowIcon;
@@ -44,7 +44,7 @@ export const FLOW_AUTHORING_ICON_CLASS = "text-lime-400";
 export const FLOW_AUTHORING_PREVIEW_ICON = WorkflowIcon;
 export const FLOW_AUTHORING_PREVIEW_ICON_CLASS = "text-lime-400";
 
-export function getExplorerTabIcon(
+export function getTabIcon(
   params: OpenPanelRequest,
 ): { Icon: LucideIcon; className?: string } | null {
   switch (params.kind) {

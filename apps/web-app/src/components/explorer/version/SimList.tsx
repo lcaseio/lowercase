@@ -1,12 +1,15 @@
 import type { SimListItem } from "@lcase/types";
 import { useListAllSimsQuery } from "@/redux/api/sims-api";
 import { cn } from "@/lib/utils";
-import { SIM_ICON, SIM_ICON_CLASS } from "./explorer-tab-icons";
+import {
+  SIM_ICON,
+  SIM_ICON_CLASS,
+} from "@/components/workbench/shared/tab-icons";
 
 // Scoped to one flow version's sims -- a possible future "all sims across
 // every version of a flow" list would be a different component, not this
 // one widened.
-export function ExplorerVersionSimList({
+export function SimList({
   versionId,
   selectedRowId,
   onSelectSim,

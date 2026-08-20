@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  EXPLORER_PANEL_COMPONENT,
-  explorerPanelId,
+  DOCK_TAB_COMPONENT,
+  dockPanelId,
   openOrFocusPanel,
   type OpenPanelRequest,
-} from "@/components/explorer/explorer-panels";
+} from "@/components/workbench/dock/dock-panels";
 
 function fakePanel(params: OpenPanelRequest, title: string) {
   return {
@@ -25,16 +25,16 @@ function fakeApi(existing?: ReturnType<typeof fakePanel>) {
   };
 }
 
-describe("explorerPanelId", () => {
+describe("dockPanelId", () => {
   it("derives a stable id from kind + content id, per kind", () => {
     expect(
-      explorerPanelId({ kind: "flow-settings", label: "x", flowId: "f1" }),
+      dockPanelId({ kind: "flow-settings", label: "x", flowId: "f1" }),
     ).toBe("flow-settings-f1");
     expect(
-      explorerPanelId({ kind: "json-definition", label: "x", versionId: "v1" }),
+      dockPanelId({ kind: "json-definition", label: "x", versionId: "v1" }),
     ).toBe("json-definition-v1");
     expect(
-      explorerPanelId({
+      dockPanelId({
         kind: "flow-graph",
         label: "x",
         versionId: "v1",
@@ -44,13 +44,13 @@ describe("explorerPanelId", () => {
   });
 
   it("gives two different versions of the same kind distinct ids", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "plain" },
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v2",
@@ -60,13 +60,13 @@ describe("explorerPanelId", () => {
   });
 
   it("gives a run-specific flow-graph request a distinct id from the plain version request", () => {
-    const plain = explorerPanelId({
+    const plain = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "plain" },
     });
-    const runSpecific = explorerPanelId({
+    const runSpecific = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -76,13 +76,13 @@ describe("explorerPanelId", () => {
   });
 
   it("gives two different runs of the same version distinct ids", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "run", runId: "r1" },
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -92,19 +92,19 @@ describe("explorerPanelId", () => {
   });
 
   it("gives a sim-specific flow-graph request a distinct id from the plain and run-specific requests", () => {
-    const plain = explorerPanelId({
+    const plain = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "plain" },
     });
-    const runSpecific = explorerPanelId({
+    const runSpecific = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "run", runId: "r1" },
     });
-    const simSpecific = explorerPanelId({
+    const simSpecific = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -115,13 +115,13 @@ describe("explorerPanelId", () => {
   });
 
   it("gives two different sims of the same version distinct ids", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
       openedAs: { type: "sim", simId: "s1" },
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "flow-graph",
       label: "x",
       versionId: "v1",
@@ -131,15 +131,15 @@ describe("explorerPanelId", () => {
   });
 
   it("gives every event-graph request the same id regardless of label -- it's a singleton", () => {
-    const a = explorerPanelId({ kind: "event-graph", label: "Event Graph" });
-    const b = explorerPanelId({ kind: "event-graph", label: "Something else" });
+    const a = dockPanelId({ kind: "event-graph", label: "Event Graph" });
+    const b = dockPanelId({ kind: "event-graph", label: "Something else" });
     expect(a).toBe(b);
     expect(a).toBe("event-graph-singleton");
   });
 
   it("gives every flow-authoring request the same id regardless of label -- it's a singleton, no real id exists for an unsaved draft", () => {
-    const a = explorerPanelId({ kind: "flow-authoring", label: "New Flow" });
-    const b = explorerPanelId({
+    const a = dockPanelId({ kind: "flow-authoring", label: "New Flow" });
+    const b = dockPanelId({
       kind: "flow-authoring",
       label: "Something else",
     });
@@ -148,11 +148,11 @@ describe("explorerPanelId", () => {
   });
 
   it("gives every flow-authoring-preview request the same id regardless of label -- a second singleton, 1:1 with flow-authoring", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "flow-authoring-preview",
       label: "Preview",
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "flow-authoring-preview",
       label: "Something else",
     });
@@ -162,7 +162,7 @@ describe("explorerPanelId", () => {
 
   it("derives an artifact request's id from its hash", () => {
     expect(
-      explorerPanelId({
+      dockPanelId({
         kind: "artifact",
         label: "x",
         hash: "h1",
@@ -172,12 +172,12 @@ describe("explorerPanelId", () => {
   });
 
   it("gives every artifact-authoring request for the same version the same id -- one draft per version", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId: "v1",
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId: "v1",
@@ -187,12 +187,12 @@ describe("explorerPanelId", () => {
   });
 
   it("gives different versions' artifact-authoring requests different ids", () => {
-    const a = explorerPanelId({
+    const a = dockPanelId({
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId: "v1",
     });
-    const b = explorerPanelId({
+    const b = dockPanelId({
       kind: "artifact-authoring",
       label: "New Artifact",
       versionId: "v2",
@@ -202,7 +202,7 @@ describe("explorerPanelId", () => {
 
   it("derives an event-payload request's id from runId + eventId together", () => {
     expect(
-      explorerPanelId({
+      dockPanelId({
         kind: "event-payload",
         label: "x",
         runId: "r1",
@@ -212,19 +212,19 @@ describe("explorerPanelId", () => {
   });
 
   it("gives event-payload requests distinct ids when either runId or eventId differs", () => {
-    const base = explorerPanelId({
+    const base = dockPanelId({
       kind: "event-payload",
       label: "x",
       runId: "r1",
       eventId: "e1",
     });
-    const differentRun = explorerPanelId({
+    const differentRun = dockPanelId({
       kind: "event-payload",
       label: "x",
       runId: "r2",
       eventId: "e1",
     });
-    const differentEvent = explorerPanelId({
+    const differentEvent = dockPanelId({
       kind: "event-payload",
       label: "x",
       runId: "r1",
@@ -249,7 +249,7 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).toHaveBeenCalledWith({
       id: "flow-graph-v1",
-      component: EXPLORER_PANEL_COMPONENT,
+      component: DOCK_TAB_COMPONENT,
       title: "Version 1 Graph",
       params: req,
     });
@@ -347,7 +347,7 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).toHaveBeenCalledWith({
       id: "event-graph-singleton",
-      component: EXPLORER_PANEL_COMPONENT,
+      component: DOCK_TAB_COMPONENT,
       title: "Event Graph",
       params: req,
       position: { direction: "right", referencePanel: "flow-graph-v1" },
@@ -367,7 +367,7 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).toHaveBeenCalledWith({
       id: "event-graph-singleton",
-      component: EXPLORER_PANEL_COMPONENT,
+      component: DOCK_TAB_COMPONENT,
       title: "Event Graph",
       params: req,
     });
@@ -399,7 +399,7 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).toHaveBeenCalledWith({
       id: "artifact-h1",
-      component: EXPLORER_PANEL_COMPONENT,
+      component: DOCK_TAB_COMPONENT,
       title: "notes.md",
       params: req,
     });
@@ -417,7 +417,7 @@ describe("openOrFocusPanel", () => {
 
     expect(api.addPanel).toHaveBeenCalledWith({
       id: "artifact-authoring-v1",
-      component: EXPLORER_PANEL_COMPONENT,
+      component: DOCK_TAB_COMPONENT,
       title: "New Artifact",
       params: req,
     });

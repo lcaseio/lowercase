@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { EventGraphSidePanelTab } from "@/components/explorer/event-graph-panel/SidePanel";
+import type { EventGraphSidePanelTab } from "@/components/workbench/event-graph-panel/SidePanel";
 import { panelRemoved } from "./panel-lifecycle-actions";
 
 export type EventGraphPanelState = {
