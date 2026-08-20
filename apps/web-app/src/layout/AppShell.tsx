@@ -1,20 +1,10 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import {
-  LayoutDashboardIcon,
-  FlaskConicalIcon,
-  WorkflowIcon,
-  ScaleIcon,
-  SettingsIcon,
-  RocketIcon,
-} from "lucide-react";
+import { ScaleIcon, SettingsIcon, RocketIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboardIcon },
-  { to: "/spike", label: "Spike", icon: FlaskConicalIcon },
   { to: "/explorer", label: "Explorer", icon: RocketIcon },
-  { to: "/flows", label: "Flows", icon: WorkflowIcon },
   { to: "/evals", label: "Evals", icon: ScaleIcon },
   { to: "/system", label: "System", icon: SettingsIcon },
 ];
