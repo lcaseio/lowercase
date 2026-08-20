@@ -37,56 +37,57 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 
 ## PR index
 
-| PR  | Description                                                                           | Status        | Where                                  | See also                            |
-| --- | ------------------------------------------------------------------------------------- | ------------- | -------------------------------------- | ----------------------------------- |
-| 1   | Explorer Mini Spike                                                                   | merged (#284) | `arcs/explorer-foundation.md`          |                                     |
-| 2   | Tab/Panel Skeleton                                                                    | merged (#285) | `arcs/explorer-foundation.md`          |                                     |
-| 3   | Content In Tab                                                                        | merged (#286) | `arcs/explorer-foundation.md`          |                                     |
-| 4   | Run Toolbar + Right Panel                                                             | merged (#287) | `arcs/explorer-foundation.md`          |                                     |
-| 5   | Dockview Added and Implemented                                                        | merged (#288) | `arcs/explorer-foundation.md`          |                                     |
-| 6   | Migrate Flow Graph Panel State to Redux                                               | merged (#289) | `arcs/explorer-foundation.md`          | `research/state-management.md`      |
-| 7   | Serialize Redux State + Dockview Layout                                               | merged (#290) | `arcs/explorer-foundation.md`          | `research/state-management.md`      |
-| 8   | ADR-0004: Panel State Management and Persistence                                      | merged (#291) | `arcs/explorer-foundation.md`          | `docs/adr/0004-...`                 |
-| 9   | Right Panel Icon Rail (Params/Sim migrated first)                                     | merged (#292) | `arcs/right-panel-rail.md`             |                                     |
-| 10  | Problems + Parameters migrated to the rail                                            | merged (#293) | `arcs/right-panel-rail.md`             |                                     |
-| 11  | Step Details migrated to the rail                                                     | merged (#294) | `arcs/right-panel-rail.md`             |                                     |
-| 12  | Settings migrated to the rail, removed from the tree                                  | merged (#295) | `arcs/right-panel-rail.md`             |                                     |
-| 13  | Step Results migrated to the rail                                                     | merged (#296) | `arcs/right-panel-rail.md`             |                                     |
-| 14  | Runs list in the tree, each run opens its own Flow Graph panel                        | merged (#297) | `arcs/runs-and-sims-in-the-tree.md`    |                                     |
-| 15  | Sims list in the tree, click opens a sim in its own Flow Graph panel                  | merged (#298) | `arcs/runs-and-sims-in-the-tree.md`    |                                     |
-| 16  | EventGraph, spawned from the Flow Graph panel itself                                  | merged (#299) | `arcs/event-graph.md`                  | PR 35 (replay stretch goal)         |
-| 17  | Event Details side panel for the Event Graph                                          | merged (#300) | `arcs/event-graph.md`                  |                                     |
-| 18  | Simulate — author a sim from a run                                                    | merged (#301) | `arcs/runs-and-sims-in-the-tree.md`    |                                     |
-| 19  | Panel/tab identity icons                                                              | merged (#302) | `arcs/panel-icons-and-nav-rail.md`     |                                     |
-| 20  | Postman-style fixed-width main nav rail                                               | merged (#303) | `arcs/panel-icons-and-nav-rail.md`     |                                     |
-| 21  | Artifacts — first piece: list per-version artifacts in the tree                       | merged (#304) | `arcs/artifacts-in-explorer.md`        |                                     |
-| 22  | Artifacts — view an artifact                                                          | merged (#305) | `arcs/artifacts-in-explorer.md`        |                                     |
-| 23  | Artifacts — rail + metadata tab (view + edit)                                         | merged (#306) | `arcs/artifacts-in-explorer.md`        |                                     |
-| 24  | Artifacts — create an artifact                                                        | merged (#307) | `arcs/artifacts-in-explorer.md`        |                                     |
-| 25  | Run Input Params — run-opened panels are read-only, always a rerun                    | merged (#308) | `arcs/run-input-params.md`             |                                     |
-| 26  | Run Input Params — curated picker for sim-opened and plain panels                     | merged (#309) | `arcs/run-input-params.md`             |                                     |
-| 27  | Expand content into its own tab, part 1 — real artifacts                              | merged (#310) | `arcs/expand-content.md`               |                                     |
-| 28  | Expand content into its own tab, part 2 — navigate into the definition, event payload | merged (#311) | `arcs/expand-content.md`               |                                     |
-| 29  | Flow graph — swap to a real layout library (dagre), two layouts                       | merged (#312) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 30  | Flow graph — one toolbar, fix fitView                                                 | merged (#313) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 31  | Flow graph — custom node types                                                        | merged (#314) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 32  | Flow graph — custom nodes for mcp + join                                              | merged (#315) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 33  | Flow graph — branch/parallel node handling                                            | merged (#316) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 34  | Flow graph — branch step details + side-panel field visual polish                     | merged (#317) | `arcs/flow-graph-visual-rework.md`     |                                     |
-| 35  | Flow graph — replay                                                                   | merged (#318) | `arcs/replay.md`                       | PR 16 (EventGraph singleton design) |
-| 36  | Documentation reorganization                                                          | merged (#319) | `arcs/documentation-reorganization.md` |                                     |
-| 37  | Sync the EventGraph panel with Flow Graph replay                                      | merged (#320) | `arcs/replay.md`                       | PR 35 (Replay)                      |
-| 38  | Basic flow authoring in the modern dockview UI, from the tree                         | merged (#321) | `arcs/flow-authoring.md`               | PR 24 (artifact authoring)          |
-| 39  | Fix CodeEditor (Monaco) spacebar input bug                                            | merged (#322) | `arcs/code-editor-spacebar-bug.md`     |                                     |
-| 40  | Replace the WebSocket live-events transport with SSE                                  | in progress   | `arcs/websocket-to-sse.md`             |                                     |
+| PR  | Description                                                                           | Status           | Where                                  | See also                             |
+| --- | ------------------------------------------------------------------------------------- | ---------------- | -------------------------------------- | ------------------------------------ |
+| 1   | Explorer Mini Spike                                                                   | merged (#284)    | `arcs/explorer-foundation.md`          |                                      |
+| 2   | Tab/Panel Skeleton                                                                    | merged (#285)    | `arcs/explorer-foundation.md`          |                                      |
+| 3   | Content In Tab                                                                        | merged (#286)    | `arcs/explorer-foundation.md`          |                                      |
+| 4   | Run Toolbar + Right Panel                                                             | merged (#287)    | `arcs/explorer-foundation.md`          |                                      |
+| 5   | Dockview Added and Implemented                                                        | merged (#288)    | `arcs/explorer-foundation.md`          |                                      |
+| 6   | Migrate Flow Graph Panel State to Redux                                               | merged (#289)    | `arcs/explorer-foundation.md`          | `research/state-management.md`       |
+| 7   | Serialize Redux State + Dockview Layout                                               | merged (#290)    | `arcs/explorer-foundation.md`          | `research/state-management.md`       |
+| 8   | ADR-0004: Panel State Management and Persistence                                      | merged (#291)    | `arcs/explorer-foundation.md`          | `docs/adr/0004-...`                  |
+| 9   | Right Panel Icon Rail (Params/Sim migrated first)                                     | merged (#292)    | `arcs/right-panel-rail.md`             |                                      |
+| 10  | Problems + Parameters migrated to the rail                                            | merged (#293)    | `arcs/right-panel-rail.md`             |                                      |
+| 11  | Step Details migrated to the rail                                                     | merged (#294)    | `arcs/right-panel-rail.md`             |                                      |
+| 12  | Settings migrated to the rail, removed from the tree                                  | merged (#295)    | `arcs/right-panel-rail.md`             |                                      |
+| 13  | Step Results migrated to the rail                                                     | merged (#296)    | `arcs/right-panel-rail.md`             |                                      |
+| 14  | Runs list in the tree, each run opens its own Flow Graph panel                        | merged (#297)    | `arcs/runs-and-sims-in-the-tree.md`    |                                      |
+| 15  | Sims list in the tree, click opens a sim in its own Flow Graph panel                  | merged (#298)    | `arcs/runs-and-sims-in-the-tree.md`    |                                      |
+| 16  | EventGraph, spawned from the Flow Graph panel itself                                  | merged (#299)    | `arcs/event-graph.md`                  | PR 35 (replay stretch goal)          |
+| 17  | Event Details side panel for the Event Graph                                          | merged (#300)    | `arcs/event-graph.md`                  |                                      |
+| 18  | Simulate — author a sim from a run                                                    | merged (#301)    | `arcs/runs-and-sims-in-the-tree.md`    |                                      |
+| 19  | Panel/tab identity icons                                                              | merged (#302)    | `arcs/panel-icons-and-nav-rail.md`     |                                      |
+| 20  | Postman-style fixed-width main nav rail                                               | merged (#303)    | `arcs/panel-icons-and-nav-rail.md`     |                                      |
+| 21  | Artifacts — first piece: list per-version artifacts in the tree                       | merged (#304)    | `arcs/artifacts-in-explorer.md`        |                                      |
+| 22  | Artifacts — view an artifact                                                          | merged (#305)    | `arcs/artifacts-in-explorer.md`        |                                      |
+| 23  | Artifacts — rail + metadata tab (view + edit)                                         | merged (#306)    | `arcs/artifacts-in-explorer.md`        |                                      |
+| 24  | Artifacts — create an artifact                                                        | merged (#307)    | `arcs/artifacts-in-explorer.md`        |                                      |
+| 25  | Run Input Params — run-opened panels are read-only, always a rerun                    | merged (#308)    | `arcs/run-input-params.md`             |                                      |
+| 26  | Run Input Params — curated picker for sim-opened and plain panels                     | merged (#309)    | `arcs/run-input-params.md`             |                                      |
+| 27  | Expand content into its own tab, part 1 — real artifacts                              | merged (#310)    | `arcs/expand-content.md`               |                                      |
+| 28  | Expand content into its own tab, part 2 — navigate into the definition, event payload | merged (#311)    | `arcs/expand-content.md`               |                                      |
+| 29  | Flow graph — swap to a real layout library (dagre), two layouts                       | merged (#312)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 30  | Flow graph — one toolbar, fix fitView                                                 | merged (#313)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 31  | Flow graph — custom node types                                                        | merged (#314)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 32  | Flow graph — custom nodes for mcp + join                                              | merged (#315)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 33  | Flow graph — branch/parallel node handling                                            | merged (#316)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 34  | Flow graph — branch step details + side-panel field visual polish                     | merged (#317)    | `arcs/flow-graph-visual-rework.md`     |                                      |
+| 35  | Flow graph — replay                                                                   | merged (#318)    | `arcs/replay.md`                       | PR 16 (EventGraph singleton design)  |
+| 36  | Documentation reorganization                                                          | merged (#319)    | `arcs/documentation-reorganization.md` |                                      |
+| 37  | Sync the EventGraph panel with Flow Graph replay                                      | merged (#320)    | `arcs/replay.md`                       | PR 35 (Replay)                       |
+| 38  | Basic flow authoring in the modern dockview UI, from the tree                         | merged (#321)    | `arcs/flow-authoring.md`               | PR 24 (artifact authoring)           |
+| 39  | Fix CodeEditor (Monaco) spacebar input bug                                            | merged (#322)    | `arcs/code-editor-spacebar-bug.md`     |                                      |
+| 40  | Replace the WebSocket live-events transport with SSE                                  | merged (#323)    | `arcs/websocket-to-sse.md`             |                                      |
+| 41  | Show the sim/reuse badge on runs that actually reused steps                           | ready for review | `arcs/sim-reuse-badge.md`              | PRs 29-34 (flow graph visual rework) |
 
 ## Next up
 
 Real order, not just a bucket of candidates — but explicitly changeable. Several of these already have fuller write-ups in `Not yet scoped` below or in `docs/todo.md`; this list is the sequencing commitment, not a duplicate of that detail.
 
-- **PR 41 — Runs with a simulation don't show the sim/reuse badge on steps that were actually reused.** Touches two existing `docs/todo.md` notes, not yet unified. Possibly merges with another PR rather than standing alone — not decided yet.
 - **PR 42 — Prune old pages, possibly across a few PRs.** Gated mostly on PR 38 (flow authoring) landing first. See `Not yet scoped` for the piece-by-piece breakdown already done.
 - **PR 43 — Grab-bag of closing-out items, expected to keep growing as more small polish surfaces — likely splits into more than one PR.** Page icon, page title, other small polish, doc updates around the API and React component layout, and a comment pass across the flow-graph work from PRs 29–34. Least scoped item on this list, deliberately so.
+  - **Idea, not yet a task — a hand-written frontend data-flow reference, `research/frontend-data-flow-traces.md` (same folder/spirit as the existing `research/state-management.md`).** Surfaced 2026-08-19 discussing how well the frontend rebuild (this whole `ui-workspace` milestone) has actually been internalized after a month of joint work — not a comprehension failure, more that React's compositional model genuinely resists the kind of top-to-bottom recall the hand-written backend rewards, compounded by real density in specific spots (the flow-graph panel's large hook, the authoring-preview panel's divergence from the main Flow Graph panel/toolbar). Proposed shape: one section per canonical data flow, written by hand as a literal numbered trace (trigger → each hop's exact file/function → what data crosses it → final render), verified hop-by-hop against real code rather than written from memory. Four flows named as worth tracing first: (1) an Explorer tree click through to a panel actually opening (`explorer-panels.ts`'s type-safe routing → dockview open/focus → `ExplorerTabContent.tsx`'s switch → the panel's own hook → render); (2) the flow-graph panel's own large hook, laid out to see what it actually aggregates and why; (3) where the authoring-preview panel's hook/toolbar diverges from the main Flow Graph panel's, by name; (4) a live SSE event landing through to a re-render. Not the panel-state-slice/persistence pattern — that part's already well understood. Explicitly not a refactor and not scoped to this milestone's push — the goal is internalization, not code change; real refactor candidates (the oversized hook chief among them) stay named but deliberately deferred past the demo push.
 
 ## Not yet scoped
 
