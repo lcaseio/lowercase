@@ -1,4 +1,4 @@
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
 import { selectEventById } from "@/redux/slices/events-slice";
 import { useAppSelector } from "@/redux/typed-hooks";

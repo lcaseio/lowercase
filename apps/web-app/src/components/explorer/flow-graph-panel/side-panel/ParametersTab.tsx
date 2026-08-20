@@ -1,5 +1,5 @@
 import type { FlowParamDefinition } from "@lcase/types";
-import { FlowParameters } from "@/components/FlowParameters";
+import { FlowParameters } from "@/components/workbench/shared/flow-graph/side-panel/Parameters";
 
 export function ParametersTab({
   params,

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { findNodeAtLocation, parseTree } from "jsonc-parser";
 import type { OnMount } from "@monaco-editor/react";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 
 export function ExplorerJsonDefinitionContent({
   versionId,

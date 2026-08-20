@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
-import { IdentityField } from "@/components/fields/IdentityField";
-import { InputField } from "@/components/fields/InputField";
+import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
+import { InputField } from "@/components/workbench/shared/fields/InputField";
 
 export function ExplorerFlowSettingsContent({ flowId }: { flowId: string }) {
   const { data, error, isLoading, refetch } = useGetFlowsQuery();

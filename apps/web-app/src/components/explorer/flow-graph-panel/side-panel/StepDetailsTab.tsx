@@ -1,5 +1,5 @@
 import type { FlowDefinition } from "@lcase/types";
-import { StepDetails } from "@/components/steps/StepDetails";
+import { StepDetails } from "@/components/workbench/shared/flow-graph/side-panel/step-details/Content";
 import { Button } from "@/components/ui/button";
 import { Maximize2Icon } from "lucide-react";
 

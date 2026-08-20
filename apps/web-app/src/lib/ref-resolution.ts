@@ -3,7 +3,7 @@ import {
   resolvePath,
   resolveJsonPath,
 } from "@lcase/json-ref-binder/resolve-path";
-import type { MainPanelLanguage } from "@/components/MainPanelTypes";
+import type { MainPanelLanguage } from "@/components/workbench/shared/MainPanelTypes";
 
 export type ParamArtifactContent =
   | { format: "json"; value: JsonValue }

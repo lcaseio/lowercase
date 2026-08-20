@@ -1,5 +1,5 @@
 import type { AnyEvent } from "@lcase/types";
-import { EventDetails } from "@/components/EventDetails";
+import { EventDetails } from "@/components/workbench/event-graph-panel/EventDetails";
 
 // onOpenInMainPanel stays a stubbed no-op -- EventDetails only uses it as a
 // fallback when onOpenEventPayload isn't passed (old-mode's own case), and

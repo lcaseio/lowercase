@@ -1,10 +1,10 @@
 import type { ArtifactListItem, FlowParamDefinition } from "@lcase/types";
 import { formatBytes } from "@/lib/format-bytes";
 import { Button } from "@/components/ui/button";
-import { IdentityField } from "@/components/fields/IdentityField";
-import { InputField } from "@/components/fields/InputField";
-import { SwitchField } from "@/components/fields/SwitchField";
-import { CuratedParamsField } from "@/components/fields/CuratedParamsField";
+import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
+import { InputField } from "@/components/workbench/shared/fields/InputField";
+import { SwitchField } from "@/components/workbench/shared/fields/SwitchField";
+import { CuratedParamsField } from "@/components/workbench/shared/fields/CuratedParamsField";
 import { CheckIcon, PenLineIcon, XIcon } from "lucide-react";
 import type { ArtifactMetadataDraft } from "@/redux/slices/artifact-panels-slice";
 

@@ -1,9 +1,9 @@
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 import { Button } from "@/components/ui/button";
-import { InputField } from "@/components/fields/InputField";
-import { SwitchField } from "@/components/fields/SwitchField";
-import { CuratedParamsField } from "@/components/fields/CuratedParamsField";
-import { SelectField } from "@/components/fields/SelectField";
+import { InputField } from "@/components/workbench/shared/fields/InputField";
+import { SwitchField } from "@/components/workbench/shared/fields/SwitchField";
+import { CuratedParamsField } from "@/components/workbench/shared/fields/CuratedParamsField";
+import { SelectField } from "@/components/workbench/shared/fields/SelectField";
 import { artifactFormatToLanguage } from "@/lib/ref-resolution";
 import { detectAuthoredFormat } from "@/lib/detect-authored-format";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
