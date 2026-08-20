@@ -80,8 +80,8 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 | 39  | Fix CodeEditor (Monaco) spacebar input bug                                            | merged (#322)    | `arcs/code-editor-spacebar-bug.md`     |                                      |
 | 40  | Replace the WebSocket live-events transport with SSE                                  | merged (#323)    | `arcs/websocket-to-sse.md`             |                                      |
 | 41  | Show the sim/reuse badge on runs that actually reused steps                           | merged (#324)    | `arcs/sim-reuse-badge.md`              | PRs 29-34 (flow graph visual rework) |
-| 42  | Prune old pages — dead-code sweep (zero-risk, no page dependency)                     | ready for review | `arcs/prune-old-pages.md`              |                                      |
-| 43  | Prune old pages — Runner/RunDetails/Runs cluster, rescue EvaluateExportModal first    | not started      | `arcs/prune-old-pages.md`              |                                      |
+| 42  | Prune old pages — dead-code sweep (zero-risk, no page dependency)                     | merged (#325)    | `arcs/prune-old-pages.md`              |                                      |
+| 43  | Prune old pages — Runner/RunDetails/Runs cluster, rescue EvaluateExportModal first    | ready for review | `arcs/prune-old-pages.md`              |                                      |
 | 44  | Prune old pages — Sims/CreateSim/ViewSim cluster                                      | not started      | `arcs/prune-old-pages.md`              |                                      |
 | 45  | Prune old pages — Artifacts.tsx + components/artifacts cluster                        | not started      | `arcs/prune-old-pages.md`              |                                      |
 | 46  | Prune old pages — Flows/FlowVersion-mode-pages cluster + rehome shared survivors      | not started      | `arcs/prune-old-pages.md`              |                                      |

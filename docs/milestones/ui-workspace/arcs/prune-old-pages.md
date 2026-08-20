@@ -4,7 +4,7 @@ Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc
 
 **Methodology note, true of every PR below**: nothing here was assumed from folder names or memory — every file was checked with an actual repo-wide `grep` for its real importers, because folder names turned out to be a genuinely unreliable signal (see PR 46's "mislabeled" findings). This is also why the whole arc got investigated together up front before any PR started: the boundaries between "dead," "old-only," and "actually still shared" only became clear by checking the whole old-page tree at once, not PR by PR.
 
-## PR 42 - Dead-code sweep - ready for review
+## PR 42 - Dead-code sweep - merged (#325)
 
 Delete code with zero importers anywhere, not tied to any page — no dependency on anything else in this arc, safe immediately.
 
@@ -24,7 +24,7 @@ Four of the five deleted cleanly. **The fifth and sixth (`EvalContextField.tsx`/
 
 Net result: **only 4 of the originally-listed 6 files actually got removed** — `parallel.tsx`, `EventBar.tsx`, `FlowTree.tsx`, `Runner-old.temp.tsx`. `EvalContextField.tsx`/`EvalContextSourceFields.tsx` are not dead code after all; struck from this list, left in place.
 
-## PR 43 - Prune Runner/RunDetails/Runs cluster - not started
+## PR 43 - Prune Runner/RunDetails/Runs cluster - ready for review
 
 Removes `pages/Runner.tsx`, `pages/RunDetails.tsx` (route `/runs/details`), and `pages/Runs.tsx`, plus their exclusive components.
 
@@ -32,9 +32,19 @@ Removes `pages/Runner.tsx`, `pages/RunDetails.tsx` (route `/runs/details`), and 
 
 **Component-only files confirmed old-page-exclusive, safe to delete with the pages:** all of `components/runner/*` (7 files); most of `components/runs/*` — `RunArtifactList`, `RunArtifactListItem`, `RunArtifactViewer`, `RunDetailsControllerProvider`, `RunDetailsFlowViewer`, `RunDetailsTabs`, `RunList`, `RunListItem`, `use-run-details-controller`, `useRunDetailsData`.
 
-**One real rescue needed first, not just noted in passing: `components/evals/EvaluateExportModal.tsx`** (the LLM-judge trigger modal, already discussed in `docs/todo.md` as real, extension-worthy eval infrastructure) is _only_ reachable today through `components/runs/RunArtifactList.tsx` — one of this cluster's exclusive files. Deleting the cluster naively would delete it too. Decided: relocate it (e.g. into `components/evals/` proper, already its logical home) as part of this PR, before the rest of the cluster goes. It does **not** need a working trigger/entry point wired into the current UI as part of this — that's future eval-system work, out of scope here. Just don't let it get deleted.
+**One real rescue needed first, not just noted in passing: `components/evals/EvaluateExportModal.tsx`** (the LLM-judge trigger modal, already discussed in `docs/todo.md` as real, extension-worthy eval infrastructure) is _only_ reachable today through `components/runs/RunArtifactList.tsx` — one of this cluster's exclusive files. Deleting the cluster naively would delete it too. Decided: it already lives in the right place (`components/evals/`, alongside the other Evals-page components) — no move needed, just don't let it get deleted, and mark it clearly so it doesn't read as accidental dead code to a future sweep. No working trigger/entry point needed in the current UI as part of this — that's future eval-system work, out of scope here.
 
-Not yet built or verified.
+### What actually landed
+
+The cluster deletion matched the plan exactly — all 3 pages, all 7 `components/runner/*` files, all 10 `components/runs/*` files (including `EvaluateExportModal`'s sole caller, `RunArtifactList.tsx`), plus `redux/slices/runs-slice.ts` and its wiring in `store.ts`. `EvaluateExportModal.tsx` itself was left in place untouched except for a new top-level comment marking it intentionally orphaned, pointing at this arc file and `docs/todo.md`'s updated note (both now describe it as unreachable-but-deliberately-kept, not just imperfect).
+
+**Two things beyond the original scope, both real, both caught by `pnpm typecheck` rather than assumed:**
+
+- **Dangling nav links**: `layout/AppShell.tsx`'s nav array still had `/runner` and `/runs` entries pointing at routes that no longer exist. Not caught by the grep-based component-importer investigation (nav entries are data, not imports) — removed along with their now-unused icon imports (`PlayIcon`, `ListIcon`).
+- **A real cross-cluster coupling in `runner-slice.ts`**: it imports the `Tab` type from `components/runs/use-run-details-controller.ts` (one of this cluster's deleted files), purely for its own `activeTab` field. `runner-slice.ts` itself has to survive this PR — `FlowListItem.tsx` (Flows cluster, PR 46) and `SimsListItem.tsx` (Sims cluster, PR 44) both still import `setRunnerFlowSelectedId`/`setRunnerSimSelectedId` from it — so the fix was inlining the small `Tab` union type directly into `runner-slice.ts` rather than reaching back into a file this PR removed.
+- **Found but deliberately not acted on, flagged for PR 44/46 instead**: checking `runner-slice.ts`'s full exported surface turned up that most of it (`activeTab`, `selectedEventId`, `eventGraphRunId`'s setter, `flowDef`, `flowHash`'s setter, `hydrateRunnerFromRun`, param-hash handling) has zero remaining consumers anywhere — only `setRunnerFlowSelectedId`, `setRunnerSimSelectedId`, `getEventGraphRunId`, and `selectFlowHash` are still used, all by the Sims/Flows clusters. `runner-slice.ts` isn't part of this PR's own file list, and trimming its dead fields now would touch a shared file mid-way through two other clusters' own pruning — left as-is, worth revisiting once PR 44 and PR 46 land and the slice's true final shape is clear.
+
+`pnpm typecheck` and `pnpm lint` both clean; a repo-wide grep for stray `/runner`/`/runs`/`/runs/details` string references (routes aren't always caught by TS) turned up nothing.
 
 ## PR 44 - Prune Sims/CreateSim/ViewSim cluster - not started
 

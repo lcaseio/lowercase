@@ -1,7 +1,8 @@
 import type { FlowDefinition, ForkSpec } from "@lcase/types";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { Tab } from "@/components/runs/use-run-details-controller";
+
+type Tab = "flow" | "events" | "details" | "artifacts" | "artifactViewer";
 
 type RunnerState = {
   flowHash: string | null;
