@@ -1,18 +1,18 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "./redux/typed-hooks";
-import { wsConnect, wsDisconnect } from "./redux/middleware/ws";
+import { sseConnect, sseDisconnect } from "./redux/middleware/sse";
 
-export function WsBootstrap() {
+export function SseBootstrap() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(
-      wsConnect({
-        url: "ws://localhost:3000/ws",
+      sseConnect({
+        url: "http://localhost:3000/events",
       }),
     );
     return () => {
-      dispatch(wsDisconnect());
+      dispatch(sseDisconnect());
     };
   }, [dispatch]);
 

@@ -2,9 +2,8 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { flowsApi } from "./api/flows-api";
 import { flowsSlice } from "./slices/flows-slice";
 import { routeEventListenerMiddleware } from "./middleware/route-event";
-import { createWsMiddleware } from "./middleware/ws";
+import { createSseMiddleware } from "./middleware/sse";
 import { eventsSlice } from "./slices/events-slice";
-import { wsSlice } from "./slices/ws-slice";
 import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
 import { simsSlice } from "./slices/sims-slice";
@@ -29,7 +28,6 @@ import { loadPersistedExplorerState } from "./explorer-persistence";
 export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
-  ws: wsSlice.reducer,
   runner: runnerSlice.reducer,
   sims: simsSlice.reducer,
   runs: runsSlice.reducer,
@@ -76,7 +74,7 @@ export const store = configureStore({
         simsApi.middleware,
         artifactsApi.middleware,
         evalsApi.middleware,
-        createWsMiddleware(),
+        createSseMiddleware(),
       ),
 });
 

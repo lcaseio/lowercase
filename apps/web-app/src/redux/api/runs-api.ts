@@ -11,7 +11,7 @@ import type {
   PostRunsRes,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { eventsBatch } from "../middleware/ws";
+import { eventsBatch } from "../middleware/sse";
 
 export const runsApi = createApi({
   reducerPath: "runsApi",

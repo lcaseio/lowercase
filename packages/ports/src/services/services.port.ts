@@ -31,7 +31,6 @@ export interface ServicesPort {
   replay: ReplayServicePort;
   system: SystemServicePort;
   run: RunServicePort;
-  ws: WsServicePort;
   artifact: ArtifactServicePort;
   eval: EvalServicePort;
 }
@@ -77,6 +76,7 @@ export interface SystemServicePort {
   startSystem(): Promise<RuntimeStatus>;
   stopSystem(): Promise<RuntimeStatus>;
   attachSink(sink: EventSink): void;
+  detachSink(sink: EventSink): void;
 }
 
 export type RunRequest = {
