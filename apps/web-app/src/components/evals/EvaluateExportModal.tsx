@@ -1,3 +1,9 @@
+// Unused as of the UI Workspace milestone's PR 43 (pruning old pages, see
+// docs/milestones/ui-workspace/arcs/prune-old-pages.md), which removed its
+// only caller -- kept intentionally, not dead code to sweep. This is v1
+// evals' judge-trigger UI, preserved as a reference for what to compare
+// against when building the real evals rework. See docs/todo.md for what's
+// actually wrong with it and what a real fix looks like.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {

@@ -8,7 +8,6 @@ import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
 import { simsSlice } from "./slices/sims-slice";
 import { simsApi } from "./api/sims-api";
-import { runsSlice } from "./slices/runs-slice";
 import { artifactsApi } from "./api/artifacts-api";
 import { evalsApi } from "./api/evals-api";
 import { flowVersionRunSlice } from "./slices/flow-version-run-slice";
@@ -30,7 +29,6 @@ export const rootReducer = combineReducers({
   events: eventsSlice.reducer,
   runner: runnerSlice.reducer,
   sims: simsSlice.reducer,
-  runs: runsSlice.reducer,
   flowVersionRun: flowVersionRunSlice.reducer,
   flowVersionRunHistory: flowVersionRunHistorySlice.reducer,
   flowVersionSims: flowVersionSimsSlice.reducer,
