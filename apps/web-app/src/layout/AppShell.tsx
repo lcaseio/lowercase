@@ -3,8 +3,6 @@ import {
   LayoutDashboardIcon,
   FlaskConicalIcon,
   WorkflowIcon,
-  BotIcon,
-  FileTextIcon,
   ScaleIcon,
   SettingsIcon,
   RocketIcon,
@@ -17,8 +15,6 @@ const navItems = [
   { to: "/spike", label: "Spike", icon: FlaskConicalIcon },
   { to: "/explorer", label: "Explorer", icon: RocketIcon },
   { to: "/flows", label: "Flows", icon: WorkflowIcon },
-  { to: "/sims", label: "Sims", icon: BotIcon },
-  { to: "/artifacts", label: "Artifacts", icon: FileTextIcon },
   { to: "/evals", label: "Evals", icon: ScaleIcon },
   { to: "/system", label: "System", icon: SettingsIcon },
 ];

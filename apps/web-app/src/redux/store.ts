@@ -6,7 +6,6 @@ import { createSseMiddleware } from "./middleware/sse";
 import { eventsSlice } from "./slices/events-slice";
 import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
-import { simsSlice } from "./slices/sims-slice";
 import { simsApi } from "./api/sims-api";
 import { artifactsApi } from "./api/artifacts-api";
 import { evalsApi } from "./api/evals-api";
@@ -28,7 +27,6 @@ export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
   runner: runnerSlice.reducer,
-  sims: simsSlice.reducer,
   flowVersionRun: flowVersionRunSlice.reducer,
   flowVersionRunHistory: flowVersionRunHistorySlice.reducer,
   flowVersionSims: flowVersionSimsSlice.reducer,

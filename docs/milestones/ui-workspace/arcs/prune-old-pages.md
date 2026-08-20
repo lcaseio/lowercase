@@ -1,8 +1,8 @@
-# UI Workspace Milestone — Arc: Prune old pages (PRs 42–46)
+# UI Workspace Milestone — Arc: Prune old pages (PRs 42–45)
 
-Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. The Explorer/dockview arc (PRs 1–41) has fully superseded the older page-navigation UI in every mode it covers; this arc is the cleanup — removing what's dead, and rescuing/rehoming what turned out to still be shared — before file/folder reorganization (a separate, later, not-yet-scoped step) makes sense to start. One continuous investigation across five PRs, sequenced cheapest/safest first: a zero-risk dead-code sweep, three independent old-page clusters that are pure deletions, and one larger cluster that also has to rehome real shared code, not just delete it.
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. The Explorer/dockview arc (PRs 1–41) has fully superseded the older page-navigation UI in every mode it covers; this arc is the cleanup — removing what's dead, and rescuing/rehoming what turned out to still be shared — before file/folder reorganization (a separate, later, not-yet-scoped step) makes sense to start. One continuous investigation across four PRs, sequenced cheapest/safest first: a zero-risk dead-code sweep, two independent old-page clusters that are pure deletions, and one larger cluster that also has to rehome real shared code, not just delete it. (Originally scoped as five PRs with Sims and Artifacts as separate clusters — merged into one PR once both turned out to be pure deletions with nothing to rescue; renumbered immediately rather than left as a skipped gap, since nothing external referenced the old numbering yet.)
 
-**Methodology note, true of every PR below**: nothing here was assumed from folder names or memory — every file was checked with an actual repo-wide `grep` for its real importers, because folder names turned out to be a genuinely unreliable signal (see PR 46's "mislabeled" findings). This is also why the whole arc got investigated together up front before any PR started: the boundaries between "dead," "old-only," and "actually still shared" only became clear by checking the whole old-page tree at once, not PR by PR.
+**Methodology note, true of every PR below**: nothing here was assumed from folder names or memory — every file was checked with an actual repo-wide `grep` for its real importers, because folder names turned out to be a genuinely unreliable signal (see PR 45's "mislabeled" findings). This is also why the whole arc got investigated together up front before any PR started: the boundaries between "dead," "old-only," and "actually still shared" only became clear by checking the whole old-page tree at once, not PR by PR.
 
 ## PR 42 - Dead-code sweep - merged (#325)
 
@@ -24,7 +24,7 @@ Four of the five deleted cleanly. **The fifth and sixth (`EvalContextField.tsx`/
 
 Net result: **only 4 of the originally-listed 6 files actually got removed** — `parallel.tsx`, `EventBar.tsx`, `FlowTree.tsx`, `Runner-old.temp.tsx`. `EvalContextField.tsx`/`EvalContextSourceFields.tsx` are not dead code after all; struck from this list, left in place.
 
-## PR 43 - Prune Runner/RunDetails/Runs cluster - ready for review
+## PR 43 - Prune Runner/RunDetails/Runs cluster - merged (#326)
 
 Removes `pages/Runner.tsx`, `pages/RunDetails.tsx` (route `/runs/details`), and `pages/Runs.tsx`, plus their exclusive components.
 
@@ -41,36 +41,30 @@ The cluster deletion matched the plan exactly — all 3 pages, all 7 `components
 **Two things beyond the original scope, both real, both caught by `pnpm typecheck` rather than assumed:**
 
 - **Dangling nav links**: `layout/AppShell.tsx`'s nav array still had `/runner` and `/runs` entries pointing at routes that no longer exist. Not caught by the grep-based component-importer investigation (nav entries are data, not imports) — removed along with their now-unused icon imports (`PlayIcon`, `ListIcon`).
-- **A real cross-cluster coupling in `runner-slice.ts`**: it imports the `Tab` type from `components/runs/use-run-details-controller.ts` (one of this cluster's deleted files), purely for its own `activeTab` field. `runner-slice.ts` itself has to survive this PR — `FlowListItem.tsx` (Flows cluster, PR 46) and `SimsListItem.tsx` (Sims cluster, PR 44) both still import `setRunnerFlowSelectedId`/`setRunnerSimSelectedId` from it — so the fix was inlining the small `Tab` union type directly into `runner-slice.ts` rather than reaching back into a file this PR removed.
-- **Found but deliberately not acted on, flagged for PR 44/46 instead**: checking `runner-slice.ts`'s full exported surface turned up that most of it (`activeTab`, `selectedEventId`, `eventGraphRunId`'s setter, `flowDef`, `flowHash`'s setter, `hydrateRunnerFromRun`, param-hash handling) has zero remaining consumers anywhere — only `setRunnerFlowSelectedId`, `setRunnerSimSelectedId`, `getEventGraphRunId`, and `selectFlowHash` are still used, all by the Sims/Flows clusters. `runner-slice.ts` isn't part of this PR's own file list, and trimming its dead fields now would touch a shared file mid-way through two other clusters' own pruning — left as-is, worth revisiting once PR 44 and PR 46 land and the slice's true final shape is clear.
+- **A real cross-cluster coupling in `runner-slice.ts`**: it imports the `Tab` type from `components/runs/use-run-details-controller.ts` (one of this cluster's deleted files), purely for its own `activeTab` field. `runner-slice.ts` itself has to survive this PR — `FlowListItem.tsx` (Flows cluster, PR 45) and `SimsListItem.tsx` (Sims cluster, PR 44) both still import `setRunnerFlowSelectedId`/`setRunnerSimSelectedId` from it — so the fix was inlining the small `Tab` union type directly into `runner-slice.ts` rather than reaching back into a file this PR removed.
+- **Found but deliberately not acted on, flagged for PR 44/45 instead**: checking `runner-slice.ts`'s full exported surface turned up that most of it (`activeTab`, `selectedEventId`, `eventGraphRunId`'s setter, `flowDef`, `flowHash`'s setter, `hydrateRunnerFromRun`, param-hash handling) has zero remaining consumers anywhere — only `setRunnerFlowSelectedId`, `setRunnerSimSelectedId`, `getEventGraphRunId`, and `selectFlowHash` are still used, all by the Sims/Flows clusters. `runner-slice.ts` isn't part of this PR's own file list, and trimming its dead fields now would touch a shared file mid-way through two other clusters' own pruning — left as-is, worth revisiting once PR 44 and PR 45 land and the slice's true final shape is clear.
 
 `pnpm typecheck` and `pnpm lint` both clean; a repo-wide grep for stray `/runner`/`/runs`/`/runs/details` string references (routes aren't always caught by TS) turned up nothing.
 
-## PR 44 - Prune Sims/CreateSim/ViewSim cluster - not started
+## PR 44 - Prune Sims/CreateSim/ViewSim + Artifacts.tsx clusters - ready for review
 
-Removes `pages/sims/Sims.tsx`, `CreateSim.tsx`, `ViewSim.tsx`, plus their exclusive components.
-
-### Discussion
-
-Pure deletion, nothing to rescue — confirmed via grep that all of `components/sims/*` (7 files) are only ever imported from within this same page cluster.
-
-Not yet built or verified.
-
-## PR 45 - Prune Artifacts.tsx cluster - not started
-
-Removes the top-level `pages/Artifacts.tsx` (global artifact browser), plus its exclusive components.
+Removes `pages/sims/{Sims,CreateSim,ViewSim}.tsx` and the top-level `pages/Artifacts.tsx` (global artifact browser), plus both clusters' exclusive components. Originally scoped as two separate PRs — merged once both turned out to be genuinely "pure deletion, nothing to rescue," per the bundling rule settled on after PR 42/43 (bundle when neither PR has a real decision or rescue step in it).
 
 ### Discussion
 
-Pure deletion — `components/artifacts/AddArtifact.tsx`, `ArtifactViewer.tsx`, `ArtifactList.tsx` are only imported from this page.
+Pure deletion for both clusters, confirmed via import-path-anchored grep (not bare substrings, after a naming-collision near-miss below): all of `components/sims/*` (7 files) and `components/artifacts/{AddArtifact,ArtifactViewer,ArtifactList}.tsx` are only ever imported from within their own page.
 
-**One naming note worth flagging, not acting on here**: `components/artifacts/ArtifactList.tsx` and `components/flow-version/artifacts/ArtifactList.tsx` (deleted separately, in PR 46) are two unrelated components sharing an identical name in different folders. Harmless in practice — both die with their respective old pages regardless — but a concrete, found-not-hypothetical example of why the later file/folder rename pass matters, not just moving folders around.
+**One near-miss during verification: a naming collision almost produced the same false-cross-cluster-dependency scare PR 43 had.** An initial grep for `sims-slice` also matched `redux/slices/flow-version-sims-slice.ts` — a completely different, unrelated slice for the PR 45 cluster — plus a code comment merely _mentioning_ it by name. A tighter grep confirmed `sims-slice.ts`'s real importers are entirely within this cluster.
 
-Not yet built or verified.
+**One naming note, not acted on**: `components/artifacts/ArtifactList.tsx` and `components/flow-version/artifacts/ArtifactList.tsx` (deleted separately, in PR 45) are two unrelated components sharing an identical name in different folders. Harmless in practice — both die with their respective old pages regardless — but a concrete example of why the later file/folder rename pass matters, not just moving folders around.
 
-## PR 46 - Prune Flows/FlowVersion-mode-pages cluster + rehome shared survivors - not started
+### What actually landed
 
-The largest PR in this arc: removes `pages/Flows.tsx`, `FlowsEdit.tsx`, and all of `pages/flow-version/*` (`FlowVersionWorkspace`, `FlowVersionModeNav`, `FlowVersionModePlaceholder`, `View`, `Edit`, `Run`, `RunHistory`, `Sims`, `Artifacts`, `context.ts`) — but unlike PRs 43–45, this cluster's component tree isn't a pure deletion. Several files inside it are still live, load-bearing dependencies of the current Explorer UI, mislabeled as old only by which folder they happen to sit in.
+Matched the plan exactly for both: all 6 pages/components clusters, `redux/slices/sims-slice.ts` and its `store.ts` wiring (no equivalent `artifacts-slice.ts` exists), the `/sims`, `/sims/create`, `/sims/view`, and `/artifacts` routes in `App.tsx`, and their dangling nav entries (+ now-unused `BotIcon`/`FileTextIcon` imports) in `AppShell.tsx` — nav/route cleanup applied proactively this time, based on what PR 43 found. `pnpm typecheck` and `pnpm lint` both clean; stray-string sweeps for `/sims` and `/artifacts` turned up nothing.
+
+## PR 45 - Prune Flows/FlowVersion-mode-pages cluster + rehome shared survivors - not started
+
+The largest PR in this arc: removes `pages/Flows.tsx`, `FlowsEdit.tsx`, and all of `pages/flow-version/*` (`FlowVersionWorkspace`, `FlowVersionModeNav`, `FlowVersionModePlaceholder`, `View`, `Edit`, `Run`, `RunHistory`, `Sims`, `Artifacts`, `context.ts`) — but unlike PRs 42–44, this cluster's component tree isn't a pure deletion. Several files inside it are still live, load-bearing dependencies of the current Explorer UI, mislabeled as old only by which folder they happen to sit in.
 
 ### Discussion
 
@@ -80,7 +74,7 @@ The largest PR in this arc: removes `pages/Flows.tsx`, `FlowsEdit.tsx`, and all 
 
 - `components/flow-version/StepResultsTab.tsx` and its whole rendering subtree, only reachable through it: `StepOutputExportsPanel`, `StepFieldResolutionPanel`, `StepReferencesPanel`, `FieldResolutionRow`, `ReferenceRow`, `ArtifactHashLoader`. Imported directly by `components/explorer/flow-graph-panel/Content.tsx` and its side-panel wrapper.
 - `components/flow-version/FlowVersionRunParamRow.tsx` — imported by `components/explorer/flow-graph-panel/side-panel/ParamsTab.tsx`.
-- `components/flow-version/artifacts/ArtifactContentPanel.tsx` — imported by `components/explorer/artifact-panel/Content.tsx`. (Its sibling `ArtifactList.tsx` in the same folder is _not_ a survivor — see PR 45's naming-collision note; that one dies with this cluster.)
+- `components/flow-version/artifacts/ArtifactContentPanel.tsx` — imported by `components/explorer/artifact-panel/Content.tsx`. (Its sibling `ArtifactList.tsx` in the same folder is _not_ a survivor — see PR 44's naming-collision note; that one dies with this cluster.)
 - `components/CodeEditor.tsx` (top-level, not `components/explorer/`) — used by 4+ current panels including `ExplorerJsonDefinitionContent.tsx`, `flow-authoring-panel/Content.tsx`, `event-payload-panel/Content.tsx`. This is the exact Monaco component from PR 39's spacebar-bug fix.
 - `components/EventGraph.tsx` and `components/EventDetails.tsx` (top-level) — the current `event-graph-panel/Content.tsx` and its side-panel `EventDetailsTab.tsx` both wrap these directly rather than having their own reimplementation.
 - `components/FlowParameters.tsx`, `components/FlowProblemsList.tsx` — used by both old `FlowVersionDetailsPanel` and current `ParametersTab`/`ProblemsTab`.
