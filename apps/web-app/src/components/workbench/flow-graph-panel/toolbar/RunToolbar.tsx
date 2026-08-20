@@ -20,7 +20,7 @@ import type {
   ReplayState,
   ReplaySpeed,
 } from "@/redux/slices/flow-graph-panels-slice";
-import { GraphViewControls } from "./GraphViewControls";
+import { GraphViewControls } from "@/components/workbench/shared/flow-graph/GraphViewControls";
 
 import {
   EVENT_GRAPH_ICON,

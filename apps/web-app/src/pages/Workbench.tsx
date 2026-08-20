@@ -10,7 +10,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { FlowExplorer } from "@/components/explorer/FlowExplorer";
+import { FlowExplorer } from "@/components/workbench/explorer/FlowExplorer";
 import { DockTabContent } from "@/components/workbench/dock/DockTabContent";
 import { DockTab } from "@/components/workbench/dock/DockTab";
 import { DockWatermark } from "@/components/workbench/dock/DockWatermark";

@@ -14,7 +14,7 @@ import {
   TAKEN_EDGE_STROKE_WIDTH,
   UNCONDITIONAL_EDGE_COLOR,
   UNTAKEN_EDGE_STROKE_WIDTH,
-} from "@/components/flow-graph-nodes/flow-step-accents";
+} from "@/components/workbench/shared/flow-graph/nodes/flow-step-accents";
 
 function edge(overrides: Partial<Edge> & Pick<Edge, "type">): Edge {
   return {

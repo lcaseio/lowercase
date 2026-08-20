@@ -11,7 +11,7 @@ import {
   FLOW_AUTHORING_PREVIEW_ID,
   openOrFocusPanel,
 } from "@/components/workbench/dock/dock-panels";
-import type { SidePanelTab } from "../flow-graph-panel/SidePanel";
+import type { SidePanelTab } from "@/components/workbench/shared/flow-graph/SidePanel";
 import { toast } from "sonner";
 
 // All the data-fetching, Redux read/write, and derived state the

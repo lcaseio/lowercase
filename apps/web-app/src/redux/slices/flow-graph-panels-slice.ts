@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
-import type { SidePanelTab } from "@/components/explorer/flow-graph-panel/SidePanel";
+import type { SidePanelTab } from "@/components/workbench/shared/flow-graph/SidePanel";
 import { panelRemoved } from "./panel-lifecycle-actions";
 
 export type SimDraftState = { reuse: string[] };

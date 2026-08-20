@@ -1,13 +1,12 @@
-import type { StepJoin } from "@lcase/types";
+import type { StepParallel } from "@lcase/types";
 import { InputField } from "@/components/workbench/shared/fields/InputField";
 import { InputListField } from "@/components/workbench/shared/fields/InputListField";
 
-export function StepJoinDetails({ step }: { step: StepJoin }) {
+export function ParallelDetails({ step }: { step: StepParallel }) {
   return (
     <div className="flex flex-col gap-3 mt-3">
       <InputField label="Type" value={step.type} />
-      <InputListField label="Steps" value={step.steps} ordered={false} />
-      <InputField label="Next" value={step.next} />
+      <InputListField label="Steps" value={step.steps} />
     </div>
   );
 }

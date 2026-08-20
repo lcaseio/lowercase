@@ -5,7 +5,7 @@ import type {
   FlowDefinition,
   StepDefinition,
 } from "@lcase/types";
-import { getFlowStepAccent } from "@/components/flow-graph-nodes/flow-step-accents";
+import { getFlowStepAccent } from "@/components/workbench/shared/flow-graph/nodes/flow-step-accents";
 
 export type LayoutDirection = "TB" | "LR";
 
