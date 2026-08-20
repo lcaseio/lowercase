@@ -11,6 +11,7 @@ Delete code with zero importers anywhere, not tied to any page — no dependency
 ### Discussion
 
 Confirmed via repo-wide grep, not folder-name guesswork:
+
 - `components/nodes/parallel.tsx`
 - `components/EventBar.tsx`
 - `components/FlowTree.tsx`
@@ -31,7 +32,7 @@ Removes `pages/Runner.tsx`, `pages/RunDetails.tsx` (route `/runs/details`), and 
 
 **Component-only files confirmed old-page-exclusive, safe to delete with the pages:** all of `components/runner/*` (7 files); most of `components/runs/*` — `RunArtifactList`, `RunArtifactListItem`, `RunArtifactViewer`, `RunDetailsControllerProvider`, `RunDetailsFlowViewer`, `RunDetailsTabs`, `RunList`, `RunListItem`, `use-run-details-controller`, `useRunDetailsData`.
 
-**One real rescue needed first, not just noted in passing: `components/evals/EvaluateExportModal.tsx`** (the LLM-judge trigger modal, already discussed in `docs/todo.md` as real, extension-worthy eval infrastructure) is *only* reachable today through `components/runs/RunArtifactList.tsx` — one of this cluster's exclusive files. Deleting the cluster naively would delete it too. Decided: relocate it (e.g. into `components/evals/` proper, already its logical home) as part of this PR, before the rest of the cluster goes. It does **not** need a working trigger/entry point wired into the current UI as part of this — that's future eval-system work, out of scope here. Just don't let it get deleted.
+**One real rescue needed first, not just noted in passing: `components/evals/EvaluateExportModal.tsx`** (the LLM-judge trigger modal, already discussed in `docs/todo.md` as real, extension-worthy eval infrastructure) is _only_ reachable today through `components/runs/RunArtifactList.tsx` — one of this cluster's exclusive files. Deleting the cluster naively would delete it too. Decided: relocate it (e.g. into `components/evals/` proper, already its logical home) as part of this PR, before the rest of the cluster goes. It does **not** need a working trigger/entry point wired into the current UI as part of this — that's future eval-system work, out of scope here. Just don't let it get deleted.
 
 Not yet built or verified.
 
@@ -63,20 +64,22 @@ The largest PR in this arc: removes `pages/Flows.tsx`, `FlowsEdit.tsx`, and all 
 
 ### Discussion
 
-**Component-only files confirmed old-page-exclusive, safe to delete with the pages:** `FlowSettings.tsx` (+ its only consumer `TextAreaField`, which becomes orphaned the moment `FlowSettings` goes), `FlowList.tsx`/`FlowListItem.tsx`, `FlowVersionList.tsx`/`FlowVersionListItem.tsx`, `FlowEditPanel.tsx`, `AddJsonFlow.tsx` (the bare-textarea upload prototype PR 38 already properly replaces), `UploadFlowFile.tsx`, `AutoFitView.tsx`, and everything under `components/flow-version/` *except* the survivors below.
+**Component-only files confirmed old-page-exclusive, safe to delete with the pages:** `FlowSettings.tsx` (+ its only consumer `TextAreaField`, which becomes orphaned the moment `FlowSettings` goes), `FlowList.tsx`/`FlowListItem.tsx`, `FlowVersionList.tsx`/`FlowVersionListItem.tsx`, `FlowEditPanel.tsx`, `AddJsonFlow.tsx` (the bare-textarea upload prototype PR 38 already properly replaces), `UploadFlowFile.tsx`, `AutoFitView.tsx`, and everything under `components/flow-version/` _except_ the survivors below.
 
 **Mislabeled by folder/name — read as "flow-version" or old top-level leftovers, but are actually live and shared with the current Explorer UI. Deleting these would break the current app; this PR needs to rehome them (move, and likely rename), not remove them:**
+
 - `components/flow-version/StepResultsTab.tsx` and its whole rendering subtree, only reachable through it: `StepOutputExportsPanel`, `StepFieldResolutionPanel`, `StepReferencesPanel`, `FieldResolutionRow`, `ReferenceRow`, `ArtifactHashLoader`. Imported directly by `components/explorer/flow-graph-panel/Content.tsx` and its side-panel wrapper.
 - `components/flow-version/FlowVersionRunParamRow.tsx` — imported by `components/explorer/flow-graph-panel/side-panel/ParamsTab.tsx`.
-- `components/flow-version/artifacts/ArtifactContentPanel.tsx` — imported by `components/explorer/artifact-panel/Content.tsx`. (Its sibling `ArtifactList.tsx` in the same folder is *not* a survivor — see PR 45's naming-collision note; that one dies with this cluster.)
+- `components/flow-version/artifacts/ArtifactContentPanel.tsx` — imported by `components/explorer/artifact-panel/Content.tsx`. (Its sibling `ArtifactList.tsx` in the same folder is _not_ a survivor — see PR 45's naming-collision note; that one dies with this cluster.)
 - `components/CodeEditor.tsx` (top-level, not `components/explorer/`) — used by 4+ current panels including `ExplorerJsonDefinitionContent.tsx`, `flow-authoring-panel/Content.tsx`, `event-payload-panel/Content.tsx`. This is the exact Monaco component from PR 39's spacebar-bug fix.
 - `components/EventGraph.tsx` and `components/EventDetails.tsx` (top-level) — the current `event-graph-panel/Content.tsx` and its side-panel `EventDetailsTab.tsx` both wrap these directly rather than having their own reimplementation.
 - `components/FlowParameters.tsx`, `components/FlowProblemsList.tsx` — used by both old `FlowVersionDetailsPanel` and current `ParametersTab`/`ProblemsTab`.
-- `components/MainPanelTypes.ts` — a shared type file, still imported by current `components/steps/StepDetails.tsx` and others; most of its *usages* happen to be old code that's being pruned, but the file itself stays.
+- `components/MainPanelTypes.ts` — a shared type file, still imported by current `components/steps/StepDetails.tsx` and others; most of its _usages_ happen to be old code that's being pruned, but the file itself stays.
 - All of `components/steps/*` and `components/fields/*` (minus PR 42's two dead `EvalContext*` files) — heavily current, wired throughout the Explorer side-panel tabs (`StepDetailsTab`, `SettingsTab`, `SimTab`, `MetadataTab`, artifact authoring, etc.).
 
 **Left genuinely open, not resolved by the investigation — likely decided during this PR, but could be pushed further out instead:**
-- `pages/Dashboard.tsx`'s fate — its content reads as old-page-era, but it's also the `/` root route and the `*` catch-all fallback, so even if the content is pruned, the *routes* need to point somewhere (most likely `/explorer`) rather than just disappearing.
+
+- `pages/Dashboard.tsx`'s fate — its content reads as old-page-era, but it's also the `/` root route and the `*` catch-all fallback, so even if the content is pruned, the _routes_ need to point somewhere (most likely `/explorer`) rather than just disappearing.
 - Whether `context/` (theme provider, `useTheme`) has any old-vs-new theme logic conflict worth untangling as part of this prune, or whether it's clean and this is a non-issue. Not yet checked closely.
 
 Not yet built or verified.
