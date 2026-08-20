@@ -224,7 +224,23 @@ export function useFlowGraphPanel(
       ? simDefinition.spec.reuse
       : null;
   const authoringReusedStepIds = simDraft ? simDraft.reuse : undefined;
-  const reusedStepIds = reuse ?? authoringReusedStepIds;
+
+  // Event-sourced fallback for any run other than a sim's own parent run --
+  // one that executed the sim rather than being authored from it -- mirroring
+  // StepResultsTab.tsx's own sourceRunId !== undefined check for the same
+  // question. Derived from effectiveStepRunInfo (not the raw stepRunInfo
+  // above) so a badge only appears once replay's scrubber has actually
+  // reached that step's step.reused event, same as its status does.
+  // Memoized since FlowGraph's own layout memo depends on reusedStepIds by
+  // reference.
+  const outcomeReusedStepIds = useMemo(
+    () =>
+      Object.entries(effectiveStepRunInfo)
+        .filter(([, info]) => info.sourceRunId !== undefined)
+        .map(([stepId]) => stepId),
+    [effectiveStepRunInfo],
+  );
+  const reusedStepIds = authoringReusedStepIds ?? reuse ?? outcomeReusedStepIds;
 
   // The engine doesn't support reusing pure control-flow steps -- no
   // switch is shown for them at all, not merely disabled.

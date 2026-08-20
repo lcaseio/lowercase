@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Not a continuation of any single earlier arc's own feature narrative — standalone backend/transport work, long-known-about (the tab-stealing bug has been named in `MILESTONE.md`'s `Next up` section since before this arc existed).
 
-## PR 40 - Replace the WebSocket live-events transport with SSE - in progress
+## PR 40 - Replace the WebSocket live-events transport with SSE - merged (#323)
 
 ### Discussion
 
