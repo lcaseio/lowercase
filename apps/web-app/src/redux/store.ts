@@ -9,10 +9,6 @@ import { runsApi } from "./api/runs-api";
 import { simsApi } from "./api/sims-api";
 import { artifactsApi } from "./api/artifacts-api";
 import { evalsApi } from "./api/evals-api";
-import { flowVersionRunSlice } from "./slices/flow-version-run-slice";
-import { flowVersionRunHistorySlice } from "./slices/flow-version-run-history-slice";
-import { flowVersionSimsSlice } from "./slices/flow-version-sims-slice";
-import { flowVersionArtifactsSlice } from "./slices/flow-version-artifacts-slice";
 import { flowGraphPanelsSlice } from "./slices/flow-graph-panels-slice";
 import { eventGraphPanelsSlice } from "./slices/event-graph-panels-slice";
 import { artifactPanelsSlice } from "./slices/artifact-panels-slice";
@@ -27,10 +23,6 @@ export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
   runner: runnerSlice.reducer,
-  flowVersionRun: flowVersionRunSlice.reducer,
-  flowVersionRunHistory: flowVersionRunHistorySlice.reducer,
-  flowVersionSims: flowVersionSimsSlice.reducer,
-  flowVersionArtifacts: flowVersionArtifactsSlice.reducer,
   flowGraphPanels: flowGraphPanelsSlice.reducer,
   eventGraphPanels: eventGraphPanelsSlice.reducer,
   artifactPanels: artifactPanelsSlice.reducer,
