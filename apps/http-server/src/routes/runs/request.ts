@@ -1,6 +1,5 @@
 import { FastifyInstance } from "fastify";
 import { PostRunsReq, PostRunsRes } from "@lcase/types";
-import { sockets } from "../ws-route.js";
 
 export const requestRunsRoute = async (app: FastifyInstance) => {
   app.post<{ Body: PostRunsReq }>(
@@ -29,12 +28,6 @@ export const requestRunsRoute = async (app: FastifyInstance) => {
 
       const runId = app.services.run.makeRunId();
 
-      if (sockets.has("client")) {
-        const s = sockets.get("client");
-        console.log("s undef?:", s === undefined);
-        app.services.ws.monitorRun(runId, s as unknown as WebSocket);
-        console.log("monitoring run");
-      }
       try {
         await app.services.run.requestRun({
           flowId,

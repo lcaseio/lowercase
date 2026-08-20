@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { WsBootstrap } from "./ws-bootstrap";
+import { SseBootstrap } from "./sse-bootstrap";
 import { ThemeProvider } from "./contexts/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 
@@ -15,7 +15,7 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider storageKey="vite-ui-theme">
       <Provider store={store}>
         <BrowserRouter>
-          <WsBootstrap />
+          <SseBootstrap />
           <Toaster />
           <App />
         </BrowserRouter>

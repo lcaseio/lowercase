@@ -2,22 +2,20 @@ import { createAction, type Middleware } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import type { AnyEvent } from "@lcase/types";
 
-export type WsStatus = {
-  status: "open" | "closed" | "connecting" | "error";
-  reason?: string;
-};
-
-export const wsConnect = createAction<{ url: string }>("ws/connect");
-export const wsDisconnect = createAction("ws/disconnect");
-export const wsStatus = createAction<WsStatus>("ws/setStatus");
-export const wsSend = createAction<{ message: string }>("ws/send");
+export const sseConnect = createAction<{ url: string }>("sse/connect");
+export const sseDisconnect = createAction("sse/disconnect");
 
 export const eventsBatch = createAction<{ events: AnyEvent[] }>("events/batch");
 
 type DispatchEventsBatch = (action: ReturnType<typeof eventsBatch>) => unknown;
 
-export const createWsMiddleware = (): Middleware<unknown, RootState> => {
-  let socket: WebSocket | null = null;
+// EventSource reconnects automatically per spec on a dropped/failed
+// connection -- no manual retry/backoff logic needed here. The one failure
+// mode it won't retry (a fatal close from a non-2xx response) isn't
+// reachable today: /events has no auth or conditional rejection logic that
+// could ever produce one.
+export const createSseMiddleware = (): Middleware<unknown, RootState> => {
+  let source: EventSource | null = null;
   let buffer: AnyEvent[] = [];
   let rafScheduled = false;
 
@@ -35,27 +33,15 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
   };
 
   return (store) => (next) => (action) => {
-    if (wsConnect.match(action)) {
-      if (socket) return next(action);
+    if (sseConnect.match(action)) {
+      if (source) return next(action);
       const { url } = action.payload;
-      store.dispatch(wsStatus({ status: "connecting" }));
 
-      // if socket exists, don't create a new one
-      // if (socket) {
-      //   socket.close();
-      //   socket = null;
-      // }
+      source = new EventSource(url);
+      source.onopen = () => console.log("[sse] connection open");
+      source.onerror = () => console.log("[sse] connection error, retrying");
 
-      socket = new WebSocket(url);
-      socket.onopen = () => store.dispatch(wsStatus({ status: "open" }));
-      socket.onclose = (e) =>
-        store.dispatch(
-          wsStatus({ status: "closed", reason: `${e.code} ${e.reason}` }),
-        );
-      socket.onerror = (e) =>
-        store.dispatch(wsStatus({ status: "error", reason: `${e.type}` }));
-
-      socket.onmessage = (e) => {
+      source.onmessage = (e) => {
         const event = parseEvent(e.data);
 
         if (!event) return;
@@ -66,19 +52,11 @@ export const createWsMiddleware = (): Middleware<unknown, RootState> => {
         scheduleFlush(store.dispatch);
       };
     }
-    if (wsSend.match(action)) {
-      if (socket) {
-        socket.send(action.payload.message);
-      }
-    }
 
-    if (wsDisconnect.match(action)) {
-      if (socket) socket.close();
-      socket = null;
+    if (sseDisconnect.match(action)) {
+      if (source) source.close();
+      source = null;
       rafScheduled = false;
-      store.dispatch(
-        wsStatus({ status: "closed", reason: "Manually closed connection" }),
-      );
     }
     return next(action);
   };

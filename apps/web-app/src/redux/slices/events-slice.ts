@@ -4,7 +4,7 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { eventsBatch } from "../middleware/ws";
+import { eventsBatch } from "../middleware/sse";
 import type { RootState } from "../store";
 
 type EventId = string;

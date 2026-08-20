@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-authoring.md`](./flow-authoring.md) (PR 38) — a standalone infrastructure fix, not a continuation of that arc's own feature narrative, surfaced while testing it.
 
-## PR 39 - Fix CodeEditor (Monaco)'s spacebar input bug - ready for review
+## PR 39 - Fix CodeEditor (Monaco)'s spacebar input bug - merged (#322)
 
 `CodeEditor.tsx` (the shared Monaco wrapper used by both the flow-authoring and artifact-authoring editors, plus several read-only viewers) sometimes stops accepting spacebar input entirely. Real-priority, not a polish item — this blocks typing at all in an editor a user is actively relying on, not a narrow edge case. Re-sequenced ahead of its original slot in `Next up` specifically for that reason.
 

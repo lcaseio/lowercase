@@ -1,13 +1,13 @@
 import type { AnyEvent } from "@lcase/types";
 import { createListenerMiddleware, type Dispatch } from "@reduxjs/toolkit";
-import { eventsBatch } from "./ws";
+import { eventsBatch } from "./sse";
 
 export const routeEventListenerMiddleware = createListenerMiddleware();
 
 export function routeEvent(_dispatch: Dispatch, event: AnyEvent) {
   switch (event.type) {
     case "run.started": {
-      // dispatch(wsConnect({ url: "" })); no custom dispatching yet
+      // no custom dispatching yet
       return;
     }
     default:
