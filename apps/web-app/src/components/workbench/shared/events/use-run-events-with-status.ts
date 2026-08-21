@@ -4,7 +4,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/redux/typed-hooks";
 import { useGetAllRunEventsQuery } from "@/redux/api/runs-api";
 import { makeSelectRunEvents } from "@/redux/slices/events-slice";
-import { useStepRunInfo } from "./use-step-run-info";
+import { useStepRunInfo } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 
 // given a runId, backfills its events over REST and derives step run info
 // (status + output/export hashes) from them -- identical for a live run and

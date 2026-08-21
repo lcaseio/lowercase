@@ -11,7 +11,7 @@ import {
   renderParamRefReport,
   resolveRefHash,
   type ResolvedRef,
-} from "@/lib/ref-resolution";
+} from "@/components/workbench/shared/ref-resolution";
 
 function makeRef(overrides: Partial<Ref>): Ref {
   return {

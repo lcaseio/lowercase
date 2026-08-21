@@ -1,6 +1,9 @@
 import type { FlowDefinition } from "@lcase/types";
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
-import { formatBindPath, type ResolvedRef } from "@/lib/ref-resolution";
+import {
+  formatBindPath,
+  type ResolvedRef,
+} from "@/components/workbench/shared/ref-resolution";
 import { FieldResolutionRow } from "./FieldResolutionRow";
 
 type Props = {

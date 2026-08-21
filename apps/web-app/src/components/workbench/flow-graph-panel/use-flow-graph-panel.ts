@@ -28,10 +28,10 @@ import {
   type LayoutDirection,
   type FlowGraphViewport,
 } from "@/redux/slices/flow-graph-panels-slice";
-import { useFlowAnalysis } from "@/hooks/use-flow-analysis";
-import { useRunEventsWithStatus } from "@/hooks/use-run-events-with-status";
+import { useFlowAnalysis } from "@/components/workbench/flow-graph-panel/use-flow-analysis";
+import { useRunEventsWithStatus } from "@/components/workbench/shared/events/use-run-events-with-status";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
-import { useFlowGraphReplay } from "@/hooks/use-flow-graph-replay";
+import { useFlowGraphReplay } from "@/components/workbench/shared/events/use-flow-graph-replay";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
 import type { SidePanelTab } from "@/components/workbench/shared/flow-graph/SidePanel";

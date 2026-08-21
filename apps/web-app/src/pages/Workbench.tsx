@@ -21,7 +21,7 @@ import { panelRemoved } from "@/redux/slices/panel-lifecycle-actions";
 import {
   loadPersistedDockState,
   savePersistedDockState,
-} from "@/redux/dock-persistence";
+} from "@/components/workbench/dock/dock-persistence";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 
 export function Workbench() {

@@ -4,7 +4,7 @@ import type { ReplayState } from "@/redux/slices/flow-graph-panels-slice";
 import {
   decideReplayToggle,
   filterEventsUpTo,
-} from "@/hooks/use-flow-graph-replay";
+} from "@/components/workbench/shared/events/use-flow-graph-replay";
 
 // This app has no jsdom/@testing-library/react-test-renderer set up
 // anywhere, so useFlowGraphReplay itself (the Redux-wired hook) isn't

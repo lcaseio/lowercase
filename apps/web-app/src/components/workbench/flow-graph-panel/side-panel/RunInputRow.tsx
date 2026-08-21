@@ -24,7 +24,7 @@ import {
   buildRefUsage,
   findParamRefs,
   renderParamRefReport,
-} from "@/lib/ref-resolution";
+} from "@/components/workbench/shared/ref-resolution";
 
 const UNSET_VALUE = "__unset__";
 

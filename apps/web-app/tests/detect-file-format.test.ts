@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectFileFormat } from "@/lib/detect-file-format";
+import { detectFileFormat } from "@/components/workbench/shared/detect-file-format";
 
 function makeFile(name: string, mimetype: string): File {
   return new File(["content"], name, { type: mimetype });

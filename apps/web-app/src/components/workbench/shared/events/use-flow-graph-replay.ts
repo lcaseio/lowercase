@@ -12,7 +12,10 @@ import {
   type ReplayState,
   type ReplaySpeed,
 } from "@/redux/slices/flow-graph-panels-slice";
-import { useStepRunInfo, type StepRunInfo } from "./use-step-run-info";
+import {
+  useStepRunInfo,
+  type StepRunInfo,
+} from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import { useReplayClock } from "./use-replay-clock";
 
 export type ReplayToggleAction =

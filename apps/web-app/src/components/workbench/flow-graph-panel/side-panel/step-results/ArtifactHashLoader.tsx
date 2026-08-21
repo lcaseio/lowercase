@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useGetArtifactQuery } from "@/redux/api/artifacts-api";
-import type { ParamArtifactContent } from "@/lib/ref-resolution";
+import type { ParamArtifactContent } from "@/components/workbench/shared/ref-resolution";
 
 type Props = {
   hash: string;

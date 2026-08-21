@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   loadPersistedDockState,
   savePersistedDockState,
-} from "@/redux/dock-persistence";
+} from "@/components/workbench/dock/dock-persistence";
 import type { FlowGraphPanelsState } from "@/redux/slices/flow-graph-panels-slice";
 import type { EventGraphPanelsState } from "@/redux/slices/event-graph-panels-slice";
 import type { SerializedDockview } from "dockview-react";

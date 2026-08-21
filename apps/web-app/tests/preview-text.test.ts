@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { stringifyForPreview, truncateForPreview } from "@/lib/preview-text";
+import {
+  stringifyForPreview,
+  truncateForPreview,
+} from "@/components/workbench/flow-graph-panel/side-panel/step-results/preview-text";
 
 describe("stringifyForPreview", () => {
   it("passes strings through unchanged", () => {

@@ -2,12 +2,12 @@ import { Maximize2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLazyGetArtifactQuery } from "@/redux/api/artifacts-api";
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
-import type { StepRunInfo } from "@/hooks/use-step-run-info";
+import type { StepRunInfo } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import {
   artifactFormatToLanguage,
   type ParamArtifactContent,
-} from "@/lib/ref-resolution";
-import { stringifyForPreview } from "@/lib/preview-text";
+} from "@/components/workbench/shared/ref-resolution";
+import { stringifyForPreview } from "@/components/workbench/flow-graph-panel/side-panel/step-results/preview-text";
 import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
 
 type Props = {

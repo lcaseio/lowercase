@@ -6,7 +6,7 @@ import {
   computeDagreLayout,
   type LayoutDirection,
 } from "@/lib/flow-graph-layout";
-import { useFlowAnalysis } from "./use-flow-analysis";
+import { useFlowAnalysis } from "@/components/workbench/flow-graph-panel/use-flow-analysis";
 
 export type FlowDraftSnapshot = {
   flowDef: FlowDefinition;

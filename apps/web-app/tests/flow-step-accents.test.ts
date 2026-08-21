@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Edge } from "@lcase/types";
-import type { StepRunInfo } from "@/hooks/use-step-run-info";
+import type { StepRunInfo } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import {
   BRANCH_CASE_COLOR,
   BRANCH_DEFAULT_COLOR,

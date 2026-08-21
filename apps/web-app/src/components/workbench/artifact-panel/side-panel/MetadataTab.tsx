@@ -1,5 +1,5 @@
 import type { ArtifactListItem, FlowParamDefinition } from "@lcase/types";
-import { formatBytes } from "@/lib/format-bytes";
+import { formatBytes } from "@/components/workbench/shared/format-bytes";
 import { Button } from "@/components/ui/button";
 import { IdentityField } from "@/components/workbench/shared/fields/IdentityField";
 import { InputField } from "@/components/workbench/shared/fields/InputField";

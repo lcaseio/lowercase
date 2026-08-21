@@ -1,7 +1,7 @@
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetArtifactQuery } from "@/redux/api/artifacts-api";
 import { CodeEditor } from "@/components/workbench/shared/CodeEditor";
-import { artifactFormatToLanguage } from "@/lib/ref-resolution";
+import { artifactFormatToLanguage } from "@/components/workbench/shared/ref-resolution";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 
 export function ArtifactContentPanel({ hash }: { hash: string | null }) {

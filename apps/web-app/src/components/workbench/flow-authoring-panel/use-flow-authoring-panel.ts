@@ -5,7 +5,7 @@ import {
   selectFlowAuthoringPanelState,
   setFlowAuthoringContent,
 } from "@/redux/slices/flow-authoring-panels-slice";
-import { useFlowDraftSnapshot } from "@/hooks/use-flow-draft-analysis";
+import { useFlowDraftSnapshot } from "@/components/workbench/shared/flow-graph/use-flow-draft-analysis";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import {
   FLOW_AUTHORING_PREVIEW_ID,

@@ -1,7 +1,13 @@
 import type { FlowDefinition } from "@lcase/types";
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
-import { foldResolvedField, type ResolvedRef } from "@/lib/ref-resolution";
-import { stringifyForPreview, truncateForPreview } from "@/lib/preview-text";
+import {
+  foldResolvedField,
+  type ResolvedRef,
+} from "@/components/workbench/shared/ref-resolution";
+import {
+  stringifyForPreview,
+  truncateForPreview,
+} from "@/components/workbench/flow-graph-panel/side-panel/step-results/preview-text";
 
 type Props = {
   stepId: string;

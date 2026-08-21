@@ -1,5 +1,5 @@
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
-import type { ResolvedRef } from "@/lib/ref-resolution";
+import type { ResolvedRef } from "@/components/workbench/shared/ref-resolution";
 import { ReferenceRow } from "./ReferenceRow";
 
 type Props = {

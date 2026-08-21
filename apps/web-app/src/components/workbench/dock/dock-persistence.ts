@@ -1,9 +1,9 @@
 import type { SerializedDockview } from "dockview-react";
-import type { FlowGraphPanelsState } from "./slices/flow-graph-panels-slice";
-import type { EventGraphPanelsState } from "./slices/event-graph-panels-slice";
-import type { ArtifactPanelsState } from "./slices/artifact-panels-slice";
-import type { ArtifactAuthoringPanelsState } from "./slices/artifact-authoring-panels-slice";
-import type { FlowAuthoringPanelsState } from "./slices/flow-authoring-panels-slice";
+import type { FlowGraphPanelsState } from "@/redux/slices/flow-graph-panels-slice";
+import type { EventGraphPanelsState } from "@/redux/slices/event-graph-panels-slice";
+import type { ArtifactPanelsState } from "@/redux/slices/artifact-panels-slice";
+import type { ArtifactAuthoringPanelsState } from "@/redux/slices/artifact-authoring-panels-slice";
+import type { FlowAuthoringPanelsState } from "@/redux/slices/flow-authoring-panels-slice";
 
 // workspace id hardcoded for now -- see docs/milestones/ui-workspace/research/state-management.md's
 // workspace-switching notes for why this is still the right seam to leave in
