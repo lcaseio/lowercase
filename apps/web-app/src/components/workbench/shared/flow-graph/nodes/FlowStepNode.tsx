@@ -8,7 +8,7 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import type { Edge as FlowAnalysisEdge } from "@lcase/types";
-import type { StepStatus } from "@/hooks/use-step-run-info";
+import type { StepStatus } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import {
   HANDLE_SPACING,
   LR_EDGES_TOP_OFFSET,

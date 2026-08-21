@@ -4,7 +4,6 @@ import { flowsSlice } from "./slices/flows-slice";
 import { routeEventListenerMiddleware } from "./middleware/route-event";
 import { createSseMiddleware } from "./middleware/sse";
 import { eventsSlice } from "./slices/events-slice";
-import { runnerSlice } from "./slices/runner-slice";
 import { runsApi } from "./api/runs-api";
 import { simsApi } from "./api/sims-api";
 import { artifactsApi } from "./api/artifacts-api";
@@ -14,7 +13,7 @@ import { eventGraphPanelsSlice } from "./slices/event-graph-panels-slice";
 import { artifactPanelsSlice } from "./slices/artifact-panels-slice";
 import { artifactAuthoringPanelsSlice } from "./slices/artifact-authoring-panels-slice";
 import { flowAuthoringPanelsSlice } from "./slices/flow-authoring-panels-slice";
-import { loadPersistedDockState } from "./dock-persistence";
+import { loadPersistedDockState } from "@/components/workbench/dock/dock-persistence";
 
 // reducers are separated out to type RootState independently of store,
 // because middleware in the store needs RootState.  This avoids circular
@@ -22,7 +21,6 @@ import { loadPersistedDockState } from "./dock-persistence";
 export const rootReducer = combineReducers({
   flows: flowsSlice.reducer,
   events: eventsSlice.reducer,
-  runner: runnerSlice.reducer,
   flowGraphPanels: flowGraphPanelsSlice.reducer,
   eventGraphPanels: eventGraphPanelsSlice.reducer,
   artifactPanels: artifactPanelsSlice.reducer,

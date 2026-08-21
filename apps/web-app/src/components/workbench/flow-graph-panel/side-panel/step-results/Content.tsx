@@ -2,14 +2,14 @@ import { useCallback, useMemo, useState } from "react";
 import type { FlowDefinition, Ref } from "@lcase/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { OpenInMainPanel } from "@/components/workbench/shared/MainPanelTypes";
-import type { StepRunInfo } from "@/hooks/use-step-run-info";
+import type { StepRunInfo } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import {
   buildRefUsage,
   findStepRefs,
   resolveRefHash,
   type ParamArtifactContent,
   type ResolvedRef,
-} from "@/lib/ref-resolution";
+} from "@/components/workbench/shared/ref-resolution";
 import { ArtifactHashLoader } from "./ArtifactHashLoader";
 import { StepOutputExportsPanel } from "./StepOutputExportsPanel";
 import { StepFieldResolutionPanel } from "./StepFieldResolutionPanel";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnyEvent } from "@lcase/types";
-import { deriveStepRunInfo } from "@/hooks/use-step-run-info";
+import { deriveStepRunInfo } from "@/components/workbench/shared/flow-graph/use-step-run-info";
 
 function makeEvent(overrides: Partial<AnyEvent> & { type: string }): AnyEvent {
   return {

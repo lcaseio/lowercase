@@ -3,7 +3,7 @@ import {
   computeReplayCutoff,
   hasNewEventInRange,
   computeTickOutcome,
-} from "@/hooks/use-replay-clock";
+} from "@/components/workbench/shared/events/use-replay-clock";
 
 // This app has no jsdom/@testing-library/react-test-renderer set up
 // anywhere, so useReplayClock's actual effect-wiring (the thin rAF-loop

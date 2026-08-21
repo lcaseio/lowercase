@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useAppDispatch } from "./redux/typed-hooks";
-import { sseConnect, sseDisconnect } from "./redux/middleware/sse";
+import { useAppDispatch } from "@/redux/typed-hooks";
+import { sseConnect, sseDisconnect } from "@/redux/middleware/sse";
 
 export function SseBootstrap() {
   const dispatch = useAppDispatch();

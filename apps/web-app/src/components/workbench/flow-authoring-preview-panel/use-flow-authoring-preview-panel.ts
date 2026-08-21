@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAppSelector } from "@/redux/typed-hooks";
 import { selectFlowAuthoringPanelState } from "@/redux/slices/flow-authoring-panels-slice";
-import { useFlowDraftSnapshot } from "@/hooks/use-flow-draft-analysis";
+import { useFlowDraftSnapshot } from "@/components/workbench/shared/flow-graph/use-flow-draft-analysis";
 import {
   computeDagreLayout,
   type LayoutDirection,

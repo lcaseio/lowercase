@@ -24,8 +24,8 @@ import {
 } from "@/redux/api/artifacts-api";
 import { useAppDispatch } from "@/redux/typed-hooks";
 import { paramHashSet } from "@/redux/slices/flow-graph-panels-slice";
-import { detectFileFormat } from "@/lib/detect-file-format";
-import { formatBytes } from "@/lib/format-bytes";
+import { detectFileFormat } from "@/components/workbench/shared/detect-file-format";
+import { formatBytes } from "@/components/workbench/shared/format-bytes";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
 import { titleFor } from "./artifact-title";

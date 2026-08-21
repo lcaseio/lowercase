@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
 import { titleFor } from "@/components/workbench/shared/artifact-title";
-import { detectAuthoredFormat } from "@/lib/detect-authored-format";
+import { detectAuthoredFormat } from "@/components/workbench/artifact-authoring-panel/detect-authored-format";
 import {
   selectArtifactAuthoringPanelState,
   setAuthoringContent,

@@ -13,7 +13,10 @@ import {
 
 import "@xyflow/react/dist/base.css";
 import { useTheme } from "@/contexts/use-theme";
-import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
+import type {
+  StepRunInfo,
+  StepStatus,
+} from "@/components/workbench/shared/flow-graph/use-step-run-info";
 import { FIT_VIEW_OPTIONS, type NodePositions } from "@/lib/flow-graph-layout";
 import { FlowStepNode } from "@/components/workbench/shared/flow-graph/nodes/FlowStepNode";
 import {

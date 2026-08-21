@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDraftFlow } from "@/hooks/use-flow-draft-analysis";
+import { parseDraftFlow } from "@/components/workbench/shared/flow-graph/use-flow-draft-analysis";
 
 describe("parseDraftFlow", () => {
   it("reports a parseError for invalid JSON, with no flowDef", () => {

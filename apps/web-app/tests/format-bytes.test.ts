@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatBytes } from "@/lib/format-bytes";
+import { formatBytes } from "@/components/workbench/shared/format-bytes";
 
 describe("formatBytes", () => {
   it("shows a whole-number byte count under 1024", () => {

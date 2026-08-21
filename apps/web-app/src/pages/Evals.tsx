@@ -2,14 +2,14 @@ import { useState } from "react";
 import {
   EvalTargetPicker,
   type EvalTargetShape,
-} from "../components/evals/EvalTargetPicker";
-import { EvalResultTable } from "../components/evals/EvalResultTable";
-import { EvalScoreChart } from "../components/evals/EvalScoreChart";
-import { Input } from "../components/ui/input";
+} from "@/components/evals/EvalTargetPicker";
+import { EvalResultTable } from "@/components/evals/EvalResultTable";
+import { EvalScoreChart } from "@/components/evals/EvalScoreChart";
+import { Input } from "@/components/ui/input";
 import {
   useListEvalsByExperimentIdQuery,
   useListEvalsByTargetShapeQuery,
-} from "../redux/api/evals-api";
+} from "@/redux/api/evals-api";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 export function Evals() {

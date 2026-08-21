@@ -1,5 +1,8 @@
 import type { Edge, StepDefinition } from "@lcase/types";
-import type { StepRunInfo, StepStatus } from "@/hooks/use-step-run-info";
+import type {
+  StepRunInfo,
+  StepStatus,
+} from "@/components/workbench/shared/flow-graph/use-step-run-info";
 
 export type FlowStepAccent = {
   label: string;
