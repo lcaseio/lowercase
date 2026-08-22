@@ -16,33 +16,35 @@ import type { OpenPanelRequest } from "@/components/workbench/dock/dock-panels";
 // (the only place that needs to derive one dynamically, since one tab
 // component is registered for every panel).
 export const FLOW_GRAPH_ICON = WorkflowIcon;
-export const FLOW_GRAPH_ICON_CLASS = "text-blue-400";
+export const FLOW_GRAPH_ICON_CLASS = "text-blue-600 dark:text-blue-400";
 export const JSON_DEFINITION_ICON = CurlyBracesIcon;
-export const JSON_DEFINITION_ICON_CLASS = "text-yellow-400";
+export const JSON_DEFINITION_ICON_CLASS =
+  "text-yellow-600 dark:text-yellow-400";
 export const RUN_ICON = HistoryIcon;
-export const RUN_ICON_CLASS = "text-rose-400";
+export const RUN_ICON_CLASS = "text-rose-600 dark:text-rose-400";
 export const SIM_ICON = BotIcon;
-export const SIM_ICON_CLASS = "text-violet-400";
+export const SIM_ICON_CLASS = "text-violet-600 dark:text-violet-400";
 // matches RunToolbar.tsx's own "Events" button icon
 export const EVENT_GRAPH_ICON = ChartNoAxesGanttIcon;
-export const EVENT_GRAPH_ICON_CLASS = "text-teal-400";
+export const EVENT_GRAPH_ICON_CLASS = "text-teal-600 dark:text-teal-400";
 // matches this app's established artifact icon (AppShell.tsx, FlowVersionModeNav.tsx)
 export const ARTIFACT_ICON = FileTextIcon;
-export const ARTIFACT_ICON_CLASS = "text-orange-400";
+export const ARTIFACT_ICON_CLASS = "text-orange-600 dark:text-orange-400";
 export const ARTIFACT_AUTHORING_ICON = FilePlusIcon;
-export const ARTIFACT_AUTHORING_ICON_CLASS = "text-lime-400";
+export const ARTIFACT_AUTHORING_ICON_CLASS = "text-lime-600 dark:text-lime-400";
 // JSON content like json-definition, but a distinct color -- this is a raw
 // event's own payload, not a flow version's definition.
 export const EVENT_PAYLOAD_ICON = CurlyBracesIcon;
-export const EVENT_PAYLOAD_ICON_CLASS = "text-cyan-400";
+export const EVENT_PAYLOAD_ICON_CLASS = "text-cyan-600 dark:text-cyan-400";
 // JSON-first, like json-definition/event-payload, but its own color -- an
 // unsaved flow draft, not a persisted flow version's definition.
 export const FLOW_AUTHORING_ICON = CurlyBracesIcon;
-export const FLOW_AUTHORING_ICON_CLASS = "text-lime-400";
+export const FLOW_AUTHORING_ICON_CLASS = "text-lime-600 dark:text-lime-400";
 // It is a flow graph, so reuses FLOW_GRAPH_ICON's shape -- a distinct color
 // marks it as the draft preview, not a real saved flow-graph panel.
 export const FLOW_AUTHORING_PREVIEW_ICON = WorkflowIcon;
-export const FLOW_AUTHORING_PREVIEW_ICON_CLASS = "text-lime-400";
+export const FLOW_AUTHORING_PREVIEW_ICON_CLASS =
+  "text-lime-600 dark:text-lime-400";
 
 export function getTabIcon(
   params: OpenPanelRequest,

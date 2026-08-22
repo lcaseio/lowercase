@@ -1,4 +1,5 @@
-import Editor, { type OnMount } from "@monaco-editor/react";
+import Editor, { type BeforeMount, type OnMount } from "@monaco-editor/react";
+import type * as monacoEditor from "monaco-editor";
 import { useRef, useState } from "react";
 import { useTheme } from "@/contexts/use-theme";
 import { useDelayedLoading } from "@/hooks/use-delayed-loading";
@@ -76,14 +77,30 @@ export function CodeEditor({
     onMount?.(editor);
   };
 
+  // Typed against monaco-editor's own primary export rather than
+  // @monaco-editor/react's re-exported `Monaco`/`BeforeMount` -- those
+  // resolve to an internal `monaco-editor/esm/vs/editor/editor.api` subpath
+  // that fails under this project's module resolution (a real bug in how
+  // the library declares it, silently masked by skipLibCheck), collapsing
+  // to `any` with no error. This resolves correctly instead. Still a stub,
+  // no defineTheme call wired up yet.
+  const handleBeforeMount: BeforeMount = (monaco: typeof monacoEditor) => {
+    monaco.editor.defineTheme("lowercase-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [],
+      colors: { "editor.background": "#1c1c1c" },
+    });
+  };
   return (
     <Editor
       height={autoHeight ? contentHeight : height}
       language={language}
       value={value}
       onChange={(value) => onChange?.(value ?? "")}
-      theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
+      theme={resolvedTheme === "dark" ? "lowercase-dark" : "vs"}
       loading={<MonacoLoadingFallback />}
+      beforeMount={handleBeforeMount}
       onMount={autoHeight || onMount ? handleMount : undefined}
       options={{
         readOnly,

@@ -33,7 +33,7 @@ export function ExportsField({
       <h4 className="text-xs font-bold">{label}</h4>
       <Accordion
         type="multiple"
-        className="rounded-md border-0 px-3 dark:bg-neutral-750"
+        className="rounded-md border-0 px-3 bg-neutral-100/40 dark:bg-neutral-750"
       >
         {entries.map(([name, exportDecl]) => (
           <AccordionItem key={name} value={name}>

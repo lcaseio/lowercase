@@ -3,13 +3,13 @@ import EChartsReact from "echarts-for-react";
 // import type { TopLevelFormatterParams } from "echarts/types/src/component/tooltip/TooltipModel.js";
 import { useMemo, useState } from "react";
 import type { AnyEvent } from "@lcase/types";
+import { useEventGraphTheme } from "./use-event-graph-theme";
 
 export type EventGraphProps = {
   events: AnyEvent[];
   selectedEventId: string | null;
   onEventClick: (eventId: string) => void;
 };
-
 type DataPoint = {
   time: number;
   index: number;
@@ -23,6 +23,8 @@ export function EventGraph({
   selectedEventId,
   onEventClick,
 }: EventGraphProps) {
+  const theme = useEventGraphTheme();
+
   /**
    * old way to create events array, no longer used, here for reference.
    */
@@ -126,12 +128,9 @@ export function EventGraph({
         type: "time",
         name: "Time",
         axisLabel: {
-          formatter: (val) =>
-            new Date(val).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
+          // relative to the first event (00:00:00), not wall-clock time --
+          // a toggle between the two is a possible future addition.
+          formatter: (val) => formatElapsedTime((val as number) - minTime),
         },
         axisPointer: {
           type: "line", // "line" | "shadow" | "cross"
@@ -157,6 +156,15 @@ export function EventGraph({
         axisLabel: {
           formatter: (val) => `#${Math.floor(val)}`,
         },
+        // "dataMin"/"dataMax" (not fixed numbers) deliberately -- with
+        // dataZoom's filterMode: "filter", these recompute dynamically
+        // against whichever events are currently inside the zoomed time
+        // window, which is what makes the Order axis "zoom" vertically
+        // alongside the time axis. A fixed min/max here would freeze it to
+        // the full dataset. Also keeps ticks integer-aligned: explicit
+        // `interval` anchors ticks at exactly `min`, so `min` needs to stay
+        // a whole number -- true of dataMin/dataMax, not of an arbitrary
+        // padded fraction (learned that the hard way, see git history).
         min: "dataMin",
         max: "dataMax",
         splitLine: { show: false },
@@ -178,28 +186,18 @@ export function EventGraph({
       {
         type: "slider",
         realtime: true,
-
         xAxisIndex: 0,
         height: 100,
         bottom: 30,
         filterMode: "filter",
-        fillerColor: "rgba(16, 185, 129, 0.15)",
+        // the floating date/time bubble ECharts shows next to a handle
+        // while dragging it
+        showDetail: false,
 
-        borderColor: "#334155",
-        backgroundColor: "rgba(0,0,0,0)",
-        handleStyle: {
-          color: "#666",
-          shadowBlur: 4,
-          shadowColor: "rgba(0,0,0,0.5)",
-          borderColor: "#555",
-        },
-
+        ...theme.dataZoom,
         moveHandleSize: 6,
-        moveHandleStyle: {
-          color: "#555",
-          opacity: 0.9,
-        },
         handleSize: 50,
+
         dataBackground: {
           lineStyle: {
             type: "solid",
@@ -265,8 +263,8 @@ export function EventGraph({
                 style: {
                   fill:
                     events[Number(index)]?.action === "failed"
-                      ? "#d3344a"
-                      : "#34d399",
+                      ? theme.series.circle.failedColor
+                      : theme.series.circle.completedColor,
                 },
               },
               {
@@ -278,7 +276,7 @@ export function EventGraph({
                   text: flip
                     ? `{label|${label}}` //{time|${time}}
                     : `{label|${label}}`, // {time|${time}}
-                  fill: "#e2e8f0",
+                  fill: theme.series.text.color,
                   textAlign: flip ? "right" : "left",
                   textVerticalAlign: "middle",
                   rich: {
@@ -286,8 +284,8 @@ export function EventGraph({
                       fontSize: baseLabelSize,
                       fill:
                         selectedEventId === eventId
-                          ? "oklch(94.5% 0.129 101.54)"
-                          : "#e2e8f0",
+                          ? theme.series.text.selectedColor
+                          : theme.series.text.color,
                     },
                     time: {
                       fontSize: Math.max(4, baseLabelSize - 1),
@@ -307,7 +305,7 @@ export function EventGraph({
         yAxisIndex: 1,
         barWidth: 1,
         itemStyle: {
-          color: "#34d399",
+          color: theme.series.bar.color,
         },
         silent: true,
       },
@@ -363,15 +361,23 @@ export function EventGraph({
                   ? 14
                   : 15;
   return (
-    <div className="w-full h-full min-w-0 min-h-0 overflow-hidden">
-      <EChartsReact
-        option={option}
-        onEvents={{ datazoom: onDataZoom, click: onChartClick }}
-        style={{ height: "100%", width: "100%" }}
-        className="pl-2 pr-2 bg-neutral-800 dark:bg-neutral-900"
-      />
-    </div>
+    <EChartsReact
+      option={option}
+      onEvents={{ datazoom: onDataZoom, click: onChartClick }}
+      style={{ height: "100%", width: "100%", overflow: "hidden" }}
+
+      className="pl-2 pr-2 bg-dock-tab-background dark:bg-dock-tab-background"
+    />
   );
+}
+
+function formatElapsedTime(ms: number): string {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
 function lowerBound(numbers: number[], target: number): number {

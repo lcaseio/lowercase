@@ -29,7 +29,7 @@ export function BranchDetails({ step }: { step: StepBranch }) {
               <Input
                 value={targetStepId}
                 readOnly
-                className="flex-1 h-6 pl-2 md:text-xs border-0"
+                className="flex-1 h-6 pl-2 md:text-xs border-0 bg-neutral-100"
               />
             </div>
           ))}

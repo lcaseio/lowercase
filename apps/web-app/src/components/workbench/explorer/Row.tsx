@@ -60,7 +60,7 @@ export function Row({
         }}
         className={cn(
           "flex items-center gap-2 px-2 py-0.5 text-xs cursor-pointer",
-          isSelected ? "bg-accent" : "hover:bg-accent/40",
+          isSelected ? "bg-explorer-selected" : "hover:bg-explorer-hover",
         )}
       >
         <div className="flex items-center gap-0.5">
@@ -83,7 +83,7 @@ export function Row({
         </div>
         <span className="truncate">{flow.name}</span>
         {flow.kind === "eval" ? (
-          <span className="text-xs font-normal rounded px-1.5 py-0.5 bg-cyan-900 text-cyan-100 shrink-0">
+          <span className="text-[9.5px] font-normal rounded px-1.5 py-0.5 bg-sky-200/70 dark:bg-sky-900 shrink-0">
             eval
           </span>
         ) : null}
@@ -95,7 +95,9 @@ export function Row({
               onClick={onSelectFlowSettings}
               className={cn(
                 "flex items-center gap-2 pl-8 pr-2 py-0.5 text-xs italic text-muted-foreground cursor-pointer",
-                isSettingsSelected ? "bg-accent" : "hover:bg-accent/40",
+                isSettingsSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <SettingsIcon className="size-3.5 shrink-0" />

@@ -134,7 +134,7 @@ export function Workbench() {
   ]);
 
   return (
-    <div className="h-full flex flex-col  dark:bg-neutral-850">
+    <div className="h-full flex flex-col">
       <div className="flex-1 min-h-0">
         {/* wraps DockviewReact too, not just the tree -- Flow Graph panel
             content (rendered inside DockviewReact via portals, which keep
@@ -143,12 +143,15 @@ export function Workbench() {
         <DockviewApiContext.Provider value={dockviewApi}>
           <ResizablePanelGroup
             orientation="horizontal"
-            className="h-full border dark:border-neutral-800"
+            className="h-full border border-dock-panel-border dark:border-dock-panel-border"
           >
-            <ResizablePanel defaultSize="15%">
+            <ResizablePanel
+              defaultSize="15%"
+              className="bg-workbench-panel-secondary"
+            >
               <FlowExplorer />
             </ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizableHandle className="bg-dock-panel-border dark:border-dock-panel-border" />
             {/* react-resizable-panels' own Panel defaults its inner content
                 wrapper to `overflow: auto` (see react-resizable-panels.js) --
                 fine for typical scrollable content, but DockviewReact manages

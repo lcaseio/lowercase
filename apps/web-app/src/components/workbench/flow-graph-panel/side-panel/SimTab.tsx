@@ -36,7 +36,10 @@ export function SimTab({
         <p className="text-sm text-muted-foreground">
           This run isn't a sim yet.
         </p>
-        <Button onClick={onStartAuthoring} className="cursor-pointer w-fit">
+        <Button
+          onClick={onStartAuthoring}
+          className="cursor-pointer w-fit bg-purple-300/60 dark:bg-purple-600 dark:text-neutral-50 hover:bg-purple-300 dark:hover:bg-purple-700 text-neutral-900"
+        >
           Simulate this run
         </Button>
       </div>

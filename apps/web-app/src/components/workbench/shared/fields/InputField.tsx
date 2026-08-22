@@ -39,7 +39,7 @@ export function InputField({
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         readOnly={!onChange}
-        className="flex-1 md:text-xs py-1 px-2 border-0 truncate"
+        className="flex-1 md:text-xs py-1 px-2 border-0 truncate bg-neutral-100"
       />
     </Field>
   );

@@ -4,6 +4,7 @@ import { PlusIcon } from "lucide-react";
 import { useListArtifactsQuery } from "@/redux/api/artifacts-api";
 import { cn } from "@/lib/utils";
 import {
+  ARTIFACT_AUTHORING_ICON_CLASS,
   ARTIFACT_ICON,
   ARTIFACT_ICON_CLASS,
 } from "@/components/workbench/shared/tab-icons";
@@ -59,7 +60,7 @@ export function ArtifactList({
           onClick={() => onSelectArtifact(item, versionId)}
           className={cn(
             "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer",
-            isSelected ? "bg-accent" : "hover:bg-accent/40",
+            isSelected ? "bg-explorer-selected" : "hover:bg-explorer-hover",
           )}
         >
           <ARTIFACT_ICON
@@ -75,9 +76,11 @@ export function ArtifactList({
     <>
       <div
         onClick={() => setDialogOpen(true)}
-        className="flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer text-muted-foreground hover:bg-accent/40"
+        className="flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer text-muted-foreground hover:bg-explorer-hover"
       >
-        <PlusIcon className="size-3.5 shrink-0 text-lime-400" />
+        <PlusIcon
+          className={cn("size-3.5 shrink-0", ARTIFACT_AUTHORING_ICON_CLASS)}
+        />
         <span className="truncate">New artifact</span>
       </div>
       {body}

@@ -13,7 +13,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider storageKey="vite-ui-theme">
+    <ThemeProvider>
       <Provider store={store}>
         <BrowserRouter>
           <TooltipProvider>

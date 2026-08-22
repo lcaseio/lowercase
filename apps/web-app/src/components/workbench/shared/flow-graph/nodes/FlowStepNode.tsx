@@ -93,7 +93,7 @@ export function FlowStepNode({
     // circles while the card still gets rounded corners.
     <div className="relative h-full w-full">
       <div
-        className="flex h-full w-full flex-col overflow-hidden rounded-sm bg-card"
+        className="flex h-full w-full flex-col overflow-hidden rounded-sm bg-neutral-200 dark:bg-card"
         style={
           // Selection ring only now -- status moved to the corner badge
           // below. A border here shared the same visual channel (a colored
@@ -160,15 +160,15 @@ export function FlowStepNode({
           {status === "completed" && (
             // White reads poorly against the green badge specifically --
             // dark instead, unlike the other two icons.
-            <CheckIcon className="h-3 w-3 text-green-900" strokeWidth={5} />
+            <CheckIcon className="h-3 w-3 text-neutral-800" strokeWidth={3} />
           )}
           {status === "failed" && (
-            <XIcon className="h-3 w-3 text-white" strokeWidth={3} />
+            <XIcon className="h-3 w-3 text-neutral-800" strokeWidth={3} />
           )}
           {status === "running" && (
             <LoaderCircleIcon
-              className="h-3 w-3 animate-spin  text-amber-950"
-              strokeWidth={5}
+              className="h-3 w-3 animate-spin  dark:text-neutral-800 text-neutral-800"
+              strokeWidth={3}
             />
           )}
         </div>
@@ -186,7 +186,7 @@ export function FlowStepNode({
             borderColor: "var(--color-card)",
           }}
         >
-          <SIM_ICON className="h-3 w-3 text-violet-300" strokeWidth={3} />
+          <SIM_ICON className="h-3 w-3 text-neutral-900" strokeWidth={2} />
         </div>
       )}
 

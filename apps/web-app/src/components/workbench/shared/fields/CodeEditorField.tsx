@@ -42,7 +42,7 @@ export function CodeEditorField({
           </Button>
         )}
       </div>
-      <div className="flex-1 overflow-hidden rounded-md border dark:border-neutral-700 mr-3">
+      <div className="flex-1 overflow-hidden mr-3">
         <CodeEditor
           value={displayValue}
           language={language}

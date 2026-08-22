@@ -132,7 +132,7 @@ export function Content() {
         ) : (
           <ResizablePanelGroup orientation="horizontal" className="h-full">
             <ResizablePanel defaultSize="70%">{graph}</ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizableHandle className="bg-dock-panel-border" />
             <ResizablePanel defaultSize="30%" minSize="15%">
               <div className="flex h-full">
                 <Rail

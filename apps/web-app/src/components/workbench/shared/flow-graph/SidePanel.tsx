@@ -37,7 +37,7 @@ type Props = {
 // living in this file instead of Content.tsx.
 export function SidePanel({ activeTab, onClose, children }: Props) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-dock-tab-background">
       <div className="flex items-center justify-between  py-1.5">
         <span className="text-sm font-medium">{TAB_LABELS[activeTab]}</span>
         <Button
@@ -50,7 +50,7 @@ export function SidePanel({ activeTab, onClose, children }: Props) {
           <XIcon className="size-4" />
         </Button>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto p-1 pr-2">{children}</div>
+      <div className="flex-1 min-h-0 overflow-auto p-1 pr-2 ">{children}</div>
     </div>
   );
 }
