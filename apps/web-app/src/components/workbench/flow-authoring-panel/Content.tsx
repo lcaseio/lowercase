@@ -74,10 +74,10 @@ export function Content({
         return (
           <>
             {saveError && (
-              <p className="mb-2 text-xs text-destructive">{saveError}</p>
+              <p className="mb-2 text-xs text-error-foreground">{saveError}</p>
             )}
             {showParseError && (
-              <p className="mb-2 text-xs text-destructive">
+              <p className="mb-2 text-xs text-error-foreground">
                 {isEmptySnapshot
                   ? "Nothing valid yet -- "
                   : "Showing problems from the last valid version -- current edits don't parse: "}
@@ -105,49 +105,57 @@ export function Content({
     />
   );
 
+  const header = (
+    <div
+      className="flex items-center justify-between shrink-0 mr-2
+    mb-2"
+    >
+      <h3 className="font-medium">New Flow</h3>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleOpenPreview}
+          size="xs"
+          className="cursor-pointer"
+        >
+          <FLOW_GRAPH_ICON
+            className={cn(FLOW_AUTHORING_ICON_CLASS, "size-4")}
+          />
+          Preview
+        </Button>
+        <Button
+          type="button"
+          onClick={handleCancel}
+          disabled={isSaving}
+          size="xs"
+          className="cursor-pointer text-neutral-900 bg-rose-300 hover:bg-rose-200 dark:bg-rose-800 dark:hover:bg-rose-600 dark:text-neutral-50"
+        >
+          <XIcon />
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          size="xs"
+          onClick={handleSave}
+          disabled={!canSave || isSaving}
+          className="cursor-pointer text-neutral-900 bg-emerald-300 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-600 dark:text-neutral-50"
+        >
+          <CheckIcon />
+          Save
+        </Button>
+      </div>
+    </div>
+  );
   return (
     <div className="flex h-full flex-col gap-2 p-3">
-      <div className="flex items-center justify-between shrink-0">
-        <h3 className="font-medium">New Flow</h3>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenPreview}
-            size="xs"
-            className="cursor-pointer"
-          >
-            <FLOW_GRAPH_ICON
-              className={cn(FLOW_AUTHORING_ICON_CLASS, "size-4")}
-            />
-            Preview
-          </Button>
-          <Button
-            type="button"
-            onClick={handleCancel}
-            disabled={isSaving}
-            size="xs"
-            className="cursor-pointer text-neutral-900 bg-rose-300 hover:bg-rose-200 dark:bg-rose-800 dark:hover:bg-rose-600 dark:text-neutral-50"
-          >
-            <XIcon />
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            size="xs"
-            onClick={handleSave}
-            disabled={!canSave || isSaving}
-            className="cursor-pointer text-neutral-900 bg-emerald-300 hover:bg-emerald-200 dark:bg-emerald-800 dark:hover:bg-emerald-600 dark:text-neutral-50"
-          >
-            <CheckIcon />
-            Save
-          </Button>
-        </div>
-      </div>
       <div className="min-h-0 flex-1">
         {!sidePanelTab ? (
           <div className="flex h-full">
-            <div className="flex-1 min-w-0">{editor}</div>
+            <div className="flex-1 min-w-0 flex h-full min-h-0 flex-col">
+              {header}
+              <div className="flex-1 min-h-0">{editor}</div>
+            </div>
             <Rail
               activeTab={sidePanelTab}
               onSelectTab={handleSelectSidePanelTab}
@@ -158,10 +166,17 @@ export function Content({
           </div>
         ) : (
           <ResizablePanelGroup orientation="horizontal" className="h-full">
-            <ResizablePanel defaultSize="70%">{editor}</ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizablePanel
+              defaultSize="70%"
+              className="flex h-full min-h-0 flex-col"
+              style={{ overflow: "hidden" }}
+            >
+              {header}
+              <div className="flex-1 min-h-0">{editor}</div>
+            </ResizablePanel>
+            <ResizableHandle className="bg-dock-panel-border" />
             <ResizablePanel defaultSize="30%" minSize="15%">
-              <div className="flex h-full">
+              <div className="flex h-full border-t border-t-dock-panel-border">
                 <Rail
                   activeTab={sidePanelTab}
                   onSelectTab={handleSelectSidePanelTab}

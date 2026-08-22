@@ -38,9 +38,11 @@ type SubTab = "outputExports" | "fieldResolution" | "references";
 
 function formatStatus(status: string | undefined) {
   if (status === "completed")
-    return <span className="text-event-completed">completed</span>;
+    return <span className="text-completed-foreground">completed</span>;
   if (status === "failed")
-    return <span className="text-event-failed">failed</span>;
+    return <span className="text-failed-foreground">failed</span>;
+  if (status === "running")
+    return <span className="text-running-foreground">running</span>;
 }
 
 // right side panel tab on run page, holds the sub tabs content and selected state
@@ -166,7 +168,10 @@ export function StepResultsTab({
       </div>
 
       <Tabs value={subTab} onValueChange={(v) => setSubTab(v as SubTab)}>
-        <TabsList variant="default">
+        <TabsList
+          variant="default"
+          className="bg-neutral-200/60 dark:bg-neutral-800"
+        >
           <TabsTrigger value="outputExports" className="text-xs">
             Output
           </TabsTrigger>

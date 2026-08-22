@@ -87,8 +87,10 @@ export function StepOutputExportsPanel({
 
       {stepRunInfo.status === "failed" ? (
         <div>
-          <div className="font-medium text-sm">Failed</div>
-          <p className="text-xs text-red-500 whitespace-pre-wrap">
+          <div className="font-medium text-sm text-error-foreground mb-2">
+            Failed
+          </div>
+          <p className="text-xs text-error-foreground whitespace-pre-wrap">
             {stepRunInfo.reason}
           </p>
         </div>

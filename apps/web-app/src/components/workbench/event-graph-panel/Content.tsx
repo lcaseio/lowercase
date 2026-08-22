@@ -143,25 +143,39 @@ export function Content({
     />
   );
 
+  const header = (
+    <div className="shrink-0 px-3 py-1.5 text-sm text-muted-foreground">
+      {headerText}
+    </div>
+  );
+
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 px-3 py-1.5 text-sm text-muted-foreground">
-        {headerText}
-      </div>
       <div className="min-h-0 flex-1">
         {!sidePanelTab ? (
           <div className="flex h-full">
-            <div className="flex-1 min-w-0">{graph}</div>
+            <div className="flex-1 min-w-0 flex h-full min-h-0 flex-col">
+              {header}
+              <div className="flex-1 min-h-0">{graph}</div>
+            </div>
             <Rail activeTab={sidePanelTab} onSelectTab={handleSelectTab} />
           </div>
         ) : (
-          <ResizablePanelGroup orientation="horizontal" className="h-full">
-            <ResizablePanel defaultSize="70%" className="min-w-0">
-              {graph}
+          <ResizablePanelGroup
+            orientation="horizontal"
+            className="h-full border-dock-panel-border"
+          >
+            <ResizablePanel
+              defaultSize="70%"
+              className="flex h-full min-h-0 w-full flex-col"
+              style={{ overflow: "hidden" }}
+            >
+              {header}
+              <div className="flex-1 min-h-0">{graph}</div>
             </ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizableHandle className="bg-dock-panel-border" />
             <ResizablePanel defaultSize="30%" minSize="15%">
-              <div className="flex h-full">
+              <div className="flex h-full border-t border-t-dock-panel-border">
                 <Rail activeTab={sidePanelTab} onSelectTab={handleSelectTab} />
                 <div className="flex-1 min-w-0">
                   <SidePanel

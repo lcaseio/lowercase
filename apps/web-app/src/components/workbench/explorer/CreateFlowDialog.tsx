@@ -97,7 +97,7 @@ export function CreateFlowDialog({ open, onOpenChange }: Props) {
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer justify-start"
+              className="cursor-pointer justify-start hover:bg-lime-200"
               onClick={() => setStep("upload")}
             >
               <UploadIcon />
@@ -106,7 +106,7 @@ export function CreateFlowDialog({ open, onOpenChange }: Props) {
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer justify-start"
+              className="cursor-pointer justify-start hover:bg-lime-200"
               onClick={handleCreateNew}
             >
               <TextCursorIcon />
@@ -127,7 +127,7 @@ export function CreateFlowDialog({ open, onOpenChange }: Props) {
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer"
+                className="cursor-pointer hover:bg-sky-200"
               >
                 Browse...
               </Button>
@@ -142,8 +142,8 @@ export function CreateFlowDialog({ open, onOpenChange }: Props) {
         <DialogFooter>
           <Button
             type="button"
-            variant="secondary"
-            className="cursor-pointer"
+            variant="outline"
+            className="cursor-pointer hover:bg-rose-200"
             onClick={() => onOpenChange(false)}
           >
             Cancel

@@ -8,7 +8,7 @@ import {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "vite-ui-theme",
+  storageKey = "lowercase-ui-theme",
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
@@ -23,11 +23,8 @@ export function ThemeProvider({
   useEffect(() => {
     const apply = (mode: "light" | "dark") => {
       const root = window.document.documentElement;
-      const body = window.document.body;
       root.classList.remove("light", "dark");
-      body.classList.remove("light", "dark");
       root.classList.add(mode);
-      body.classList.add(mode);
       setResolvedTheme(mode);
     };
 

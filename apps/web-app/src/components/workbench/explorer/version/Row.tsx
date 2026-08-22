@@ -66,7 +66,7 @@ export function Row({
         }}
         className={cn(
           "flex items-center gap-2 pl-8 pr-2 py-0.5 text-xs cursor-pointer",
-          isSelected ? "bg-accent" : "hover:bg-accent/40",
+          isSelected ? "bg-explorer-selected" : "hover:bg-explorer-hover",
         )}
       >
         <div className="flex items-center gap-0.5">
@@ -102,7 +102,9 @@ export function Row({
               onClick={onSelectFlowGraph}
               className={cn(
                 "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
-                isGraphSelected ? "bg-accent" : "hover:bg-accent/40",
+                isGraphSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <FLOW_GRAPH_ICON
@@ -115,7 +117,9 @@ export function Row({
               onClick={onSelectJsonDefinition}
               className={cn(
                 "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
-                isJsonSelected ? "bg-accent" : "hover:bg-accent/40",
+                isJsonSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <JSON_DEFINITION_ICON
@@ -131,7 +135,9 @@ export function Row({
               }}
               className={cn(
                 "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
-                isRunsSelected ? "bg-accent" : "hover:bg-accent/40",
+                isRunsSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <div className="flex items-center gap-0.5">
@@ -165,7 +171,9 @@ export function Row({
               }}
               className={cn(
                 "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
-                isSimsSelected ? "bg-accent" : "hover:bg-accent/40",
+                isSimsSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <div className="flex items-center gap-0.5">
@@ -198,7 +206,9 @@ export function Row({
               }}
               className={cn(
                 "flex items-center gap-2 pl-14 pr-2 py-0.5 text-xs cursor-pointer",
-                isArtifactsSelected ? "bg-accent" : "hover:bg-accent/40",
+                isArtifactsSelected
+                  ? "bg-explorer-selected"
+                  : "hover:bg-explorer-hover",
               )}
             >
               <div className="flex items-center gap-0.5">

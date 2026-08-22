@@ -54,8 +54,8 @@ export function RunList({
           className={cn(
             "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer",
             selectedRowId === `run:${run.runId}`
-              ? "bg-accent"
-              : "hover:bg-accent/40",
+              ? "bg-explorer-selected"
+              : "hover:bg-explorer-hover",
           )}
         >
           <RUN_ICON className={cn("size-3.5 shrink-0", RUN_ICON_CLASS)} />

@@ -19,9 +19,15 @@ export function StepDetails({
   onOpenInMainPanel,
   onNavigateToDefinition,
 }: Props) {
-  if (!stepId || !flowDef) return <p>Select a stepid / flow definition</p>;
+  if (!stepId || !flowDef)
+    return (
+      <p className="text-xs text-muted-foreground">Select a valid stepid</p>
+    );
   const step = flowDef.steps[stepId];
-  if (!step) return <p>Select a valid stepId</p>;
+  if (!step)
+    return (
+      <p className="text-xs text-muted-foreground">Select a valid stepId</p>
+    );
 
   switch (step.type) {
     case "httpjson":

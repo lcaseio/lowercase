@@ -68,7 +68,7 @@ export function Rail({
   const [openTab, setOpenTab] = useState<SidePanelTab | null>(null);
 
   return (
-    <div className="flex h-full w-12 shrink-0 flex-col items-center gap-1 py-2">
+    <div className="flex h-full w-12 shrink-0 flex-col items-center gap-1 py-2 bg-panel-hidden-background">
       {items.map(({ tab, label, icon: Icon }) => (
         <Tooltip
           key={tab}
@@ -91,8 +91,8 @@ export function Rail({
                   className={cn(
                     "absolute -right-1 -top-1 rounded px-1 text-xs pointer-events-none",
                     problemsBadgeVariant === "error"
-                      ? "bg-rose-900 text-rose-100"
-                      : "bg-cyan-900 text-cyan-100",
+                      ? "bg-rose-200 dark:bg-rose-800"
+                      : "bg-sky-200 dark:bg-sky-800",
                   )}
                 >
                   {problemsCount}

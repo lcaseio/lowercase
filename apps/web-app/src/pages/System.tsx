@@ -10,6 +10,7 @@ export function System() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-5">System</h2>
 
+      <p>Theme</p>
       <ToggleGroup
         type="single"
         variant="outline"
@@ -17,15 +18,27 @@ export function System() {
         onValueChange={(value) => {
           if (value) setTheme(value as Theme);
         }}
-        className="mt-2"
+        className="mt-2 cursor-pointer"
       >
-        <ToggleGroupItem value="system" aria-label="Use system theme">
+        <ToggleGroupItem
+          value="system"
+          aria-label="Use system theme"
+          className="data-[state=on]:bg-neutral-200 data-[state=on]:dark:bg-neutral-700 cursor-pointer"
+        >
           <LaptopIcon />
         </ToggleGroupItem>
-        <ToggleGroupItem value="light" aria-label="Use light theme">
+        <ToggleGroupItem
+          value="light"
+          aria-label="Use light theme"
+          className="data-[state=on]:bg-neutral-200 data-[state=on]:dark:bg-neutral-700 cursor-pointer"
+        >
           <SunIcon />
         </ToggleGroupItem>
-        <ToggleGroupItem value="dark" aria-label="Use dark theme">
+        <ToggleGroupItem
+          value="dark"
+          aria-label="Use dark theme"
+          className="data-[state=on]:bg-neutral-200 data-[state=on]:dark:bg-neutral-700 cursor-pointer"
+        >
           <MoonIcon />
         </ToggleGroupItem>
       </ToggleGroup>

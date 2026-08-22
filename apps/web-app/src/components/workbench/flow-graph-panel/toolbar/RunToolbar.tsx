@@ -185,10 +185,9 @@ export function RunToolbar({
             variant="ghost"
             size="xs"
             className={cn(
-              "cursor-pointer",
-              paramsHasUnsetRequired
-                ? " text-xs text-amber-700 dark:text-amber-400 dark:bg-amber-900 hover:dark:bg-amber-800"
-                : " text-xs text-muted-foreground",
+              "cursor-pointer text-xs text-amber-700 dark:text-amber-400 dark:hover:text-amber-400 hover:text-amber-700",
+              paramsHasUnsetRequired &&
+                "bg-amber-200  dark:bg-amber-900 dark:hover:bg-amber-800  hover:bg-amber-100",
             )}
             onClick={onOpenParams}
             title="Set params"
@@ -199,7 +198,7 @@ export function RunToolbar({
         <Button
           variant="outline"
           size="xs"
-          className="cursor-pointer bg-green-200 dark:bg-green-900 hover:bg-green-100 hover:dark:bg-green-800"
+          className="cursor-pointer bg-green-300/80 dark:bg-green-900 hover:bg-green-200 hover:dark:bg-green-800"
 
           onClick={onRun}
           disabled={runDisabled}

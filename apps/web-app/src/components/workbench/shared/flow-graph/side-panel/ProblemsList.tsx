@@ -1,6 +1,6 @@
 import type { FlowProblem } from "@lcase/types";
 import { formatProblem } from "@lcase/flow-analysis";
-import { CircleXIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 
 type Props = {
   problems: FlowProblem[];
@@ -16,9 +16,9 @@ export function FlowProblemsList({ problems }: Props) {
       {problems.map((problem, index) => (
         <li
           key={index}
-          className="flex items-start gap-2 rounded-md  px-3 py-2 text-sm"
+          className="flex items-start gap-2 rounded-md py-2 text-sm"
         >
-          <CircleXIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
+          <InfoIcon className="mt-0.5 size-4 shrink-0 text-sky-600 dark:text-sky-300" />
           <span>{formatProblem(problem)}</span>
         </li>
       ))}

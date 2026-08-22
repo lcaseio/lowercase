@@ -76,7 +76,7 @@ export function Content({
           />
         </div>
       </div>
-      <div className="w-80 shrink-0 flex flex-col gap-4 p-4 overflow-y-auto border-l dark:border-neutral-800">
+      <div className="w-80 shrink-0 flex flex-col gap-4 p-4 overflow-y-auto border-l border-dock-panel-border dark:border-dock-panel-border">
         <div className="flex-1 flex flex-col gap-4">
           <SelectField
             label="Content Type"

@@ -27,7 +27,7 @@ export function Rail({ activeTab, onSelectTab }: Props) {
   const [openTab, setOpenTab] = useState<EventGraphSidePanelTab | null>(null);
 
   return (
-    <div className="flex h-full w-12 shrink-0 flex-col items-center gap-1 py-2">
+    <div className="flex h-full w-12 shrink-0 flex-col items-center gap-1 py-2 bg-secondary-panel">
       {RAIL_ITEMS.map(({ tab, label, icon: Icon }) => (
         <Tooltip
           key={tab}

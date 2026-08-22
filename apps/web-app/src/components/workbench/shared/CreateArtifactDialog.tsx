@@ -253,7 +253,7 @@ export function CreateArtifactDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-0 dark:bg-neutral-875">
+      <DialogContent className="border-0 bg-background dark:bg-neutral-875">
         <DialogHeader>
           <DialogTitle>New artifact</DialogTitle>
         </DialogHeader>
@@ -263,7 +263,7 @@ export function CreateArtifactDialog({
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer justify-start"
+              className="cursor-pointer justify-start  hover:bg-lime-200"
               onClick={() => setStep("upload")}
             >
               <UploadIcon />
@@ -272,7 +272,7 @@ export function CreateArtifactDialog({
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer justify-start"
+              className="cursor-pointer justify-start hover:bg-lime-200"
               onClick={handleAuthor}
             >
               <TextCursorIcon />
@@ -297,7 +297,7 @@ export function CreateArtifactDialog({
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer"
+                className="cursor-pointer hover:bg-sky-200"
               >
                 Browse...
               </Button>
@@ -342,8 +342,8 @@ export function CreateArtifactDialog({
           {step === "choose" ? (
             <Button
               type="button"
-              variant="secondary"
-              className="cursor-pointer"
+              variant="outline"
+              className="cursor-pointer hover:bg-rose-200"
               onClick={() => onOpenChange(false)}
             >
               Cancel
@@ -352,8 +352,8 @@ export function CreateArtifactDialog({
             <>
               <Button
                 type="button"
-                variant="secondary"
-                className="cursor-pointer"
+                variant="outline"
+                className="cursor-pointer hover:bg-rose-200"
                 onClick={() => onOpenChange(false)}
                 disabled={isSaving}
               >
@@ -361,7 +361,8 @@ export function CreateArtifactDialog({
               </Button>
               <Button
                 type="button"
-                className="cursor-pointer"
+                variant="outline"
+                className="cursor-pointer hover:bg-lime-200"
                 onClick={handleSave}
                 disabled={!file || isSaving}
               >

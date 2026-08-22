@@ -12,6 +12,8 @@ import {
 import { titleFor } from "@/components/workbench/shared/artifact-title";
 import { Row } from "./Row";
 import { CreateFlowDialog } from "./CreateFlowDialog";
+import { cn } from "@/lib/utils";
+import { FLOW_AUTHORING_ICON_CLASS } from "../shared/tab-icons";
 
 export function FlowExplorer() {
   const api = useDockviewApi();
@@ -43,7 +45,9 @@ export function FlowExplorer() {
         onClick={() => setDialogOpen(true)}
         className="flex items-center gap-2 px-2 py-1.5 mt-1 text-xs cursor-pointer hover:bg-accent/40"
       >
-        <PlusIcon className="size-3.5 shrink-0 text-lime-400" />
+        <PlusIcon
+          className={cn("size-3.5 shrink-0", FLOW_AUTHORING_ICON_CLASS)}
+        />
         <span>New Flow</span>
       </div>
       <CreateFlowDialog open={dialogOpen} onOpenChange={setDialogOpen} />

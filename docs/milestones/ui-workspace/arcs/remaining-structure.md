@@ -4,7 +4,7 @@ Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc
 
 **Not a mechanical sweep the way PR 42's dead-code pass was — a real review, done a piece at a time, same methodology as the rest of this milestone: check real importers/usage directly, never assume from a file's name or age.** Discussion below grows as pieces get looked at; not everything under `## PR 49` was investigated in one sitting.
 
-## PR 49 - Remaining structure review - ready for review
+## PR 49 - Remaining structure review - merged (#332)
 
 ### Discussion
 

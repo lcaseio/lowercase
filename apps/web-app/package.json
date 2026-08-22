@@ -28,6 +28,7 @@
     "echarts-for-react": "^3.0.6",
     "jsonc-parser": "^3.3.1",
     "lucide-react": "^0.563.0",
+    "monaco-editor": "^0.55.1",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

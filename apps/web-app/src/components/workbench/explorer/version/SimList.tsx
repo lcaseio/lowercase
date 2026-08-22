@@ -53,8 +53,8 @@ export function SimList({
           className={cn(
             "flex items-center gap-2 pl-20 pr-2 py-0.5 text-xs cursor-pointer",
             selectedRowId === `sim:${sim.id}`
-              ? "bg-accent"
-              : "hover:bg-accent/40",
+              ? "bg-explorer-selected"
+              : "hover:bg-explorer-hover",
           )}
         >
           <SIM_ICON className={cn("size-3.5 shrink-0", SIM_ICON_CLASS)} />

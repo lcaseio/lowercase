@@ -26,22 +26,25 @@ export function FlowParameters({ value }: Props) {
           </span>
         </div>
         {entries.map(([paramName, paramDef]) => (
-          <div key={paramName} className="flex flex-row gap-1 text-neutral-200">
+          <div
+            key={paramName}
+            className="flex flex-row gap-1 dark:text-neutral-200"
+          >
             <Input
               value={paramName}
               readOnly
-              className="flex-1  border-0 md:text-xs pl-1 h-5"
+              className="flex-1  border-0 md:text-xs pl-1 h-5 bg-neutral-100"
             />
             <Input
               value={paramDef.type}
               readOnly
-              className="flex-1 h-5  border-0 md:text-xs"
+              className="flex-1 h-5  border-0 md:text-xs bg-neutral-100"
             />
-            <div className="w-16 shrink-0 flex items-center justify-center">
+            <div className="w-16 shrink-0 flex items-center justify-center ">
               <Checkbox
                 checked={!!paramDef.optional}
                 disabled
-                className="disabled:opacity-100 border-0 dark:bg-neutral-700 dark:data-[state=checked]:bg-neutral-600 dark:data-[state=checked]:text-neutral-200 dark:data-[state=checked]:border-0"
+                className="disabled:opacity-100 border-0 bg-neutral-100 data-[state=checked]:bg-neutral-200 data-[state=checked]:text-neutral-900 dark:bg-neutral-700 dark:data-[state=checked]:bg-neutral-600 dark:data-[state=checked]:text-neutral-200 dark:data-[state=checked]:border-0"
               />
             </div>
           </div>

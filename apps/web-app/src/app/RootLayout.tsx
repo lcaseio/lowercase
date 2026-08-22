@@ -12,8 +12,8 @@ export function RootLayout() {
   const location = useLocation();
 
   return (
-    <div className="h-screen flex">
-      <nav className="w-16 shrink-0 flex flex-col items-center gap-1 py-2 border-r border-r-neutral-200 dark:border-r-neutral-800 overflow-y-auto">
+    <div className="h-screen flex ">
+      <nav className="w-18 shrink-0 flex flex-col items-center gap-0.5 py-1  bg-workbench-panel-secondary overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname.startsWith(item.to);
           return (
@@ -21,10 +21,10 @@ export function RootLayout() {
               key={item.to}
               to={item.to}
               className={cn(
-                "flex flex-col items-center gap-0.5 w-14 rounded-md py-1.5 text-[10px] leading-none transition-colors",
+                "flex flex-col items-center gap-1 w-16 rounded-sm py-2 text-[10px] leading-none transition-colors",
                 isActive
-                  ? "text-foreground bg-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
+                  ? "text-foreground bg-neutral-200/80 dark:bg-neutral-700/80"
+                  : "text-muted-foreground hover:text-foreground hover:bg-neutral-200/40 hover:dark:bg-neutral-700/40",
               )}
             >
               <item.icon className="size-4" />

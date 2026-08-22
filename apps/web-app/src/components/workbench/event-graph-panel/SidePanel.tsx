@@ -42,7 +42,7 @@ export function SidePanel({
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-secondary-panel">
       <div className="flex items-center justify-between  py-1.5">
         <span className="text-sm font-medium">{TAB_LABELS[activeTab]}</span>
         <Button

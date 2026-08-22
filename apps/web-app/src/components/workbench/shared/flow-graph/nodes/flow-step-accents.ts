@@ -15,14 +15,20 @@ export type FlowStepAccent = {
 const FLOW_STEP_ACCENTS: Partial<
   Record<StepDefinition["type"], FlowStepAccent>
 > = {
-  httpjson: { label: "httpjson", colorClassName: "bg-teal-800" },
-  mcp: { label: "mcp", colorClassName: "bg-lime-800" },
-  join: { label: "join", colorClassName: "bg-fuchsia-800" },
-  branch: { label: "branch", colorClassName: "bg-blue-800" },
-  // Pink isn't claimed anywhere else in this palette -- purple was
-  // considered but the reuse badge already uses violet, and a dark-enough
-  // yellow for white-text contrast tends to read as olive/brown.
-  parallel: { label: "parallel", colorClassName: "bg-pink-800" },
+  httpjson: {
+    label: "httpjson",
+    colorClassName: "bg-teal-300 dark:bg-teal-800",
+  },
+  mcp: { label: "mcp", colorClassName: "bg-lime-300 dark:bg-lime-800" },
+  join: { label: "join", colorClassName: "bg-pink-300 dark:bg-pink-800" },
+  branch: {
+    label: "branch",
+    colorClassName: "bg-indigo-300 dark:bg-indigo-800",
+  },
+  parallel: {
+    label: "parallel",
+    colorClassName: "bg-pink-300 dark:bg-pink-800",
+  },
 };
 
 export function getFlowStepAccent(
@@ -46,22 +52,22 @@ export function getFlowStepAccent(
 //     and join's *inbound* edges -- structural membership, not a real
 //     decision point)
 export const GATE_SUCCESS_COLOR = "#34d399";
-export const GATE_FAILURE_COLOR = "#d3344a";
+export const GATE_FAILURE_COLOR = "var(--flow-edge-failure)";
 // A case value isn't inherently good or bad, and neither is default --
 // both currently share one color rather than being distinguished from each
 // other, on the theory that the case/default *label* already carries that
 // distinction (FlowStepNode.tsx renders the real value next to the handle),
 // so the color's job is just "this is a conditional-but-not-success/failure
 // branch," not which specific one.
-export const BRANCH_CASE_COLOR = "var(--color-flow-conditional)";
-export const BRANCH_DEFAULT_COLOR = "var(--color-flow-conditional)";
+export const BRANCH_CASE_COLOR = "var(--flow-edge-conditional)";
+export const BRANCH_DEFAULT_COLOR = "var(--flow-edge-conditional)";
 // Warm neutral, not the flat gray React Flow's default edge stroke already
 // uses -- that default was never chosen to sit next to a saturated green/
 // red, and reads heavier/duller than either. Deliberately not tied to any
 // step's own header color -- this is an edge-condition color, not a
 // step-type color, the reasoning that moved join's inbound edges away from
 // matching its header in the first place.
-export const UNCONDITIONAL_EDGE_COLOR = "var(--color-stone-500, #a8a29e)";
+export const UNCONDITIONAL_EDGE_COLOR = "var(--flow-edge-unconditional)";
 
 // Shared so the handle color (FlowStepNode.tsx) and the edge line color
 // (FlowGraph.tsx) that leaves it can't drift apart from each other.
@@ -266,19 +272,21 @@ export function isEdgeAnimating(
 // Same amber already used for a running step's outline (FlowGraph.tsx's
 // statusNodeStyle) -- shared here too, same drift-avoidance reasoning as the
 // gate colors above.
-export const STATUS_RUNNING_COLOR = "var(--color-amber-500, #f59e0b)";
+export const STATUS_RUNNING_COLOR = "var(--flow-status-running-background)";
+export const STATUS_COMPLETED_COLOR = "var(--flow-status-completed-background)";
+export const STATUS_FAILED_COLOR = "var(--flow-status-failed-background)";
 
 // Deliberately its own hue, outside the green/amber/red palette status and
 // gate colors already claim -- blue is the conventional "this is selected"
 // color in most editors, so it reads as a distinct kind of signal rather
 // than competing with either of those for the same visual meaning.
-export const SELECTION_RING_COLOR = "#43779e";
+export const SELECTION_RING_COLOR = "var(--flow-step-selected)";
 
 // A neutral, deliberately quieter hue than the semantic status/gate/
 // selection colors above -- reuse is informational, not a judgment call the
 // way success/failure/running are, so it doesn't need to compete for
 // attention the way those do.
-export const REUSE_BADGE_COLOR = "var(--color-violet-800)";
+export const REUSE_BADGE_COLOR = "var(--flow-step-reused-background)";
 
 export function getStatusBorderColor(
   status: StepStatus | undefined,
@@ -287,9 +295,9 @@ export function getStatusBorderColor(
     case "running":
       return STATUS_RUNNING_COLOR;
     case "completed":
-      return GATE_SUCCESS_COLOR;
+      return STATUS_COMPLETED_COLOR;
     case "failed":
-      return GATE_FAILURE_COLOR;
+      return STATUS_FAILED_COLOR;
     default:
       return undefined;
   }
