@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Panel icons and the main nav rail (PRs 19, 20)
 
+**Previous:** [Event Graph](./event-graph.md) (PRs 16, 17) · **Next:** [Artifacts in Explorer](./artifacts-in-explorer.md) (PRs 21–24)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`event-graph.md`](./event-graph.md). Two small, unrelated pieces of visual identity work bundled together only because they landed back to back: distinguishing panel/tab kinds by icon, and replacing the app's outer left nav with a fixed-width rail. Continues in [`artifacts-in-explorer.md`](./artifacts-in-explorer.md).
 
 ## PR 19 - Panel/tab identity icons - merged (#302)

@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Remaining structure review (PR 49)
 
+**Previous:** [Naming the shell — Workbench, Dock, FlowExplorer](./workbench-naming.md) (PRs 47–48) · **Next:** [Theme logic + visual polish](./theme-and-visual-polish.md) (PR 50)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Surfaced while wrapping up [`workbench-naming.md`](./workbench-naming.md)'s PR 48 — with `components/` fully reorganized (PRs 46–48) and holding only domain folders now, the obvious next question was what's still outside it. This arc is that look: `src/lib/`, `layout/`, `contexts/`, `hooks/`, `pages/`, `redux/`, and the package root — none of it was "Explorer stuff," so none of it was touched by PRs 1–48. Some of it predates the whole Explorer/Workbench rework and has just been sitting.
 
 **Not a mechanical sweep the way PR 42's dead-code pass was — a real review, done a piece at a time, same methodology as the rest of this milestone: check real importers/usage directly, never assume from a file's name or age.** Discussion below grows as pieces get looked at; not everything under `## PR 49` was investigated in one sitting.

@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Explorer foundation (PRs 1–8)
 
+**Next:** [Right panel icon rail](./right-panel-rail.md) (PRs 9–13)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable — full history preserved here verbatim, nothing summarized away. This covers the Explorer arc's foundation: the tree/tab skeleton, dockview adoption, migrating panel state to Redux, and the persistence layer that got distilled into [`docs/adr/0004-panel-state-management-and-persistence.md`](../../../adr/0004-panel-state-management-and-persistence.md) at the end of this range (PR 8). PR 9 onward continues in [`right-panel-rail.md`](./right-panel-rail.md).
 
 ## PR 1 - Explorer Mini Spike - merged (#284)

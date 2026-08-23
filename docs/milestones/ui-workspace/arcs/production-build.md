@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Activate the real production build (PR 53)
 
+**Previous:** [Web app API usage audit](./api-usage-audit.md) (PR 52) · **Next:** [`apps/web-app` + `apps/http-server` READMEs](./web-app-readme.md) (PR 54)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Standalone build/tooling work, not a continuation of any feature arc — surfaced during PR 49's "what's left outside `components/`" review of `apps/web-app`.
 
 ## PR 53 - Activate `apps/web-app`'s real production build - merged (#336)

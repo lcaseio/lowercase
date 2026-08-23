@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: WebSocket → SSE for live events (PR 40)
 
+**Previous:** [CodeEditor (Monaco) spacebar bug](./code-editor-spacebar-bug.md) (PR 39) · **Next:** [Sim/reuse badge on actually-reused steps](./sim-reuse-badge.md) (PR 41)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Not a continuation of any single earlier arc's own feature narrative — standalone backend/transport work, long-known-about (the tab-stealing bug has been named in `MILESTONE.md`'s `Next up` section since before this arc existed).
 
 ## PR 40 - Replace the WebSocket live-events transport with SSE - merged (#323)

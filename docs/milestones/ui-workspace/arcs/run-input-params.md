@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Run Input params (PRs 25, 26)
 
+**Previous:** [Artifacts in Explorer](./artifacts-in-explorer.md) (PRs 21–24) · **Next:** [Expand content into its own tab](./expand-content.md) (PRs 27, 28)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`artifacts-in-explorer.md`](./artifacts-in-explorer.md). Split off from a single larger "Run Input Params" idea once it became clear runs and sims want genuinely different semantics, not just different data sources. Continues in [`expand-content.md`](./expand-content.md).
 
 ## PR 25 - Run Input Params — run-opened panels are read-only, always a rerun - merged (#308)

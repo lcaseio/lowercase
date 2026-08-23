@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Event Graph (PRs 16, 17)
 
+**Previous:** [Runs and Sims in the tree](./runs-and-sims-in-the-tree.md) (PRs 14, 15, 18) · **Next:** [Panel icons and the main nav rail](./panel-icons-and-nav-rail.md) (PRs 19, 20)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`runs-and-sims-in-the-tree.md`](./runs-and-sims-in-the-tree.md), though this is an unrelated feature that just happens to sit between PR 15 and PR 18 numerically. Covers spawning an `EventGraph` panel from the Flow Graph panel itself, its identity redesign into a dockview-focus-following singleton, and giving it its own Event Details side panel. Continues in [`panel-icons-and-nav-rail.md`](./panel-icons-and-nav-rail.md).
 
 ## PR 16 - EventGraph, spawned from the Flow Graph panel itself - merged (#299)

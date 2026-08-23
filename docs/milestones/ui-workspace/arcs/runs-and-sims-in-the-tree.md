@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Runs and Sims in the tree (PRs 14, 15, 18)
 
+**Previous:** [Right panel icon rail](./right-panel-rail.md) (PRs 9–13) · **Next:** [Event Graph](./event-graph.md) (PRs 16, 17)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`right-panel-rail.md`](./right-panel-rail.md). Covers promoting Runs and Sims from candidate ideas into real, lazy-loaded tree categories (each opening its own Flow Graph panel), plus the Simulate authoring flow that builds on the Sims list. PR 16/17 (EventGraph) is a separate, unrelated feature that happens to sit between these numerically — continues in [`event-graph.md`](./event-graph.md).
 
 ## PR 14 - Runs list in the tree, each run opens its own Flow Graph panel - merged (#297)

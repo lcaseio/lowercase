@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Theme logic + visual polish (PR 50)
 
+**Previous:** [Remaining structure review](./remaining-structure.md) (PR 49) · **Next:** [Server API reference docs](./api-reference-docs.md) (PR 51)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Started as a small, purely visual line item ("CSS visual polish — light + dark mode, page title/icon"), first named in the tentative PRs 49–52 roadmap. Widened while reviewing `contexts/` and the package root during [`remaining-structure.md`](./remaining-structure.md)'s PR 49 pass — real, if low-stakes, findings in the theme system itself, not just things that look wrong on screen. The user's own framing for the widened scope: this deserves a genuine investigation of whether the current theme approach is even the right one, not just a coat of paint on top of it.
 
 ## PR 50 - Theme logic review + CSS visual polish - merged (#333)

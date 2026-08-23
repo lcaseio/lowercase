@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Server API reference docs (PR 51)
 
+**Previous:** [Theme logic + visual polish](./theme-and-visual-polish.md) (PR 50) · **Next:** [Web app API usage audit](./api-usage-audit.md) (PR 52)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Named in `docs/todo.md` on 2026-08-14 while pruning old pages — `docs/request-flow-map.md` (a page→component→hook→route→service quick-reference) was useful for confirming what a couple of old pages still uniquely provided, which surfaced the idea of rebuilding it as something more substantial.
 
 ## PR 51 — Server API reference — merged (#334)

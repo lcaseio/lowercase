@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Right panel icon rail (PRs 9–13)
 
+**Previous:** [Explorer foundation](./explorer-foundation.md) (PRs 1–8) · **Next:** [Runs and Sims in the tree](./runs-and-sims-in-the-tree.md) (PRs 14, 15, 18)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. This covers migrating the old page-based right-panel content (Params, Sim, Problems, Parameters, Step Details, Step Results) onto a single Postman-style icon rail inside the Flow Graph panel — one continuous arc, landing one tab at a time. PR 14 onward continues in [`runs-and-sims-in-the-tree.md`](./runs-and-sims-in-the-tree.md).
 
 ## PR 9 - Right Panel Icon Rail (Params/Sim migrated first) - merged (#292)

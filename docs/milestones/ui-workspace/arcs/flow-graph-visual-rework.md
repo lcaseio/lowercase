@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Flow graph visual rework (PRs 29–34)
 
+**Previous:** [Expand content into its own tab](./expand-content.md) (PRs 27, 28) · **Next:** [Replay](./replay.md) (PRs 35, 37)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`expand-content.md`](./expand-content.md). One continuous arc, elevated ahead of the end-of-August demo window: swapping to a real dagre layout, consolidating the toolbar and fixing `fitView`, building custom node types, extending them to every step type, and giving branch steps their own details view plus a side-panel visual polish pass. Continues in [`replay.md`](./replay.md).
 
 ## PR 29 - Flow graph — swap to a real layout library (dagre), two layouts - merged (#312)

@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Artifacts in Explorer (PRs 21–24)
 
+**Previous:** [Panel icons and the main nav rail](./panel-icons-and-nav-rail.md) (PRs 19, 20) · **Next:** [Run Input params](./run-input-params.md) (PRs 25, 26)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`panel-icons-and-nav-rail.md`](./panel-icons-and-nav-rail.md). One continuous story across four PRs: bringing Artifacts mode's already-built backend (see the separate, earlier [`artifacts-mode.md`](../artifacts-mode.md) satellite doc) into the Explorer/dockview tree — listing, viewing, a metadata rail, and creation. Continues in [`run-input-params.md`](./run-input-params.md).
 
 ## PR 21 - Artifacts — first piece: list per-version artifacts in the tree - merged (#304)

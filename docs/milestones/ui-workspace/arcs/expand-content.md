@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Expand content into its own tab (PRs 27, 28)
 
+**Previous:** [Run Input params](./run-input-params.md) (PRs 25, 26) · **Next:** [Flow graph visual rework](./flow-graph-visual-rework.md) (PRs 29–34)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`run-input-params.md`](./run-input-params.md). Two parts of the same effort: wiring up the `onOpenInMainPanel` stubs that have sat inert since PR 11/13, now that opening a new dockview panel from inside another panel's content is a proven pattern. Continues in [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md).
 
 ## PR 27 - Expand content into its own tab, part 1 — real artifacts - merged (#310)
