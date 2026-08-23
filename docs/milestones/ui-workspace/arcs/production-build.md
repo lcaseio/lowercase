@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Standalone build/tooling work, not a continuation of any feature arc — surfaced during PR 49's "what's left outside `components/`" review of `apps/web-app`.
 
-## PR 53 - Activate `apps/web-app`'s real production build - in progress
+## PR 53 - Activate `apps/web-app`'s real production build - merged (#336)
 
 `apps/web-app`'s `build` script is currently `echo build` — production `vite build` was never exercised this whole milestone. Bundled with it, per the user's own call: the dead `baseUrl`/`paths` tsconfig config, and hardcoded `localhost:3000` in 6 files, both found during the same PR 49 review pass.
 
