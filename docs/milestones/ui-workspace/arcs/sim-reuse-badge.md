@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Sim/reuse badge on actually-reused steps (PR 41)
 
+**Previous:** [WebSocket → SSE for live events](./websocket-to-sse.md) (PR 40) · **Next:** [Prune old pages](./prune-old-pages.md) (PRs 42–46)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md) (PRs 29–34) — the reused badge itself was built there; this is a wiring gap in what feeds it, not a continuation of that arc's own narrative.
 
 ## PR 41 - Show the sim/reuse badge on runs that actually reused steps, not just a sim's own parent run - merged (#324)

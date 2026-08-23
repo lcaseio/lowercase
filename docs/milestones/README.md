@@ -19,8 +19,8 @@ One directory per milestone. See the convention below for shape, naming, and the
 
 **`MILESTONE.md` section skeleton** (omit a section entirely until it has real content, never leave an empty stub):
 
-- `Summary` — doc-meta note + the actual pitch (problem, approach, target shape). If the design pivoted partway through, name that in prose here rather than editing the original framing to hide it.
-- `Current state` — synchronic snapshot of what's built today; distinct from the PR log's chronological "how it got built."
+- `Summary` — synchronic snapshot: what this milestone is/has built, as of now, stated as fact — the default home for "what's built today." Present tense, overview level, no history.
+- `Evolution` — the chronological narrative of how the design got here: original plan, pivots, motivation, longer-term context not yet built. Optional while a milestone is young/thin — its few sentences can live briefly inside Summary until there's an actual pivot or backstory worth naming; split out once Summary would otherwise have to carry both "what it is" and "why it changed" at once. The PR index below is this narrative's detail layer — Evolution names the beats, individual PR entries carry the specifics behind each one. Expect to periodically re-summarize/compress it as it grows, the same recurring maintenance PR 36 established for the whole doc — a beat that's fully absorbed into Summary's present-tense description, or fully superseded by a later pivot, doesn't need to keep its own paragraph forever.
 - `Design principles` — durable heuristics ongoing/future PRs should follow. Optional.
 - `PR index` — table: `PR | Description | Status | Where | See also`.
 - `Next up` — ordered, committed upcoming PR slots. Detail level tapers with distance: the next PR up gets real substance, ones further out are often just a title/one-liner.
@@ -35,6 +35,18 @@ One directory per milestone. See the convention below for shape, naming, and the
 Neither category should keep growing going forward for its own sake — (1) is legitimate indefinitely; (2) is closed by construction (nothing new can predate a log that already exists) and exists only because real content already does.
 
 **`arcs/<descriptive-name>.md`** — zero or more, one per narratively-related group of PRs from this milestone's own numbered log. Never numbered filenames (the PR index table maps number → file, not filename order). A PR whose story doesn't fit its neighbors gets its own file. Content is written directly into its arc file from the moment it's written (during discussion, before planning) — never staged in `MILESTONE.md` first, even while a PR is still in progress.
+
+**Arc file header, fixed shape:**
+
+```markdown
+# <Milestone> Milestone — Arc: <Title> (PRs N–M)
+
+**Previous:** [<prior arc title>](./prior-arc.md) (PRs ...) · **Next:** [<next arc title>](./next-arc.md) (PRs ...)
+
+Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. <1-3 sentences: what this arc covers.>
+```
+
+The `Previous`/`Next` line is mechanical navigation, not narrative — order comes from each arc file's first appearance in the PR index, one file counted once even when its PRs are numerically interleaved with another arc's (e.g. an unrelated one-off PR landing in the middle of a longer arc's number range). Omit `Previous:` on the first arc file; omit `Next:` (or write "— none yet") on the most recent one. Keep this line separate from the descriptive paragraph below it — that paragraph can still explain non-adjacent or thematic relationships in prose (e.g. "this is PR 41's precondition, not its direct predecessor"); the header line is chain order only, always present, always the same shape.
 
 **One PR entry, fixed shape, always nested under its own heading — never split across a separate floating section, regardless of length. Heading depth is contextual, not fixed**: the old, monolithic single-doc format's `####` was an artifact of nesting four levels into one giant file — inside a standalone `arcs/<name>.md` file, the file's own `#` title is the only thing above an entry, so `##` is enough. Pick the level that actually matches how deep the entry sits in whichever file it's in.
 

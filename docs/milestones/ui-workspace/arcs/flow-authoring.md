@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Flow authoring (PR 38)
 
+**Previous:** [Documentation reorganization](./documentation-reorganization.md) (PR 36) · **Next:** [CodeEditor (Monaco) spacebar bug](./code-editor-spacebar-bug.md) (PR 39)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`replay.md`](./replay.md) (PR 37). Continues in [`code-editor-spacebar-bug.md`](./code-editor-spacebar-bug.md) (PR 39) — a standalone infrastructure fix, not a continuation of this arc's own narrative, but surfaced while testing PR 38.
 
 ## PR 38 - Basic flow authoring in the modern dockview UI, from the tree - merged (#321)

@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: CodeEditor (Monaco) spacebar bug (PR 39)
 
+**Previous:** [Flow authoring](./flow-authoring.md) (PR 38) · **Next:** [WebSocket → SSE for live events](./websocket-to-sse.md) (PR 40)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-authoring.md`](./flow-authoring.md) (PR 38) — a standalone infrastructure fix, not a continuation of that arc's own feature narrative, surfaced while testing it.
 
 ## PR 39 - Fix CodeEditor (Monaco)'s spacebar input bug - merged (#322)

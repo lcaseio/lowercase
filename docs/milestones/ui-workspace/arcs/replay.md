@@ -1,5 +1,7 @@
 # UI Workspace Milestone — Arc: Replay (PRs 35, 37)
 
+**Previous:** [Flow graph visual rework](./flow-graph-visual-rework.md) (PRs 29–34) · **Next:** [Documentation reorganization](./documentation-reorganization.md) (PR 36)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Continues from [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md). Continues in [`documentation-reorganization.md`](./documentation-reorganization.md) (PR 36) — but PR 37 below returns to this arc rather than living there, since it's PR 35's own deferred stretch goal, not a continuation of the docs-reorg thread. Continues in [`flow-authoring.md`](./flow-authoring.md) (PR 38) after PR 37 below.
 
 ## PR 35 - Flow graph — replay - merged (#318)
