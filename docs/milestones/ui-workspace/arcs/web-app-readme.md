@@ -1,12 +1,12 @@
 # UI Workspace Milestone — Arc: `apps/web-app` + `apps/http-server` READMEs, real content (PR 54)
 
-**Previous:** [Activate the real production build](./production-build.md) (PR 53) · **Next:** — none yet (PRs 55–56 not yet their own arc files)
+**Previous:** [Activate the real production build](./production-build.md) (PR 53) · **Next:** [Repo version bump, prep for merge to `main`](./version-bump.md) (PR 55)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Standalone docs work, not a continuation of any feature arc — the still-unedited Vite scaffolding stub was flagged during PR 49's "what's left outside `components/`" review of `apps/web-app`.
 
 **Scope widened 2026-08-23 to include `apps/http-server`.** This milestone made real changes to the backend along the way too (PR 53's build/lint work, `docs/api-reference.md`/`docs/api-usage-audit.md`), and it had no README at all. Added here rather than as a separate PR since it's the same shape and small — mostly commands plus links out to the existing API docs, not new narrative content to maintain.
 
-## PR 54 - `apps/web-app` + `apps/http-server` READMEs, real content - in progress
+## PR 54 - `apps/web-app` + `apps/http-server` READMEs, real content - merged (#337)
 
 ### Discussion
 
@@ -40,3 +40,5 @@ Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Standalone docs work, not 
 **PR index renumbered**: PR 54 stayed README-only; the comment pass split out into a new PR 55 (scope not yet determined — flow-graph-only was always just a default, never a decision); the version bump moved from PR 55 to PR 56.
 
 Verified: `pnpm typecheck` and `pnpm lint` clean on both `apps/web-app` and `apps/http-server` (`http-server`'s `lint` is still its pre-existing no-op stub, unrelated to this PR).
+
+**Follow-up (2026-08-23, after this PR merged as #337): PR 55 (the comment pass) undone.** The user's own call, made while scoping it for real: a standalone full-codebase comment sweep isn't worth doing on its own, since a UI refactor is wanted eventually anyway and would rewrite most of the same comments as a side effect — better to fold comment correctness into that future refactor, piece by piece, than sweep the whole codebase now for something that might get redone. PR 55 removed from this milestone's numbered log entirely (deferred, not cancelled — tracked in `docs/todo.md` instead, tied to the future refactor idea) and the version bump renumbered back from PR 56 to PR 55, since neither had landed yet.
