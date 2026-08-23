@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Follows directly from PR 51 (`arcs/api-reference-docs.md`) — having the real API surface written down first is what makes this audit possible at all.
 
-## PR 52 — Web app endpoint usage audit — in progress
+## PR 52 — Web app endpoint usage audit — merged (#335)
 
 ### Discussion
 

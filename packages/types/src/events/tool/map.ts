@@ -1,5 +1,9 @@
-import { DomainActionDescriptor } from "../shared/otel-attributes.js";
-import { ToolCompletedData, ToolFailedData, ToolStartedData } from "./data.js";
+import type { DomainActionDescriptor } from "../shared/otel-attributes.js";
+import type {
+  ToolCompletedData,
+  ToolFailedData,
+  ToolStartedData,
+} from "./data.js";
 
 export type ToolEventMap = {
   "tool.started": DomainActionDescriptor<"tool", "started", ToolStartedData>;

@@ -10,4 +10,5 @@ export interface ClientControllerPort extends ControllerPort {
     handler: (payload: TPayload) => void,
   ): () => void;
 }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- deliberate: a nominal marker distinct from ClientControllerPort, no extra members needed yet
 export interface ServerControllerPort extends ControllerPort {}

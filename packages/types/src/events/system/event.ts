@@ -1,5 +1,5 @@
-import { CloudEvent } from "../shared/cloud-event.js";
-import { SystemEventType } from "./map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { SystemEventType } from "./map.js";
 
 export type SystemScope = {
   flowid?: string;

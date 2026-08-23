@@ -1,4 +1,4 @@
-import { CapId } from "../flow/map.js";
+import type { CapId } from "../flow/map.js";
 
 /**
  * NOTE: Tool types are in development.
@@ -12,7 +12,11 @@ import { CapId } from "../flow/map.js";
  */
 export type ToolId = string;
 
-export type ToolContext = {};
+// export type ToolContext = {}; -- placeholder, not yet given real fields or
+// wired to anything; kept as a comment rather than deleted since
+// ToolContextSchema (packages/events/src/schemas/tool.event.schema.ts) is a
+// similarly-named, currently-unrelated thing a future reader may go looking
+// for a matching type for.
 
 export type RateLimitPolicy = {
   scope: "worker" | "global";

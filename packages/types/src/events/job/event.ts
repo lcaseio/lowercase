@@ -1,6 +1,6 @@
-import { CapId } from "../../flow/map.js";
-import { CloudEvent } from "../shared/cloud-event.js";
-import { JobEventType } from "./map.js";
+import type { CapId } from "../../flow/map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { JobEventType } from "./map.js";
 
 export type JobScope = {
   flowid: string;

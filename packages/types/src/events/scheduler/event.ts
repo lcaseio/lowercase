@@ -1,5 +1,5 @@
-import { CloudEvent } from "../shared/cloud-event.js";
-import { SchedulerEventType } from "./map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { SchedulerEventType } from "./map.js";
 
 export type SchedulerScope = {
   schedulerid: string;

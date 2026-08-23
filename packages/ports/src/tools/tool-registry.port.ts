@@ -1,6 +1,6 @@
 import type { ToolId } from "@lcase/types";
 import type { ToolInstancePort, ToolBinding } from "./tool-instance.port.js";
-import { ToolDeps } from "./tool-context.js";
+import type { ToolDeps } from "./tool-context.js";
 
 export interface ToolRegistryPort {
   getBinding(id: ToolId): ToolBinding<ToolId> | undefined;

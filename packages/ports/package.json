@@ -38,12 +38,15 @@
     "build": "tsc --incremental false",
     "typecheck": "tsc --noEmit",
     "test": "echo test",
-    "lint": "echo lint",
+    "lint": "eslint .",
     "clean-dist": "rm -rf ./dist",
     "clean-node-modules": "rm -rf ./node_modules"
   },
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
-    "@lcase/types": "workspace:*"
+    "@eslint/js": "^9.39.1",
+    "@lcase/types": "workspace:*",
+    "eslint": "^9.39.1",
+    "typescript-eslint": "^8.46.4"
   }
 }

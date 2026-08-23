@@ -1,5 +1,5 @@
 import type { DomainActionDescriptor } from "../shared/otel-attributes.js";
-import { SystemLoggedData } from "./data.js";
+import type { SystemLoggedData } from "./data.js";
 
 export type SystemEventMap = {
   "system.logged": DomainActionDescriptor<"system", "logged", SystemLoggedData>;

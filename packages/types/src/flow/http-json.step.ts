@@ -1,9 +1,9 @@
-import {
+import type {
   ExportDeclaration,
   StepCapCommonFields,
   StepOnField,
 } from "./common-fields.js";
-import { ShallowJsonValue } from "../json-value.js";
+import type { ShallowJsonValue } from "../json-value.js";
 
 export type StepHttpJson = StepCapCommonFields &
   StepOnField & {

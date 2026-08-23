@@ -1,5 +1,5 @@
-import { CloudEvent } from "../shared/cloud-event.js";
-import { LimiterEventType } from "./map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { LimiterEventType } from "./map.js";
 
 export type LimiterScope = {
   limiterid: string;

@@ -1,5 +1,5 @@
-import { CloudEvent } from "../shared/cloud-event.js";
-import { ReplayEventType } from "./map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { ReplayEventType } from "./map.js";
 
 export type ReplayScope = {
   runid: string;

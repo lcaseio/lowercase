@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "@/redux/typed-hooks";
 import { sseConnect, sseDisconnect } from "@/redux/middleware/sse";
+import { SERVER_URL } from "@/lib/server-url";
 
 export function SseBootstrap() {
   const dispatch = useAppDispatch();
@@ -8,7 +9,7 @@ export function SseBootstrap() {
   useEffect(() => {
     dispatch(
       sseConnect({
-        url: "http://localhost:3000/events",
+        url: `${SERVER_URL}/events`,
       }),
     );
     return () => {

@@ -25,6 +25,8 @@ dist-electron/
 
 # environment vars
 .env
+.env.local
+.env.*.local
 
 # test coverage reports
 coverage/

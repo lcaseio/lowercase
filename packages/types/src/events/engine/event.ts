@@ -1,4 +1,4 @@
-import { CloudEvent } from "../shared/cloud-event.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
 import type { EngineEventType } from "./map.js";
 
 export type EngineScope = {
