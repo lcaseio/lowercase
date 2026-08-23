@@ -32,6 +32,7 @@ import type {
   LimiterEventData,
 } from "@lcase/types";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- deliberate: common marker base type, no shared members yet
 export interface BaseEmitterPort {}
 
 export type EnvelopeHeader = {

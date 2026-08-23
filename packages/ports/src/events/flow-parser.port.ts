@@ -1,4 +1,4 @@
-import { FlowEvent } from "@lcase/types";
+import type { FlowEvent } from "@lcase/types";
 
 export type FlowQueuedParsed = {
   event: FlowEvent<"flow.queued">;

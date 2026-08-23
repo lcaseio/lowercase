@@ -1,5 +1,5 @@
-import { CloudEvent } from "../shared/cloud-event.js";
-import { WorkerEventType } from "./map.js";
+import type { CloudEvent } from "../shared/cloud-event.js";
+import type { WorkerEventType } from "./map.js";
 
 export type WorkerScope = {
   workerid: string;

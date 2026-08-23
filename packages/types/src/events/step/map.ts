@@ -1,5 +1,5 @@
 import type { DomainActionDescriptor } from "../shared/otel-attributes.js";
-import {
+import type {
   StepCompletedData,
   StepFailedData,
   StepPlannedData,

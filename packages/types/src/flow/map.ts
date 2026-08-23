@@ -1,5 +1,5 @@
-import { StepHttpJson } from "./http-json.step.js";
-import { StepMcp } from "./mcp.step.js";
+import type { StepHttpJson } from "./http-json.step.js";
+import type { StepMcp } from "./mcp.step.js";
 
 export type CapMap = {
   mcp: StepMcp;

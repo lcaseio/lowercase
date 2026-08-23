@@ -1,6 +1,3 @@
-type OutputHash = string;
-type StepId = string;
-
 /**
  * Spec for deriving forked run behavior.
  * Currently has properties more specific to a Simulation Spec, in terms
@@ -14,7 +11,7 @@ export type ForkSpec = {
   // flowDefMode: FlowDefMode;
   // forceRerunSteps: string[];
   // cascade: boolean;
-  // stepOutputOverrides?: Record<StepId, OutputHash>;
+  // stepOutputOverrides?: Record<string, string>; // StepId -> OutputHash
 };
 
 export type FlowDefMode =

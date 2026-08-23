@@ -9,6 +9,7 @@ import type {
   PostArtifactRes,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { SERVER_URL } from "@/lib/server-url";
 
 // client-side calling convention, not a wire type -- the route branches on
 // Content-Type, so this just picks which encoding `query` produces. value
@@ -26,7 +27,7 @@ type CreateArtifactArg =
 
 export const artifactsApi = createApi({
   reducerPath: "artifactsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${SERVER_URL}/api/` }),
   tagTypes: ["Artifacts"],
   endpoints: (builder) => ({
     listArtifacts: builder.query<GetArtifactsRes, GetArtifactsReq | void>({

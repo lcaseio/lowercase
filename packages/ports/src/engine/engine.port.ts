@@ -1,8 +1,8 @@
-import { ArtifactsPort } from "../artifacts/artifacts.port.js";
-import { EventBusPort } from "../bus/event-bus.port.js";
-import { EmitterFactoryPort } from "../events/emitter-factory.port.js";
-import { JobParserPort } from "../events/job-parser.port.js";
-import { RunQueryPort } from "../run/run-query.port.js";
+import type { ArtifactsPort } from "../artifacts/artifacts.port.js";
+import type { EventBusPort } from "../bus/event-bus.port.js";
+import type { EmitterFactoryPort } from "../events/emitter-factory.port.js";
+import type { JobParserPort } from "../events/job-parser.port.js";
+import type { RunQueryPort } from "../run/run-query.port.js";
 
 export type EngineDeps = {
   bus: EventBusPort;

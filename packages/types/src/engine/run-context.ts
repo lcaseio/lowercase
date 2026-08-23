@@ -1,6 +1,6 @@
 import type { FlowAnalysis } from "../flow-analysis/types.js";
 import type { ForkSpec } from "./fork-spec.type.js";
-import { RunPlan } from "./run-plan.type.js";
+import type { RunPlan } from "./run-plan.type.js";
 import type { ReusableRunStepData } from "../db-sql/run-record.js";
 
 type StepId = string;

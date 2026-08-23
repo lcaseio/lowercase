@@ -617,9 +617,18 @@ importers:
 
   packages/ports:
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript-eslint:
+        specifier: ^8.46.4
+        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
 
   packages/replay:
     devDependencies:
@@ -730,7 +739,17 @@ importers:
         specifier: workspace:*
         version: link:../types
 
-  packages/types: {}
+  packages/types:
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript-eslint:
+        specifier: ^8.46.4
+        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
 
   packages/ui:
     dependencies:

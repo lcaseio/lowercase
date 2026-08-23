@@ -1,4 +1,4 @@
-import { JsonSimpleValue } from "../../json-simple-value.js";
+import type { JsonSimpleValue } from "../../json-simple-value.js";
 
 export type ToolDescriptorData = {
   tool: {

@@ -1,4 +1,4 @@
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
 
 export interface RouterPort {
   route(event: AnyEvent): Promise<void>;

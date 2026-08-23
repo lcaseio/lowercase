@@ -12,10 +12,11 @@ import type {
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { eventsBatch } from "../middleware/sse";
+import { SERVER_URL } from "@/lib/server-url";
 
 export const runsApi = createApi({
   reducerPath: "runsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${SERVER_URL}/api/` }),
   tagTypes: ["Runs"],
   endpoints: (builder) => ({
     requestRun: builder.mutation<PostRunsRes, PostRunsReq>({
