@@ -1,6 +1,6 @@
 # Workbench UI Rework
 
-**Status: In progress — closing out via PRs 54–56.**
+**Status: In progress — closing out via PR 55.**
 
 ## Summary
 
@@ -8,7 +8,7 @@
 
 Panel state — params, run selection, side-panel tab, layout direction, viewport, replay position, and more — persists across tab switches, in-app navigation away and back, and a real reload, via a keyed Redux slice per panel kind, persisted to `sessionStorage`/`localStorage`. Full reasoning trail in [`research/state-management.md`](./research/state-management.md), distilled decision in `docs/adr/0004-panel-state-management-and-persistence.md`.
 
-The old page-based flow-version-mode-nav system (Edit/View/Run/Run History/Sims/Artifacts/Evals as separate routed pages) was fully deleted (PRs 42–45) once the Workbench covered its ground. Evals stayed out of scope on purpose — it's its own separate milestone (`docs/milestones/evals/`).
+The old page-based flow-version-mode-nav system (Edit/View/Run/Run History/Sims/Artifacts as separate routed pages, plus a routed-but-never-built Evals stub) was fully deleted (PRs 42–45) once the Workbench covered its ground. Evals stayed out of scope on purpose — it's its own separate milestone (`docs/milestones/evals/`).
 
 ## Evolution
 
@@ -24,9 +24,11 @@ Not everything was equally fleshed out along the way. The point of writing this 
 
 One instinct from that early period held up in retrospect: deliberately not adopting a docking/tab-management library until the simple skeleton's real limits were actually felt. This played out for real — `dockview` was adopted in PR 5, only after PR 2–4's hand-rolled tab registry hit a real, felt limit — confirming the instinct was right, not just cautious.
 
-### Sims and Artifacts, folded in
+### The old modes, folded in
 
-**Two pieces of today's Workbench predate the Explorer/dockview arc entirely — and how they got folded in is more precise than "migrated."** Sims mode and Artifacts mode were each fully built earlier, as their own standalone PR sequences, as real separate top-level pages/modes — full design narratives in [`sims-mode.md`](./sims-mode.md) and [`artifacts-mode.md`](./artifacts-mode.md). Once the Explorer tree existed, the _mode_ itself didn't survive — neither kept its own top-level page — but their actual pieces (list views, detail views, forms) were reused and adapted, becoming tree branches and panels inside the Workbench instead: Sims during PR 15/18, Artifacts during PRs 21–24. Neither has its own row in the PR index below — they aren't part of _this_ PR sequence, but they're real prior work this milestone absorbed and reshaped, not built from within it. (Artifacts' payoff still isn't fully cashed in: the curated/associated artifact set is meant to replace the fully-unfiltered global artifact list some pickers still draw from — tracked in `docs/todo.md`.)
+**Every mode from the old flow-version-mode-nav system predates the Explorer/dockview arc and was folded into it — not just Sims and Artifacts, but only those two left behind a written design narrative.** Edit and View were functionally identical, so in practice there was really just one mode there ("View"), alongside Run, Run History, Sims, and Artifacts — all absorbed once the Explorer tree existed and the old mode-nav pages were deleted (PRs 42–45, `arcs/prune-old-pages.md`).
+
+Sims and Artifacts get their own callout here because they were substantial enough, and built early enough as their own standalone PR sequences, to get a written design narrative as they went — full narratives in [`sims-mode.md`](./sims-mode.md) and [`artifacts-mode.md`](./artifacts-mode.md). View, Run, and Run History have no equivalent doc; their only record is the PR history on GitHub itself. Once the Explorer tree existed, none of the old modes kept their own top-level page, but Sims' and Artifacts' actual pieces (list views, detail views, forms) were reused and adapted into tree branches and panels inside the Workbench: Sims during PR 15/18, Artifacts during PRs 21–24. Neither has its own row in the PR index below — they aren't part of _this_ PR sequence, but they're real prior work this milestone absorbed and reshaped, not built from within it. (Artifacts' payoff still isn't fully cashed in: the curated/associated artifact set is meant to replace the fully-unfiltered global artifact list some pickers still draw from — tracked in `docs/todo.md`.)
 
 ### Longer-term context
 
@@ -110,21 +112,8 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 | 51  | Server API reference, swagger-style (`docs/api-reference.md`)                         | merged (#334) | `arcs/api-reference-docs.md`           | PR 52 (retired `request-flow-map.md`) |
 | 52  | Web app endpoint usage audit (`docs/api-usage-audit.md`)                              | merged (#335) | `arcs/api-usage-audit.md`              | PR 51                                 |
 | 53  | Activate `apps/web-app`'s real production build                                       | merged (#336) | `arcs/production-build.md`             |                                       |
-| 54  | `apps/web-app` + `apps/http-server` READMEs, real content                             | in progress   | `arcs/web-app-readme.md`               |                                       |
-| 55  | Comment pass — fresh sweep, scope TBD                                                 | tentative     | `MILESTONE.md` (Next up)               |                                       |
-| 56  | Repo version bump, prep for merge to `main`                                           | tentative     | `MILESTONE.md` (Next up)               |                                       |
-
-## Next up
-
-Real order, not just a bucket of candidates — but explicitly changeable. Several of these already have fuller write-ups in `Not yet scoped` below or in `docs/todo.md`; this list is the sequencing commitment, with context necessary before committing to an arc file, not a duplicate of existing detail.
-
-### PR 54 - 56
-
-- **PR 54 — `apps/web-app` README, real content.** Now has its own arc file, [`arcs/web-app-readme.md`](./arcs/web-app-readme.md) — see there for full discussion.
-
-- **PR 55 — a comment pass across the codebase, scope not yet determined.** Split out from PR 54 (2026-08-23) once it became clear the two were different kinds of review (docs content vs. cross-file code comment correctness), and that the comment pass's real scope isn't just the flow-graph code (PRs 29–34) it had defaulted to living under — that default followed from PR 54's own trace-reading touching that code anyway, not from where the need is actually greatest. Original trigger for flagging this is lost and not worth rediscovering; some impacted files are already known, but this needs a fresh sweep to actually scope before it's plannable. Not yet an arc file.
-
-- **PR 56 — repo version bump, root `README.md` updated, prep for merge to `main`.** Named 2026-08-22 as this milestone's actual close-out. Not scoped beyond the name yet.
+| 54  | `apps/web-app` + `apps/http-server` READMEs, real content                             | merged (#337) | `arcs/web-app-readme.md`               |                                       |
+| 55  | Repo version bump, prep for merge to `main`                                           | in progress   | `arcs/version-bump.md`                 |                                       |
 
 ## Not yet scoped
 

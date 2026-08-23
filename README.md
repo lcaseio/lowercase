@@ -1,6 +1,11 @@
 # lowercase
 
-### ❗ Alpha Software (v0.1.0-alpha.12)
+[![CI](https://github.com/lcaseio/lowercase/actions/workflows/ci.yaml/badge.svg)](https://github.com/lcaseio/lowercase/actions/workflows/ci.yaml)
+[![License](https://img.shields.io/github/license/lcaseio/lowercase)](LICENSE)
+[![Last commit (main)](https://img.shields.io/github/last-commit/lcaseio/lowercase/main?label=last%20commit%20%28main%29)](https://github.com/lcaseio/lowercase/commits/main)
+[![Last commit (dev)](https://img.shields.io/github/last-commit/lcaseio/lowercase/dev?label=last%20commit%20%28dev%29)](https://github.com/lcaseio/lowercase/commits/dev)
+
+## Alpha Software (v0.1.0-alpha.13)
 
 **lowercase** is in an early alpha stage and still taking shape. Some things work but APIs and behaviors will change as development evolves. Expect rough edges and breaking changes for now.
 
@@ -8,9 +13,22 @@
 
 ## Overview
 
-**lowercase** is an event-driven workflow engine for building and testing AI/LLM-driven pipelines: flows defined as JSON, executed step by step, with structured validation of model output and branching based on it. Today it runs locally, as a single process.
+**lowercase** is an event-driven workflow engine for building and testing AI/LLM-driven pipelines: flows defined as JSON, executed step by step, with structured validation of model output and branching based on it.
 
-Every component communicates through events, and business logic depends only on interfaces (hexagonal ports/adapters), not on specific infrastructure. Right now, every implementation behind those interfaces is local: SQL (SQLite) owns metadata (flows, artifacts, sims, runs, evals), a content-addressed filesystem store owns immutable content (LLM outputs, API responses, exported values), and the event bus and job queue are both in-memory. The ports/adapters boundary exists so other backends could be swapped in later without touching business logic — candidates include Redis Streams for the job queue and MinIO for CAS/blob storage — but that's a structural property, not a current capability: none of those adapters exist yet.
+It runs locally today, as a single process: SQL (SQLite) holds metadata (flows, artifacts, sims, runs, evals), a content-addressed filesystem store holds immutable content (LLM outputs, API responses, exported values), and the event bus and job queue are both in-memory. Business logic is written against interfaces rather than these specific implementations, so other backends could get swapped in later — Redis Streams for the queue and MinIO for blob storage are the leading candidates — but that's a design intent, not a present capability.
+
+## The Workbench (`apps/web-app`)
+
+![The Workbench: FlowExplorer tree, an open Flow Graph panel with custom branch/parallel/join nodes, the Step Details right-rail, and a synced JSON Definition panel](workbench-01.png)
+
+`apps/web-app` is a dockview-based **Workbench**: a persistent shell with a left-side FlowExplorer tree (Flows → Versions, with Runs/Sims/Artifacts nested under each version) and a Dock of open/closeable/draggable panels — Flow Graph, Event Graph, artifacts, flow authoring, step results, and more — plus a Postman-style right-rail (Parameters, Run Input, Simulate, Problems, Step Details, Step Results, Settings) that follows whichever panel is focused.
+
+- **Flow Graph**: dagre-based auto-layout, custom node types per step kind, branch/parallel handling, and replay — play back a run's event history (play/pause, speed selection, cancel) and watch step status update live, in sync with a companion Event Graph panel.
+- **Flow authoring**, from the tree: create a flow by uploading a JSON file or typing one in, with live schema validation and a synced graph preview. Full drag-and-drop visual editing isn't built yet.
+- **Sims and Artifacts** are first-class tree branches and panels, not separate top-level pages.
+- **Panel state** (params, run selection, layout, replay position, and more) persists across tab switches, in-app navigation, and a real reload.
+
+Full design history: [`docs/milestones/ui-workspace/MILESTONE.md`](docs/milestones/ui-workspace/MILESTONE.md).
 
 ## Quickstart
 
@@ -39,11 +57,19 @@ pnpm db:migrate
 
 Applies Prisma migrations to a local SQLite file. Defaults to `lcase-db/sqlite/dev.db` at the repo root — no `.env` needed unless you want to point it somewhere else (see `.env.example` for the `DATABASE_URL` override).
 
-### 3. Run with http server and vite react
+### 3. run with http server and vite react
 
-Go to `./apps/http-server` and run `pnpm dev`, and `./apps/web-app` and run `pnpm dev`, for the current primary way to run and inspect flows.
+The current primary way to work with flows — see [The Workbench](#the-workbench-appsweb-app) above for everything it covers. Runs as two separate long-lived processes, each in its own terminal:
 
-Does not support authoring flows in a visual editor yet, but can view, run, create forked sims, etc.
+```bash
+cd apps/http-server && pnpm dev
+```
+
+```bash
+cd apps/web-app && pnpm dev
+```
+
+![A run replaying in the Flow Graph panel (branch path highlighted, playback controls visible) with the Event Graph docked below, in sync](workbench-02.png)
 
 ### 4. CLI
 
@@ -55,58 +81,66 @@ pnpm -F @lcase/cli start validate ./examples/parallel.flow.json
 
 The rest of the CLI (`add`/`run`/`sim`) is currently out of sync with the relational identity model introduced during the SQL migration — `run` now expects `<flowId> <flowVersionId> <flowDefHash>`, which `add` doesn't yet produce, and `sim` still uses an older fork path with no params support. It's paused pending a rework, not a supported walkthrough right now — use the HTTP server + web app above instead.
 
-## unit tests
+## Weather Example (Local LLM)
 
-You can run unit tests for various components across the repo.
+Steps reference each other's data through normalized, path-addressable values (`{{params.x}}`, `{{steps.x.exports.y}}`) across `application/json`, `text/plain`, and `text/markdown`; a step's export can declare a JSON Schema, validated with `ajv`, before any downstream step trusts it — an LLM's structured output is checked, not assumed.
 
-```
-pnpm -r test
+[`examples/llm-weather.flow.json`](examples/llm-weather.flow.json) is a real worked example of this: a local LLM parses a free-text weather question into validated structured intent + location, and the flow branches to different external API endpoints (forecast vs. air quality) based on that intent, with a graceful fallback for off-topic questions.
 
+Not a one-command demo, though — its `text/markdown` params (`systemParser`, `userParser`, `systemReport`) need real prompt content supplied as run params before it'll actually execute, and only a partial starting point ([`examples/weather.system.prompt.md`](examples/weather.system.prompt.md)) is checked in. Worth reading the flow definition to see what each param expects rather than assuming it runs out of the box. Also needs a local LLM reachable over HTTP — see the flow definition for the expected endpoint. Hosted LLM API providers aren't wired up yet.
+
+## Other commands
+
+```bash
+pnpm build-packages   # build only packages/ (skips apps/)
+pnpm typecheck        # typecheck every package (turbo fan-out)
+pnpm lint             # real ESLint config only in apps/web-app today; most packages stub this as a no-op
+pnpm -r test          # run every package's unit test suite
 ```
 
 Further test coverage will grow as the architecture is cemented. Large breaking changes are still in progress.
 
-## Monorepo Packages
+## Code Layout
 
-| Package                    | Purpose                                                                                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **@lcase/types**           | Shared types across packages.                                                                                                         |
-| **@lcase/ports**           | Ports (Interfaces) and some supporting types.                                                                                         |
-| **@lcase/specs**           | Flow definition zod schemas.                                                                                                          |
-| **@lcase/events**          | Event schemas and helper functions.                                                                                                   |
-| **@lcase/adapters**        | Implementations of ports.                                                                                                             |
-| **@lcase/engine**          | Event driven workflow engine.                                                                                                         |
-| **@lcase/worker**          | Orchestrates jobs and tool invocations.                                                                                               |
-| **@lcase/tools**           | Implements internal tools and some tool configs.                                                                                      |
-| **@lcase/scheduler**       | Deprecated — dead code pending removal. Superseded by `@lcase/limiter`.                                                               |
-| **@lcase/limiter**         | Global rate and concurrency limiter per tool.                                                                                         |
-| **@lcase/observability**   | Observability tap and sinks for events.                                                                                               |
-| **@lcase/flow-analysis**   | Builds a flow graph and analyzes template references.                                                                                 |
-| **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference.                                                                          |
-| **@lcase/artifacts**       | JSON / text/ markdown CAS file system store.                                                                                          |
-| **@lcase/runtime**         | Wires up a configurable runtime.                                                                                                      |
-| **@lcase/services**        | Implements grouped application logic exposed to apps.                                                                                 |
-| **@lcase/use-cases**       | Small business logic reusable pieces.                                                                                                 |
-| **@lcase/controller**      | Mostly dead — was an Electron IPC-vs-HTTP UI abstraction, no longer needed after backing out of Electron in favor of the HTTP server. |
-| **@lcase/cli**             | CLI for running and validating flows. Currently paused/out of sync with the relational identity model; planned for a future rework.   |
-| **@lcase/desktop**         | Electron desktop application. (deprecated)                                                                                            |
-| **@lcase/http-server**     | Fastify http REST api and WebSocket server.                                                                                           |
-| **@lcase/web-app**         | Vite / React web application.                                                                                                         |
-| **@lcase/observe-web**     | Vite web observability event viewer. (obsolete)                                                                                       |
-| **@lcase/examples**        | Example / demo flows and servers.                                                                                                     |
+A map of what's here, not an exhaustive index. `apps/` is what you actually run; almost everything else lives in `packages/`, layered bottom-up — each one depends only on what's above it in this list. A few other packages exist in the repo beyond what's listed here, slated for future removal or archival rather than active use — not worth a newcomer's attention.
 
-## Alpha 12 Highlights
+### `apps/`
 
-- Eval/measurement vertical slice: proves the engine's experimentation loop end-to-end — run a flow, judge its output, store the score, compare results — as a first-class part of the system rather than something inferred from logs after the fact.
-- Evals are modeled as ordinary flows, no new engine primitives: a rubric-based LLM-as-judge flow ([examples/eval-judge.flow.json](examples/eval-judge.flow.json)) takes a subject run's export as a normal param and produces a structured, multi-metric score (overall + named dimensions + rationale).
-- A `kind` distinction on flows (`business` vs. `eval`) categorizes eval flows so they can be surfaced separately in the UI.
-- `evalContext`: a flow can declare, per export, which other refs from the same run (a param, another step's export, or a step's raw output) are useful context for judging that export — resolved automatically when an eval is triggered, no caller involvement required.
-- `EvalResult` storage: fixed columns for what every consumer needs (target run, evaluator identity, overall score, pass/fail) plus a flexible JSON payload for the per-dimension breakdown and rationale, validated at the application layer.
-- A minimal comparison UI in the web app: trigger an eval directly from a run's export, then browse/compare results by target flow + step + export identity (spanning every version of a flow, so a score shift between versions is visible) with a table and bar chart.
-- Verified live, end-to-end, against a real local LLM — including catching and fixing a real race condition between two observability sinks reacting to the same event (see `docs/todo.md`).
+| Package                | Purpose                                                                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **@lcase/http-server** | Fastify HTTP REST API, with Server-Sent Events for live run updates.                                                                |
+| **@lcase/web-app**     | The Workbench — see above.                                                                                                          |
+| **@lcase/cli**         | CLI for running and validating flows. Currently paused/out of sync with the relational identity model; planned for a future rework. |
+
+### `packages/`
+
+| Package                    | Purpose                                                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **@lcase/types**           | Shared types across packages.                                                                                                                                             |
+| **@lcase/ports**           | Ports (Interfaces) and some supporting types.                                                                                                                             |
+| **@lcase/specs**           | Flow definition zod schemas.                                                                                                                                              |
+| **@lcase/events**          | Event schemas and helper functions.                                                                                                                                       |
+| **@lcase/adapters**        | Implementations of ports.                                                                                                                                                 |
+| **@lcase/db-prisma**       | Prisma schema, migrations, and generated client for the SQL metadata store.                                                                                               |
+| **@lcase/engine**          | Event driven workflow engine.                                                                                                                                             |
+| **@lcase/worker**          | Orchestrates jobs and tool invocations.                                                                                                                                   |
+| **@lcase/tools**           | Implements internal tools and some tool configs.                                                                                                                          |
+| **@lcase/limiter**         | Global rate and concurrency limiter per tool.                                                                                                                             |
+| **@lcase/observability**   | Observability tap and sinks for events.                                                                                                                                   |
+| **@lcase/replay**          | Raw event history (JSONL event log) — a separate concern from the SQL metadata store.                                                                                     |
+| **@lcase/flow-analysis**   | Builds a flow graph and analyzes template references.                                                                                                                     |
+| **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference.                                                                                                              |
+| **@lcase/artifacts**       | JSON / text/ markdown CAS file system store.                                                                                                                              |
+| **@lcase/runtime**         | Wires up a configurable runtime.                                                                                                                                          |
+| **@lcase/services**        | Implements grouped application logic exposed to apps.                                                                                                                     |
+| **`packages/use-cases/*`** | Small, focused business-logic pieces (`@lcase/run-flow`, `@lcase/run-history`) — this tier's boundaries are actively being reworked, don't read today's shape as settled. |
+
+`examples/` (**@lcase/examples**) holds demo/example flows and servers — its own top-level workspace entry, not part of either bucket above.
 
 ## Next
 
-No scoped milestone yet — the current direction is a larger UI rework for `apps/web-app`, moving away from page navigation toward a desktop-style panel/toolbar model with real relational organization (grouping, comparison, drilling into one flow version's context). Still in the design/prototyping stage.
+No committed next milestone yet — real candidates on the table: an evals rework (today's eval is a flow-embedded v1 slice; the goal is standalone, reusable eval entities — see [`docs/milestones/evals/MILESTONE.md`](docs/milestones/evals/MILESTONE.md)), a `packages/worker`/tool-interaction refactor (already flagged as unsettled), real binary artifact support, and general architecture-hardening work (the `packages/events` schema boilerplate + EmitterFactory rework, `packages/runtime`'s two incomplete wiring paths, a few engine bugs/enhancements). See [`docs/todo.md`](docs/todo.md) for the fuller backlog.
 
-MIT Open Source License: [LICENSE](LICENSE)
+## License
+
+MIT — see [LICENSE](LICENSE).
