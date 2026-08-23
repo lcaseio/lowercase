@@ -174,14 +174,29 @@ export class PrismaRunQuery implements RunQueryPort {
   ) {}
 
   async listRuns(): Promise<RunListItem[]> {
+    return this.#listWhere({});
+  }
+
+  async listByFlowVersionId(flowVersionId: string): Promise<RunListItem[]> {
+    return this.#listWhere({ flowVersionId });
+  }
+
+  async #listWhere(
+    where: NonNullable<
+      Parameters<PrismaRunQueryDb["run"]["findMany"]>[0]
+    >["where"],
+  ): Promise<RunListItem[]> {
     const runs = await this.db.run.findMany({
+      where,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 
     const flowDefHashes = [...new Set(runs.map((run) => run.flowDefHash))];
     const flowVersionIds = [
       ...new Set(
-        runs.map((run) => run.flowVersionId).filter((id): id is string => Boolean(id)),
+        runs
+          .map((run) => run.flowVersionId)
+          .filter((id): id is string => Boolean(id)),
       ),
     ];
     const flowVersions = await this.db.flowVersion.findMany({
@@ -282,7 +297,10 @@ export class PrismaRunQuery implements RunQueryPort {
         value: {
           run: toRunRecord(run),
           steps: steps.map((step) =>
-            toRunStepProjectionRecord(step, exportsByStepId.get(step.stepId) ?? []),
+            toRunStepProjectionRecord(
+              step,
+              exportsByStepId.get(step.stepId) ?? [],
+            ),
           ),
           params: params.length > 0 ? params : undefined,
           flow: flowVersion ? toFlowRecord(flowVersion.flow) : undefined,
@@ -323,7 +341,9 @@ export class PrismaRunQuery implements RunQueryPort {
 
       if (steps.length !== uniqueStepIds.length) {
         const foundStepIds = new Set(steps.map((step) => step.stepId));
-        const missingStepId = uniqueStepIds.find((stepId) => !foundStepIds.has(stepId));
+        const missingStepId = uniqueStepIds.find(
+          (stepId) => !foundStepIds.has(stepId),
+        );
         return {
           ok: false,
           error: `Reusable step data not found for stepId: ${missingStepId ?? "unknown"}`,

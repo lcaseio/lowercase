@@ -21,7 +21,7 @@ export function useObsEvent(channel: string): AnyEvent | null {
           setMessage(event);
           console.log(`ms:${currentDelayMs} total: ${totalEventsInFlight}`);
         }, currentDelayMs);
-      }
+      },
     );
   }, [channel]);
 

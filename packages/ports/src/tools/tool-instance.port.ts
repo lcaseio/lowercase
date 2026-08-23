@@ -4,12 +4,12 @@ import type {
   ToolRuntimePolicy,
   ToolEvent,
 } from "@lcase/types";
-import { ToolDeps } from "./tool-context.js";
+import type { ToolDeps } from "./tool-context.js";
 
 export interface ToolInstancePort<ID extends ToolId = ToolId> {
   id: ID;
   invoke(
-    event: unknown
+    event: unknown,
   ): Promise<ToolEvent<"tool.completed"> | ToolEvent<"tool.failed">>;
 }
 

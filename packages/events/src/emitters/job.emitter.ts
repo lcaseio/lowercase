@@ -25,7 +25,7 @@ export class JobEmitter extends BaseEmitter implements JobEmitterPort {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & JobScope & CloudScope
+    scope: OtelContext & JobScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, flowversionid, runid, stepid, jobid, capid, toolid } =
@@ -49,7 +49,7 @@ export class JobEmitter extends BaseEmitter implements JobEmitterPort {
 
   async emit<T extends JobEventType>(
     type: T,
-    data: JobEventData<T>
+    data: JobEventData<T>,
   ): Promise<JobEvent<T>> {
     const event = this.formEvent(type, data);
 
@@ -63,7 +63,7 @@ export class JobEmitter extends BaseEmitter implements JobEmitterPort {
 
   formEvent<T extends JobEventType>(
     type: T,
-    data: JobEventData<T>
+    data: JobEventData<T>,
   ): JobEvent<T> {
     const event = {
       ...this.envelopeHeader(),
@@ -81,7 +81,7 @@ export class JobEmitter extends BaseEmitter implements JobEmitterPort {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[job-emitter] error parsing event; ${event.type}; ${result.error}`
+        `[job-emitter] error parsing event; ${event.type}; ${result.error}`,
       );
     }
     return event;

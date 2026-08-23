@@ -16,7 +16,7 @@ export const SystemContextSchema = z
   .strict() satisfies z.ZodType<SystemScope>;
 
 export const SystemLoggedSchema = CloudEventContextSchema.merge(
-  SystemContextSchema
+  SystemContextSchema,
 )
   .merge(
     z.object({
@@ -24,6 +24,6 @@ export const SystemLoggedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("logged"),
       data: SystemLoggedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"system.logged">>;

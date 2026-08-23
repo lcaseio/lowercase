@@ -116,7 +116,9 @@ describe("validateRefTargetStep()", () => {
 });
 
 describe("validateExportRefPath()", () => {
-  function makeFlowDef(exportType: "text/plain" | "application/json"): FlowDefinition {
+  function makeFlowDef(
+    exportType: "text/plain" | "application/json",
+  ): FlowDefinition {
     return {
       steps: {
         upstream: {

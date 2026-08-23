@@ -7,12 +7,7 @@ export type StepMcp = StepCapCommonFields &
     transport: "sse" | "stdio" | "streamable-http" | "http";
     feature: {
       primitive:
-        | "resource"
-        | "prompt"
-        | "tool"
-        | "sampling"
-        | "roots"
-        | "elicitation";
+        "resource" | "prompt" | "tool" | "sampling" | "roots" | "elicitation";
       name: string;
     };
   };

@@ -14,9 +14,6 @@ describe("run request route", () => {
         requestRun: vi.fn(),
         makeRunId: vi.fn().mockReturnValue("run-1"),
       },
-      ws: {
-        monitorRun: vi.fn(),
-      },
     });
 
     await app.register(requestRunsRoute, { prefix: "/api/runs" });
@@ -45,9 +42,6 @@ describe("run request route", () => {
       run: {
         requestRun,
         makeRunId: vi.fn().mockReturnValue("run-123"),
-      },
-      ws: {
-        monitorRun: vi.fn(),
       },
     });
 
@@ -95,9 +89,6 @@ describe("run request route", () => {
       run: {
         requestRun: vi.fn().mockRejectedValue(new Error("Invalid run params")),
         makeRunId: vi.fn().mockReturnValue("run-123"),
-      },
-      ws: {
-        monitorRun: vi.fn(),
       },
     });
 

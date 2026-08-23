@@ -11,7 +11,7 @@ describe("jobResumedPlanner", () => {
     const effects = jobResumedPlanner(
       jobResumedStartState,
       jobResumedEndState,
-      jobResumedMsg
+      jobResumedMsg,
     );
     const expectedEffects: QueueJobFx[] = [
       {

@@ -1,4 +1,4 @@
-import type { Path, Ref } from "../../flow-analysis/types.js";
+import type { Ref } from "../../flow-analysis/types.js";
 import type { CapId } from "../../flow/map.js";
 
 export type JobDescriptor = {

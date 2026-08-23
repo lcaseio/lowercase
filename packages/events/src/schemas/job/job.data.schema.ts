@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ShallowJsonValueSchema } from "@lcase/specs";
 import type {
   ExportRef,
   JobCompletedData,
@@ -115,7 +116,7 @@ export const JobHttpJsonDataSchema = z
       .enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
       .optional(),
     headers: z.record(z.string(), z.string()).optional(),
-    body: z.record(z.string(), z.unknown()).optional(),
+    body: ShallowJsonValueSchema.optional(),
     args: z.record(z.string(), z.unknown()).optional(),
   })
   .strict() satisfies z.ZodType<Omit<JobHttpJsonData, "type">>;

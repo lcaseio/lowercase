@@ -19,7 +19,7 @@ export const WorkerContextSchema = z
   .strict() satisfies z.ZodType<WorkerScope>;
 
 export const WorkerStartedSchema = CloudEventContextSchema.merge(
-  WorkerContextSchema
+  WorkerContextSchema,
 )
   .merge(
     z.object({
@@ -27,12 +27,12 @@ export const WorkerStartedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("started"),
       data: WorkerStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.started">>;
 
 export const WorkerStoppedSchema = CloudEventContextSchema.merge(
-  WorkerContextSchema
+  WorkerContextSchema,
 )
   .merge(
     z.object({
@@ -40,12 +40,12 @@ export const WorkerStoppedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("stopped"),
       data: WorkerStoppedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.stopped">>;
 
 export const WorkerProfileAddedSchema = CloudEventContextSchema.merge(
-  WorkerContextSchema
+  WorkerContextSchema,
 )
   .merge(
     z.object({
@@ -53,12 +53,12 @@ export const WorkerProfileAddedSchema = CloudEventContextSchema.merge(
       entity: z.literal("profile"),
       action: z.literal("added"),
       data: WorkerProfileAddedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.profile.added">>;
 
 export const WorkerProfileSubmittedSchema = CloudEventContextSchema.merge(
-  WorkerContextSchema
+  WorkerContextSchema,
 )
   .merge(
     z.object({
@@ -66,7 +66,7 @@ export const WorkerProfileSubmittedSchema = CloudEventContextSchema.merge(
       entity: z.literal("profile"),
       action: z.literal("submitted"),
       data: WorkerProfileSubmittedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"worker.profile.submitted">>;
 

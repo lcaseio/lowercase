@@ -19,7 +19,7 @@ describe("jobFinishedPlanner", () => {
     const effects = jobFinishedPlanner(
       startStateDelayed,
       endStateDelayed,
-      jobFinishedMsg
+      jobFinishedMsg,
     );
     expect(effects).toEqual(expectedEffects);
   });

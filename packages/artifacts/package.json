@@ -1,6 +1,6 @@
 {
   "name": "@lcase/artifacts",
-  "version": "0.1.0-alpha.12",
+  "version": "0.1.0-alpha.13",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "clean-dist": "rm -rf dist",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest",
     "lint": "echo lint"
   },

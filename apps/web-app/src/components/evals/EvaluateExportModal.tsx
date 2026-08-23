@@ -1,3 +1,9 @@
+// Unused as of the UI Workspace milestone's PR 43 (pruning old pages, see
+// docs/milestones/ui-workspace/arcs/prune-old-pages.md), which removed its
+// only caller -- kept intentionally, not dead code to sweep. This is v1
+// evals' judge-trigger UI, preserved as a reference for what to compare
+// against when building the real evals rework. See docs/todo.md for what's
+// actually wrong with it and what a real fix looks like.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,7 +28,7 @@ import {
 } from "../ui/select";
 import { useGetFlowsQuery } from "@/redux/api/flows-api";
 import { useRequestEvalMutation } from "@/redux/api/evals-api";
-import { useUploadArtifactFileMutation } from "@/redux/api/artifacts-api";
+import { useCreateArtifactMutation } from "@/redux/api/artifacts-api";
 
 export type EvaluateExportTarget = {
   runId: string;
@@ -81,11 +87,11 @@ export function EvaluateExportModal({
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [error, setError] = useState<string>();
 
-  const [uploadArtifactFile, uploadState] = useUploadArtifactFileMutation();
+  const [createArtifact, createState] = useCreateArtifactMutation();
   const [requestEval, requestState] = useRequestEvalMutation();
 
   const selectedFlow = evalFlows.find((f) => f.flow.id === evalFlowId);
-  const isSubmitting = uploadState.isLoading || requestState.isLoading;
+  const isSubmitting = createState.isLoading || requestState.isLoading;
 
   const handleSubmit = async () => {
     setError(undefined);
@@ -94,12 +100,11 @@ export function EvaluateExportModal({
       return;
     }
 
-    const promptFile = new File([systemPrompt], "judge-system-prompt.md", {
-      type: "text/markdown",
-    });
-    const uploadResult = await uploadArtifactFile({
-      file: promptFile,
-      label: "judge system prompt",
+    const uploadResult = await createArtifact({
+      kind: "authored",
+      contentType: "text/markdown",
+      value: systemPrompt,
+      metadata: { label: "judge system prompt" },
     }).unwrap();
     if (!uploadResult.ok) {
       setError(uploadResult.error);
@@ -118,7 +123,7 @@ export function EvaluateExportModal({
       evalFlowId: selectedFlow.flow.id,
       evalFlowVersionId: selectedFlow.latestVersion.id,
       evalFlowDefHash: selectedFlow.latestVersion.definitionHash,
-      judgeSystemPromptHash: uploadResult.value,
+      judgeSystemPromptHash: uploadResult.value.hash,
       ...(experimentId ? { experimentId } : {}),
     }).unwrap();
 
@@ -187,7 +192,9 @@ export function EvaluateExportModal({
             />
           </div>
 
-          {error ? <div className="text-destructive text-sm">{error}</div> : null}
+          {error ? (
+            <div className="text-destructive text-sm">{error}</div>
+          ) : null}
         </div>
 
         <DialogFooter>

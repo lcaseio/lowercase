@@ -25,7 +25,7 @@ export class WorkerEmitter extends BaseEmitter {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & WorkerScope & CloudScope
+    scope: OtelContext & WorkerScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { workerid } = scope;
@@ -40,7 +40,7 @@ export class WorkerEmitter extends BaseEmitter {
 
   async emit<T extends WorkerEventType>(
     type: T,
-    data: WorkerEventData<T>
+    data: WorkerEventData<T>,
   ): Promise<void> {
     const event = {
       ...this.envelopeHeader(),
@@ -58,7 +58,7 @@ export class WorkerEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[worker-emitter] error parsing event; ${type}; ${result.error}`
+        `[worker-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

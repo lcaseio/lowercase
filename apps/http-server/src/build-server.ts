@@ -1,11 +1,10 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
-import websocket from "@fastify/websocket";
 import { config } from "./runtime.config.js";
 import { createServices } from "@lcase/runtime";
 import { routes } from "./routes/routes.js";
-import { wsRoute } from "./routes/ws-route.js";
+import { eventsRoute } from "./routes/events-route.js";
 
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify();
@@ -16,17 +15,15 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   await app.register(cors, {
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   });
 
   await app.register(multipart, { limits: { fileSize: 1000 * 1024 * 1024 } });
-  await app.register(websocket);
 
   await app.register(routes);
-  await app.register(wsRoute);
+  await app.register(eventsRoute);
 
   const system = await app.services.system.startSystem();
-  await app.services.ws.start();
   console.log("System status: ", system);
 
   app.addHook("onClose", async (app) => {

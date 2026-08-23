@@ -1,0 +1,60 @@
+{
+  "name": "layout-stress-test",
+  "version": "v1",
+  "start": "ingest",
+  "description": "Synthetic flow for eyeballing dagre's layout on reconvergence/skip-rank/multi-source-convergence shapes -- uses every step type, not meant to actually run. See docs/milestones/ui-workspace/MILESTONE.md's PR 33 entry for why this exists.",
+  "steps": {
+    "ingest": {
+      "type": "httpjson",
+      "url": "https://example.com/ingest",
+      "on": { "success": "classify", "failure": "notify_failure" }
+    },
+    "classify": {
+      "type": "branch",
+      "value": "$.exports.ingest.category",
+      "cases": { "urgent": "escalate", "normal": "fan_out" },
+      "default": "finalize"
+    },
+    "escalate": {
+      "type": "mcp",
+      "url": "https://example.com/mcp",
+      "transport": "http",
+      "feature": { "primitive": "tool", "name": "escalate-ticket" },
+      "on": { "success": "finalize", "failure": "notify_failure" }
+    },
+    "fan_out": {
+      "type": "parallel",
+      "steps": ["task_a", "task_b", "task_c"]
+    },
+    "task_a": {
+      "type": "httpjson",
+      "url": "https://example.com/task-a"
+    },
+    "task_b": {
+      "type": "httpjson",
+      "url": "https://example.com/task-b"
+    },
+    "task_c": {
+      "type": "httpjson",
+      "url": "https://example.com/task-c"
+    },
+    "merge": {
+      "type": "join",
+      "steps": ["task_a", "task_b", "task_c"],
+      "next": "finalize"
+    },
+    "finalize": {
+      "type": "httpjson",
+      "url": "https://example.com/finalize",
+      "on": { "success": "done", "failure": "notify_failure" }
+    },
+    "notify_failure": {
+      "type": "httpjson",
+      "url": "https://example.com/notify-failure"
+    },
+    "done": {
+      "type": "httpjson",
+      "url": "https://example.com/done"
+    }
+  }
+}

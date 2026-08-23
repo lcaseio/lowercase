@@ -90,6 +90,10 @@ export class RunService implements RunServicePort {
     return this.runQuery.listRuns();
   }
 
+  async listRunsByFlowVersionId(flowVersionId: string): Promise<RunListItem[]> {
+    return this.runQuery.listByFlowVersionId(flowVersionId);
+  }
+
   async getRunDetail(runId: string): Promise<Result<RunDetail, string>> {
     return this.runQuery.getRunDetail(runId);
   }

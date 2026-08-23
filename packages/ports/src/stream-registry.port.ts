@@ -1,4 +1,4 @@
-import { ConsumerStreamPort, ProducerStreamPort } from "./stream.port.js";
+import type { ConsumerStreamPort, ProducerStreamPort } from "./stream.port.js";
 
 export interface StreamHandles {
   id: string;

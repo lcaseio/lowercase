@@ -1,6 +1,5 @@
-import { JobEventMap } from "../job/map.js";
-import { DomainEntityActionDescriptor } from "../shared/otel-attributes.js";
-import { ReplayModeSubmittedData } from "./data.js";
+import type { DomainEntityActionDescriptor } from "../shared/otel-attributes.js";
+import type { ReplayModeSubmittedData } from "./data.js";
 
 export type ReplayEventMap = {
   "replay.mode.submitted": DomainEntityActionDescriptor<

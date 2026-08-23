@@ -9,5 +9,4 @@ export type PostRunsReq = {
 };
 
 export type PostRunsRes =
-  | { ok: true; runId: string }
-  | { ok: false; error: string };
+  { ok: true; runId: string } | { ok: false; error: string };

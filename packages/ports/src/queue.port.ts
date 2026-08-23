@@ -1,4 +1,4 @@
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
 
 /**
  * QueuePort defines the interface for a message queue system.
@@ -42,7 +42,7 @@ export interface QueuePort {
   reserve(
     queue: string,
     workerId: string,
-    holdMs?: number
+    holdMs?: number,
   ): Promise<AnyEvent | null>;
   ack(queue: string, eventId: string): Promise<void>;
   nack(queue: string, eventId: string, reason: string): Promise<void>;

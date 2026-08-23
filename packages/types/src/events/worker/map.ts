@@ -1,8 +1,8 @@
-import {
+import type {
   DomainActionDescriptor,
   DomainEntityActionDescriptor,
 } from "../shared/otel-attributes.js";
-import {
+import type {
   WorkerJobDequeuedData,
   WorkerProfileAddedData,
   WorkerProfileSubmittedData as WorkerProfileSubmittedData,

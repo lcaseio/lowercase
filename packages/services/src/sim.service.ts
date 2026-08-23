@@ -61,11 +61,17 @@ export class SimService implements SimServicePort {
     return this.simRepository.listSimsWithFlowVersion();
   }
 
+  async getSimsByFlowVersionId(flowVersionId: string): Promise<SimListItem[]> {
+    return this.simRepository.listSimsByFlowVersionId(flowVersionId);
+  }
+
   async getSim(simId: string): Promise<Result<SimDefinition, string>> {
     const simResult = await this.simRepository.getSim(simId);
     if (!simResult.ok) return simResult;
 
-    const specResult = await this.artifacts.getJson(simResult.value.forkSpecHash);
+    const specResult = await this.artifacts.getJson(
+      simResult.value.forkSpecHash,
+    );
     if (!specResult.ok) {
       return { ok: false, error: specResult.error.message };
     }

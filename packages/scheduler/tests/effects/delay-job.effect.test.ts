@@ -49,7 +49,7 @@ describe("delayJobEffect", () => {
     expect(parseJobDelayed).toHaveBeenCalledExactlyOnceWith(e);
     expect(newJobEmitterFromEvent).toHaveBeenCalledExactlyOnceWith(
       e,
-      "lowercase://rm"
+      "lowercase://rm",
     );
     expect(enqueue).toHaveBeenCalledWith(delayJobFx.toolId + "-delayed", e);
     expect(emitFormedEvent).toHaveBeenCalledWith(e);
@@ -85,7 +85,7 @@ describe("delayJobEffect", () => {
     expect(emitErrorFn).toHaveBeenCalledExactlyOnceWith(
       jobSubmittedHttpJsonMsg.event,
       ef,
-      `Error delaying event ${e.type}`
+      `Error delaying event ${e.type}`,
     );
   });
 });

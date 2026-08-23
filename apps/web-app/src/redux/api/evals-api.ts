@@ -5,10 +5,11 @@ import type {
   PostEvalsRes,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { SERVER_URL } from "@/lib/server-url";
 
 export const evalsApi = createApi({
   reducerPath: "evalsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${SERVER_URL}/api/` }),
   endpoints: (builder) => ({
     requestEval: builder.mutation<PostEvalsRes, PostEvalsReq>({
       query: (arg) => ({
@@ -28,15 +29,16 @@ export const evalsApi = createApi({
         params: arg satisfies GetEvalsReq,
       }),
     }),
-    listEvalsByExperimentId: builder.query<GetEvalsRes, { experimentId: string }>(
-      {
-        query: (arg) => ({
-          url: "evals",
-          method: "GET",
-          params: arg satisfies GetEvalsReq,
-        }),
-      },
-    ),
+    listEvalsByExperimentId: builder.query<
+      GetEvalsRes,
+      { experimentId: string }
+    >({
+      query: (arg) => ({
+        url: "evals",
+        method: "GET",
+        params: arg satisfies GetEvalsReq,
+      }),
+    }),
   }),
 });
 

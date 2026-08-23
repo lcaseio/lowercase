@@ -1,14 +1,3 @@
-import type { RunParams } from "../../engine/run-params.js";
-
-type RunDescriptor = {
-  run: {
-    id: string;
-    status: string;
-  };
-  engine: {
-    id: string;
-  };
-};
 export type RunRequestedData = {
   flowId: string;
   flowVersionId: string;

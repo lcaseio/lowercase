@@ -6,11 +6,11 @@ import type {
 
 export const emitFlowCompletedFx: EffectHandler<"EmitFlowCompleted"> = async (
   effect: EmitFlowCompletedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newFlowEmitterNewSpan(
     { ...effect.scope },
-    effect.traceId
+    effect.traceId,
   );
   await emitter.emit("flow.completed", effect.data);
 };

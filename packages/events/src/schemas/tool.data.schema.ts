@@ -24,14 +24,14 @@ const ToolDescriptorDataSchema = z
 export const ToolStartedDataSchema = ToolDescriptorDataSchema.merge(
   z.object({
     log: z.string(),
-  })
+  }),
 ).strict() satisfies z.ZodType<ToolStartedData>;
 
 export const ToolCompletedDataSchema = ToolDescriptorDataSchema.merge(
   z.object({
     status: ToolStatusSchema,
     payload: jsonValueSchema.optional(),
-  })
+  }),
 ).strict() satisfies z.ZodType<ToolCompletedData>;
 
 export const ToolFailedDataSchema = ToolDescriptorDataSchema.merge(
@@ -39,5 +39,5 @@ export const ToolFailedDataSchema = ToolDescriptorDataSchema.merge(
     status: ToolStatusSchema,
     reason: z.string(),
     payload: jsonValueSchema.optional(),
-  })
+  }),
 ).strict() satisfies z.ZodType<ToolFailedData>;

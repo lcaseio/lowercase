@@ -1,7 +1,5 @@
-import { AnyEvent } from "../../events/any-event.js";
+import type { AnyEvent } from "../../events/any-event.js";
 
-type RunId = string;
-type EventId = string;
 export type GetRunEventsReq = { runId: string };
 export type GetRunEventsRes =
   | {

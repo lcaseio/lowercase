@@ -4,12 +4,12 @@ import type { LimiterConfig } from "../types/runtime.config.js";
 import { LimiterPort } from "@lcase/ports";
 export function createLimiter(
   config: LimiterConfig,
-  deps: LimiterDeps
+  deps: LimiterDeps,
 ): LimiterPort {
   const makeLimiter = makeLimiterFactory(
     config.placement,
     config.transport,
-    config.store
+    config.store,
   );
 
   const limiter = makeLimiter(config.id, config.scope, deps);

@@ -7,7 +7,8 @@ export interface ControllerPort {
 export interface ClientControllerPort extends ControllerPort {
   subscribeToChannel<TPayload = unknown>(
     channel: string,
-    handler: (payload: TPayload) => void
+    handler: (payload: TPayload) => void,
   ): () => void;
 }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- deliberate: a nominal marker distinct from ClientControllerPort, no extra members needed yet
 export interface ServerControllerPort extends ControllerPort {}

@@ -34,7 +34,10 @@ export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
       return;
     }
 
-    const paramValidationError = validateRunParams(run.params, flow.definition.params);
+    const paramValidationError = validateRunParams(
+      run.params,
+      flow.definition.params,
+    );
     if (paramValidationError) {
       run.status = "failed";
       return;
@@ -83,11 +86,14 @@ function validateRunParams(
   declarations?: Record<string, FlowParamDefinition>,
 ): string | undefined {
   if (!declarations) {
-    return Object.keys(params).length > 0 ? "undeclared params supplied" : undefined;
+    return Object.keys(params).length > 0
+      ? "undeclared params supplied"
+      : undefined;
   }
 
   for (const supplied of Object.keys(params)) {
-    if (declarations[supplied] === undefined) return `undeclared param:${supplied}`;
+    if (declarations[supplied] === undefined)
+      return `undeclared param:${supplied}`;
   }
 
   for (const [name, declaration] of Object.entries(declarations)) {

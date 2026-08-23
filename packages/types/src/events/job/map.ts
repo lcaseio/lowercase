@@ -1,12 +1,12 @@
-import { CapId } from "../../flow/map.js";
-import { JobHttpJsonEventMap } from "./httpjson/map.js";
-import { JobMcpEventMap } from "./mcp/map.js";
+import type { CapId } from "../../flow/map.js";
+import type { JobHttpJsonEventMap } from "./httpjson/map.js";
+import type { JobMcpEventMap } from "./mcp/map.js";
 
 export type DomainCapActionDescriptor<
   Domain extends string,
   Id extends CapId,
   Action extends string,
-  Data
+  Data,
 > = {
   domain: Domain;
   entity: Id;

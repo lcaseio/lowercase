@@ -7,14 +7,16 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
+import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { ArtifactService } from "@lcase/services";
 import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
 import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
-import { postArtifactFileRoute } from "../src/routes/artifacts/post-artifact-file.js";
-import { putJsonArtifactRoute } from "../src/routes/artifacts/put-json-artifact.js";
+import { postArtifactRoute } from "../src/routes/artifacts/post-artifact.js";
+import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
+import type { FlowDefinition, JsonValue } from "@lcase/types";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(currentDir, "../../..");
@@ -77,11 +79,16 @@ describe("artifact sql routes", () => {
 
   it("stores artifact metadata in SQL while reading content from CAS", async () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
+    const flowRepository = new PrismaFlowRepository(prisma);
     const artifacts = new Artifacts(
       new FsArtifactStore(artifactDir),
       artifactRepository,
     );
-    const artifactService = new ArtifactService(artifacts, artifactRepository);
+    const artifactService = new ArtifactService(
+      artifacts,
+      artifactRepository,
+      flowRepository,
+    );
 
     const app = Fastify();
     await app.register(import("@fastify/multipart"));
@@ -91,21 +98,23 @@ describe("artifact sql routes", () => {
 
     await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
     await app.register(getArtifactRoute, { prefix: "/api/artifacts" });
-    await app.register(putJsonArtifactRoute, { prefix: "/api/artifacts" });
-    await app.register(postArtifactFileRoute, {
-      prefix: "/api/artifacts/files",
-    });
+    await app.register(postArtifactRoute, { prefix: "/api/artifacts" });
+    await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
 
     const jsonResponse = await app.inject({
       method: "POST",
-      url: "/api/artifacts/json",
+      url: "/api/artifacts",
       payload: {
-        value: { hello: "world" },
-        label: "Prompt",
+        contentType: "application/json",
+        value: JSON.stringify({ hello: "world" }),
+        metadata: { label: "Prompt" },
       },
     });
     expect(jsonResponse.statusCode).toBe(200);
-    const jsonBody = jsonResponse.json() as { ok: true; value: string };
+    const jsonBody = jsonResponse.json() as {
+      ok: true;
+      value: { hash: string };
+    };
     expect(jsonBody.ok).toBe(true);
 
     const listResponse = await app.inject({
@@ -117,17 +126,26 @@ describe("artifact sql routes", () => {
       ok: true,
       value: [
         expect.objectContaining({
-          hash: jsonBody.value,
-          label: "Prompt",
-          contentType: "application/json",
-          format: "json",
+          artifact: expect.objectContaining({
+            hash: jsonBody.value.hash,
+            label: "Prompt",
+            contentType: "application/json",
+            format: "json",
+          }),
+          associations: expect.objectContaining({
+            // creation through the unified route always curates -- unlike
+            // the old JSON-only route, which called putArtifact() and never
+            // curated
+            curated: true,
+            paramCurations: [],
+          }),
         }),
       ],
     });
 
     const getResponse = await app.inject({
       method: "GET",
-      url: `/api/artifacts/${jsonBody.value}`,
+      url: `/api/artifacts/${jsonBody.value.hash}`,
     });
     expect(getResponse.statusCode).toBe(200);
     expect(getResponse.json()).toEqual({
@@ -138,27 +156,30 @@ describe("artifact sql routes", () => {
 
     const fileResponse = await app.inject({
       method: "POST",
-      url: "/api/artifacts/files",
+      url: "/api/artifacts",
       payload: makeMultipartBody("# prompt", "prompt.md", "text/markdown", {
-        label: "Markdown Prompt",
+        metadata: JSON.stringify({ label: "Markdown Prompt" }),
       }),
       headers: makeMultipartHeaders(),
     });
     expect(fileResponse.statusCode).toBe(200);
-    const fileBody = fileResponse.json() as { ok: true; value: string };
+    const fileBody = fileResponse.json() as {
+      ok: true;
+      value: { hash: string };
+    };
     expect(fileBody.ok).toBe(true);
 
     const storedMetadata = await prisma.artifact.findMany({
       orderBy: [{ time: "desc" }, { hash: "desc" }],
     });
     expect(storedMetadata).toHaveLength(2);
-    expect(storedMetadata.some((artifact) => artifact.hash === jsonBody.value)).toBe(
-      true,
-    );
+    expect(
+      storedMetadata.some((artifact) => artifact.hash === jsonBody.value.hash),
+    ).toBe(true);
     expect(
       storedMetadata.some(
         (artifact) =>
-          artifact.hash === fileBody.value &&
+          artifact.hash === fileBody.value.hash &&
           artifact.label === "Markdown Prompt" &&
           artifact.filename === "prompt.md" &&
           artifact.contentType === "text/markdown" &&
@@ -166,8 +187,206 @@ describe("artifact sql routes", () => {
       ),
     ).toBe(true);
 
-    const markdown = await artifacts.getMarkdown(fileBody.value);
+    const markdown = await artifacts.getMarkdown(fileBody.value.hash);
     expect(markdown).toEqual({ ok: true, value: "# prompt" });
+
+    await app.close();
+  });
+
+  it("PATCH /api/artifacts/:hash associates and toggles curated", async () => {
+    const artifactRepository = new PrismaArtifactRepository(prisma);
+    const flowRepository = new PrismaFlowRepository(prisma);
+    const artifacts = new Artifacts(
+      new FsArtifactStore(artifactDir),
+      artifactRepository,
+    );
+    const artifactService = new ArtifactService(
+      artifacts,
+      artifactRepository,
+      flowRepository,
+    );
+
+    const app = Fastify();
+    app.decorate("services", { artifact: artifactService });
+    await app.register(import("@fastify/multipart"));
+    await app.register(postArtifactRoute, { prefix: "/api/artifacts" });
+    await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
+
+    const putResponse = await app.inject({
+      method: "POST",
+      url: "/api/artifacts",
+      payload: {
+        contentType: "application/json",
+        value: JSON.stringify({ hello: "world" }),
+      },
+    });
+    const hash = (putResponse.json() as { value: { hash: string } }).value.hash;
+
+    const patchResponse = await app.inject({
+      method: "PATCH",
+      url: `/api/artifacts/${hash}`,
+      payload: { label: "renamed" },
+    });
+    expect(patchResponse.statusCode).toBe(200);
+    expect(patchResponse.json()).toEqual({
+      ok: true,
+      // curated is set unconditionally by updateMetadata -- not because the
+      // payload asked for it, ArtifactUpdateMetadata has no `curated` field at all
+      value: expect.objectContaining({ hash, label: "renamed", curated: true }),
+    });
+
+    const invalidHashResponse = await app.inject({
+      method: "PATCH",
+      url: "/api/artifacts/not-a-hash",
+      payload: { label: "renamed" },
+    });
+    expect(invalidHashResponse.json()).toEqual({
+      ok: false,
+      error: "Invalid hash",
+    });
+
+    await app.close();
+  });
+
+  it("GET /api/artifacts filters by flowId, flowVersionId, and curated", async () => {
+    const artifactRepository = new PrismaArtifactRepository(prisma);
+    const flowRepository = new PrismaFlowRepository(prisma);
+    const artifacts = new Artifacts(
+      new FsArtifactStore(artifactDir),
+      artifactRepository,
+    );
+    const artifactService = new ArtifactService(
+      artifacts,
+      artifactRepository,
+      flowRepository,
+    );
+
+    const app = Fastify();
+    app.decorate("services", { artifact: artifactService });
+    await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
+
+    const flow = await prisma.flow.create({ data: { name: "Test Flow" } });
+    const flowVersion = await prisma.flowVersion.create({
+      data: { flowId: flow.id, sequence: 1, definitionHash: "h".repeat(64) },
+    });
+
+    const curatedResult = await artifactRepository.writeArtifact({
+      hash: "a".repeat(64),
+      time: "2026-01-01T00:00:00.000Z",
+      format: "json",
+    });
+    expect(curatedResult.ok).toBe(true);
+    await artifactRepository.updateMetadata("a".repeat(64), {
+      flowId: flow.id,
+      flowVersionId: flowVersion.id,
+    });
+    await artifactRepository.writeArtifact({
+      hash: "b".repeat(64),
+      time: "2026-01-02T00:00:00.000Z",
+      format: "json",
+    });
+
+    const curatedOnly = await app.inject({
+      method: "GET",
+      url: "/api/artifacts?curated=true",
+    });
+    expect(curatedOnly.json()).toEqual({
+      ok: true,
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+        }),
+      ],
+    });
+
+    const byFlowVersion = await app.inject({
+      method: "GET",
+      url: `/api/artifacts?flowVersionId=${flowVersion.id}`,
+    });
+    expect(byFlowVersion.json()).toEqual({
+      ok: true,
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+        }),
+      ],
+    });
+
+    const unfiltered = await app.inject({
+      method: "GET",
+      url: "/api/artifacts",
+    });
+    expect((unfiltered.json() as { value: unknown[] }).value).toHaveLength(2);
+
+    await app.close();
+  });
+
+  it("GET /api/artifacts includes paramCurations when scoped by flowVersionId", async () => {
+    const artifactRepository = new PrismaArtifactRepository(prisma);
+    const flowRepository = new PrismaFlowRepository(prisma);
+    const artifacts = new Artifacts(
+      new FsArtifactStore(artifactDir),
+      artifactRepository,
+    );
+    const artifactService = new ArtifactService(
+      artifacts,
+      artifactRepository,
+      flowRepository,
+    );
+
+    const app = Fastify();
+    app.decorate("services", { artifact: artifactService });
+    await app.register(listArtifactsRoute, { prefix: "/api/artifacts" });
+    await app.register(patchArtifactRoute, { prefix: "/api/artifacts" });
+
+    const definition: FlowDefinition = {
+      name: "Weather Flow",
+      version: "v1",
+      params: { weatherApiKey: { type: "text/plain" } },
+      start: "fetch",
+      steps: { fetch: { type: "httpjson", url: "https://example.com" } },
+    };
+    const defResult = await artifacts.putJson(definition as JsonValue);
+    if (!defResult.ok) throw new Error("failed to store flow definition");
+
+    const flow = await prisma.flow.create({ data: { name: "Weather Flow" } });
+    const flowVersion = await prisma.flowVersion.create({
+      data: { flowId: flow.id, sequence: 1, definitionHash: defResult.value },
+    });
+
+    await artifactRepository.writeArtifact({
+      hash: "a".repeat(64),
+      time: "2026-01-01T00:00:00.000Z",
+      format: "text",
+    });
+
+    const curateResponse = await app.inject({
+      method: "PATCH",
+      url: `/api/artifacts/${"a".repeat(64)}`,
+      payload: {
+        flowVersionId: flowVersion.id,
+        paramCurations: ["weatherApiKey"],
+      },
+    });
+    expect(curateResponse.statusCode).toBe(200);
+
+    const listResponse = await app.inject({
+      method: "GET",
+      url: `/api/artifacts?flowVersionId=${flowVersion.id}`,
+    });
+    expect(listResponse.json()).toEqual({
+      ok: true,
+      value: [
+        expect.objectContaining({
+          artifact: expect.objectContaining({ hash: "a".repeat(64) }),
+          associations: expect.objectContaining({
+            paramCurations: [
+              { flowVersionId: flowVersion.id, paramName: "weatherApiKey" },
+            ],
+          }),
+        }),
+      ],
+    });
 
     await app.close();
   });

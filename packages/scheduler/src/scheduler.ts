@@ -129,56 +129,56 @@ export class Scheduler implements SchedulerPort {
     this.busStopTopics.set(
       worker,
       this.#bus.subscribe(worker, async (event) =>
-        this.handleWorkerProfileSubmitted(event)
-      )
+        this.handleWorkerProfileSubmitted(event),
+      ),
     );
     this.busStopTopics.set(
       submitted,
       this.#bus.subscribe(submitted, async (event) =>
-        this.handleJobSubmitted(event)
-      )
+        this.handleJobSubmitted(event),
+      ),
     );
 
     this.busStopTopics.set(
       delayed,
       this.#bus.subscribe(delayed, async (event) =>
-        this.handleJobDelayed(event)
-      )
+        this.handleJobDelayed(event),
+      ),
     );
     this.busStopTopics.set(
       resumed,
       this.#bus.subscribe(resumed, async (event) =>
-        this.handleJobResumed(event)
-      )
+        this.handleJobResumed(event),
+      ),
     );
     this.busStopTopics.set(
       queued,
-      this.#bus.subscribe(queued, async (event) => this.handleJobQueued(event))
+      this.#bus.subscribe(queued, async (event) => this.handleJobQueued(event)),
     );
     this.busStopTopics.set(
       dequeued,
       this.#bus.subscribe(dequeued, async (event) =>
-        this.handleJobDequeued(event)
-      )
+        this.handleJobDequeued(event),
+      ),
     );
     this.busStopTopics.set(
       completed,
       this.#bus.subscribe(completed, async (event) =>
-        this.handleJobCompletedOrFailed(event)
-      )
+        this.handleJobCompletedOrFailed(event),
+      ),
     );
     this.busStopTopics.set(
       failed,
       this.#bus.subscribe(failed, async (event) =>
-        this.handleJobCompletedOrFailed(event)
-      )
+        this.handleJobCompletedOrFailed(event),
+      ),
     );
 
     this.busStopTopics.set(
       replay,
       this.#bus.subscribe(replay, async (event) => {
         this.handleReplayModeSubmitted(event);
-      })
+      }),
     );
   }
   stop() {
@@ -218,8 +218,7 @@ export class Scheduler implements SchedulerPort {
   }
   executeEffect(effect: SchedulerEffect) {
     const handler = this.handlers[effect.type] as
-      | SchedulerEffectHandler<any>
-      | undefined;
+      SchedulerEffectHandler<any> | undefined;
     if (!handler) return;
     handler(effect);
   }

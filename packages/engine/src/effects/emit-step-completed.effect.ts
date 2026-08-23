@@ -12,7 +12,7 @@ import type {
  */
 export const emitStepCompletedFx: EffectHandler<"EmitStepCompleted"> = async (
   effect: EmitStepCompletedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
   await emitter.emit("step.completed", effect.data);

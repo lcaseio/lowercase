@@ -13,12 +13,7 @@ export type Chunk<T = unknown> = {
 export type InputChunk = Omit<Chunk, "seq" | "ts">;
 
 export type StreamStatus =
-  | "idle"
-  | "open"
-  | "active"
-  | "ended"
-  | "closed"
-  | "error";
+  "idle" | "open" | "active" | "ended" | "closed" | "error";
 
 export interface StreamPort {
   // close the connection to a stream, lets either side close

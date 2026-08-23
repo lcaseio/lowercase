@@ -1,6 +1,5 @@
 export type ArtifactStorePutResult =
-  | { ok: true; path: string }
-  | { ok: false; cause: string };
+  { ok: true; path: string } | { ok: false; cause: string };
 
 export type ArtifactStorePort = {
   putBytes(

@@ -2,16 +2,18 @@ import type {
   FlowDefinition,
   GetFlowsRes,
   GetFlowVersionRes,
+  GetFlowVersionsRes,
   PostFlowFileRes,
-  PostJsonFlowReq,
-  PostJsonFlowRes,
+  PostFlowReq,
+  PostFlowRes,
   Result,
 } from "@lcase/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { SERVER_URL } from "@/lib/server-url";
 
 export const flowsApi = createApi({
   reducerPath: "flowsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/api/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${SERVER_URL}/api/` }),
   endpoints: (builder) => ({
     getFlows: builder.query<GetFlowsRes, void>({
       query: () => "flows",
@@ -22,7 +24,10 @@ export const flowsApi = createApi({
     getFlowVersionDef: builder.query<GetFlowVersionRes, string>({
       query: (flowVersionId: string) => `/flows/versions/${flowVersionId}`,
     }),
-    addJsonFlow: builder.mutation<PostJsonFlowRes, PostJsonFlowReq>({
+    getFlowVersions: builder.query<GetFlowVersionsRes, string>({
+      query: (flowId: string) => `/flows/${flowId}/versions`,
+    }),
+    addJsonFlow: builder.mutation<PostFlowRes, PostFlowReq>({
       query: (arg) => ({
         url: "flows",
         method: "POST",
@@ -51,4 +56,5 @@ export const {
   useGetFlowsQuery,
   useGetFlowDefQuery,
   useGetFlowVersionDefQuery,
+  useGetFlowVersionsQuery,
 } = flowsApi;

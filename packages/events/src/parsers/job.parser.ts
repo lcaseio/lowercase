@@ -168,14 +168,14 @@ export class JobParser implements JobParserPort {
 
   /** any job event parser */
   parseJobEvent<T extends JobEventType>(
-    event: JobEvent<T>
+    event: JobEvent<T>,
   ): JobEvent<T> | undefined {
     const schema = this.eventRegistry[event.type].schema.event;
     const parsedEvent = schema.safeParse(event);
     if (parsedEvent.error) {
       console.log(
         `job parse error: ${event.type}, ${event}`,
-        parsedEvent.error
+        parsedEvent.error,
       );
       return;
     }

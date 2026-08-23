@@ -80,14 +80,11 @@ export type EmitWorkerProfileAddedFx = {
 };
 
 export type SchedulerEffect =
-  | QueueJobFx
-  | DelayJobFx
-  | ResumeJobFx
-  | EmitWorkerProfileAddedFx;
+  QueueJobFx | DelayJobFx | ResumeJobFx | EmitWorkerProfileAddedFx;
 
 export type SchedulerReducer<M extends SchedulerMessage = SchedulerMessage> = (
   state: SchedulerState,
-  message: M
+  message: M,
 ) => SchedulerState;
 
 export type SchedulerReducerRegistry = {
@@ -99,7 +96,7 @@ export type SchedulerReducerRegistry = {
 export type SchedulerPlanner<M extends SchedulerMessage = SchedulerMessage> = (
   oldState: SchedulerState,
   newState: SchedulerState,
-  message: M
+  message: M,
 ) => SchedulerEffect[];
 
 export type SchedulerPlannerRegistry = {
@@ -109,7 +106,7 @@ export type SchedulerPlannerRegistry = {
 };
 
 export type SchedulerEffectHandler<T extends SchedulerEffect["type"]> = (
-  effect: Extract<SchedulerEffect, { type: T }>
+  effect: Extract<SchedulerEffect, { type: T }>,
 ) => void | Promise<void>;
 
 export type SchedulerEffectHandlerRegistry = {

@@ -2,10 +2,9 @@ import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
 import type { GetReusableStepDataFx } from "../types/effect.types.js";
 import { ReusableStepDataResultMsg } from "../types/message.types.js";
 
-export const getReusableStepDataFx: EffectHandler<"GetReusableStepData"> = async (
-  effect: GetReusableStepDataFx,
-  deps: EffectHandlerDeps,
-) => {
+export const getReusableStepDataFx: EffectHandler<
+  "GetReusableStepData"
+> = async (effect: GetReusableStepDataFx, deps: EffectHandlerDeps) => {
   const result = await deps.runQuery.getReusableStepData(
     effect.parentRunId,
     effect.stepIds,

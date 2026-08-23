@@ -37,7 +37,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
 
   constructor(
     private readonly bus: EventBusPort,
-    private readonly ef: EmitterFactoryPort
+    private readonly ef: EmitterFactoryPort,
   ) {}
 
   /**
@@ -61,7 +61,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @returns ConcurrencyResult[]
    */
   slotRequestDecisions(
-    event: AnyEvent<"worker.slot.requested">
+    event: AnyEvent<"worker.slot.requested">,
   ): SlotAccessDecision[] {
     const concurrencyResult: SlotAccessDecision[] = [];
     const { toolId } = event.data;
@@ -79,7 +79,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @returns ConcurrencyResult
    */
   grantOrDenyEvent(
-    event: AnyEvent<"worker.slot.requested">
+    event: AnyEvent<"worker.slot.requested">,
   ): SlotAccessDecision {
     const { toolId } = event.data;
     if (!this.hasSlot(toolId)) {
@@ -116,7 +116,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    */
   addQueuedSlots(
     toolId: string,
-    decisions: SlotAccessDecision[]
+    decisions: SlotAccessDecision[],
   ): SlotAccessDecision[] {
     const queue = this.toolQueues[toolId];
 
@@ -139,7 +139,7 @@ export class ConcurrencyLimiter implements ConcurrencyLimiterPort {
    * @returns boolean
    */
   slotFinishedDecisions(
-    event: AnyEvent<"worker.slot.finished">
+    event: AnyEvent<"worker.slot.finished">,
   ): SlotAccessDecision[] {
     const concurrencyResult: SlotAccessDecision[] = [];
     const { toolId } = event.data;

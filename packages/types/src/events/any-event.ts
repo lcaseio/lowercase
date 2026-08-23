@@ -62,7 +62,10 @@ export type ScopeFor<T extends EventType = EventType> = T extends StepEventType
                     ? ReplayScope
                     : T extends SystemEventType
                       ? SystemScope
-                      : {};
+                      : // {} is the intersection identity for AnyEvent<T> = CloudEvent<T> & ScopeFor<T>.
+                        // never/unknown may be better -- deliberately deferred, see docs/todo.md.
+                        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+                        {};
 
 /**
  * Access any event by event type.

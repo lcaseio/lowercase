@@ -1,14 +1,15 @@
-import { useController } from "../context/ControllerContext.js"
+import { useController } from "../context/ControllerContext.js";
 
-
-export function Button() { 
+export function Button() {
   const controller = useController();
 
-  const handleClick = () => { 
+  const handleClick = () => {
     controller.startRuntime();
-  }
+  };
 
   return (
-    <div><button onClick={handleClick}>Hello</button></div>
-  ) 
-};
+    <div>
+      <button onClick={handleClick}>Hello</button>
+    </div>
+  );
+}

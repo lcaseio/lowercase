@@ -1,5 +1,8 @@
 import type {
   ArtifactIndex,
+  ArtifactListFilter,
+  ArtifactListItem,
+  ArtifactUpdateMetadata,
   ArtifactPutInput,
   AnyEvent,
   CreateSimRecordInput,
@@ -21,7 +24,6 @@ import type {
 import type { AutoGetResult } from "../artifacts/artifacts.port.js";
 import type { EventSink } from "../observability/observability-sink.port.js";
 import type { RuntimeStatus } from "../controller.port.js";
-import { JsonValue } from "../artifacts/artifacts.port.js";
 
 export interface ServicesPort {
   flow: FlowServicePort;
@@ -29,7 +31,6 @@ export interface ServicesPort {
   replay: ReplayServicePort;
   system: SystemServicePort;
   run: RunServicePort;
-  ws: WsServicePort;
   artifact: ArtifactServicePort;
   eval: EvalServicePort;
 }
@@ -42,6 +43,7 @@ export interface SimServicePort {
   ): Promise<void>;
 
   getAllSims(): Promise<SimListItem[]>;
+  getSimsByFlowVersionId(flowVersionId: string): Promise<SimListItem[]>;
   getSim(simId: string): Promise<Result<SimDefinition, string>>;
   saveSim(
     simDetails: Omit<CreateSimRecordInput, "forkSpecHash"> & {
@@ -74,6 +76,7 @@ export interface SystemServicePort {
   startSystem(): Promise<RuntimeStatus>;
   stopSystem(): Promise<RuntimeStatus>;
   attachSink(sink: EventSink): void;
+  detachSink(sink: EventSink): void;
 }
 
 export type RunRequest = {
@@ -94,6 +97,7 @@ export interface RunServicePort {
   requestRun(request: RunRequest): Promise<void>;
   makeRunId(): string;
   listAllRuns(): Promise<RunListItem[]>;
+  listRunsByFlowVersionId(flowVersionId: string): Promise<RunListItem[]>;
   getRunDetail(runId: string): Promise<Result<RunDetail, string>>;
   getRunParams(runId: string): Promise<Result<RunParamManifest, string>>;
   // getRunParamsIndex(runId: string): Promise<Result<RunParams, string>>;
@@ -136,6 +140,18 @@ export interface WsServicePort {
 
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
-  listArtifacts(): Promise<ArtifactIndex[]>;
+  listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactListItem[]>;
   putArtifact(input: ArtifactPutInput): Promise<Result<string, string>>;
+  createArtifact(
+    input: ArtifactPutInput,
+    metadata?: ArtifactUpdateMetadata,
+  ): Promise<Result<ArtifactIndex, string>>;
+  updateArtifactMetadata(
+    hash: string,
+    metadata: ArtifactUpdateMetadata,
+  ): Promise<Result<ArtifactIndex, string>>;
+  listCuratedArtifacts(
+    flowVersionId: string,
+    paramName: string,
+  ): Promise<ArtifactIndex[]>;
 }

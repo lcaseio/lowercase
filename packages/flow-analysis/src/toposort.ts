@@ -1,8 +1,11 @@
 import { FlowAnalysis } from "@lcase/types";
+import { addProblem } from "./analyze-flow.js";
 /**
  * Uses a flow analysis to generate a toposort array of node ids.
  * @param fa FlowAnalysis object
- * @returns string[] of node ids
+ * @returns string[] of node ids -- partial (fewer than fa.nodes.length) if a
+ *   cycle prevented some nodes from being ordered; a CycleDetected problem
+ *   is added to fa.problems in that case rather than throwing.
  */
 export function toposort(fa: FlowAnalysis): string[] {
   const inDegreeMap = new Map<string, number>();
@@ -32,7 +35,7 @@ export function toposort(fa: FlowAnalysis): string[] {
   }
 
   if (toposort.length !== fa.nodes.length) {
-    throw new Error("Cycle detected");
+    addProblem({ type: "CycleDetected" }, fa.problems);
   }
   return toposort;
 }

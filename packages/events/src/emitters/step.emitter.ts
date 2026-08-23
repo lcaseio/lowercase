@@ -25,7 +25,7 @@ export class StepEmitter extends BaseEmitter {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: CloudScope & StepScope & OtelContext
+    scope: CloudScope & StepScope & OtelContext,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, flowversionid, runid, stepid, steptype } = scope;
@@ -39,7 +39,7 @@ export class StepEmitter extends BaseEmitter {
 
   async emit<T extends StepEventType>(
     type: T,
-    data: StepEventData<T>
+    data: StepEventData<T>,
   ): Promise<void> {
     const event = {
       ...this.envelopeHeader(),
@@ -57,7 +57,7 @@ export class StepEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[step-emitter] error parsing event; ${type}; ${result.error}`
+        `[step-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

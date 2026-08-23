@@ -1,0 +1,60 @@
+/*
+ * Overrides for dockview's built-in "abyss" theme. The theme's className is
+ * applied by the library to an internal element it manages itself (not
+ * `<DockviewReact>`'s own root), so a wrapping element's inline style can't
+ * reach it -- CSS custom properties are re-declared there, cutting off
+ * inheritance from anything above. A real rule against the same selector,
+ * loaded after dockview's own stylesheet, is what actually wins.
+ *
+ * Colors are wired to this app's own semantic tokens (index.css's :root/
+ * .dark blocks) rather than hardcoded per-theme -- .dockview-theme-abyss
+ * only has to be declared once, and it stays correct for both themes
+ * automatically since --background/--foreground/etc. already flip whenever
+ * .dark is toggled on <html>. Non-color values (spacing, radius, opacity)
+ * aren't theme-dependent, so they stay as plain literals.
+ *
+ * Token choices below are a structural starting point, not tuned -- adjust
+ * which semantic token each line points at (or introduce new ones) freely
+ * during the actual visual pass.
+ */
+.dockview-theme-abyss {
+  --dv-floating-group-dragging-opacity: 1;
+  --dv-activegroup-visiblepanel-tab-background-color: var(
+    --dock-tab-background
+  );
+  --dv-activegroup-hiddenpanel-tab-background-color: var(
+    --dock-tab-hidden-background
+  );
+  --dv-activegroup-hiddenpanel-tab-color: var(--dock-tab-hidden-foreground);
+
+  --dv-group-view-background-color: var(--dock-tab-background);
+
+  --dv-tabs-and-actions-container-background-color: var(
+    --dock-tab-hidden-background
+  );
+
+  --dv-separator-border: var(--dock-panel-border);
+
+  --dv-paneview-header-border-color: var(--dock-panel-border);
+
+  --dv-activegroup-visiblepanel-tab-color: var(--dock-tab-foreground);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(
+    --dock-tab-background
+  );
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(
+    --dock-tab-hidden-background
+  );
+  --dv-inactivegroup-visiblepanel-tab-color: var(--dock-tab-foreground);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--dock-tab-hidden-foreground);
+  --dv-tab-divider-color: var(--background);
+  --dv-icon-hover-background-color: var(--accent);
+  --dv-active-sash-color: var(--ring);
+  --dv-spacing-padding: 12px;
+  --dv-tabs-and-actions-container-height: 39px;
+  --dv-border-radius: 0px;
+  --dv-tab-border-radius: 0px;
+  --dv-sash-border-radius: 0px;
+}
+.dv-tab {
+  border-right: 2px solid var(--dock-tab-border);
+}

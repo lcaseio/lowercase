@@ -54,6 +54,12 @@ export * from "./run-index-store/run-list.js";
 // artifacts
 export * from "./artifacts/artifact-index.js";
 export * from "./artifacts/artifact-put.js";
+export * from "./artifacts/artifact-update-metadata.js";
+export * from "./artifacts/artifact-write-content.js";
+export * from "./artifacts/artifact-write-metadata.js";
+export * from "./artifacts/artifact-param-curation.js";
+export * from "./artifacts/artifact-list-filter.js";
+export * from "./artifacts/artifact-list-item.js";
 
 // sql return types used in adapters / api responses
 export * from "./db-sql/index.js";

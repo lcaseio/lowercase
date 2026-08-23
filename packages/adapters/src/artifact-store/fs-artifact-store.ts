@@ -23,7 +23,11 @@ export class FsArtifactStore implements ArtifactStorePort {
     bytes: Uint8Array,
     extension: string,
   ): Promise<ArtifactStorePutResult> {
-    const absoluteTempFilePath = this.getAbsoluteFilePath(hash, extension, true);
+    const absoluteTempFilePath = this.getAbsoluteFilePath(
+      hash,
+      extension,
+      true,
+    );
     const absoluteFilePath = this.getAbsoluteFilePath(hash, extension);
 
     try {

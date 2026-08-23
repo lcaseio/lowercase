@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ControllerProvider controller={electronController}>
       <App />
     </ControllerProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 window.ipcRenderer.on("main-process-message", (_event, message) => {

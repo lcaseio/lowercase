@@ -73,7 +73,9 @@ function toOptionalDate(value: string | undefined): Date | undefined {
   return value ? new Date(value) : undefined;
 }
 
-function definedFields<T extends Record<string, unknown>>(input: T): Partial<T> {
+function definedFields<T extends Record<string, unknown>>(
+  input: T,
+): Partial<T> {
   return Object.fromEntries(
     Object.entries(input).filter(([, value]) => value !== undefined),
   ) as Partial<T>;
@@ -82,7 +84,9 @@ function definedFields<T extends Record<string, unknown>>(input: T): Partial<T> 
 export class PrismaRunRepository implements RunRepositoryPort {
   constructor(private readonly db: PrismaRunRepositoryDb) {}
 
-  async createRun(input: CreateRunRecordInput): Promise<Result<RunRecord, string>> {
+  async createRun(
+    input: CreateRunRecordInput,
+  ): Promise<Result<RunRecord, string>> {
     try {
       const created = await this.db.$transaction(async (tx) => {
         const run = await tx.run.upsert({
@@ -152,7 +156,9 @@ export class PrismaRunRepository implements RunRepositoryPort {
     }
   }
 
-  async updateRun(input: UpdateRunRecordInput): Promise<Result<RunRecord, string>> {
+  async updateRun(
+    input: UpdateRunRecordInput,
+  ): Promise<Result<RunRecord, string>> {
     try {
       const updated = await this.db.run.update({
         where: { id: input.id },

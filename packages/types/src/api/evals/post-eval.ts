@@ -16,5 +16,4 @@ export type PostEvalsReq = {
 };
 
 export type PostEvalsRes =
-  | { ok: true; evalRunId: string }
-  | { ok: false; error: string };
+  { ok: true; evalRunId: string } | { ok: false; error: string };

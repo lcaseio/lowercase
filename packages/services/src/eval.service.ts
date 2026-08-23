@@ -117,9 +117,7 @@ export class EvalService implements EvalServicePort {
     return this.deps.evalResults.listByTargetShape(shape);
   }
 
-  async listByExperimentId(
-    experimentId: string,
-  ): Promise<EvalResultRecord[]> {
+  async listByExperimentId(experimentId: string): Promise<EvalResultRecord[]> {
     return this.deps.evalResults.listByExperimentId(experimentId);
   }
 

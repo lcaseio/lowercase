@@ -45,9 +45,12 @@ export function analyzeRefs(fd: FlowDefinition, fa: FlowAnalysis) {
 export function findAndParseRefs(
   stepId: string,
   fd: FlowDefinition,
-  fa: FlowAnalysis
+  fa: FlowAnalysis,
 ) {
-  const { refs, exportRefs, problems } = parseStepRefs(fd.steps[stepId], stepId);
+  const { refs, exportRefs, problems } = parseStepRefs(
+    fd.steps[stepId],
+    stepId,
+  );
   fa.refs = fa.refs.concat(refs);
   fa.exportRefsByStep ??= {};
   fa.exportRefsByStep[stepId] = exportRefs;
@@ -67,7 +70,7 @@ export function findAndParseRefs(
 export function validateRefTargetStep(
   ref: Ref,
   fd: FlowDefinition,
-  fa: FlowAnalysis
+  fa: FlowAnalysis,
 ): FlowProblem | undefined {
   // check and see if its a step scope, that the step exists
   if (ref.scope !== "steps") return;
@@ -152,7 +155,7 @@ export function validateExportRefPath(
 export function isReachable(
   refStepId: string,
   targetStepId: string,
-  fa: FlowAnalysis
+  fa: FlowAnalysis,
 ): boolean {
   if (!fa.outEdges[targetStepId]) return false;
   for (const outEdge of fa.outEdges[targetStepId]) {

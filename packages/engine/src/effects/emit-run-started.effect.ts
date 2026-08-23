@@ -12,7 +12,7 @@ import type {
  */
 export const emitRunStartedFx: EffectHandler<"EmitRunStarted"> = async (
   effect: EmitRunStartedFx,
-  deps: EffectHandlerDeps
+  deps: EffectHandlerDeps,
 ) => {
   const emitter = deps.ef.newRunEmitterNewSpan({
     ...effect.scope,

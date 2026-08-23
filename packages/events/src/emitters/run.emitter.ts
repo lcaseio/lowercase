@@ -25,7 +25,7 @@ export class RunEmitter extends BaseEmitter {
 
   constructor(
     private readonly bus: EventBusPort,
-    scope: OtelContext & RunScope & CloudScope
+    scope: OtelContext & RunScope & CloudScope,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { flowid, flowversionid, runid } = scope;
@@ -40,7 +40,7 @@ export class RunEmitter extends BaseEmitter {
 
   async emit<T extends RunEventType>(
     type: T,
-    data: RunEventData<T>
+    data: RunEventData<T>,
   ): Promise<RunEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -58,7 +58,7 @@ export class RunEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[run-emitter] error parsing event; ${type}; ${result.error}`
+        `[run-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event);

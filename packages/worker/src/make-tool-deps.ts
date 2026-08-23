@@ -4,7 +4,7 @@ import { PipeData } from "@lcase/types";
 export function makeTookDeps(
   pipe: PipeData,
   ef: EmitterFactoryPort,
-  sr: StreamRegistryPort
+  sr: StreamRegistryPort,
 ): ToolDeps {
   const deps: ToolDeps = { ef };
   if (pipe.to?.id) {

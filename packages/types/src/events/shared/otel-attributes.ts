@@ -1,7 +1,7 @@
 export type DomainActionDescriptor<
   Domain extends string,
   Action extends string,
-  Data
+  Data,
 > = {
   domain: Domain;
   action: Action;
@@ -13,7 +13,7 @@ export type DomainEntityActionDescriptor<
   Domain extends string,
   Entity extends string,
   Action extends string,
-  Data
+  Data,
 > = {
   domain: Domain;
   entity: Entity;

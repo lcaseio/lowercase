@@ -1,6 +1,5 @@
-import { JobEventData } from "@lcase/types";
-import { ConsumerStreamPort, ProducerStreamPort } from "../stream.port.js";
-import { EmitterFactoryPort } from "../events/emitter-factory.port.js";
+import type { ConsumerStreamPort, ProducerStreamPort } from "../stream.port.js";
+import type { EmitterFactoryPort } from "../events/emitter-factory.port.js";
 
 export type ToolDeps = {
   consumer?: ConsumerStreamPort;

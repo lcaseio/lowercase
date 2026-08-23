@@ -78,4 +78,8 @@ export class SystemService implements SystemServicePort {
   attachSink(sink: EventSink) {
     this.deps.tap.attachSink(sink);
   }
+
+  detachSink(sink: EventSink) {
+    this.deps.tap.detachSink(sink);
+  }
 }

@@ -10,7 +10,7 @@ import type { JobFinishedMsg, SchedulerReducer } from "../scheduler.types.js";
  */
 export const jobFinishedReducer: SchedulerReducer<JobFinishedMsg> = (
   state: SchedulerState,
-  message: JobFinishedMsg
+  message: JobFinishedMsg,
 ) => {
   return produce(state, (draft) => {
     const toolId = message.event.data.job.toolid;

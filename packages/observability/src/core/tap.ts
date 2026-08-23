@@ -19,7 +19,13 @@ export class ObservabilityTap implements ObservabilityTapPort {
   start() {
     this.bus.subscribe(this.#subscribeTopic, async (event: AnyEvent) => {
       for (const sink of this.#sinks.values()) {
-        sink.handle(event);
+        try {
+          await sink.handle(event);
+        } catch (err) {
+          console.error(
+            `[observability-tap] sink '${sink.id}' failed to handle event: ${err}`,
+          );
+        }
       }
     });
   }

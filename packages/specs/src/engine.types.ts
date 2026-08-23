@@ -66,6 +66,6 @@ export const RunContextSchema = z.object({
           .optional(),
       }),
       // TODO: implement history, an array of attempts and outputs
-    })
+    }),
   ),
 });

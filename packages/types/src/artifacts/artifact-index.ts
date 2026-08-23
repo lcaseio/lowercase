@@ -7,4 +7,7 @@ export type ArtifactIndex = {
   contentType?: string;
   size?: number;
   format?: "json" | "text" | "markdown" | "bytes";
+  flowId?: string;
+  flowVersionId?: string;
+  curated?: boolean;
 };

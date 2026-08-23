@@ -26,7 +26,7 @@ export class LimiterEmitter extends BaseEmitter {
   constructor(
     private readonly bus: EventBusPort,
     scope: OtelContext & LimiterScope & CloudScope,
-    private internal: boolean = false
+    private internal: boolean = false,
   ) {
     const { traceId, spanId, traceParent, source } = scope;
     const { limiterid } = scope;
@@ -41,7 +41,7 @@ export class LimiterEmitter extends BaseEmitter {
 
   async emit<T extends LimiterEventType>(
     type: T,
-    data: LimiterEventData<T>
+    data: LimiterEventData<T>,
   ): Promise<LimiterEvent<T>> {
     const event = {
       ...this.envelopeHeader(),
@@ -59,7 +59,7 @@ export class LimiterEmitter extends BaseEmitter {
     const result = entry.schema.event.safeParse(event);
     if (result.error) {
       throw new Error(
-        `[limiter-emitter] error parsing event; ${type}; ${result.error}`
+        `[limiter-emitter] error parsing event; ${type}; ${result.error}`,
       );
     }
     await this.bus.publish(type, event, { internal: this.internal });

@@ -9,7 +9,10 @@ import type {
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
-import { EmitStepReusedFx, ResolveBranchValueFx } from "../types/effect.types.js";
+import {
+  EmitStepReusedFx,
+  ResolveBranchValueFx,
+} from "../types/effect.types.js";
 
 export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
   oldState: EngineState,

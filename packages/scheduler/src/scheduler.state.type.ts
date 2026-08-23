@@ -21,9 +21,7 @@ export type CapRegisteredToolsMap = {
 };
 
 export type JobParsedAny =
-  | JobSubmittedParsed
-  | JobCompletedParsed
-  | JobFailedParsed;
+  JobSubmittedParsed | JobCompletedParsed | JobFailedParsed;
 
 type ToolId = string;
 type WorkerId = string;

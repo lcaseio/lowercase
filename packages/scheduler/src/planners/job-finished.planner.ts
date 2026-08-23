@@ -9,7 +9,7 @@ import type {
 export const jobFinishedPlanner: SchedulerPlanner<JobFinishedMsg> = (
   oldState: SchedulerState,
   newState: SchedulerState,
-  message: JobFinishedMsg
+  message: JobFinishedMsg,
 ): SchedulerEffect[] => {
   const effects: SchedulerEffect[] = [];
 

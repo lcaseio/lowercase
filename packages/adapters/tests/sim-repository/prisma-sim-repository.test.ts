@@ -183,4 +183,39 @@ describe("PrismaSimRepository", () => {
     });
     expect(sims[1]?.sim.name).toBe("First Sim");
   });
+
+  it("lists only sims matching the given flow version id", async () => {
+    const firstFlow = await flowRepository.createFlow({
+      name: "Flow A",
+      definitionHash: "a".repeat(64),
+      versionLabel: "v1",
+    });
+    const secondFlow = await flowRepository.createFlow({
+      name: "Flow B",
+      definitionHash: "b".repeat(64),
+      versionLabel: "v2",
+    });
+    expect(firstFlow.ok).toBe(true);
+    expect(secondFlow.ok).toBe(true);
+    if (!firstFlow.ok || !secondFlow.ok) return;
+
+    await repository.createSim({
+      name: "First Sim",
+      flowId: firstFlow.value.flow.id,
+      flowVersionId: firstFlow.value.version.id,
+      forkSpecHash: "1".repeat(64),
+    });
+    await repository.createSim({
+      name: "Second Sim",
+      flowId: secondFlow.value.flow.id,
+      flowVersionId: secondFlow.value.version.id,
+      forkSpecHash: "2".repeat(64),
+    });
+
+    const sims = await repository.listSimsByFlowVersionId(
+      firstFlow.value.version.id,
+    );
+    expect(sims).toHaveLength(1);
+    expect(sims[0]?.sim.name).toBe("First Sim");
+  });
 });

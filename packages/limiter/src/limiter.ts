@@ -25,7 +25,7 @@ export class Limiter {
     id: string,
     scope: string,
     private readonly deps: LimiterDeps,
-    defaultConfig = true
+    defaultConfig = true,
   ) {
     this.id = id;
     this.scope = scope;
@@ -40,14 +40,14 @@ export class Limiter {
     this.busTopics.set(
       slot,
       this.deps.bus.subscribe(slot, async (event) =>
-        this.handleSlotRequested(event)
-      )
+        this.handleSlotRequested(event),
+      ),
     );
     this.busTopics.set(
       slotFinished,
       this.deps.bus.subscribe(slotFinished, async (event) =>
-        this.handleSlotFinished(event)
-      )
+        this.handleSlotFinished(event),
+      ),
     );
     // rate limiting not yet implemented
     // this.busTopics.set(
@@ -103,7 +103,7 @@ export class Limiter {
         limiterid: this.id,
         source: this.source,
       },
-      decision.traceId
+      decision.traceId,
     );
     if (decision.granted) {
       await emitter.emit("limiter.slot.granted", {

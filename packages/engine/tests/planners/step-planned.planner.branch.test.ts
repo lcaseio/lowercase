@@ -119,9 +119,8 @@ describe("stepPlannedPlanner() branch arm", () => {
 
     const effects = stepPlannedPlanner(state, state, message);
 
-    const resolveFx = effects.find(
-      (e) => e.type === "ResolveBranchValue",
-    ) as ResolveBranchValueFx | undefined;
+    const resolveFx = effects.find((e) => e.type === "ResolveBranchValue") as
+      ResolveBranchValueFx | undefined;
 
     expect(resolveFx).toBeDefined();
     expect(resolveFx?.cases).toEqual({ forecast: "getforecast" });

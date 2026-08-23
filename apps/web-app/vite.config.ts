@@ -11,4 +11,17 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-dom/client"],
+          monaco: ["monaco-editor", "@monaco-editor/react"],
+          xyflow: ["@xyflow/react"],
+          dockview: ["dockview-react"],
+          echarts: ["echarts", "echarts-for-react"],
+        },
+      },
+    },
+  },
 });

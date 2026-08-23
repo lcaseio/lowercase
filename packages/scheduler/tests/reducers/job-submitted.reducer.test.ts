@@ -16,11 +16,11 @@ describe("jobSubmittedReducer", () => {
 
     const result = jobSubmittedReducer(
       jobSubmittedStartState,
-      jobSubmittedHttpJsonMsg
+      jobSubmittedHttpJsonMsg,
     );
 
     const expectedState = structuredClone(
-      jobSubmittedStartState
+      jobSubmittedStartState,
     ) as SchedulerState;
 
     expectedState.runtime.perRun = {
@@ -71,11 +71,11 @@ describe("jobSubmittedReducer", () => {
 
     const result = jobSubmittedReducer(
       startStateFilledConcurrency,
-      jobSubmittedHttpJsonMsg
+      jobSubmittedHttpJsonMsg,
     );
 
     const expectedState = structuredClone(
-      startStateFilledConcurrency
+      startStateFilledConcurrency,
     ) as SchedulerState;
 
     expectedState.runtime.perRun = {

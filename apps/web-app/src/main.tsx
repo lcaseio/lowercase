@@ -3,19 +3,24 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 
-import { App } from "./App";
+import { App } from "./app/App";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { WsBootstrap } from "./ws-bootstrap";
+import { SseBootstrap } from "./app/SseBootstrap";
 import { ThemeProvider } from "./contexts/theme-provider";
+import { Toaster } from "./components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider storageKey="vite-ui-theme">
+    <ThemeProvider>
       <Provider store={store}>
         <BrowserRouter>
-          <WsBootstrap />
-          <App />
+          <TooltipProvider>
+            <SseBootstrap />
+            <Toaster />
+            <App />
+          </TooltipProvider>
         </BrowserRouter>
       </Provider>
     </ThemeProvider>

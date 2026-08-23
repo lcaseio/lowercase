@@ -22,7 +22,7 @@ export const ToolContextSchema = z
   .strict() satisfies z.ZodType<ToolScope>;
 
 export const ToolStartedSchema = CloudEventContextSchema.merge(
-  ToolContextSchema
+  ToolContextSchema,
 )
   .merge(
     z.object({
@@ -30,12 +30,12 @@ export const ToolStartedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("started"),
       data: ToolStartedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"tool.started">>;
 
 export const ToolCompletedSchema = CloudEventContextSchema.merge(
-  ToolContextSchema
+  ToolContextSchema,
 )
   .merge(
     z.object({
@@ -43,7 +43,7 @@ export const ToolCompletedSchema = CloudEventContextSchema.merge(
       entity: z.undefined().optional(),
       action: z.literal("completed"),
       data: ToolCompletedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"tool.completed">>;
 
@@ -54,6 +54,6 @@ export const ToolFailedSchema = CloudEventContextSchema.merge(ToolContextSchema)
       entity: z.undefined().optional(),
       action: z.literal("failed"),
       data: ToolFailedDataSchema,
-    })
+    }),
   )
   .strict() satisfies z.ZodType<AnyEvent<"tool.failed">>;

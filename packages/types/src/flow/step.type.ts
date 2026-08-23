@@ -1,12 +1,8 @@
-import { StepHttpJson } from "./http-json.step.js";
-import { StepJoin } from "./join.step.js";
-import { StepMcp } from "./mcp.step.js";
-import { StepParallel } from "./parallel.step.js";
-import { StepBranch } from "./branch.step.js";
+import type { StepHttpJson } from "./http-json.step.js";
+import type { StepJoin } from "./join.step.js";
+import type { StepMcp } from "./mcp.step.js";
+import type { StepParallel } from "./parallel.step.js";
+import type { StepBranch } from "./branch.step.js";
 
 export type StepDefinition =
-  | StepMcp
-  | StepHttpJson
-  | StepParallel
-  | StepJoin
-  | StepBranch;
+  StepMcp | StepHttpJson | StepParallel | StepJoin | StepBranch;

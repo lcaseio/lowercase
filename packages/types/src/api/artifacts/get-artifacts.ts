@@ -1,4 +1,12 @@
-import type { ArtifactIndex } from "../../artifacts/artifact-index.js";
+import type { ArtifactListItem } from "../../artifacts/artifact-list-item.js";
 import type { Result } from "../../result.type.js";
 
-export type GetArtifactsRes = Result<ArtifactIndex[], string>;
+// querystring values arrive as raw strings -- "curated" is parsed "true"/"false" by the route
+export type GetArtifactsReq = {
+  flowId?: string;
+  flowVersionId?: string;
+  curated?: string;
+  hash?: string;
+};
+
+export type GetArtifactsRes = Result<ArtifactListItem[], string>;

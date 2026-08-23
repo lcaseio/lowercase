@@ -1,9 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import { GetRunsRes } from "@lcase/types";
+import { GetRunsReq, GetRunsRes } from "@lcase/types";
 
 export const listRunsRoute = async (app: FastifyInstance) => {
-  app.get("/", async (req, reply): Promise<GetRunsRes> => {
-    const runList = await app.services.run.listAllRuns();
-    return { ok: true, runList };
-  });
+  app.get<{ Querystring: GetRunsReq }>(
+    "/",
+    async (req, reply): Promise<GetRunsRes> => {
+      const { flowVersionId } = req.query;
+      const runList = flowVersionId
+        ? await app.services.run.listRunsByFlowVersionId(flowVersionId)
+        : await app.services.run.listAllRuns();
+      return { ok: true, runList };
+    },
+  );
 };
