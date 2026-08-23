@@ -2,7 +2,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. Named in `docs/todo.md` on 2026-08-14 while pruning old pages — `docs/request-flow-map.md` (a page→component→hook→route→service quick-reference) was useful for confirming what a couple of old pages still uniquely provided, which surfaced the idea of rebuilding it as something more substantial.
 
-## PR 51 — Server API reference — in progress
+## PR 51 — Server API reference — merged (#334)
 
 ### Discussion
 

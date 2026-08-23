@@ -15,7 +15,7 @@ One directory per milestone. See the convention below for shape, naming, and the
 
 **Location**: `docs/milestones/<name>/`, kebab-case.
 
-**What stays top-level, outside `docs/milestones/`, and why**: `docs/todo.md`, `docs/adr/`, `docs/request-flow-map.md`, `docs/observability.md` — things that outlive any single milestone. A bug found during one milestone is equally relevant during the next one; an ADR is a durable decision independent of which milestone produced it.
+**What stays top-level, outside `docs/milestones/`, and why**: `docs/todo.md`, `docs/adr/`, `docs/api-reference.md`, `docs/api-usage-audit.md`, `docs/observability.md` — things that outlive any single milestone. A bug found during one milestone is equally relevant during the next one; an ADR is a durable decision independent of which milestone produced it.
 
 **`MILESTONE.md` section skeleton** (omit a section entirely until it has real content, never leave an empty stub):
 
