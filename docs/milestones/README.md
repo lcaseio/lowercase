@@ -4,10 +4,10 @@ One directory per milestone. See the convention below for shape, naming, and the
 
 ## Milestones, in order
 
-| #   | Milestone    | Status                  | Where                                                      |
-| --- | ------------ | ----------------------- | ---------------------------------------------------------- |
-| 1   | ui-workspace | in progress             | [`ui-workspace/MILESTONE.md`](./ui-workspace/MILESTONE.md) |
-| 2   | evals        | not started, scaffolded | [`evals/MILESTONE.md`](./evals/MILESTONE.md)               |
+| #   | Milestone    | Status                           | Where                                                      |
+| --- | ------------ | -------------------------------- | ---------------------------------------------------------- |
+| 1   | ui-workspace | complete (v0.1.0-alpha.13, #339) | [`ui-workspace/MILESTONE.md`](./ui-workspace/MILESTONE.md) |
+| 2   | evals        | not started, scaffolded          | [`evals/MILESTONE.md`](./evals/MILESTONE.md)               |
 
 (Order here is start/intended-start order, not priority within a milestone — that's what each milestone's own `Next up` list is for.)
 

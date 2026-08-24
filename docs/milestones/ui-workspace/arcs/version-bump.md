@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log. This milestone's close-out PR — bump the repo version, update the root `README.md`, and get the branch ready to merge into `main`.
 
-## PR 55 - Repo version bump, prep for merge to `main` - in progress
+## PR 55 - Repo version bump, prep for merge to `main` - merged (#338)
 
 Named 2026-08-22 as this milestone's actual close-out, not scoped beyond that yet.
 
