@@ -1,5 +1,5 @@
 import { InMemoryQueue } from "@lcase/adapters/queue";
-import { NodeRouter } from "@lcase/adapters/router";
+import { NodeRouter } from "@lcase/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";

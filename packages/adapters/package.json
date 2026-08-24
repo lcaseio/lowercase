@@ -32,10 +32,6 @@
       "types": "./dist/mcp-manager/index.d.ts",
       "import": "./dist/mcp-manager/index.js"
     },
-    "./router": {
-      "types": "./dist/router/index.d.ts",
-      "import": "./dist/router/index.js"
-    },
     "./queue": {
       "types": "./dist/queue/index.d.ts",
       "import": "./dist/queue/index.js"
@@ -74,7 +70,6 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@lcase/events": "workspace:*",
     "@lcase/specs": "workspace:*",
     "@lcase/db-prisma": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.19.1",
