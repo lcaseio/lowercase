@@ -1,6 +1,6 @@
 # Workbench UI Rework
 
-**Status: In progress — closing out via PR 55.**
+**Status: Complete — merged to `main` at `v0.1.0-alpha.13` (#339).**
 
 ## Summary
 
@@ -113,7 +113,7 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 | 52  | Web app endpoint usage audit (`docs/api-usage-audit.md`)                              | merged (#335) | `arcs/api-usage-audit.md`              | PR 51                                 |
 | 53  | Activate `apps/web-app`'s real production build                                       | merged (#336) | `arcs/production-build.md`             |                                       |
 | 54  | `apps/web-app` + `apps/http-server` READMEs, real content                             | merged (#337) | `arcs/web-app-readme.md`               |                                       |
-| 55  | Repo version bump, prep for merge to `main`                                           | in progress   | `arcs/version-bump.md`                 |                                       |
+| 55  | Repo version bump, prep for merge to `main`                                           | merged (#338) | `arcs/version-bump.md`                 |                                       |
 
 ## Not yet scoped
 
