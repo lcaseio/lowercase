@@ -5,7 +5,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers proving the settled taxonomy by actually moving packages into it.
 
-## PR 2 - Physical package moves - in progress
+## PR 2 - Physical package moves - merged (#342)
 
 ### Discussion
 
