@@ -28,7 +28,7 @@ importers:
     dependencies:
       '@lcase/observability':
         specifier: workspace:*
-        version: link:../../packages/observability
+        version: link:../../packages/components/observability
       '@lcase/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
@@ -251,10 +251,10 @@ importers:
         version: 3.1.1
       '@lcase/flow-analysis':
         specifier: workspace:*
-        version: link:../../packages/flow-analysis
+        version: link:../../packages/functional-core/flow-analysis
       '@lcase/json-ref-binder':
         specifier: workspace:*
-        version: link:../../packages/json-ref-binder
+        version: link:../../packages/functional-core/json-ref-binder
       '@lcase/specs':
         specifier: workspace:*
         version: link:../../packages/specs
@@ -381,7 +381,7 @@ importers:
         version: link:../packages/adapters
       '@lcase/engine':
         specifier: workspace:*
-        version: link:../packages/engine
+        version: link:../packages/components/engine
       '@lcase/ports':
         specifier: workspace:*
         version: link:../packages/ports
@@ -413,9 +413,6 @@ importers:
       '@lcase/db-prisma':
         specifier: workspace:*
         version: link:../db-prisma
-      '@lcase/events':
-        specifier: workspace:*
-        version: link:../events
       '@lcase/specs':
         specifier: workspace:*
         version: link:../specs
@@ -450,6 +447,118 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/components/engine:
+    dependencies:
+      '@lcase/adapters':
+        specifier: workspace:*
+        version: link:../../adapters
+      '@lcase/flow-analysis':
+        specifier: workspace:*
+        version: link:../../functional-core/flow-analysis
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../../functional-core/json-ref-binder
+      '@lcase/run-history':
+        specifier: workspace:*
+        version: link:../../use-cases/run-history
+      '@lcase/specs':
+        specifier: workspace:*
+        version: link:../../specs
+      immer:
+        specifier: ^11.0.1
+        version: 11.0.1
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6))
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/components/limiter:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/components/observability:
+    dependencies:
+      '@lcase/run-history':
+        specifier: workspace:*
+        version: link:../../use-cases/run-history
+      '@lcase/specs':
+        specifier: workspace:*
+        version: link:../../specs
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/components/router:
+    dependencies:
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../events
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/components/worker:
+    dependencies:
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@lcase/json-ref-binder':
+        specifier: workspace:*
+        version: link:../../functional-core/json-ref-binder
+      '@lcase/tools':
+        specifier: workspace:*
+        version: link:../../tools
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -498,40 +607,6 @@ importers:
         specifier: ^7.8.0
         version: 7.8.0(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(better-sqlite3@12.11.1)(magicast@0.3.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
 
-  packages/engine:
-    dependencies:
-      '@lcase/adapters':
-        specifier: workspace:*
-        version: link:../adapters
-      '@lcase/flow-analysis':
-        specifier: workspace:*
-        version: link:../flow-analysis
-      '@lcase/json-ref-binder':
-        specifier: workspace:*
-        version: link:../json-ref-binder
-      '@lcase/run-history':
-        specifier: workspace:*
-        version: link:../use-cases/run-history
-      '@lcase/specs':
-        specifier: workspace:*
-        version: link:../specs
-      immer:
-        specifier: ^11.0.1
-        version: 11.0.1
-    devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6))
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
-
   packages/events:
     dependencies:
       '@lcase/specs':
@@ -551,66 +626,29 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
 
-  packages/flow-analysis:
+  packages/functional-core/flow-analysis:
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
-        version: link:../ports
+        version: link:../../ports
       '@lcase/types':
         specifier: workspace:*
-        version: link:../types
+        version: link:../../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
 
-  packages/json-ref-binder:
+  packages/functional-core/json-ref-binder:
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
-        version: link:../ports
+        version: link:../../ports
       '@lcase/types':
         specifier: workspace:*
-        version: link:../types
+        version: link:../../types
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6))
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
-
-  packages/limiter:
-    devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
-
-  packages/observability:
-    dependencies:
-      '@lcase/run-history':
-        specifier: workspace:*
-        version: link:../use-cases/run-history
-      '@lcase/specs':
-        specifier: workspace:*
-        version: link:../specs
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-    devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -655,19 +693,22 @@ importers:
         version: link:../db-prisma
       '@lcase/engine':
         specifier: workspace:*
-        version: link:../engine
+        version: link:../components/engine
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
       '@lcase/limiter':
         specifier: workspace:*
-        version: link:../limiter
+        version: link:../components/limiter
       '@lcase/observability':
         specifier: workspace:*
-        version: link:../observability
+        version: link:../components/observability
       '@lcase/replay':
         specifier: workspace:*
         version: link:../replay
+      '@lcase/router':
+        specifier: workspace:*
+        version: link:../components/router
       '@lcase/services':
         specifier: workspace:*
         version: link:../services
@@ -676,7 +717,7 @@ importers:
         version: link:../tools
       '@lcase/worker':
         specifier: workspace:*
-        version: link:../worker
+        version: link:../components/worker
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -692,7 +733,7 @@ importers:
         version: link:../events
       '@lcase/flow-analysis':
         specifier: workspace:*
-        version: link:../flow-analysis
+        version: link:../functional-core/flow-analysis
       '@lcase/run-flow':
         specifier: workspace:*
         version: link:../use-cases/run-flow
@@ -799,31 +840,6 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../../types
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
-
-  packages/worker:
-    dependencies:
-      '@lcase/events':
-        specifier: workspace:*
-        version: link:../events
-      '@lcase/json-ref-binder':
-        specifier: workspace:*
-        version: link:../json-ref-binder
-      '@lcase/tools':
-        specifier: workspace:*
-        version: link:../tools
-      ajv:
-        specifier: ^8.17.1
-        version: 8.17.1
-    devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -6469,14 +6485,14 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.28.5':
     dependencies:
       '@babel/traverse': 7.29.0
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
   '@babel/helper-module-imports@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
 
@@ -6507,7 +6523,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.29.0
 
   '@babel/helper-plugin-utils@7.27.1': {}
 
@@ -8856,7 +8872,7 @@ snapshots:
       istanbul-reports: 3.2.0
       magic-string: 0.30.21
       magicast: 0.3.5
-      std-env: 3.9.0
+      std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
@@ -10821,8 +10837,8 @@ snapshots:
 
   magicast@0.3.5:
     dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.29.0
+      '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
   make-dir@4.0.0:

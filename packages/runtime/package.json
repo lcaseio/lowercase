@@ -23,6 +23,7 @@
     "@lcase/tools": "workspace:*",
     "@lcase/engine": "workspace:*",
     "@lcase/adapters": "workspace:*",
+    "@lcase/router": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/observability": "workspace:*",
     "@lcase/services": "workspace:*",

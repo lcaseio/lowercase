@@ -1,10 +1,10 @@
 # Architecture Boundaries Milestone — Arc: Taxonomy & Control-Plane Research (PR 1)
 
-**Next:** — none yet
+**Next:** [`physical-moves.md`](./physical-moves.md) (PR 2)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers settling the full package-tier taxonomy and opening the control-plane question, both grounded in real code rather than pure discussion.
 
-## PR 1 - Package-tier taxonomy + control-plane research - in progress
+## PR 1 - Package-tier taxonomy + control-plane research - merged (#341)
 
 Settled the full package-tier taxonomy and opened the control-plane question, both grounded in real code rather than pure discussion. Genuinely iterative, not a clean discuss-then-build pass — the summary below distills the settled decisions and rejected alternatives; the research docs carry the full evidence trail.
 
