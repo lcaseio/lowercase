@@ -102,44 +102,11 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 
 ## Code Layout
 
-A map of what's here, not an exhaustive index. `apps/` is what you actually run; almost everything else lives in `packages/`, layered bottom-up — each one depends only on what's above it in this list. A few other packages exist in the repo beyond what's listed here, slated for future removal or archival rather than active use — not worth a newcomer's attention.
-
-### `apps/`
-
-| Package                | Purpose                                                                                                                             |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **@lcase/http-server** | Fastify HTTP REST API, with Server-Sent Events for live run updates.                                                                |
-| **@lcase/workbench**   | The Workbench — see above.                                                                                                          |
-| **@lcase/cli**         | CLI for running and validating flows. Currently paused/out of sync with the relational identity model; planned for a future rework. |
-
-### `packages/`
-
-| Package                    | Purpose                                                                                                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@lcase/types**           | Shared types across packages.                                                                                                                                             |
-| **@lcase/ports**           | Ports (Interfaces) and some supporting types.                                                                                                                             |
-| **@lcase/specs**           | Flow definition zod schemas.                                                                                                                                              |
-| **@lcase/events**          | Event schemas and helper functions.                                                                                                                                       |
-| **@lcase/adapters**        | Implementations of ports.                                                                                                                                                 |
-| **@lcase/db-prisma**       | Prisma schema, migrations, and generated client for the SQL metadata store.                                                                                               |
-| **@lcase/engine**          | Event driven workflow engine.                                                                                                                                             |
-| **@lcase/worker**          | Orchestrates jobs and tool invocations.                                                                                                                                   |
-| **@lcase/tools**           | Implements internal tools and some tool configs.                                                                                                                          |
-| **@lcase/limiter**         | Global rate and concurrency limiter per tool.                                                                                                                             |
-| **@lcase/observability**   | Observability tap and sinks for events.                                                                                                                                   |
-| **@lcase/replay**          | Raw event history (JSONL event log) — a separate concern from the SQL metadata store.                                                                                     |
-| **@lcase/flow-analysis**   | Builds a flow graph and analyzes template references.                                                                                                                     |
-| **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference.                                                                                                              |
-| **@lcase/artifacts**       | JSON / text/ markdown CAS file system store.                                                                                                                              |
-| **@lcase/runtime**         | Wires up a configurable runtime.                                                                                                                                          |
-| **@lcase/app-services**    | Implements grouped application logic exposed to apps.                                                                                                                     |
-| **`packages/use-cases/*`** | Small, focused business-logic pieces (`@lcase/run-flow`, `@lcase/run-history`) — this tier's boundaries are actively being reworked, don't read today's shape as settled. |
-
-`examples/` (**@lcase/examples**) holds demo/example flows and servers — its own top-level workspace entry, not part of either bucket above.
+`apps/` is what you actually run; almost everything else lives in `packages/`, organized into dependency-ordered tiers. Full package-by-package map, including the settled tier taxonomy: [`docs/architecture.md`](docs/architecture.md).
 
 ## Next
 
-No committed next milestone yet — real candidates on the table: an evals rework (today's eval is a flow-embedded v1 slice; the goal is standalone, reusable eval entities — see [`docs/milestones/evals/MILESTONE.md`](docs/milestones/evals/MILESTONE.md)), a `packages/worker`/tool-interaction refactor (already flagged as unsettled), real binary artifact support, and general architecture-hardening work (the `packages/events` schema boilerplate + EmitterFactory rework, `packages/runtime`'s two incomplete wiring paths, a few engine bugs/enhancements). See [`docs/todo.md`](docs/todo.md) for the fuller backlog.
+No committed next milestone yet — real candidates on the table: an evals rework (today's eval is a flow-embedded v1 slice; the goal is standalone, reusable eval entities — see [`docs/milestones/evals/MILESTONE.md`](docs/milestones/evals/MILESTONE.md)), a `packages/components/worker`/tool-interaction refactor (already flagged as unsettled), real binary artifact support, and general architecture-hardening work (the `packages/events` schema boilerplate + EmitterFactory rework, `packages/runtime`'s two incomplete wiring paths, a few engine bugs/enhancements). See [`docs/todo.md`](docs/todo.md) for the fuller backlog.
 
 ## License
 
