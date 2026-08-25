@@ -1,5 +1,7 @@
 # Architecture Boundaries
 
+**Status: Complete — PRs #341–#346 merged to `dev`.**
+
 ## Summary
 
 Settles the package-tier taxonomy (types, ports, specs, functional core, Operations, application services, components, adapters) and the worker/tool extensibility model together, since they're related boundary questions, not separate ones — correcting, not just executing, the taxonomy already sketched in `docs/todo.md`. Full reasoning, evidence, and open questions live in [`research/package-tier-taxonomy.md`](./research/package-tier-taxonomy.md), [`research/control-plane.md`](./research/control-plane.md), and [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md) — this doc stays overview-level.
@@ -19,11 +21,11 @@ Originally scoped as decision-first, ADR-only — no execution pass across the r
 | 3   | Renames (`services` → `app-services`, `web-app` → `workbench`) + dead-code cleanup | merged (#343) | [`arcs/renames-and-cleanup.md`](./arcs/renames-and-cleanup.md)               |                                                                                                                                        |
 | 4   | Worker/tool extensibility research                                                 | merged (#344) | [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md)   | [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md)                                                     |
 | 5   | ADR(s) reflecting the settled, now-real shape                                      | merged (#345) | [`arcs/adrs.md`](./arcs/adrs.md)                                             | [`ADR-0005`](../../adr/0005-package-tier-taxonomy.md), [`ADR-0006`](../../adr/0006-worker-tool-extensibility-model.md)                 |
-| 6   | Package-boundaries README (final PR of this milestone)                             | in progress   | [`arcs/package-boundaries-readme.md`](./arcs/package-boundaries-readme.md)   |                                                                                                                                        |
+| 6   | Package-boundaries README (final PR of this milestone)                             | merged (#346) | [`arcs/package-boundaries-readme.md`](./arcs/package-boundaries-readme.md)   | [`docs/architecture.md`](../../architecture.md)                                                                                       |
 
 ## Next up
 
-1. **PR 6 — package-boundaries README.** The final PR of this milestone: a plain, human-facing reference — what each tier _is_, not why it was decided (the ADRs' job) or the evidence trail (the research docs' job). Lower depth than either, closer to "here's the map" for someone developing against this repo. Any mention of the worker's protocols/transports belongs here, folded into that component's own entry — not a separate document (the previously-planned worker/tool extensibility guide was cut, see below).
+This milestone is complete — all six PRs merged. Real, already-identified follow-on work is deliberately not carried forward as scheduled next steps; see "Not yet scoped" below, and `worker-tools-artifacts`/other future milestones for where some of it may land.
 
 ## Not yet scoped
 
