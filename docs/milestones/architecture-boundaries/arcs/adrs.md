@@ -1,10 +1,11 @@
 # Architecture Boundaries Milestone — Arc: ADRs (PR 5)
 
 **Previous:** [`worker-tool-extensibility.md`](./worker-tool-extensibility.md) (PR 4)
+**Next:** [`package-boundaries-readme.md`](./package-boundaries-readme.md) (PR 6)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 5 - ADR(s) reflecting the settled, now-real shape - in progress
+## PR 5 - ADR(s) reflecting the settled, now-real shape - merged (#345)
 
 ### Discussion
 
