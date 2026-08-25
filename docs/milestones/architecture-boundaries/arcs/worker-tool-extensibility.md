@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 4 - Worker/tool extensibility research - in progress
+## PR 4 - Worker/tool extensibility research - merged (#344)
 
 ### Discussion
 
