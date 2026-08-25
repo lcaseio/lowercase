@@ -44,8 +44,7 @@ import {
   ReplayService,
   SimService,
   SystemService,
-  WsService,
-} from "@lcase/services";
+} from "@lcase/app-services";
 import { JobParser } from "@lcase/events/parsers";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
 import path from "path";
@@ -74,8 +73,6 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     new PrismaSimRepository(prisma),
     flowRepository,
   );
-  const wsService = new WsService(ctx.bus);
-
   const systemService = new SystemService({
     bus: ctx.bus,
     ef: ctx.ef,
@@ -91,7 +88,6 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     replayService,
     simService,
     systemService,
-    wsService,
   });
   return runtime;
 }

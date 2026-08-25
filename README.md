@@ -17,11 +17,11 @@
 
 It runs locally today, as a single process: SQL (SQLite) holds metadata (flows, artifacts, sims, runs, evals), a content-addressed filesystem store holds immutable content (LLM outputs, API responses, exported values), and the event bus and job queue are both in-memory. Business logic is written against interfaces rather than these specific implementations, so other backends could get swapped in later — Redis Streams for the queue and MinIO for blob storage are the leading candidates — but that's a design intent, not a present capability.
 
-## The Workbench (`apps/web-app`)
+## The Workbench (`apps/workbench`)
 
 ![The Workbench: FlowExplorer tree, an open Flow Graph panel with custom branch/parallel/join nodes, the Step Details right-rail, and a synced JSON Definition panel](workbench-01.png)
 
-`apps/web-app` is a dockview-based **Workbench**: a persistent shell with a left-side FlowExplorer tree (Flows → Versions, with Runs/Sims/Artifacts nested under each version) and a Dock of open/closeable/draggable panels — Flow Graph, Event Graph, artifacts, flow authoring, step results, and more — plus a Postman-style right-rail (Parameters, Run Input, Simulate, Problems, Step Details, Step Results, Settings) that follows whichever panel is focused.
+`apps/workbench` is a dockview-based **Workbench**: a persistent shell with a left-side FlowExplorer tree (Flows → Versions, with Runs/Sims/Artifacts nested under each version) and a Dock of open/closeable/draggable panels — Flow Graph, Event Graph, artifacts, flow authoring, step results, and more — plus a Postman-style right-rail (Parameters, Run Input, Simulate, Problems, Step Details, Step Results, Settings) that follows whichever panel is focused.
 
 - **Flow Graph**: dagre-based auto-layout, custom node types per step kind, branch/parallel handling, and replay — play back a run's event history (play/pause, speed selection, cancel) and watch step status update live, in sync with a companion Event Graph panel.
 - **Flow authoring**, from the tree: create a flow by uploading a JSON file or typing one in, with live schema validation and a synced graph preview. Full drag-and-drop visual editing isn't built yet.
@@ -59,14 +59,14 @@ Applies Prisma migrations to a local SQLite file. Defaults to `lcase-db/sqlite/d
 
 ### 3. run with http server and vite react
 
-The current primary way to work with flows — see [The Workbench](#the-workbench-appsweb-app) above for everything it covers. Runs as two separate long-lived processes, each in its own terminal:
+The current primary way to work with flows — see [The Workbench](#the-workbench-appsworkbench) above for everything it covers. Runs as two separate long-lived processes, each in its own terminal:
 
 ```bash
 cd apps/http-server && pnpm dev
 ```
 
 ```bash
-cd apps/web-app && pnpm dev
+cd apps/workbench && pnpm dev
 ```
 
 ![A run replaying in the Flow Graph panel (branch path highlighted, playback controls visible) with the Event Graph docked below, in sync](workbench-02.png)
@@ -94,7 +94,7 @@ Not a one-command demo, though — its `text/markdown` params (`systemParser`, `
 ```bash
 pnpm build-packages   # build only packages/ (skips apps/)
 pnpm typecheck        # typecheck every package (turbo fan-out)
-pnpm lint             # real ESLint config only in apps/web-app today; most packages stub this as a no-op
+pnpm lint             # real ESLint config only in apps/workbench today; most packages stub this as a no-op
 pnpm -r test          # run every package's unit test suite
 ```
 
@@ -109,7 +109,7 @@ A map of what's here, not an exhaustive index. `apps/` is what you actually run;
 | Package                | Purpose                                                                                                                             |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **@lcase/http-server** | Fastify HTTP REST API, with Server-Sent Events for live run updates.                                                                |
-| **@lcase/web-app**     | The Workbench — see above.                                                                                                          |
+| **@lcase/workbench**   | The Workbench — see above.                                                                                                          |
 | **@lcase/cli**         | CLI for running and validating flows. Currently paused/out of sync with the relational identity model; planned for a future rework. |
 
 ### `packages/`
@@ -132,7 +132,7 @@ A map of what's here, not an exhaustive index. `apps/` is what you actually run;
 | **@lcase/json-ref-binder** | Binds output from JSON path reference to template reference.                                                                                                              |
 | **@lcase/artifacts**       | JSON / text/ markdown CAS file system store.                                                                                                                              |
 | **@lcase/runtime**         | Wires up a configurable runtime.                                                                                                                                          |
-| **@lcase/services**        | Implements grouped application logic exposed to apps.                                                                                                                     |
+| **@lcase/app-services**    | Implements grouped application logic exposed to apps.                                                                                                                     |
 | **`packages/use-cases/*`** | Small, focused business-logic pieces (`@lcase/run-flow`, `@lcase/run-history`) — this tier's boundaries are actively being reworked, don't read today's shape as settled. |
 
 `examples/` (**@lcase/examples**) holds demo/example flows and servers — its own top-level workspace entry, not part of either bucket above.

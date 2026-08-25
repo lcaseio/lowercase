@@ -132,12 +132,6 @@ export interface EvalServicePort {
   listByExperimentId(experimentId: string): Promise<EvalResultRecord[]>;
 }
 
-export interface WsServicePort {
-  monitorRun(runId: string, socket: WebSocket): void;
-  stopMonitoringRun(runId: string): void;
-  start(): Promise<void>;
-}
-
 export interface ArtifactServicePort {
   getArtifact(hash: string): Promise<AutoGetResult>;
   listArtifacts(filter?: ArtifactListFilter): Promise<ArtifactListItem[]>;

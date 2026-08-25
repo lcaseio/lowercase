@@ -12,7 +12,7 @@ import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
 import type { ArtifactsPort, ReplayServicePort } from "@lcase/ports";
-import { RunService } from "@lcase/services";
+import { RunService } from "@lcase/app-services";
 import type { AnyEvent } from "@lcase/types";
 import { getRunDetailRoute } from "../src/routes/runs/get-run-detail.js";
 import { getRunParamsRoute } from "../src/routes/runs/get-run-params.js";
