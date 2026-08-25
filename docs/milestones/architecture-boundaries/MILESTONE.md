@@ -17,13 +17,12 @@ Originally scoped as decision-first, ADR-only — no execution pass across the r
 | 1   | Package-tier taxonomy + control-plane research                                     | merged (#341) | [`arcs/taxonomy-and-control-plane.md`](./arcs/taxonomy-and-control-plane.md) | [`research/package-tier-taxonomy.md`](./research/package-tier-taxonomy.md), [`research/control-plane.md`](./research/control-plane.md) |
 | 2   | Physical package moves (`functional-core/*`, `components/*`)                       | merged (#342) | [`arcs/physical-moves.md`](./arcs/physical-moves.md)                         |                                                                                                                                        |
 | 3   | Renames (`services` → `app-services`, `web-app` → `workbench`) + dead-code cleanup | merged (#343) | [`arcs/renames-and-cleanup.md`](./arcs/renames-and-cleanup.md)               |                                                                                                                                        |
-| 4   | Worker/tool extensibility research                                                 | in progress   | [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md)   | [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md)                                                     |
+| 4   | Worker/tool extensibility research                                                 | merged (#344) | [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md)   | [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md)                                                     |
 | 5   | ADR(s) reflecting the settled, now-real shape                                      | not started   |                                                                              |                                                                                                                                        |
 
 ## Next up
 
-1. **PR 4 — worker/tool extensibility research.** In progress — see [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md). Same depth as the package-tier-taxonomy work; `research/worker-tool-extensibility.md` still needs to absorb the discussion once it settles.
-2. **PR 5 — ADR(s).** Shape and count not decided — whether this is one ADR covering the whole taxonomy or splits by tier/theme is explicitly a call to make once PRs 2–4 have actually landed, not now.
+1. **PR 5 — ADR(s).** Shape and count not decided — whether this is one ADR covering the whole taxonomy or splits by tier/theme is explicitly a call to make once PRs 2–4 have actually landed, not now.
 
 ## Not yet scoped
 
