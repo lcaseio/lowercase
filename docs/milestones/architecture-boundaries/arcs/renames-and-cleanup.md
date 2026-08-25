@@ -5,7 +5,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers the `services` → `app-services` and `web-app` → `workbench` renames, plus removing the confirmed-dead ports, files, and packages surfaced during PR 1's research (originally scoped as a separate PR 4, folded in here — see "Combining with dead-code cleanup" below).
 
-## PR 3 - Renames + dead-code cleanup - in progress
+## PR 3 - Renames + dead-code cleanup - merged (#343)
 
 ### Discussion
 
