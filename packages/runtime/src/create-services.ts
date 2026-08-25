@@ -6,7 +6,7 @@ import {
   RunService,
   SimService,
   SystemService,
-} from "@lcase/services";
+} from "@lcase/app-services";
 import { RuntimeConfig } from "./types/runtime.config.js";
 import { makeRuntimeContext } from "./runtime.js";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";

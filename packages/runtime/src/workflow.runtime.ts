@@ -3,7 +3,7 @@ import {
   ReplayService,
   SimService,
   type Services,
-} from "@lcase/services";
+} from "@lcase/app-services";
 import { RuntimeContext } from "./types/runtime.context.js";
 import { EventSink, RuntimeStatus } from "@lcase/ports";
 

@@ -3,6 +3,7 @@ packages:
   - packages/use-cases/*
   - packages/functional-core/*
   - packages/components/*
+  - packages/archive/*
   - apps/*
   - examples/
 

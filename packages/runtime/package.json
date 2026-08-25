@@ -26,7 +26,7 @@
     "@lcase/router": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/observability": "workspace:*",
-    "@lcase/services": "workspace:*",
+    "@lcase/app-services": "workspace:*",
     "@lcase/replay": "workspace:*",
     "@lcase/limiter": "workspace:*",
     "@lcase/artifacts": "workspace:*",

@@ -10,7 +10,7 @@ import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
-import { ArtifactService } from "@lcase/services";
+import { ArtifactService } from "@lcase/app-services";
 import type { FlowDefinition, JsonValue } from "@lcase/types";
 import { getCuratedArtifactsForParamRoute } from "../src/routes/flows/curated-artifacts.js";
 import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";

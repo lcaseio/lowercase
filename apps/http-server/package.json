@@ -24,7 +24,7 @@
     "@lcase/db-prisma": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/ports": "workspace:*",
-    "@lcase/services": "workspace:*",
+    "@lcase/app-services": "workspace:*",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@lcase/types": "workspace:*",
     "@types/ws": "^8.18.1",

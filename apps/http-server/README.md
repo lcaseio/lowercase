@@ -1,6 +1,6 @@
 # @lcase/http-server
 
-Fastify REST API and event stream server for the workflow engine — the backend [`apps/web-app`](../web-app) talks to. See the [repo root README](../../README.md) for the overall project, including database setup (`pnpm db:migrate`).
+Fastify REST API and event stream server for the workflow engine — the backend [`apps/workbench`](../workbench) talks to. See the [repo root README](../../README.md) for the overall project, including database setup (`pnpm db:migrate`).
 
 ## Development
 

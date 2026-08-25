@@ -11,7 +11,7 @@ import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
-import { FlowService } from "@lcase/services";
+import { FlowService } from "@lcase/app-services";
 import type { FlowDefinition } from "@lcase/types";
 import { postFlowsRoute } from "../src/routes/flows/post.js";
 import { postFlowsFilesRoute } from "../src/routes/flows/files/post.js";

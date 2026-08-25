@@ -546,7 +546,7 @@ curl http://localhost:3000/api/flows
 `PostFlowReq = { body: FlowDefinition }`, but the route itself types its body
 as plain `FlowDefinition` directly (`app.post<{ Body: FlowDefinition }>`) —
 `PostFlowReq` is never imported by the route at all. It's only used client-side,
-as `apps/web-app/src/redux/api/flows-api.ts`'s `addJsonFlow` mutation's own
+as `apps/workbench/src/redux/api/flows-api.ts`'s `addJsonFlow` mutation's own
 _argument_ shape (`builder.mutation<PostFlowRes, PostFlowReq>`) — its `query()`
 callback unwraps `arg.body` before sending, so the real wire payload is still
 plain `FlowDefinition`, matching the route. `PostFlowReq` describes a client-side

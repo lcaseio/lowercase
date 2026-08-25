@@ -9,7 +9,7 @@ Dockview owns workspace layout and panel identity. Redux owns durable panel UI/r
 
 ## Context
 
-`apps/web-app` is moving away from rigid, per-mode pages toward a dockview-based panel/tab workspace (currently prototyped under the `/explorer` route — that name is a throwaway spike label, not a settled product name, and this decision isn't about that route specifically). Content opens into panels a user can arrange, split, and close freely, rather than navigating between fixed pages.
+`apps/workbench` is moving away from rigid, per-mode pages toward a dockview-based panel/tab workspace (currently prototyped under the `/explorer` route — that name is a throwaway spike label, not a settled product name, and this decision isn't about that route specifically). Content opens into panels a user can arrange, split, and close freely, rather than navigating between fixed pages.
 
 The old page-based UI already used Redux for state that needed to survive route unmounts, with local `useState` reserved for state that was acceptable to lose. The dockview workspace reuses that general lesson, but adds requirements the old model never had to handle: **true multi-instance panels** (two different flow versions' graphs open side by side), **dockview owning the user-arranged layout itself** (a second state system with no fixed-page equivalent), and **cross-tab/reload/new-tab restoration** as load-bearing questions. The persistence work below is driven primarily by dockview's layout being torn down on reload with nothing to rebuild it from; keyed panel state is persisted alongside that layout because it makes restored work predictable, not because Redux alone had an unresolved route-survival gap.
 
