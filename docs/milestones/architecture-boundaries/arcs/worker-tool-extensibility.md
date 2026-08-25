@@ -1,6 +1,7 @@
 # Architecture Boundaries Milestone — Arc: Worker/Tool Extensibility Research (PR 4)
 
 **Previous:** [`renames-and-cleanup.md`](./renames-and-cleanup.md) (PR 3)
+**Next:** [`adrs.md`](./adrs.md) (PR 5)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 

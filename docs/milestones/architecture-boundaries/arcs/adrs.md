@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 5 - ADR(s) reflecting the settled, now-real shape - in progress
+## PR 5 - ADR(s) reflecting the settled, now-real shape - merged (#345)
 
 ### Discussion
 

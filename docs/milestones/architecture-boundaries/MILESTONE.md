@@ -18,11 +18,11 @@ Originally scoped as decision-first, ADR-only — no execution pass across the r
 | 2   | Physical package moves (`functional-core/*`, `components/*`)                       | merged (#342) | [`arcs/physical-moves.md`](./arcs/physical-moves.md)                         |                                                                                                                                        |
 | 3   | Renames (`services` → `app-services`, `web-app` → `workbench`) + dead-code cleanup | merged (#343) | [`arcs/renames-and-cleanup.md`](./arcs/renames-and-cleanup.md)               |                                                                                                                                        |
 | 4   | Worker/tool extensibility research                                                 | merged (#344) | [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md)   | [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md)                                                     |
-| 5   | ADR(s) reflecting the settled, now-real shape                                      | in progress   | [`arcs/adrs.md`](./arcs/adrs.md)                                             |                                                                                                                                        |
+| 5   | ADR(s) reflecting the settled, now-real shape                                      | merged (#345) | [`arcs/adrs.md`](./arcs/adrs.md)                                            | [`ADR-0005`](../../adr/0005-package-tier-taxonomy.md), [`ADR-0006`](../../adr/0006-worker-tool-extensibility-model.md)                |
 
 ## Next up
 
-1. **PR 5 — ADR(s).** In progress. Secrets/`SecretsPort` work and "tool" as vocabulary are both explicitly out of scope for this PR. `Operations` will be written in as a settled tier despite having no substantial real example yet — a deliberate best-guess call, to be superseded later if it doesn't hold up, not a claim it's proven.
+This milestone's PR index is complete. Remaining work is explicitly deferred, not scheduled — see "Not yet scoped" below.
 
 ## Not yet scoped
 
