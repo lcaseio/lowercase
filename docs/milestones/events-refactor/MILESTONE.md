@@ -21,7 +21,7 @@ Started with a long discussion-first research pass across the whole of `packages
 | PR  | Description                                                                                      | Status        | Where                                                                  | See also                                                                           |
 | --- | ------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model                 | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)         | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
-| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | in progress   | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
+| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | merged (#348) | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
 
 ## Next up
 

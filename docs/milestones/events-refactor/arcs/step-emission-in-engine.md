@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Builds directly on PR 1 ([`arcs/event-emission-core.md`](./event-emission-core.md)), which built the new `emit()`/`deriveTraceHeaderFields()`/span-per-entity core as a self-contained addition to `packages/events` with no real call-site migration. This PR is that migration's first, deliberately narrow proof: real `step` emission in the engine, chosen because it exercises both the normal `step.started`→`step.completed`/`failed` path and `step.reused`'s short-span path in one domain.
 
-## PR 2 - Wire `step` emission in the engine onto the new core - in progress
+## PR 2 - Wire `step` emission in the engine onto the new core - merged (#348)
 
 ### Discussion
 
