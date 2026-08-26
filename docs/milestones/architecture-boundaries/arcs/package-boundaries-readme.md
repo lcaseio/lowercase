@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 6 - Package-boundaries README - in progress
+## PR 6 - Package-boundaries README - merged (#346)
 
 ### Discussion
 
