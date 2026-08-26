@@ -7,7 +7,7 @@ One directory per milestone. See the convention below for shape, naming, and the
 | #   | Milestone                     | Status                           | Where                                                                                        |
 | --- | ----------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
 | 1   | ui-workspace                  | complete (v0.1.0-alpha.13, #339) | [`ui-workspace/MILESTONE.md`](./ui-workspace/MILESTONE.md)                                   |
-| 2   | architecture-boundaries       | complete (#341–#346)              | [`architecture-boundaries/MILESTONE.md`](./architecture-boundaries/MILESTONE.md)             |
+| 2   | architecture-boundaries       | complete (#341–#346)             | [`architecture-boundaries/MILESTONE.md`](./architecture-boundaries/MILESTONE.md)             |
 | 3   | events-refactor               | not started, scaffolded          | [`events-refactor/MILESTONE.md`](./events-refactor/MILESTONE.md)                             |
 | 4   | json-schema-migration         | not started, scaffolded          | [`json-schema-migration/MILESTONE.md`](./json-schema-migration/MILESTONE.md)                 |
 | 5   | rate-limiting                 | not started, scaffolded          | [`rate-limiting/MILESTONE.md`](./rate-limiting/MILESTONE.md)                                 |

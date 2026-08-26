@@ -21,7 +21,7 @@ Originally scoped as decision-first, ADR-only — no execution pass across the r
 | 3   | Renames (`services` → `app-services`, `web-app` → `workbench`) + dead-code cleanup | merged (#343) | [`arcs/renames-and-cleanup.md`](./arcs/renames-and-cleanup.md)               |                                                                                                                                        |
 | 4   | Worker/tool extensibility research                                                 | merged (#344) | [`arcs/worker-tool-extensibility.md`](./arcs/worker-tool-extensibility.md)   | [`research/worker-tool-extensibility.md`](./research/worker-tool-extensibility.md)                                                     |
 | 5   | ADR(s) reflecting the settled, now-real shape                                      | merged (#345) | [`arcs/adrs.md`](./arcs/adrs.md)                                             | [`ADR-0005`](../../adr/0005-package-tier-taxonomy.md), [`ADR-0006`](../../adr/0006-worker-tool-extensibility-model.md)                 |
-| 6   | Package-boundaries README (final PR of this milestone)                             | merged (#346) | [`arcs/package-boundaries-readme.md`](./arcs/package-boundaries-readme.md)   | [`docs/architecture.md`](../../architecture.md)                                                                                       |
+| 6   | Package-boundaries README (final PR of this milestone)                             | merged (#346) | [`arcs/package-boundaries-readme.md`](./arcs/package-boundaries-readme.md)   | [`docs/architecture.md`](../../architecture.md)                                                                                        |
 
 ## Next up
 
