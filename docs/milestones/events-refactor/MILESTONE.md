@@ -21,11 +21,12 @@ Started with a long discussion-first research pass across the whole of `packages
 | PR  | Description                                                                                      | Status        | Where                                                                  | See also                                                                           |
 | --- | ------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model                 | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)         | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
-| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | in progress   | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
+| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | merged (#348) | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
+| 3   | Give `packages/events` a real ESLint config, then clean/rebuild/fix                              | in progress   | [`arcs/events-lint-and-rebuild.md`](./arcs/events-lint-and-rebuild.md) |                                                                                    |
 
 ## Next up
 
-1. **Give `packages/events` a real, working ESLint config and command** — today it's the `echo lint` stub every `packages/*` uses (per `CLAUDE.md`, real ESLint currently only exists in `apps/workbench`). Alongside it, add clean commands for `node_modules`/`dist`, then actually run the sequence here — clean, reinstall, rebuild, run the new lint for real, fix whatever it surfaces — as a maintenance pass while this package is already being touched, not a separate cleanup detour. **Opportunistic, per package, not a monorepo-wide sweep**: the intent is to give each package this same treatment as work naturally touches it going forward, not to schedule the rest of `packages/*` now.
+Nothing scoped right now — see `arcs/events-lint-and-rebuild.md` for PR 3, currently in progress.
 
 ## Not yet scoped
 
