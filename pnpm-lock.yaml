@@ -470,6 +470,9 @@ importers:
 
   packages/components/engine:
     dependencies:
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../events
       '@lcase/flow-analysis':
         specifier: workspace:*
         version: link:../../functional-core/flow-analysis

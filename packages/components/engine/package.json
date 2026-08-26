@@ -17,6 +17,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
+    "@lcase/events": "workspace:*",
     "@lcase/flow-analysis": "workspace:*",
     "@lcase/json-ref-binder": "workspace:*",
     "@lcase/run-history": "workspace:*",

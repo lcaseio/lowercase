@@ -1,6 +1,7 @@
 import type {
   ArtifactsPort,
   EmitterFactoryPort,
+  EventBusPort,
   RunQueryPort,
 } from "@lcase/ports";
 import type {
@@ -170,13 +171,13 @@ export type EmitRunStartedFx = {
 };
 export type EmitStepPlannedFx = {
   type: "EmitStepPlanned";
-  scope: StepScope & CloudScope;
+  scope: StepScope & Omit<CloudScope, "source">;
   data: StepPlannedData;
   traceId: string;
 };
 export type EmitStepStartedFx = {
   type: "EmitStepStarted";
-  scope: StepScope & CloudScope;
+  scope: StepScope & Omit<CloudScope, "source">;
   data: StepStartedData;
   traceId: string;
 };
@@ -306,8 +307,10 @@ export type EffectHandlerRegistry = {
 };
 export type EffectHandlerDeps = {
   ef: EmitterFactoryPort;
+  bus: EventBusPort;
   runQuery: RunQueryPort;
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactsPort;
+  source: string;
 };

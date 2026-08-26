@@ -1,3 +1,4 @@
+import { emit } from "@lcase/events";
 import type {
   EffectHandler,
   EffectHandlerDeps,
@@ -8,10 +9,9 @@ export const emitStepStartedFx: EffectHandler<"EmitStepStarted"> = async (
   effect: EmitStepStartedFx,
   deps: EffectHandlerDeps,
 ) => {
-  const emitter = deps.ef.newStepEmitterNewSpan(
-    { ...effect.scope },
-    effect.traceId,
-  );
-
-  await emitter.emit("step.started", effect.data);
+  await emit(deps.bus, "step.started", effect.data, {
+    ...effect.scope,
+    source: deps.source,
+    traceId: effect.traceId,
+  });
 };

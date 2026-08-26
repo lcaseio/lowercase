@@ -41,7 +41,6 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
         flowid: newRun.flowId,
         flowversionid: newRun.flowVersionId,
         runid: runId,
-        source: "lowercase://engine",
         stepid: plannedStepId,
         steptype: step.type,
       },

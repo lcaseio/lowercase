@@ -40,7 +40,7 @@ export type MakeRunPlanFx = {
 
 export type EmitStepReusedFx = {
   type: "EmitStepReused";
-  scope: StepScope & CloudScope;
+  scope: StepScope & Omit<CloudScope, "source">;
   data: StepReusedData;
   traceId: string;
 };

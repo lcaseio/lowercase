@@ -1,8 +1,10 @@
 # Events Package Refactor Milestone — Arc: Event-Emission Core (PR 1)
 
+**Next:** [`step-emission-in-engine.md`](./step-emission-in-engine.md) (PR 2)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Originally scoped as "genericize the ten domain emitter classes" — a mechanical DRY-up of the existing `EmitterFactory`/`BaseEmitter` architecture. Discussion broadened it into a genuinely new event-emission core instead, superseding that narrower plan rather than incrementally cleaning it up. Full background on the current system this replaces: [`research/history-and-current-shape.md`](../research/history-and-current-shape.md).
 
-## PR 1 - Event-emission core: single `emit()`, context propagation, span-per-entity model - in progress
+## PR 1 - Event-emission core: single `emit()`, context propagation, span-per-entity model - merged (#347)
 
 ### Discussion
 
