@@ -1,10 +1,12 @@
 # Events Package Refactor
 
+**Status: Complete — merged (#347, #348, #349).**
+
 ## Summary
 
 Refactor `packages/events` — originally scoped narrowly around `EmitterFactory`'s boilerplate (self-documented in its own doc comment as "currently in between being refactored"), now aimed at a new event-emission core: a single generic `emit()` function, context (scope/trace/span) handled via propagation rather than per-domain construction, and a span-per-entity-identity model — replacing the current per-domain-class architecture rather than incrementally DRYing it up.
 
-Whether the hand-rolled Zod event/data schemas (`*.event.schema.ts`/`*.data.schema.ts`) get folded into this same milestone, stay scoped to `json-schema-migration` separately, or `packages/specs` joins too, is explicitly undecided — this starts as its own thing, scope grows from there rather than being decided up front.
+Delivered as a first working slice, deliberately not a full-package rewrite: the new core (PR 1), proven out in one real domain (`step` emission in the engine, PR 2), plus real ESLint/typecheck coverage and a maintenance pass (PR 3). The hand-rolled Zod event/data schemas (`*.event.schema.ts`/`*.data.schema.ts`) were deliberately left untouched — see `Not yet scoped` below, now resolved to `json-schema-migration`'s territory rather than staying an open question here.
 
 Full research/discussion behind everything below: [`research/history-and-current-shape.md`](./research/history-and-current-shape.md).
 
@@ -22,15 +24,11 @@ Started with a long discussion-first research pass across the whole of `packages
 | --- | ------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model                 | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)         | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
 | 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | merged (#348) | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
-| 3   | Give `packages/events` a real ESLint config, then clean/rebuild/fix                              | in progress   | [`arcs/events-lint-and-rebuild.md`](./arcs/events-lint-and-rebuild.md) |                                                                                    |
-
-## Next up
-
-Nothing scoped right now — see `arcs/events-lint-and-rebuild.md` for PR 3, currently in progress.
+| 3   | Give `packages/events` a real ESLint config, then clean/rebuild/fix                              | merged (#349) | [`arcs/events-lint-and-rebuild.md`](./arcs/events-lint-and-rebuild.md) |                                                                                    |
 
 ## Not yet scoped
 
-- **`event-schema.registry.ts`/`category.registry.ts`/`event-types.ts`'s hand-maintained schema/type wiring.** Real overlap with `json-schema-migration` (this is exactly the hand-rolled-Zod-schemas problem that milestone names). Whether this becomes a later PR of this milestone or moves into that one entirely is undecided.
+- **`event-schema.registry.ts`/`category.registry.ts`/`event-types.ts`'s hand-maintained schema/type wiring — deferred to `json-schema-migration`, not this milestone.** Real overlap with that milestone (this is exactly the hand-rolled-Zod-schemas problem it names), and its own `MILESTONE.md` already scopes moving `packages/events`' schemas to JSON Schema directly. No longer an open "which milestone" question.
 - **Broader adoption beyond the `step` proof** (`worker`, `router`, `limiter`, etc.) — deliberately not committed as ordered milestone PRs yet. A real open strategic question: migrate these as their own dedicated pass, or defer most of it to each subsystem's own future refactor (a broader refactor of `packages/*` beyond just `events` is a real, separately-intended future direction), since migrating a call site now that gets rewritten again during that system's own refactor could just be redone work. Leaning toward deferring, not settled.
 - **A principled, consistent answer for what belongs in the envelope header vs. `data`.** Not applied consistently today (see research doc) — sometimes deliberately duplicated as an experiment, sometimes header-only, sometimes `data`-only; `LimiterScope` keeping its ids in `data` is one concrete instance. A real future goal to derive an actual rule and align existing events to it. Not scoped or started.
 - **Error propagation across the whole event-bus-adjacent backend — bigger than this milestone, not just `packages/events`.** Surfaced directly from `buildEvent()`'s current behavior (throws on schema-validation failure, which can halt whatever handler called it) — but the real question is broader: should a failure like this instead emit an event and/or return a Result-shaped value (mirroring the existing, deliberate `{ok,value}`/`{ok,error}` envelope convention already used on API responses) so callers across `engine`/`worker`/`router`/`limiter` can react without crashing? Explicitly named as needing its own research and design pass, not a `buildEvent()` tweak — touches `engine-hardening`'s territory too (currently scoped to `packages/engine` specifically, per its own `MILESTONE.md`, not this broader cross-cutting question). Not scoped or started; may end up as its own future milestone rather than fitting inside an existing one.
