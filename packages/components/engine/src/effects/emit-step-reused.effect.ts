@@ -1,3 +1,4 @@
+import { emit } from "@lcase/events";
 import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
 import type { EmitStepReusedFx } from "../types/effect.types.js";
 
@@ -10,6 +11,9 @@ export const emitStepReusedFx: EffectHandler<"EmitStepReused"> = async (
   effect: EmitStepReusedFx,
   deps: EffectHandlerDeps,
 ) => {
-  const emitter = deps.ef.newStepEmitterNewSpan(effect.scope, effect.traceId);
-  await emitter.emit("step.reused", effect.data);
+  await emit(deps.bus, "step.reused", effect.data, {
+    ...effect.scope,
+    source: deps.source,
+    traceId: effect.traceId,
+  });
 };

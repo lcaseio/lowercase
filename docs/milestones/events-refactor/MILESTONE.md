@@ -18,14 +18,14 @@ Started with a long discussion-first research pass across the whole of `packages
 
 ## PR index
 
-| PR  | Description                                                                      | Status      | Where                                                          | See also                                                                           |
-| --- | -------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md) | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
+| PR  | Description                                                                                      | Status        | Where                                                                  | See also                                                                           |
+| --- | ------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model                 | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)         | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
+| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | in progress   | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
 
 ## Next up
 
-1. **Prove the core out on a real usage: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()`.** Deliberately narrow — chosen because it exercises both the normal completed/failed path and `step.reused`'s short-span path in one domain. Real DX feedback from this decides whether `emit()` alone is enough or whether named variants (`emitFromEvent()` or similar) are actually needed — not designed ahead of that. No arc file yet.
-2. **Give `packages/events` a real, working ESLint config and command** — today it's the `echo lint` stub every `packages/*` uses (per `CLAUDE.md`, real ESLint currently only exists in `apps/workbench`). Alongside it, add clean commands for `node_modules`/`dist`, then actually run the sequence here — clean, reinstall, rebuild, run the new lint for real, fix whatever it surfaces — as a maintenance pass while this package is already being touched, not a separate cleanup detour. **Opportunistic, per package, not a monorepo-wide sweep**: the intent is to give each package this same treatment as work naturally touches it going forward, not to schedule the rest of `packages/*` now.
+1. **Give `packages/events` a real, working ESLint config and command** — today it's the `echo lint` stub every `packages/*` uses (per `CLAUDE.md`, real ESLint currently only exists in `apps/workbench`). Alongside it, add clean commands for `node_modules`/`dist`, then actually run the sequence here — clean, reinstall, rebuild, run the new lint for real, fix whatever it surfaces — as a maintenance pass while this package is already being touched, not a separate cleanup detour. **Opportunistic, per package, not a monorepo-wide sweep**: the intent is to give each package this same treatment as work naturally touches it going forward, not to schedule the rest of `packages/*` now.
 
 ## Not yet scoped
 

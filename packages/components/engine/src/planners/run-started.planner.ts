@@ -52,7 +52,6 @@ export const runStartedPlanner: Planner<RunStartedMsg> = (
       flowid: message.event.flowid,
       flowversionid: message.event.flowversionid,
       runid: message.event.runid,
-      source: "lowercase://engine",
       stepid: newStepId,
       steptype: newFlow.definition.steps[newStepId].type,
     },

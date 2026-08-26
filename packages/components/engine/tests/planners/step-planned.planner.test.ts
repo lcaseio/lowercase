@@ -32,7 +32,6 @@ describe("stepPlannedPlanner()", () => {
         flowid: message.event.flowid,
         flowversionid: message.event.flowversionid,
         runid: message.event.runid,
-        source: "lowercase://engine",
         stepid: stepId,
         steptype: stepType,
       },

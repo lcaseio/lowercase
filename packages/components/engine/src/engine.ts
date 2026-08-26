@@ -57,10 +57,12 @@ export class Engine {
 
     this.handlers = wireEffectHandlers({
       ef: this.ef,
+      bus: this.bus,
       runQuery: deps.runQuery,
       enqueue: this.enqueue.bind(this),
       processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,
+      source: `lowercase://engine/${this.id}`,
     });
   }
 

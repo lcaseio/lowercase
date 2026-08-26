@@ -44,7 +44,6 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
         runid: runId,
         stepid: stepId,
         steptype: stepType,
-        source: "lowercase://engine",
       },
       data: {
         status,
@@ -69,7 +68,6 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       runid: runId,
       stepid: stepId,
       steptype: stepType,
-      source: "lowercase://engine",
     },
     data: {
       status: "started",

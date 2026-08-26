@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { EventBusPort } from "@lcase/ports";
-import { emitStepPlannedFx } from "../../src/effects/emit-step-planned.effect.js";
+import { emitStepStartedFx } from "../../src/effects/emit-step-started.effect.js";
 import type {
   EffectHandlerDeps,
-  EmitStepPlannedFx,
+  EmitStepStartedFx,
 } from "../../src/engine.types.js";
 
-describe("emitStepPlannedFx", () => {
-  it("emits step.planned via the emit() core, sourced from deps.source", async () => {
+describe("emitStepStartedFx", () => {
+  it("emits step.started via the emit() core, sourced from deps.source", async () => {
     const publish = vi.fn(async () => {});
     const bus: EventBusPort = {
       publish,
@@ -15,7 +15,7 @@ describe("emitStepPlannedFx", () => {
       close: vi.fn(async () => undefined),
     };
     const effect = {
-      type: "EmitStepPlanned",
+      type: "EmitStepStarted",
       scope: {
         flowid: "test-flowid",
         flowversionid: "test-flowversionid",
@@ -24,6 +24,7 @@ describe("emitStepPlannedFx", () => {
         steptype: "test-steptype",
       },
       data: {
+        status: "started",
         step: {
           id: "test-step.id",
           name: "test-step.name",
@@ -31,18 +32,18 @@ describe("emitStepPlannedFx", () => {
         },
       },
       traceId: "test-traceid",
-    } satisfies EmitStepPlannedFx;
+    } satisfies EmitStepStartedFx;
 
-    await emitStepPlannedFx(effect, {
+    await emitStepStartedFx(effect, {
       bus,
       source: "lowercase://engine/test-engine",
     } as EffectHandlerDeps);
 
     expect(publish).toHaveBeenCalledOnce();
     const [type, event] = publish.mock.calls[0];
-    expect(type).toBe("step.planned");
+    expect(type).toBe("step.started");
     expect(event).toMatchObject({
-      type: "step.planned",
+      type: "step.started",
       source: "lowercase://engine/test-engine",
       traceid: "test-traceid",
       data: effect.data,

@@ -41,7 +41,6 @@ export const stepStartedPlanner: Planner<StepStartedMsg> = (
           flowid: newRunState.flowId,
           flowversionid: newRunState.flowVersionId,
           runid: runId,
-          source: "lowercase://engine",
           stepid: edge.endStepId,
           steptype: flowDef.definition.steps[edge.endStepId].type,
         },
