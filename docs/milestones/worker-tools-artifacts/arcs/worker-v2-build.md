@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers the actual build of Worker V2, seeded from [`docs/component-architecture/worker-v2/README.md`](../../../component-architecture/worker-v2/README.md)'s phased plan — a starting reference synthesized from PR 1's investigation plus a larger-model review, not a commitment. Each PR below still gets discussed on its own terms before being planned, and may split further once that happens.
 
-## PR 2 - Worker V2 core contract + fake collaborators, no runtime wiring - in progress
+## PR 2 - Worker V2 core contract + fake collaborators, no runtime wiring - merged (#351)
 
 ### Discussion
 
