@@ -9,9 +9,9 @@ One directory per milestone. See the convention below for shape, naming, and the
 | 1   | ui-workspace                  | complete (v0.1.0-alpha.13, #339) | [`ui-workspace/MILESTONE.md`](./ui-workspace/MILESTONE.md)                                   |
 | 2   | architecture-boundaries       | complete (#341–#346)             | [`architecture-boundaries/MILESTONE.md`](./architecture-boundaries/MILESTONE.md)             |
 | 3   | events-refactor               | complete (#347–#349)             | [`events-refactor/MILESTONE.md`](./events-refactor/MILESTONE.md)                             |
-| 4   | json-schema-migration         | not started, scaffolded          | [`json-schema-migration/MILESTONE.md`](./json-schema-migration/MILESTONE.md)                 |
-| 5   | rate-limiting                 | not started, scaffolded          | [`rate-limiting/MILESTONE.md`](./rate-limiting/MILESTONE.md)                                 |
-| 6   | worker-tools-artifacts        | not started, scaffolded          | [`worker-tools-artifacts/MILESTONE.md`](./worker-tools-artifacts/MILESTONE.md)               |
+| 4   | worker-tools-artifacts        | in progress                      | [`worker-tools-artifacts/MILESTONE.md`](./worker-tools-artifacts/MILESTONE.md)               |
+| 5   | json-schema-migration         | not started, scaffolded          | [`json-schema-migration/MILESTONE.md`](./json-schema-migration/MILESTONE.md)                 |
+| 6   | rate-limiting                 | not started, scaffolded          | [`rate-limiting/MILESTONE.md`](./rate-limiting/MILESTONE.md)                                 |
 | 7   | engine-hardening              | not started, scaffolded          | [`engine-hardening/MILESTONE.md`](./engine-hardening/MILESTONE.md)                           |
 | 8   | runtime-storage-consolidation | not started, scaffolded          | [`runtime-storage-consolidation/MILESTONE.md`](./runtime-storage-consolidation/MILESTONE.md) |
 | 9   | swappable-infrastructure      | not started, scaffolded          | [`swappable-infrastructure/MILESTONE.md`](./swappable-infrastructure/MILESTONE.md)           |
