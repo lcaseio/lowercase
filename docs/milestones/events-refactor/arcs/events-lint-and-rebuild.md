@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 3 - Give `packages/events` a real ESLint config, then clean/rebuild/fix - in progress
+## PR 3 - Give `packages/events` a real ESLint config, then clean/rebuild/fix - merged (#349)
 
 ### Discussion
 
