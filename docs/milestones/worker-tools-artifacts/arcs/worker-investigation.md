@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
-## PR 1 - Worker/tools investigation — history, current shape, refactor direction - in progress
+## PR 1 - Worker/tools investigation — history, current shape, refactor direction - merged (#350)
 
 `packages/components/worker`'s `Worker` class (`worker.ts`, ~700 lines) has been a known refactor target for a while — grew organically to support advancement elsewhere rather than getting a deliberate design pass of its own, the same shape of problem `EmitterFactory` was before its own refactor. This PR is that pass: understand the actual history and current shape before planning any change.
 
