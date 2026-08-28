@@ -4,8 +4,8 @@ import type {
   QueuePort,
   LimiterPort,
   ArtifactsPort,
+  WorkerPort,
 } from "@lcase/ports";
-import { Worker } from "@lcase/worker";
 import { Engine } from "@lcase/engine";
 import {
   ConsoleSink,
@@ -27,7 +27,7 @@ export type RuntimeContext = {
   bus: EventBusPort;
   router: RouterPort;
   engine: Engine;
-  worker: Worker;
+  worker: WorkerPort;
   tap: ObservabilityTap;
   sinks: SinkMap;
   ef: EmitterFactory;

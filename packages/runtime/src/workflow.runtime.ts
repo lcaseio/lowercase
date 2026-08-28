@@ -33,8 +33,6 @@ export class WorkflowRuntime {
       await this.ctx.worker.start();
       await this.ctx.limiter.start();
 
-      await this.ctx.worker.requestRegistration();
-
       return "running";
     } catch (err) {
       const traceId = this.ctx.ef.generateTraceId();

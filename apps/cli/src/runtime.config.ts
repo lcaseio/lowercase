@@ -22,6 +22,10 @@ export const config = {
   },
   worker: {
     id: "default-worker",
+    maxConcurrentJobs: 4,
+    protocolTimeoutMs: 60_000,
+    maxInFlightJobs: 4,
+    maxConcurrencyPerKey: 2,
   },
   stream: {
     id: "",
