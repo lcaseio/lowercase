@@ -1,7 +1,8 @@
 export type PermitRequest = {
   requestId: string;
-  // Provisional -- resource-key derivation for HTTP endpoints, accounts, and
-  // local models is an open question the doc explicitly leaves unresolved.
+  // Derived by a ResourceKeyResolver (see resource-key-resolver.ts), not
+  // supplied directly by the caller -- the canonical key may only be
+  // knowable after reference resolution (e.g. a templated URL).
   resourceKey: string;
   concurrencyCost?: number;
   rateCost?: number;
