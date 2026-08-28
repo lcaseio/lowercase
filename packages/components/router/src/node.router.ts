@@ -20,7 +20,16 @@ export class NodeRouter implements RouterPort {
     if (!event.type.endsWith(".submitted") && !event.type.startsWith("job.")) {
       return;
     }
-    await this.queueJob(event as JobSubmittedEvent);
+    // Worker V2 plan Phase 4: the engine now calls Worker V2 directly for
+    // httpjson (packages/integrations' engine-worker subpath), bypassing the
+    // router/queue entirely -- job.httpjson.submitted still publishes (kept
+    // for observability), but nothing consumes job.httpjson.queued anymore.
+    // Queueing it here would let a still-running legacy consumer execute the
+    // same job a second time. Temporary, same as the legacy consumer itself:
+    // Phase 5 removes this guard along with the rest of the queue path.
+    const jobSubmittedEvent = event as JobSubmittedEvent;
+    if (jobSubmittedEvent.capid === "httpjson") return;
+    await this.queueJob(jobSubmittedEvent);
   }
 
   async start() {

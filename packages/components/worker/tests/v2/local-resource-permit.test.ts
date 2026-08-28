@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { createLocalResourcePermitPort } from "../../src/v2/adapters/outbound/local-resource-permit.adapter.js";
+import { createLocalResourcePermit } from "../../src/v2/adapters/outbound/local-resource-permit.adapter.js";
 
-describe("createLocalResourcePermitPort", () => {
+describe("createLocalResourcePermit", () => {
   it("serializes acquisitions for the same resourceKey up to maxConcurrencyPerKey", async () => {
-    const port = createLocalResourcePermitPort({ maxConcurrencyPerKey: 1 });
+    const port = createLocalResourcePermit({ maxConcurrencyPerKey: 1 });
 
     const grant1 = await port.acquire({ requestId: "r1", resourceKey: "k" });
     let secondSettled = false;
@@ -24,7 +24,7 @@ describe("createLocalResourcePermitPort", () => {
   });
 
   it("different resourceKeys don't block each other", async () => {
-    const port = createLocalResourcePermitPort({ maxConcurrencyPerKey: 1 });
+    const port = createLocalResourcePermit({ maxConcurrencyPerKey: 1 });
 
     const grantA = await port.acquire({ requestId: "a", resourceKey: "key-a" });
     const grantB = await port.acquire({ requestId: "b", resourceKey: "key-b" });
@@ -34,7 +34,7 @@ describe("createLocalResourcePermitPort", () => {
   });
 
   it("release() is idempotent for an unknown or already-released grantId", async () => {
-    const port = createLocalResourcePermitPort({ maxConcurrencyPerKey: 1 });
+    const port = createLocalResourcePermit({ maxConcurrencyPerKey: 1 });
     const grant = await port.acquire({ requestId: "r1", resourceKey: "k" });
 
     await expect(port.release(grant.grantId)).resolves.toBeUndefined();
@@ -43,7 +43,7 @@ describe("createLocalResourcePermitPort", () => {
   });
 
   it("cancellation while waiting rejects rather than resolving, so signal-based classification upstream keeps working", async () => {
-    const port = createLocalResourcePermitPort({ maxConcurrencyPerKey: 1 });
+    const port = createLocalResourcePermit({ maxConcurrencyPerKey: 1 });
     await port.acquire({ requestId: "r1", resourceKey: "k" }); // hold the only slot
 
     const controller = new AbortController();
@@ -60,7 +60,7 @@ describe("createLocalResourcePermitPort", () => {
     const onWaitStart = vi.fn();
     const onGranted = vi.fn();
     const onReleased = vi.fn();
-    const port = createLocalResourcePermitPort(
+    const port = createLocalResourcePermit(
       { maxConcurrencyPerKey: 1 },
       { onWaitStart, onGranted, onReleased },
     );

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { JobCompletedData } from "@lcase/types";
 import { createLegacyHttpJsonQueueConsumer } from "../../src/v2/adapters/inbound/legacy-httpjson-queue-consumer.adapter.js";
 import { createWorkerV2 } from "../../src/v2/worker.js";
-import { createLocalResourcePermitPort } from "../../src/v2/adapters/outbound/local-resource-permit.adapter.js";
+import { createLocalResourcePermit } from "../../src/v2/adapters/outbound/local-resource-permit.adapter.js";
 import { createHttpJsonExecutor } from "../../src/v2/protocol/http-json/http-json.executor.js";
 import { createFakeArtifactsPort } from "./helpers/fake-artifacts.js";
 import { createFakeBus } from "./helpers/fake-bus.js";
@@ -34,7 +34,7 @@ describe("legacy compatibility adapter, end to end", () => {
 
     const worker = createWorkerV2(
       {
-        permits: createLocalResourcePermitPort({ maxConcurrencyPerKey: 1 }),
+        permits: createLocalResourcePermit({ maxConcurrencyPerKey: 1 }),
         lifecycle,
         protocol: createHttpJsonExecutor({ fetch }),
         artifacts,
