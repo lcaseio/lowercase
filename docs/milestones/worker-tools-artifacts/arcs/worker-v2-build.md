@@ -199,7 +199,7 @@ Built as planned, with a handful of real findings surfacing only once implementa
 
 Verified: `pnpm typecheck && pnpm vitest run` inside `packages/components/worker`; `tests/` typechecked separately via the same temporary sibling `tsconfig.json` approach as PR 2/3, then discarded; `pnpm build && pnpm -w turbo run typecheck && pnpm -w turbo run test && pnpm lint` clean across the full repo (27/26/26/26 tasks); the live end-to-end scratch check above.
 
-## PR 5 - Engine migrates to `WorkerDispatch` - built, pending review
+## PR 5 - Engine migrates to `WorkerDispatch` - merged (#354)
 
 ### Discussion
 
