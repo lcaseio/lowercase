@@ -1,15 +1,23 @@
 import type { JsonValue } from "@lcase/types";
-import type { JobExecutionError, ProtocolRequest } from "../job.contracts.js";
+import type { JobExecutionError } from "../job.contracts.js";
+import type { ResolvedHttpJsonRequest } from "./http-json/http-json.types.js";
+
+// Grows with MCP in Phase 5.
+export type ResolvedProtocolRequest = ResolvedHttpJsonRequest;
 
 export type ProtocolResult =
-  { ok: true; payload: JsonValue } | { ok: false; error: JobExecutionError };
+  | { ok: true; payload: JsonValue }
+  // `payload` here is a parseable failure response body -- carried so it can
+  // become the failed JobResult's optional `output` (debugging data via an
+  // artifact reference, never a raw response in the lifecycle event).
+  | { ok: false; error: JobExecutionError; payload?: JsonValue };
 
 // `execute` deliberately matches JobExecutionPort's own verb -- distinct
 // types, always called through a named receiver (`protocol.execute(...)`
 // vs `worker.execute(...)`), so there's no real ambiguity.
 export interface ProtocolExecutor {
   execute(
-    request: ProtocolRequest,
+    request: ResolvedProtocolRequest,
     options?: { signal?: AbortSignal },
   ): Promise<ProtocolResult>;
 }

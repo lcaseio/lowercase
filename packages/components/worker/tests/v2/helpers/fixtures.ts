@@ -8,7 +8,7 @@ export function makeCommand(
     jobId: "job-1",
     runId: "run-1",
     stepId: "step-1",
-    protocol: { kind: "fake", payload: null },
+    protocol: { kind: "httpjson", url: "https://example.test/resource" },
     refs: [],
     ...overrides,
   };
