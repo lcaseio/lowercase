@@ -41,7 +41,7 @@ A naming question surfaced during review, resolved in favor of keeping `JobExecu
 
 Verified: `pnpm typecheck && pnpm vitest run` inside `packages/components/worker` (31/31 tests pass, including the 21 pre-existing old-worker tests, unchanged); `pnpm -w turbo run typecheck` (26/26 tasks pass) confirms the `index.ts` addition doesn't break any downstream consumer. `tests/` isn't covered by the package's own `pnpm typecheck` (the same pre-existing gap `docs/todo.md` already tracks, and this milestone's own "Not yet scoped" repo-hygiene item for this package) — verified separately, twice (after the initial build and again after the later refactor), with a temporary, uncommitted `tsconfig.typecheck.json`-style config to confirm the test files themselves are type-sound, then discarded rather than committed (that hygiene fix stays out of scope for this PR, per the milestone's own note).
 
-## PR 3 - HTTP JSON vertical slice - in progress
+## PR 3 - HTTP JSON vertical slice - merged (#352)
 
 ### Discussion
 
