@@ -118,7 +118,7 @@ Built as designed, closely matching the discussion above — no significant delt
 
 Verified: `pnpm typecheck && pnpm vitest run` inside `packages/components/worker`; `pnpm -w turbo run typecheck` (26/26 tasks); `tests/` typechecked separately via the same temporary, uncommitted sibling `tsconfig.json` approach as PR 2, then discarded.
 
-## PR 4 - Legacy compatibility adapter - built, pending review
+## PR 4 - Legacy compatibility adapter - merged (#353)
 
 ### Discussion
 
