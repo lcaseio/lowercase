@@ -12,7 +12,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:migrate": "pnpm --filter @lcase/db-prisma run migrate"
+    "db:migrate": "pnpm --filter @lcase/db-prisma run migrate",
+    "verify": "pnpm format && pnpm lint && pnpm build && pnpm typecheck && pnpm -r test"
   },
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {

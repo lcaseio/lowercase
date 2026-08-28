@@ -22,6 +22,10 @@ export const runtimeConfig = {
   },
   worker: {
     id: "desktop-worker",
+    maxConcurrentJobs: 4,
+    protocolTimeoutMs: 60_000,
+    maxInFlightJobs: 4,
+    maxConcurrencyPerKey: 2,
   },
   stream: {
     id: "",

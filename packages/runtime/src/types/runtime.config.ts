@@ -45,6 +45,16 @@ export type EngineConfig = {
 
 export type WorkerConfig = {
   id: string;
+  // Worker V2's own execution parameters -- required, no package defaults
+  // (matches WorkerV2Config's existing convention).
+  maxConcurrentJobs: number;
+  protocolTimeoutMs: number;
+  // The legacy compatibility adapter's own intake bound -- deliberately a
+  // separate knob from maxConcurrentJobs, even though today's composition
+  // sets them equal (see legacy-httpjson-queue-consumer.adapter.ts).
+  maxInFlightJobs: number;
+  // The local resource-permit adapter's own per-key concurrency limit.
+  maxConcurrencyPerKey: number;
 };
 
 export type StreamConfig = {

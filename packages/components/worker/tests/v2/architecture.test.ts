@@ -9,10 +9,16 @@ const BANNED_IDENTIFIERS = [
   "EmitterFactoryPort",
   "AnyEvent",
 ];
+// adapters/ is where legacy-compatibility code deliberately lives -- it's
+// the one part of v2/ meant to know about the old queue/bus/event-envelope
+// world (see legacy-httpjson-queue-consumer.adapter.ts). The ban applies to
+// core: worker.ts, ports/, protocol/, concurrency/, and friends.
+const EXCLUDED_DIRS = ["adapters"];
 
 function listTsFiles(dir: string): string[] {
   const files: string[] = [];
   for (const entry of readdirSync(dir)) {
+    if (EXCLUDED_DIRS.includes(entry)) continue;
     const fullPath = join(dir, entry);
     if (statSync(fullPath).isDirectory()) {
       files.push(...listTsFiles(fullPath));
@@ -24,7 +30,7 @@ function listTsFiles(dir: string): string[] {
 }
 
 describe("Worker V2 core dependency boundary", () => {
-  it("no file under src/v2 imports EventBusPort, QueuePort, EmitterFactoryPort, or AnyEvent", () => {
+  it("no core file under src/v2 (excluding adapters/) imports EventBusPort, QueuePort, EmitterFactoryPort, or AnyEvent", () => {
     const offenders: string[] = [];
     for (const file of listTsFiles(V2_SRC_DIR)) {
       const contents = readFileSync(file, "utf8");

@@ -1,4 +1,3 @@
-import { InMemoryQueue } from "@lcase/adapters/queue";
 import { NodeRouter } from "@lcase/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
@@ -7,9 +6,6 @@ import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
-import { Worker } from "@lcase/worker";
-import { allToolBindingsMap, ToolRegistry } from "@lcase/tools";
-import { InMemoryStreamRegistry } from "@lcase/adapters/stream";
 import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
@@ -18,7 +14,6 @@ import type {
   EventBusPort,
   JobParserPort,
   RunQueryPort,
-  StreamRegistryPort,
 } from "@lcase/ports";
 import {
   makeBusFactory,
@@ -27,7 +22,6 @@ import {
 import type {
   ObservabilityConfig,
   RuntimeConfig,
-  WorkerConfig,
 } from "./types/runtime.config.js";
 import type { RuntimeContext, SinkMap } from "./types/runtime.context.js";
 import {
@@ -52,6 +46,7 @@ import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
+import { createWorkerV2Compat } from "./worker-v2/create-worker-v2.js";
 import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
@@ -110,7 +105,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const ef = new EmitterFactory(bus);
   const router = new NodeRouter(bus, queue, ef);
-  const streamRegistry = new InMemoryStreamRegistry();
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
@@ -122,16 +116,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
   const engine = createInProcessEngine(bus, ef, jobParser, runQuery, artifacts);
 
-  const worker = createInProcessWorker(
-    config.worker.id,
-    bus,
-    queue,
-    streamRegistry,
-    ef,
-    jobParser,
-    artifacts,
-    config.worker,
-  );
+  const worker = createWorkerV2Compat({ queue, bus, artifacts }, config.worker);
 
   const { tap, sinks } = createObservability(
     config.observability,
@@ -244,30 +229,4 @@ export function createInProcessEngine(
   });
 
   return engine;
-}
-
-export function createInProcessWorker(
-  id: string,
-  bus: EventBusPort,
-  queue: InMemoryQueue,
-  streamRegistry: StreamRegistryPort,
-  emitterFactory: EmitterFactory,
-  jobParser: JobParserPort,
-  artifacts: ArtifactsPort,
-  config: WorkerConfig,
-): Worker {
-  const toolRegistry = new ToolRegistry(allToolBindingsMap);
-  const worker = new Worker(id, {
-    bus,
-    emitterFactory,
-    queue,
-    streamRegistry,
-    toolRegistry,
-    jobParser,
-    artifacts,
-  });
-
-  // NOTE: add custom config for tools
-
-  return worker;
 }
