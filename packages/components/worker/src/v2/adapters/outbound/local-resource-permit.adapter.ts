@@ -24,7 +24,7 @@ export type ResourcePermitTelemetry = {
 // is a separate adapter the runtime composes independently and hands in via
 // WorkerV2Deps.permits, keeping WorkerV2Config scoped to worker's own
 // execution parameters only.
-export function createLocalResourcePermitPort(
+export function createLocalResourcePermit(
   config: LocalResourcePermitConfig,
   telemetry?: ResourcePermitTelemetry,
 ): ResourcePermitPort {

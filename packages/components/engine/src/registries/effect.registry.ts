@@ -3,6 +3,7 @@ import { emitFlowCompletedFx } from "../effects/emit-flow-completed.effect.js";
 import { emitFlowFailedFx } from "../effects/emit-flow-failed.effect.js";
 import { emitJobHttpJsonSubmittedFx } from "../effects/emit-job-httpjson-submitted.effect.js";
 import { emitJobMcpSubmittedFx } from "../effects/emit-job-mcp-submitted.effect.js";
+import { executeHttpJsonJobFx } from "../effects/execute-httpjson-job.effect.js";
 import { emitRunCompletedFx } from "../effects/emit-run-completed.effect.js";
 import { emitRunDeniedFx } from "../effects/emit-run-denied.effect.js";
 import { emitRunFailedFx } from "../effects/emit-run-failed.effect.js";
@@ -26,6 +27,7 @@ import type {
   EmitFlowFailedFx,
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
+  ExecuteHttpJsonJobFx,
   EmitRunCompletedFx,
   EmitRunFailedFx,
   EmitRunStartedFx,
@@ -87,6 +89,8 @@ export function wireEffectHandlers(deps: EffectHandlerDeps) {
     // job
     EmitJobHttpJsonSubmitted: async (effect: EmitJobHttpJsonSubmittedFx) =>
       emitJobHttpJsonSubmittedFx(effect, deps),
+    ExecuteHttpJsonJob: async (effect: ExecuteHttpJsonJobFx) =>
+      executeHttpJsonJobFx(effect, deps),
     EmitJobMcpSubmitted: async (effect: EmitJobMcpSubmittedFx) =>
       emitJobMcpSubmittedFx(effect, deps),
     // write to disk

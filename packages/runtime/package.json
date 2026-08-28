@@ -20,6 +20,7 @@
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
     "@lcase/worker": "workspace:*",
+    "@lcase/integrations": "workspace:*",
     "@lcase/tools": "workspace:*",
     "@lcase/engine": "workspace:*",
     "@lcase/adapters": "workspace:*",

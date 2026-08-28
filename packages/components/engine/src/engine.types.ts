@@ -4,6 +4,7 @@ import type {
   EventBusPort,
   RunQueryPort,
 } from "@lcase/ports";
+import type { JobExecutionRequest, JobExecutorPort } from "@lcase/ports/engine";
 import type {
   AnyEvent,
   CloudScope,
@@ -207,6 +208,22 @@ export type EmitJobHttpJsonSubmittedFx = {
   traceId: string;
 };
 
+// Worker V2 plan Phase 4: calls the engine-owned JobExecutorPort directly
+// instead of waiting on a job.httpjson.completed bus event. Deliberately a
+// second, separate effect alongside EmitJobHttpJsonSubmittedFx (left
+// untouched) rather than a replacement -- job.httpjson.submitted keeps
+// publishing for observability, this is what actually advances the run.
+export type ExecuteHttpJsonJobFx = {
+  type: "ExecuteHttpJsonJob";
+  request: JobExecutionRequest;
+  // Carried separately from `request` -- JobExecutionRequest deliberately
+  // doesn't need flowid/flowversionid/capid/toolid to execute a job, but the
+  // handler needs them to build the compat job.httpjson.completed/.failed
+  // event it still publishes for the event log/UI graph.
+  scope: JobScope & Omit<CloudScope, "source">;
+  traceId: string;
+};
+
 export type EmitJobMcpSubmittedFx = {
   type: "EmitJobMcpSubmitted";
   scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
@@ -252,6 +269,7 @@ export type DispatchInternalFx = {
 export type EngineEffect =
   | EmitRunStartedFx
   | EmitJobHttpJsonSubmittedFx
+  | ExecuteHttpJsonJobFx
   | EmitJobMcpSubmittedFx
   | EmitRunDeniedFx
   | EmitRunCompletedFx
@@ -312,5 +330,6 @@ export type EffectHandlerDeps = {
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactsPort;
+  jobExecutor: JobExecutorPort;
   source: string;
 };

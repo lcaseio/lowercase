@@ -62,15 +62,23 @@ export class Engine {
       enqueue: this.enqueue.bind(this),
       processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,
+      jobExecutor: deps.jobExecutor,
       source: `lowercase://engine/${this.id}`,
     });
   }
 
   subscribeToTopics(): void {
-    this.bus.subscribe("job.*.completed", async (e: AnyEvent) => {
+    // Worker V2 plan Phase 4: httpjson no longer advances the run from these
+    // subscriptions -- ExecuteHttpJsonJobFx enqueues JobFinished directly
+    // from the JobExecutorPort's return value instead. job.httpjson.completed/
+    // .failed still publishes (kept for the event log/UI graph), so this
+    // subscription is narrowed to mcp specifically, which still relies on it,
+    // rather than left as a job.*.completed/.failed wildcard -- otherwise the
+    // still-published httpjson compat event would be double-processed here.
+    this.bus.subscribe("job.mcp.completed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
-    this.bus.subscribe("job.*.failed", async (e: AnyEvent) => {
+    this.bus.subscribe("job.mcp.failed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
     this.bus.subscribe("replay.mode.submitted", async (e: AnyEvent) =>

@@ -1,9 +1,12 @@
+import { randomUUID } from "crypto";
+import type { JsonValue } from "@lcase/types";
 import type {
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
   EmitStepStartedFx,
   EngineEffect,
   EngineState,
+  ExecuteHttpJsonJobFx,
   Planner,
   WriteContextToDiskFx,
 } from "../engine.types.js";
@@ -116,6 +119,47 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
+
+    // Worker V2 plan Phase 4: a second, independent effect that actually
+    // dispatches the job -- EmitJobHttpJsonSubmittedFx above is left
+    // untouched (still generates its own jobid internally), so this path
+    // generates its own jobid too. Their jobid values no longer correlate --
+    // a small, known, accepted divergence from keeping the submitted
+    // handler untouched, not something worth routing around here.
+    const dispatchJobId = "job-" + randomUUID();
+    const executeJob: ExecuteHttpJsonJobFx = {
+      type: "ExecuteHttpJsonJob",
+      request: {
+        jobId: dispatchJobId,
+        runId,
+        stepId,
+        traceId: newRun.traceId,
+        protocol: {
+          kind: "httpjson",
+          url: step.url,
+          ...(step.method ? { method: step.method } : {}),
+          ...(step.headers ? { headers: step.headers } : {}),
+          // ShallowJsonValue -> JsonValue: correct by construction (a step's
+          // body is only ever JSON.parse'd/authored JSON), but not
+          // structurally assignable -- same precedent as PR 3's
+          // materialize-http-json-request.ts and PR 4's compat mapper.
+          ...(step.body !== undefined ? { body: step.body as JsonValue } : {}),
+        },
+        refs: jobRefs,
+        ...(Object.keys(exportRefs).length > 0 ? { exports: exportRefs } : {}),
+      },
+      scope: {
+        flowid: newRun.flowId,
+        flowversionid: newRun.flowVersionId,
+        runid: runId,
+        stepid: stepId,
+        jobid: dispatchJobId,
+        capid: "httpjson",
+        toolid: "httpjson",
+      },
+      traceId: newRun.traceId,
+    };
+    effects.push(executeJob);
   } else if (stepType === "mcp" && step.type === "mcp") {
     // const materializedStep = bindStepRefs(
     //   refs,
