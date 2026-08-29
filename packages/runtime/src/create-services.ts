@@ -69,7 +69,6 @@ export function createServices(config: RuntimeConfig): ServicesPort {
     router: ctx.router,
     sinks: ctx.sinks,
     tap: ctx.tap,
-    worker: ctx.worker,
   });
 
   return { flow, replay, sim, system, run, artifact, eval: evalService };

@@ -21,7 +21,6 @@
   "dependencies": {
     "@lcase/worker": "workspace:*",
     "@lcase/integrations": "workspace:*",
-    "@lcase/tools": "workspace:*",
     "@lcase/engine": "workspace:*",
     "@lcase/adapters": "workspace:*",
     "@lcase/router": "workspace:*",
