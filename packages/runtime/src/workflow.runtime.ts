@@ -30,7 +30,6 @@ export class WorkflowRuntime {
       this.ctx.tap.start();
 
       await this.ctx.engine.start();
-      await this.ctx.worker.start();
       await this.ctx.limiter.start();
 
       return "running";
@@ -54,7 +53,6 @@ export class WorkflowRuntime {
   async stopRuntime(): Promise<RuntimeStatus> {
     try {
       await this.ctx.engine.stop();
-      await this.ctx.worker.stopAllJobWaiters();
 
       for (const sink of Object.values(this.ctx.sinks)) {
         await sink.stop();

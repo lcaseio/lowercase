@@ -7,9 +7,9 @@ import type {
 import type { JobExecutionPort } from "@lcase/worker";
 import { toExecuteJobCommand, toJobExecutionOutcome } from "./mapper.js";
 
-// The local integration adapter for Worker V2 plan Phase 4: implements
-// engine's own JobExecutorPort by calling worker's JobExecutionPort inbound
-// port directly, in-process. Deliberately the only file that imports both
+// The local integration adapter: implements engine's own JobExecutorPort by
+// calling worker's JobExecutionPort inbound port directly, in-process.
+// Deliberately the only file that imports both
 // @lcase/ports/engine and @lcase/worker at once -- engine and worker cores
 // never import each other; packages/runtime constructs and wires this in.
 //

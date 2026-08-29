@@ -8,7 +8,6 @@ import type {
   RouterPort,
   RuntimeStatus,
   SystemServicePort,
-  WorkerPort,
 } from "@lcase/ports";
 
 export type SystemServiceDeps = {
@@ -18,7 +17,6 @@ export type SystemServiceDeps = {
   router: RouterPort;
   sinks: Record<string, EventSink>;
   tap: ObservabilityTapPort;
-  worker: WorkerPort;
   bus: EventBusPort;
 };
 export class SystemService implements SystemServicePort {
@@ -34,7 +32,6 @@ export class SystemService implements SystemServicePort {
       this.deps.tap.start();
 
       await this.deps.engine.start();
-      await this.deps.worker.start();
       await this.deps.limiter.start();
 
       return "running";
@@ -59,7 +56,6 @@ export class SystemService implements SystemServicePort {
   async stopSystem(): Promise<RuntimeStatus> {
     try {
       await this.deps.engine.stop();
-      await this.deps.worker.stopAllJobWaiters();
 
       for (const sink of Object.values(this.deps.sinks)) {
         await sink.stop();

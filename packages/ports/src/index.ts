@@ -17,7 +17,6 @@ export * from "./eval/eval-result-repository.port.js";
 
 // folder indexes
 export * from "./events/index.js";
-export * from "./tools/index.js";
 export * from "./bus/index.js";
 
 // individual files
@@ -27,8 +26,6 @@ export * from "./artifacts/artifact-store.port.js";
 export * from "./artifacts/artifacts.port.js";
 export * from "./artifacts/artifact-repository.port.js";
 export * from "./artifact-index-store/artifact-index-store.port.js";
-
-export * from "./worker/worker.port.js";
 
 export * from "./services/services.port.js";
 export * from "./client-api/client-api.js";

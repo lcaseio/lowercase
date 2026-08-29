@@ -48,10 +48,7 @@ import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
 import { createArtifacts } from "./wire-functions/create-artifacts.js";
-import {
-  createNoopLegacyWorker,
-  createWorkerV2Core,
-} from "./worker-v2/create-worker-v2.js";
+import { createWorkerCore } from "./worker/create-worker.js";
 import { prisma } from "../../db-prisma/dist/client.js";
 
 export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
@@ -81,7 +78,6 @@ export function createRuntime(config: RuntimeConfig): WorkflowRuntime {
     router: ctx.router,
     sinks: ctx.sinks,
     tap: ctx.tap,
-    worker: ctx.worker,
   });
   const runtime = new WorkflowRuntime(ctx, {
     flowService,
@@ -120,13 +116,11 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
 
-  // Worker V2 plan Phase 4: engine calls Worker V2 directly via jobExecutor,
-  // bypassing the router/queue for the monolith path. `worker` (RuntimeContext.
-  // worker/SystemServiceDeps.worker) has no real work left once httpjson goes
-  // direct and mcp already has no consumer -- see createNoopLegacyWorker.
-  const workerCore = createWorkerV2Core({ artifacts }, config.worker);
+  // The engine calls the worker directly via jobExecutor, bypassing the
+  // router/queue for the monolith path (mcp still has no consumer -- see
+  // docs/todo.md).
+  const workerCore = createWorkerCore({ artifacts }, config.worker);
   const jobExecutor: JobExecutorPort = new LocalWorkerJobExecutor(workerCore);
-  const worker = createNoopLegacyWorker();
 
   const engine = createInProcessEngine(
     bus,
@@ -158,7 +152,6 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
     bus,
     router,
     engine,
-    worker,
     tap,
     sinks,
     ef,
