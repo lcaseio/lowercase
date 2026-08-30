@@ -1,5 +1,5 @@
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EventSink,
   EvalResultRepositoryPort,
   RunQueryPort,
@@ -37,7 +37,7 @@ export class EvalResultProjectionSink implements EventSink {
 
   constructor(
     private readonly evalResults: EvalResultRepositoryPort,
-    private readonly artifacts: ArtifactsPort,
+    private readonly artifacts: ArtifactReaderPort,
     private readonly runQuery: RunQueryPort,
     private readonly scoreExportRetryDelaysMs: number[] = DEFAULT_SCORE_EXPORT_RETRY_DELAYS_MS,
   ) {}
@@ -92,7 +92,10 @@ export class EvalResultProjectionSink implements EventSink {
       return;
     }
 
-    const jsonResult = await this.artifacts.getJson(scoreExport.artifactHash);
+    const jsonResult = await this.artifacts.load(
+      scoreExport.artifactHash,
+      "application/json",
+    );
     if (!jsonResult.ok) {
       console.error(
         `[eval-result-projection-sink] unable to read score artifact for run ${evalRunId}: ${jsonResult.error.message}`,

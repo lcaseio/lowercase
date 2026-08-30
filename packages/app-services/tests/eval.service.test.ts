@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { EvalService } from "../src/eval.service.js";
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EvalResultRepositoryPort,
   RunQueryPort,
   RunRepositoryPort,
@@ -74,9 +74,9 @@ function makeEvalResults(): EvalResultRepositoryPort {
   };
 }
 
-function makeArtifacts(flowDef: unknown = undefined): ArtifactsPort {
+function makeArtifacts(flowDef: unknown = undefined): ArtifactReaderPort {
   return {
-    getJson: vi.fn().mockResolvedValue(
+    load: vi.fn().mockResolvedValue(
       flowDef === undefined
         ? {
             ok: false,
@@ -84,7 +84,7 @@ function makeArtifacts(flowDef: unknown = undefined): ArtifactsPort {
           }
         : { ok: true, value: flowDef },
     ),
-  } as unknown as ArtifactsPort;
+  } as unknown as ArtifactReaderPort;
 }
 
 const baseRequest = {
@@ -244,7 +244,7 @@ describe("EvalService", () => {
 
     await service.startEvalRun(baseRequest);
 
-    expect(artifacts.getJson).not.toHaveBeenCalled();
+    expect(artifacts.load).not.toHaveBeenCalled();
     expect(runService.requestRun).toHaveBeenCalledWith(
       expect.objectContaining({
         params: {

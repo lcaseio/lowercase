@@ -42,8 +42,5 @@ export const runtimeConfig = {
   },
   artifacts: {
     path: path.resolve(process.cwd(), "run-artifacts"),
-    placement: "embedded",
-    transport: "local",
-    store: "fs",
   },
 } satisfies RuntimeConfig;

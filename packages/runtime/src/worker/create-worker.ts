@@ -1,4 +1,4 @@
-import type { ArtifactAccessPort } from "@lcase/ports";
+import type { ArtifactReadWritePort } from "@lcase/ports";
 import type { JobExecutionPort } from "@lcase/worker";
 import {
   createConsoleWorkerLifecycleEventSink,
@@ -9,7 +9,7 @@ import {
 import type { WorkerConfig } from "../types/runtime.config.js";
 
 export type CreateWorkerCoreDeps = {
-  artifacts: ArtifactAccessPort;
+  artifacts: ArtifactReadWritePort;
 };
 
 // Composition only -- construction logic lives in packages/components/worker,
@@ -39,5 +39,3 @@ export function createWorkerCore(
     },
   );
 }
-
-// 3c2b0d67e5f299e7e0cbe858097c801845f974849922885c0f14ab8a5e28fb55

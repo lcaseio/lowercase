@@ -33,13 +33,13 @@ PRs 2 and onward are additionally governed by [`docs/component-architecture/`](.
 | 5   | Engine migrates to `WorkerDispatch`    | merged (#354) | [`arcs/worker-v2-build.md`](./arcs/worker-v2-build.md)                 | [Worker V2 plan — Phase 4](../../component-architecture/worker-v2/README.md#phase-4-engine-workerdispatch)                              |
 | 6   | Repo-hygiene + dead-code removal       | merged (#355) | [`arcs/worker-v2-build.md`](./arcs/worker-v2-build.md)                 | [Worker V2 plan — Phase 5](../../component-architecture/worker-v2/README.md#phase-5-complete-the-worker-surface) (removal portion only) |
 | 7   | Artifacts research + v2 writer built   | merged (#356) | [`arcs/artifacts-investigation.md`](./arcs/artifacts-investigation.md) | [Capability module category](../../component-architecture/research/capability-modules.md)                                               |
-| 8   | Artifacts read side + legacy migration | in progress   | [`arcs/artifacts-v2-build.md`](./arcs/artifacts-v2-build.md)           |                                                                                                                                         |
+| 8   | Artifacts read side + worker migration | merged (#357) | [`arcs/artifacts-v2-build.md`](./arcs/artifacts-v2-build.md)           |                                                                                                                                         |
+| 9   | Migrate legacy to new artifacts        | in progress   | [`arcs/artifacts-v2-build.md`](./arcs/artifacts-v2-build.md)           |                                                                                                                                         |
 
 ## Next up
 
-PR 8 is in progress (the artifacts read side — see PR index and [`arcs/artifacts-v2-build.md`](./arcs/artifacts-v2-build.md)). PRs 9–10 remain a rough sequencing sketch from discussion, not commitments — each still gets discussed on its own terms before being planned, and may split or reorder once that happens:
+PR 8 is merged (the artifacts read side, worker migrated onto it). PR 9 is in progress — migrating the remaining legacy consumers onto the new artifact ports, port shape and scope discussed, implementation not yet started (see PR index and [`arcs/artifacts-v2-build.md`](./arcs/artifacts-v2-build.md)). PR 10 remains a rough sequencing sketch from discussion, not a commitment — still gets discussed on its own terms before being planned, and may split or reorder once that happens:
 
-- **PR 9** — Integrate the refactored artifact system into the worker; update other call sites as needed, or leave them on the old artifacts API where the refactor allows it.
 - **PR 10** — Expand HTTP protocol support beyond JSON-only (not an MCP rebuild). This is also where MCP's near-term fate gets decided: postpone further MCP work, or land limited MCP support alongside the broader multi-protocol change. Not a decision to drop MCP from the project — the stated intent is to eventually support MCP and other protocols; this is a sequencing question, not a removal.
 
 ## Not yet scoped

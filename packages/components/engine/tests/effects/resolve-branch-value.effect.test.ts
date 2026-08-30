@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ArtifactsPort } from "@lcase/ports";
+import type { ArtifactReaderPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { resolveBranchValueFx } from "../../src/effects/resolve-branch-value.effect.js";
 import type { ResolveBranchValueFx } from "../../src/types/effect.types.js";
@@ -19,7 +19,7 @@ const baseRef: Ref = {
 
 describe("resolveBranchValueFx()", () => {
   it("resolves matchedCase when the value matches a declared case", async () => {
-    const getJson = vi
+    const load = vi
       .fn()
       .mockResolvedValue({ ok: true, value: { intent: "forecast" } });
     const enqueue = vi.fn();
@@ -34,7 +34,7 @@ describe("resolveBranchValueFx()", () => {
     };
 
     await resolveBranchValueFx(effect, {
-      artifacts: { getJson } as unknown as ArtifactsPort,
+      artifacts: { load } as unknown as ArtifactReaderPort,
       enqueue,
       processAll,
     } as unknown as EffectHandlerDeps);
@@ -46,13 +46,16 @@ describe("resolveBranchValueFx()", () => {
       ok: true,
       matchedCase: "forecast",
     };
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-hash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-hash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
     expect(processAll).toHaveBeenCalledOnce();
   });
 
   it("resolves matchedCase to null when the value matches no declared case", async () => {
-    const getJson = vi
+    const load = vi
       .fn()
       .mockResolvedValue({ ok: true, value: { intent: "something-else" } });
     const enqueue = vi.fn();
@@ -67,7 +70,7 @@ describe("resolveBranchValueFx()", () => {
     };
 
     await resolveBranchValueFx(effect, {
-      artifacts: { getJson } as unknown as ArtifactsPort,
+      artifacts: { load } as unknown as ArtifactReaderPort,
       enqueue,
       processAll,
     } as unknown as EffectHandlerDeps);
@@ -83,7 +86,7 @@ describe("resolveBranchValueFx()", () => {
   });
 
   it("enqueues an error message when the CAS fetch fails", async () => {
-    const getJson = vi
+    const load = vi
       .fn()
       .mockResolvedValue({ ok: false, error: { message: "not found" } });
     const enqueue = vi.fn();
@@ -98,7 +101,7 @@ describe("resolveBranchValueFx()", () => {
     };
 
     await resolveBranchValueFx(effect, {
-      artifacts: { getJson } as unknown as ArtifactsPort,
+      artifacts: { load } as unknown as ArtifactReaderPort,
       enqueue,
       processAll,
     } as unknown as EffectHandlerDeps);
@@ -109,7 +112,7 @@ describe("resolveBranchValueFx()", () => {
   });
 
   it("enqueues an error message when the ref has no hash", async () => {
-    const getJson = vi.fn();
+    const load = vi.fn();
     const enqueue = vi.fn();
     const processAll = vi.fn();
 
@@ -122,12 +125,12 @@ describe("resolveBranchValueFx()", () => {
     };
 
     await resolveBranchValueFx(effect, {
-      artifacts: { getJson } as unknown as ArtifactsPort,
+      artifacts: { load } as unknown as ArtifactReaderPort,
       enqueue,
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({ type: "BranchValueResolved", ok: false }),
     );

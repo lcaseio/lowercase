@@ -8,8 +8,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
-import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
-import { Artifacts } from "@lcase/artifacts";
+import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { createArtifactReadWritePort } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { ArtifactService } from "@lcase/app-services";
 import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
@@ -80,8 +80,8 @@ describe("artifact sql routes", () => {
   it("stores artifact metadata in SQL while reading content from CAS", async () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
     const flowRepository = new PrismaFlowRepository(prisma);
-    const artifacts = new Artifacts(
-      new LegacyFsArtifactStore(artifactDir),
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
       artifactRepository,
     );
     const artifactService = new ArtifactService(
@@ -187,7 +187,7 @@ describe("artifact sql routes", () => {
       ),
     ).toBe(true);
 
-    const markdown = await artifacts.getMarkdown(fileBody.value.hash);
+    const markdown = await artifacts.load(fileBody.value.hash, "text/markdown");
     expect(markdown).toEqual({ ok: true, value: "# prompt" });
 
     await app.close();
@@ -196,8 +196,8 @@ describe("artifact sql routes", () => {
   it("PATCH /api/artifacts/:hash associates and toggles curated", async () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
     const flowRepository = new PrismaFlowRepository(prisma);
-    const artifacts = new Artifacts(
-      new LegacyFsArtifactStore(artifactDir),
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
       artifactRepository,
     );
     const artifactService = new ArtifactService(
@@ -251,8 +251,8 @@ describe("artifact sql routes", () => {
   it("GET /api/artifacts filters by flowId, flowVersionId, and curated", async () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
     const flowRepository = new PrismaFlowRepository(prisma);
-    const artifacts = new Artifacts(
-      new LegacyFsArtifactStore(artifactDir),
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
       artifactRepository,
     );
     const artifactService = new ArtifactService(
@@ -324,8 +324,8 @@ describe("artifact sql routes", () => {
   it("GET /api/artifacts includes paramCurations when scoped by flowVersionId", async () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
     const flowRepository = new PrismaFlowRepository(prisma);
-    const artifacts = new Artifacts(
-      new LegacyFsArtifactStore(artifactDir),
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
       artifactRepository,
     );
     const artifactService = new ArtifactService(
@@ -346,17 +346,23 @@ describe("artifact sql routes", () => {
       start: "fetch",
       steps: { fetch: { type: "httpjson", url: "https://example.com" } },
     };
-    const defResult = await artifacts.putJson(definition as JsonValue);
-    if (!defResult.ok) throw new Error("failed to store flow definition");
+    const defResult = await artifacts.save(
+      definition as JsonValue,
+      "application/json",
+    );
+    if (defResult.status === "failed") {
+      throw new Error("failed to store flow definition");
+    }
 
     const flow = await prisma.flow.create({ data: { name: "Weather Flow" } });
     const flowVersion = await prisma.flowVersion.create({
-      data: { flowId: flow.id, sequence: 1, definitionHash: defResult.value },
+      data: { flowId: flow.id, sequence: 1, definitionHash: defResult.hash },
     });
 
     await artifactRepository.writeArtifact({
       hash: "a".repeat(64),
       time: "2026-01-01T00:00:00.000Z",
+      contentType: "text/plain",
       format: "text",
     });
 

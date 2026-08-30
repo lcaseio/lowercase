@@ -1,5 +1,4 @@
-import type { Path } from "@lcase/types";
-import type { JsonValue } from "@lcase/ports";
+import type { JsonValue, Path } from "@lcase/types";
 
 /**
  * Uses a path from a reference and resolves the path to a value

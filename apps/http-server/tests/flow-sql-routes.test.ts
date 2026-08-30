@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
-import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
+import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
-import { Artifacts } from "@lcase/artifacts";
+import { createArtifactReadWritePort } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { FlowService } from "@lcase/app-services";
 import type { FlowDefinition } from "@lcase/types";
@@ -80,8 +80,8 @@ describe("flow routes", () => {
   });
 
   it("uses the main flow routes with SQL-backed metadata", async () => {
-    const artifacts = new Artifacts(
-      new LegacyFsArtifactStore(artifactDir),
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
       new PrismaArtifactRepository(prisma),
     );
     const flowService = new FlowService(
@@ -164,7 +164,10 @@ describe("flow routes", () => {
       body.value.version.definitionHash,
     );
 
-    const artifact = await artifacts.getJson(body.value.version.definitionHash);
+    const artifact = await artifacts.load(
+      body.value.version.definitionHash,
+      "application/json",
+    );
     expect(artifact.ok).toBe(true);
     if (artifact.ok) {
       expect(artifact.value).toEqual(flowDefinition);

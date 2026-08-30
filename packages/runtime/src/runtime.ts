@@ -1,8 +1,7 @@
 import { NodeRouter } from "@lcase/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
-import { ArtifactReader, ArtifactWriter } from "@lcase/artifacts";
-import type { ArtifactAccessPort } from "@lcase/ports";
+import { createArtifactReadWritePort } from "@lcase/artifacts";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
@@ -13,7 +12,7 @@ import { Engine } from "@lcase/engine";
 
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EventBusPort,
   JobParserPort,
   RunQueryPort,
@@ -50,7 +49,6 @@ import path from "path";
 import { ReplayEngine } from "@lcase/replay";
 import { createLimiter } from "./wire-functions/create-limiter.js";
 import { ConcurrencyLimiter } from "@lcase/limiter";
-import { createArtifacts } from "./wire-functions/create-artifacts.js";
 import { createWorkerCore } from "./worker/create-worker.js";
 import { prisma } from "../../db-prisma/dist/client.js";
 
@@ -112,33 +110,24 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const artifacts = createArtifacts(
-    config.artifacts,
-    new PrismaArtifactRepository(prisma),
-  );
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
 
-  // New capability-module writer/reader (packages/ports' ArtifactWriterPort/
-  // ArtifactReaderPort), sharing one FsArtifactStore instance. Only the
-  // worker depends on this combined ArtifactAccessPort so far; every other
-  // consumer (engine, observability, HTTP routes) still uses the legacy
-  // `artifacts` above.
+  // One shared FsArtifactStore-backed ArtifactReadWritePort -- every
+  // consumer (engine, observability, HTTP routes via app-services, worker)
+  // now depends on this instead of the legacy Artifacts/ArtifactsPort,
+  // narrowing to ArtifactReaderPort at each read-only consumer's own
+  // constructor via ordinary structural typing.
   const artifactStore = new FsArtifactStore(config.artifacts.path);
-  const artifactWriter = new ArtifactWriter(artifactStore, artifactRepository);
-  const artifactReader = new ArtifactReader(artifactStore);
-  const artifactAccess: ArtifactAccessPort = {
-    reader: artifactReader,
-    writer: artifactWriter,
-  };
+  const artifacts = createArtifactReadWritePort(
+    artifactStore,
+    artifactRepository,
+  );
 
   // The engine calls the worker directly via jobExecutor, bypassing the
   // router/queue for the monolith path (mcp still has no consumer -- see
   // docs/todo.md).
-  const workerCore = createWorkerCore(
-    { artifacts: artifactAccess },
-    config.worker,
-  );
+  const workerCore = createWorkerCore({ artifacts }, config.worker);
   const jobExecutor: JobExecutorPort = new LocalWorkerJobExecutor(workerCore);
 
   const engine = createInProcessEngine(
@@ -183,7 +172,7 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
 export function createObservability(
   config: ObservabilityConfig,
   bus: EventBusPort,
-  artifacts: ArtifactsPort,
+  artifacts: ArtifactReaderPort,
   runQuery: RunQueryPort,
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
@@ -249,7 +238,7 @@ export function createInProcessEngine(
   ef: EmitterFactory,
   jobParser: JobParserPort,
   runQuery: RunQueryPort,
-  artifacts: ArtifactsPort,
+  artifacts: ArtifactReaderPort,
   jobExecutor: JobExecutorPort,
 ): Engine {
   const engine = new Engine({

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ArtifactIndex, ArtifactUpdateMetadata } from "@lcase/types";
+import type { ArtifactUpdateMetadata } from "@lcase/types";
 import { isArtifactCompatible } from "@lcase/flow-analysis";
 import { useGetFlowVersionDefQuery } from "@/redux/api/flows-api";
 import {
@@ -10,7 +10,6 @@ import { useAppDispatch, useAppSelector } from "@/redux/typed-hooks";
 import { useDockviewApi } from "@/components/workbench/dock/dock-context";
 import { openOrFocusPanel } from "@/components/workbench/dock/dock-panels";
 import { titleFor } from "@/components/workbench/shared/artifact-title";
-import { detectAuthoredFormat } from "@/components/workbench/artifact-authoring-panel/detect-authored-format";
 import {
   selectArtifactAuthoringPanelState,
   setAuthoringContent,
@@ -89,13 +88,7 @@ export function useArtifactAuthoringPanel(
   const compatibleParams = flowDef
     ? Object.fromEntries(
         Object.entries(flowDef.params ?? {}).filter(([, def]) =>
-          isArtifactCompatible(
-            {
-              contentType,
-              format: detectAuthoredFormat(contentType),
-            } as ArtifactIndex,
-            def.type,
-          ),
+          isArtifactCompatible(contentType, def.type),
         ),
       )
     : undefined;
@@ -210,7 +203,7 @@ export function useArtifactAuthoringPanel(
         if (
           returnTo &&
           returnToParamDef &&
-          isArtifactCompatible(result.value, returnToParamDef.type)
+          isArtifactCompatible(result.value.contentType, returnToParamDef.type)
         ) {
           dispatch(
             paramHashSet({

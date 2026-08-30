@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import type {
-  ArtifactIndex,
   ArtifactUpdateMetadata,
   FlowParamContentType,
 } from "@lcase/types";
-import { isArtifactCompatible } from "@lcase/flow-analysis";
+import {
+  defaultContentTypeForFormat,
+  isArtifactCompatible,
+} from "@lcase/flow-analysis";
 import {
   Dialog,
   DialogContent,
@@ -144,7 +146,7 @@ export function CreateArtifactDialog({
     if (
       targetParamDef &&
       !isArtifactCompatible(
-        { contentType: picked.type, format: pickedFormat } as ArtifactIndex,
+        defaultContentTypeForFormat(pickedFormat),
         targetParamDef.type,
       )
     ) {
@@ -164,10 +166,7 @@ export function CreateArtifactDialog({
     flowDef && file && format
       ? Object.fromEntries(
           Object.entries(flowDef.params ?? {}).filter(([, def]) =>
-            isArtifactCompatible(
-              { contentType: file.type, format } as ArtifactIndex,
-              def.type,
-            ),
+            isArtifactCompatible(defaultContentTypeForFormat(format), def.type),
           ),
         )
       : undefined;
@@ -225,7 +224,7 @@ export function CreateArtifactDialog({
         if (
           returnTo &&
           targetParamDef &&
-          isArtifactCompatible(result.value, targetParamDef.type)
+          isArtifactCompatible(result.value.contentType, targetParamDef.type)
         ) {
           dispatch(
             paramHashSet({

@@ -1,5 +1,5 @@
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EmitterFactoryPort,
   EventBusPort,
   RunQueryPort,
@@ -329,7 +329,7 @@ export type EffectHandlerDeps = {
   runQuery: RunQueryPort;
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
-  artifacts: ArtifactsPort;
+  artifacts: ArtifactReaderPort;
   jobExecutor: JobExecutorPort;
   source: string;
 };

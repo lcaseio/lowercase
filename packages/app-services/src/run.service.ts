@@ -1,6 +1,6 @@
 import {
   ArtifactRepositoryPort,
-  ArtifactsPort,
+  ArtifactReaderPort,
   EmitterFactoryPort,
   RunRequest,
   RunRepositoryPort,
@@ -25,7 +25,7 @@ import { FlowSchema } from "@lcase/specs";
 
 type RunServiceDeps = {
   artifactRepository: ArtifactRepositoryPort;
-  artifacts: ArtifactsPort;
+  artifacts: ArtifactReaderPort;
   ef: EmitterFactoryPort;
   runRepository: RunRepositoryPort;
   runQuery: RunQueryPort;
@@ -34,7 +34,7 @@ type RunServiceDeps = {
 
 export class RunService implements RunServicePort {
   private readonly artifactRepository: ArtifactRepositoryPort;
-  private readonly artifacts: ArtifactsPort;
+  private readonly artifacts: ArtifactReaderPort;
   private readonly ef: EmitterFactoryPort;
   private readonly runRepository: RunRepositoryPort;
   private readonly runQuery: RunQueryPort;
@@ -134,7 +134,7 @@ export class RunService implements RunServicePort {
         throw new Error(`Run param artifact not found: ${artifactHash}`);
       }
 
-      if (!isArtifactCompatible(artifact, declaration.type)) {
+      if (!isArtifactCompatible(artifact.contentType, declaration.type)) {
         throw new Error(
           `Run param ${paramName} requires ${declaration.type}, received ${artifact.contentType ?? artifact.format ?? "unknown"}`,
         );
@@ -143,7 +143,7 @@ export class RunService implements RunServicePort {
   }
 
   async #getFlowDefinition(flowDefHash: string): Promise<FlowDefinition> {
-    const result = await this.artifacts.getJson(flowDefHash);
+    const result = await this.artifacts.load(flowDefHash, "application/json");
     if (!result.ok) {
       throw new Error(
         `Unable to load flow definition: ${result.error.message}`,

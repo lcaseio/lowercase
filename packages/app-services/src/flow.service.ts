@@ -1,6 +1,6 @@
 import type {
   FlowServicePort,
-  ArtifactsPort,
+  ArtifactReadWritePort,
   FlowRepositoryPort,
 } from "@lcase/ports";
 import type {
@@ -17,7 +17,7 @@ import { analyzeFlow } from "@lcase/flow-analysis";
 
 export class FlowService implements FlowServicePort {
   constructor(
-    private readonly artifacts: ArtifactsPort,
+    private readonly artifacts: ArtifactReadWritePort,
     private readonly flowRepository?: FlowRepositoryPort,
   ) {}
 
@@ -90,7 +90,7 @@ export class FlowService implements FlowServicePort {
   private async getFlowDefByHash(
     hash: string,
   ): Promise<Result<FlowDefinition, string>> {
-    const result = await this.artifacts.getJson(hash);
+    const result = await this.artifacts.load(hash, "application/json");
     if (!result.ok) return { ok: result.ok, error: result.error.message };
 
     const validateResult = this.validateFlow(result.value);

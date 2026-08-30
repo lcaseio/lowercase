@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ArtifactsPort } from "@lcase/ports";
+import type { ArtifactReaderPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { getForkSpec } from "../../src/effects/get-fork-spec.effect.js";
 import { GetForkSpecFx } from "../../src/types/effect.types.js";
@@ -21,13 +21,13 @@ describe("getForkSpecFx()", () => {
     };
 
     const returnValue = { ok: true, value: message.forkSpec };
-    const getJson = vi.fn().mockResolvedValue(returnValue);
+    const load = vi.fn().mockResolvedValue(returnValue);
     const enqueue = vi.fn().mockReturnValue(undefined) as (
       message: string,
     ) => void;
     const processAll = vi.fn().mockReturnValue(undefined) as () => void;
 
-    const artifacts = { getJson } as unknown as ArtifactsPort;
+    const artifacts = { load } as unknown as ArtifactReaderPort;
     const effect: GetForkSpecFx = {
       type: "GetForkSpec",
       hash: "test-forkspechash",
@@ -40,7 +40,10 @@ describe("getForkSpecFx()", () => {
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-forkspechash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-forkspechash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
   });
   it("emits an error ForkSpecResult when getting the json fails", async () => {
@@ -52,13 +55,13 @@ describe("getForkSpecFx()", () => {
     };
 
     const returnValue = { ok: false, error: { message: message.error } };
-    const getJson = vi.fn().mockResolvedValue(returnValue);
+    const load = vi.fn().mockResolvedValue(returnValue);
     const enqueue = vi.fn().mockReturnValue(undefined) as (
       message: string,
     ) => void;
     const processAll = vi.fn().mockReturnValue(undefined) as () => void;
 
-    const artifacts = { getJson } as unknown as ArtifactsPort;
+    const artifacts = { load } as unknown as ArtifactReaderPort;
     const effect: GetForkSpecFx = {
       type: "GetForkSpec",
       hash: "test-forkspechash",
@@ -71,7 +74,10 @@ describe("getForkSpecFx()", () => {
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-forkspechash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-forkspechash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
   });
 });
