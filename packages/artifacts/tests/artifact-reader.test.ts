@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ArtifactReader } from "../../src/v2/artifact-reader.js";
-import { createFakeArtifactStorePort } from "../helpers/fake-artifact-store.js";
+import { ArtifactReader } from "../src/artifact-reader.js";
+import { createFakeArtifactStorePort } from "./helpers/fake-artifact-store.js";
 
 describe("ArtifactReader load()", () => {
   it("auto-mode: infers and decodes JSON content", async () => {

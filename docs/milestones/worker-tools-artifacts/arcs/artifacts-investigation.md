@@ -1,7 +1,7 @@
 # Worker, Tools, and Artifacts Milestone — Arc: Artifacts Investigation (PR 7)
 
 **Previous:** [`worker-v2-build.md`](./worker-v2-build.md) (PRs 2–6)
-**Next:** [`artifacts-v2-build.md`](./artifacts-v2-build.md) (PR 8–)
+**Next:** [`artifacts-v2-build.md`](./artifacts-v2-build.md) (PRs 8–10)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 

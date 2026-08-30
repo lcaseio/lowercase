@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { ArtifactWriter } from "../../src/v2/artifact-writer.js";
-import { createFakeArtifactStorePort } from "../helpers/fake-artifact-store.js";
-import { createFakeArtifactRepositoryPort } from "../helpers/fake-artifact-repository.js";
+import { ArtifactWriter } from "../src/artifact-writer.js";
+import { createFakeArtifactStorePort } from "./helpers/fake-artifact-store.js";
+import { createFakeArtifactRepositoryPort } from "./helpers/fake-artifact-repository.js";
 
 describe("ArtifactWriter save()", () => {
   it("saves JSON content", async () => {

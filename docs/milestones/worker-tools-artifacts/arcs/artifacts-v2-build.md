@@ -1,10 +1,10 @@
-# Worker, Tools, and Artifacts Milestone — Arc: Artifacts V2 Build (PRs 8–)
+# Worker, Tools, and Artifacts Milestone — Arc: Artifacts V2 Build (PRs 8–10)
 
 **Previous:** [`artifacts-investigation.md`](./artifacts-investigation.md) (PR 7)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers the actual build of the artifacts read side and the migration off the legacy path, seeded from PR 7's investigation and write-side build. Each PR below still gets discussed on its own terms before being planned, and may split further once that happens.
 
-## PR 8 - Artifacts read side (`load()`) + legacy migration - in progress
+## PR 8 - Artifacts read side (`load()`) + legacy migration - merged
 
 ### Discussion
 
@@ -40,7 +40,7 @@ Full repo `build`/`typecheck`/`test`/`lint` green throughout (27/27 build, 26/26
 
 **Explicitly not done, unchanged from the plan:** every other legacy consumer (engine effects, `ArtifactService`, HTTP routes) still uses `Artifacts`/`ArtifactsPort` — later work.
 
-## PR 9 - Migrate remaining legacy consumers onto new artifact ports - in progress
+## PR 9 - Migrate remaining legacy consumers onto new artifact ports - merged
 
 ### Discussion
 
@@ -90,5 +90,15 @@ Built matching the plan. `ArtifactReadWritePort` (`packages/ports/src/artifacts/
 **One incidental layering fix, found via the same full-repo build sweep**: `packages/functional-core/json-ref-binder` (a zero-ports package per its own tier) was importing `JsonValue` from `@lcase/ports` — only reachable because `artifacts.port.ts` re-exported it from `@lcase/types`. Fixed by importing directly from `@lcase/types`, incidentally correcting a real (if harmless) tier violation that predated this PR.
 
 **Test-fixture gaps of exactly the kind flagged in the discussion above, caught by the full suite, not missed**: two `apps/http-server` integration tests inserted artifact rows with `format` but no `contentType` (fine under the old fallback, broken under the new contentType-only check) — fixed by adding real `contentType` values, the same fix the discussion already anticipated for production code, just also needed in test fixtures.
+
+## PR 10 - Flatten `packages/artifacts/src/v2` into the package root - in progress
+
+### Discussion
+
+The `v2` subfolder existed only to distinguish the new artifact ports from the legacy `Artifacts` class living alongside it at `packages/artifacts/src/artifacts.ts`. PR 9 deleted that legacy class outright, so by the end of PR 9 `v2` was the only real content in the package — a versioning label with nothing left to version against. Decided to drop the folder as a small closing cleanup for this milestone, rather than carry a stale "v2" name forward into whatever consumes this package next.
+
+### What actually landed
+
+`artifact-reader.ts`, `artifact-writer.ts`, `artifact-read-write.ts` moved from `src/v2/` to `src/` directly; `v2/index.ts`'s three re-export lines merged into the package's existing root `index.ts` (which previously just re-exported `./v2/index.js`). Test files moved the same way (`tests/v2/*.test.ts` → `tests/*.test.ts`), with their relative imports (`../../src/v2/...` → `../src/...`, `../helpers/...` → `./helpers/...`) updated to match the new depth. `draft.temp.ts` (an unrelated, never-exported design sketch already at `src/` root) untouched. Full repo `build`/`typecheck`/`test` green throughout (27/27 build, 26/26 typecheck, 26/26 test).
 
 Full repo verification clean throughout: `build`/`typecheck`/`test`/`lint` all green (27/27, 26/26, 26/26, 26/26).
