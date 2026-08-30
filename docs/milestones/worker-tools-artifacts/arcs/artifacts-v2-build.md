@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers the actual build of the artifacts read side and the migration off the legacy path, seeded from PR 7's investigation and write-side build. Each PR below still gets discussed on its own terms before being planned, and may split further once that happens.
 
-## PR 8 - Artifacts read side (`load()`) + legacy migration - in progress
+## PR 8 - Artifacts read side (`load()`) + legacy migration - merged
 
 ### Discussion
 
@@ -40,7 +40,7 @@ Full repo `build`/`typecheck`/`test`/`lint` green throughout (27/27 build, 26/26
 
 **Explicitly not done, unchanged from the plan:** every other legacy consumer (engine effects, `ArtifactService`, HTTP routes) still uses `Artifacts`/`ArtifactsPort` — later work.
 
-## PR 9 - Migrate remaining legacy consumers onto new artifact ports - in progress
+## PR 9 - Migrate remaining legacy consumers onto new artifact ports - merged
 
 ### Discussion
 
