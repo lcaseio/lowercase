@@ -5,4 +5,5 @@ export * from "./analyze-references.js";
 export * from "./graph-layout.js";
 export * from "./toposort.js";
 export * from "./artifact-compat.js";
+export * from "./artifact-format.js";
 export * from "./format-problem.js";

@@ -42,9 +42,6 @@ export const config = {
   },
   artifacts: {
     path: path.resolve(process.cwd(), "lcase-db/artifacts"),
-    placement: "embedded",
-    transport: "local",
-    store: "fs",
   },
 } satisfies RuntimeConfig;
 

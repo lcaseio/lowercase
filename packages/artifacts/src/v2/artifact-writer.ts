@@ -5,8 +5,24 @@ import type {
   ArtifactStorePort,
   ArtifactRepositoryPort,
 } from "@lcase/ports";
-import type { JsonValue } from "@lcase/types";
+import type {
+  ArtifactFormat,
+  ArtifactWriteMetadata,
+  JsonValue,
+} from "@lcase/types";
 import { createHash } from "node:crypto";
+
+// Local, not imported from @lcase/flow-analysis's inferFormatFromContentType
+// -- duplicated rather than adding a cross-package dependency for a 4-line
+// mapping (mirrors the legacy Artifacts.inferFormat()/defaultContentType()
+// precedent). Keeps the legacy `format` column populated for every write
+// through this port, not just ones already going through it before this PR.
+function inferFormat(contentType: string): ArtifactFormat {
+  if (contentType === "application/json") return "json";
+  if (contentType === "text/markdown") return "markdown";
+  if (contentType.startsWith("text/")) return "text";
+  return "bytes";
+}
 
 // Capability-module writer: fuses ArtifactStorePort (CAS) + ArtifactRepositoryPort
 // (SQL) behind one owned write policy. Built fresh, independent of the legacy
@@ -67,15 +83,20 @@ export class ArtifactWriter implements ArtifactWriterPort {
       };
     }
 
+    const { filename, ...rest } = metadata ?? {};
+    const writeMetadata: ArtifactWriteMetadata =
+      rest.curated === true ? rest : { ...rest, curated: false };
+
     const writeResult = await this.repository.writeArtifact(
       {
         hash,
         time: new Date().toISOString(),
         size: bytes.length,
         contentType,
-        filename: metadata?.filename,
+        format: inferFormat(contentType),
+        filename,
       },
-      { curated: false, label: metadata?.label },
+      writeMetadata,
     );
 
     if (!writeResult.ok) {

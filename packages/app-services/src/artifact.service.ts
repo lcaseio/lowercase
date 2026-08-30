@@ -1,31 +1,48 @@
 import {
   AutoGetResult,
+  ArtifactMetadataInput,
   ArtifactRepositoryPort,
+  ArtifactReadWritePort,
   ArtifactServicePort,
-  ArtifactPutInput,
-  ArtifactsPort,
   FlowRepositoryPort,
 } from "@lcase/ports";
 import type {
   ArtifactIndex,
   ArtifactListFilter,
   ArtifactListItem,
+  ArtifactPutInput,
   ArtifactUpdateMetadata,
-  ArtifactWriteMetadata,
   FlowDefinition,
+  JsonValue,
   Result,
 } from "@lcase/types";
-import { isArtifactCompatible } from "@lcase/flow-analysis";
+import {
+  defaultContentTypeForFormat,
+  inferFormatFromContentType,
+  isArtifactCompatible,
+} from "@lcase/flow-analysis";
 
 export class ArtifactService implements ArtifactServicePort {
   constructor(
-    private readonly artifacts: ArtifactsPort,
+    private readonly artifacts: ArtifactReadWritePort,
     private readonly artifactRepository: ArtifactRepositoryPort,
     private readonly flowRepository: FlowRepositoryPort,
   ) {}
 
   async getArtifact(hash: string): Promise<AutoGetResult> {
-    return this.artifacts.getAuto(hash);
+    const result = await this.artifacts.load(hash);
+    if (!result.ok) return result;
+
+    const format = inferFormatFromContentType(result.contentType);
+    switch (format) {
+      case "json":
+        return { ok: true, format, value: result.value as JsonValue };
+      case "text":
+      case "markdown":
+        return { ok: true, format, value: result.value as string };
+      case "bytes":
+        return { ok: true, format, value: result.value as Uint8Array };
+    }
   }
 
   async listArtifacts(
@@ -35,13 +52,6 @@ export class ArtifactService implements ArtifactServicePort {
     return artifacts.sort((a, b) =>
       b.artifact.time.localeCompare(a.artifact.time),
     );
-  }
-
-  async putArtifact(input: ArtifactPutInput): Promise<Result<string, string>> {
-    if (input.value === undefined) return { ok: false, error: "undefined" };
-    const result = await this.artifacts.put(input);
-    if (!result.ok) return { ok: false, error: result.error.message };
-    return result;
   }
 
   async createArtifact(
@@ -59,14 +69,18 @@ export class ArtifactService implements ArtifactServicePort {
       return { ok: false, error: "Binary artifacts are not supported yet" };
     }
 
+    const contentType =
+      input.index?.contentType ?? defaultContentTypeForFormat(input.format);
+
     if (metadata?.paramCurations) {
       const versionResult = await this.flowRepository.getFlowVersion(
         metadata.flowVersionId,
       );
       if (!versionResult.ok) return versionResult;
 
-      const definitionResult = await this.artifacts.getJson(
+      const definitionResult = await this.artifacts.load(
         versionResult.value.definitionHash,
+        "application/json",
       );
       if (!definitionResult.ok) {
         return { ok: false, error: definitionResult.error.message };
@@ -78,17 +92,12 @@ export class ArtifactService implements ArtifactServicePort {
         if (!paramDef) {
           return { ok: false, error: `Undeclared param: ${paramName}` };
         }
-        // isArtifactCompatible only ever reads contentType/format at
-        // runtime, never persisted-only fields like hash/time -- validating
+        // isArtifactCompatible only ever needs contentType -- validating
         // against the not-yet-written input is equivalent to validating the
         // persisted artifact after the fact, and lets creation reject an
         // incompatible param before writing anything, unlike the edit path
         // (which validates an artifact that already exists)
-        const pending = {
-          format: input.format,
-          contentType: input.index?.contentType,
-        } as ArtifactIndex;
-        if (!isArtifactCompatible(pending, paramDef.type)) {
+        if (!isArtifactCompatible(contentType, paramDef.type)) {
           return {
             ok: false,
             error: `Artifact incompatible with param: ${paramName}`,
@@ -101,13 +110,37 @@ export class ArtifactService implements ArtifactServicePort {
     // JSON, untyped at runtime, so a client could send its own `curated`
     // key despite ArtifactUpdateMetadata never declaring one; spreading
     // metadata first means this always wins over anything it might contain
-    const writeMetadata: ArtifactWriteMetadata = {
+    const writeMetadata: ArtifactMetadataInput = {
       ...(metadata ?? {}),
+      filename: input.index?.filename,
       curated: true,
     };
-    const result = await this.artifacts.write(input, writeMetadata);
-    if (!result.ok) return { ok: false, error: result.error.message };
-    return result;
+
+    const result =
+      input.format === "json"
+        ? await this.artifacts.save(
+            input.value,
+            "application/json",
+            writeMetadata,
+          )
+        : await this.artifacts.save(
+            input.value,
+            contentType as `text/${string}`,
+            writeMetadata,
+          );
+
+    if (result.status === "failed" || result.status === "content-only") {
+      return { ok: false, error: result.error.message };
+    }
+
+    const index = await this.artifactRepository.getArtifact(result.hash);
+    if (!index) {
+      return {
+        ok: false,
+        error: `Artifact not found after save: ${result.hash}`,
+      };
+    }
+    return { ok: true, value: index };
   }
 
   async updateArtifactMetadata(
@@ -120,8 +153,9 @@ export class ArtifactService implements ArtifactServicePort {
       );
       if (!versionResult.ok) return versionResult;
 
-      const definitionResult = await this.artifacts.getJson(
+      const definitionResult = await this.artifacts.load(
         versionResult.value.definitionHash,
+        "application/json",
       );
       if (!definitionResult.ok) {
         return { ok: false, error: definitionResult.error.message };
@@ -136,7 +170,7 @@ export class ArtifactService implements ArtifactServicePort {
         if (!paramDef) {
           return { ok: false, error: `Undeclared param: ${paramName}` };
         }
-        if (!isArtifactCompatible(artifact, paramDef.type)) {
+        if (!isArtifactCompatible(artifact.contentType, paramDef.type)) {
           return {
             ok: false,
             error: `Artifact incompatible with param: ${paramName}`,

@@ -11,7 +11,7 @@ import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
-import type { ArtifactsPort, ReplayServicePort } from "@lcase/ports";
+import type { ArtifactReaderPort, ReplayServicePort } from "@lcase/ports";
 import { RunService } from "@lcase/app-services";
 import type { AnyEvent } from "@lcase/types";
 import { getRunDetailRoute } from "../src/routes/runs/get-run-detail.js";
@@ -138,19 +138,19 @@ describe("run sql routes", () => {
     });
 
     const artifacts = {
-      async getJson(hash: string) {
+      async load(hash: string) {
         return {
           ok: false as const,
           error: {
-            code: "STORE_GET_FAILED" as const,
+            code: "NOT_FOUND" as const,
             message: `Unknown hash: ${hash}`,
           },
         };
       },
-    } satisfies Pick<ArtifactsPort, "getJson">;
+    } as unknown as ArtifactReaderPort;
 
     const runService = new RunService({
-      artifacts: artifacts as ArtifactsPort,
+      artifacts,
       artifactRepository: new PrismaArtifactRepository(prisma),
       ef: new EmitterFactory(new InMemoryEventBus()),
       runRepository: new PrismaRunRepository(prisma),

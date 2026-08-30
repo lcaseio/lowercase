@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { SimService } from "../src/sim.service.js";
 import type {
-  ArtifactsPort,
+  ArtifactReadWritePort,
   EmitterFactoryPort,
   FlowRepositoryPort,
   RunQueryPort,
@@ -17,7 +17,7 @@ describe("SimService", () => {
     } as unknown as SimRepositoryPort;
 
     const service = new SimService(
-      {} as ArtifactsPort,
+      {} as ArtifactReadWritePort,
       {} as EmitterFactoryPort,
       {} as RunQueryPort,
       simRepository,

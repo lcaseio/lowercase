@@ -1,6 +1,6 @@
 import { ForkSpec } from "@lcase/types";
 import type {
-  ArtifactsPort,
+  ArtifactWriterPort,
   EmitterFactoryPort,
   EventBusPort,
 } from "@lcase/ports";
@@ -16,7 +16,7 @@ export function createForkSpec(steps: string[], runId: string) {
 
 type RunForkedSimDeps = {
   ef: EmitterFactoryPort;
-  artifacts: ArtifactsPort;
+  writer: ArtifactWriterPort;
 };
 
 type ForkedRunFlowMeta = {
@@ -41,8 +41,8 @@ export async function startForkedSim(
     runid: runId,
   });
 
-  const forkSpecResult = await deps.artifacts.putJson(forkSpec);
-  if (!forkSpecResult.ok) {
+  const forkSpecResult = await deps.writer.save(forkSpec, "application/json");
+  if (forkSpecResult.status === "failed") {
     console.log("Error storing fork spec");
     console.log(forkSpecResult.error);
     return;
@@ -52,7 +52,7 @@ export async function startForkedSim(
     flowId: flow.flowId,
     flowVersionId: flow.flowVersionId,
     flowDefHash: flow.flowDefHash,
-    forkSpecHash: forkSpecResult.value,
+    forkSpecHash: forkSpecResult.hash,
   });
 }
 

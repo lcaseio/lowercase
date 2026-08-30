@@ -7,7 +7,7 @@ export const getFlowDefFx: EffectHandler<"GetFlowDef"> = async (
   effect: GetFlowDefFx,
   deps: EffectHandlerDeps,
 ) => {
-  const json = await deps.artifacts.getJson(effect.hash);
+  const json = await deps.artifacts.load(effect.hash, "application/json");
 
   if (!json.ok) {
     const message: FlowDefResultMsg = {

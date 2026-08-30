@@ -1,4 +1,4 @@
-import type { JsonValue } from "@lcase/types";
+import type { ArtifactUpdateMetadata, JsonValue } from "@lcase/types";
 
 // Capability-module inbound port (see docs/component-architecture/research/
 // capability-modules.md): fuses ArtifactStorePort + ArtifactRepositoryPort
@@ -27,10 +27,20 @@ export interface ArtifactWriterPort {
   ): Promise<SaveArtifactResult>;
 }
 
-export type ArtifactMetadataInput = {
-  label?: string;
-  filename?: string;
-};
+// The default (curated: false, or omitted) branch mirrors the old narrow
+// shape -- filename lives here (it's stored alongside content, not on
+// ArtifactWriteMetadata) rather than in the curated branch's intersection.
+// A curated write carries the real ArtifactUpdateMetadata (paramCurations,
+// etc.) through to the repository -- see ArtifactWriter.save().
+export type ArtifactMetadataInput =
+  | {
+      curated?: false;
+      label?: string;
+      filename?: string;
+      flowId?: string;
+      flowVersionId?: string;
+    }
+  | ({ curated: true; filename?: string } & ArtifactUpdateMetadata);
 
 export type ArtifactContentError = {
   code: "STORE_PUT_FAILED" | "ENCODING_FAILED";

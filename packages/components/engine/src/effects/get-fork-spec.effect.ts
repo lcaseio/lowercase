@@ -7,7 +7,7 @@ export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
   effect: GetForkSpecFx,
   deps: EffectHandlerDeps,
 ) => {
-  const json = await deps.artifacts.getJson(effect.hash);
+  const json = await deps.artifacts.load(effect.hash, "application/json");
   if (json.ok) {
     const message: ForkSpecResultMsg = {
       type: "ForkSpecResult",

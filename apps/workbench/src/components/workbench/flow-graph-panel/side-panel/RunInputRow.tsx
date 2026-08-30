@@ -84,12 +84,12 @@ export function FlowVersionRunParamRow({
 
   const isOptional = definition.optional === true;
   const compatibleArtifacts = artifacts.filter((item) =>
-    isArtifactCompatible(item.artifact, definition.type),
+    isArtifactCompatible(item.artifact.contentType, definition.type),
   );
   const candidateArtifacts = curatedOnly
     ? (curatedArtifacts ?? []).filter(
         (item) =>
-          isArtifactCompatible(item.artifact, definition.type) &&
+          isArtifactCompatible(item.artifact.contentType, definition.type) &&
           item.associations.paramCurations.some(
             (pc) => pc.flowVersionId === versionId && pc.paramName === name,
           ),
@@ -101,7 +101,10 @@ export function FlowVersionRunParamRow({
   );
   const selectedIsCompatible =
     selectedArtifact &&
-    isArtifactCompatible(selectedArtifact.artifact, definition.type);
+    isArtifactCompatible(
+      selectedArtifact.artifact.contentType,
+      definition.type,
+    );
   const selectedInCandidates = candidateArtifacts.some(
     (item) => item.artifact.hash === selectedHash,
   );

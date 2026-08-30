@@ -48,6 +48,27 @@ describe("ArtifactWriter save()", () => {
     expect(stored?.contentType).toBe("audio/wav");
   });
 
+  it("infers and stores the legacy format field from contentType", async () => {
+    const { store } = createFakeArtifactStorePort();
+    const { repository, rows } = createFakeArtifactRepositoryPort();
+    const writer = new ArtifactWriter(store, repository);
+
+    const json = await writer.save({ a: 1 }, "application/json");
+    const text = await writer.save("hello", "text/plain");
+    const markdown = await writer.save("# hello", "text/markdown");
+    const bytes = await writer.save(new Uint8Array([1]), "audio/wav");
+
+    if (json.status !== "saved") throw new Error("expected saved");
+    if (text.status !== "saved") throw new Error("expected saved");
+    if (markdown.status !== "saved") throw new Error("expected saved");
+    if (bytes.status !== "saved") throw new Error("expected saved");
+
+    expect(rows.get(json.hash)?.format).toBe("json");
+    expect(rows.get(text.hash)?.format).toBe("text");
+    expect(rows.get(markdown.hash)?.format).toBe("markdown");
+    expect(rows.get(bytes.hash)?.format).toBe("bytes");
+  });
+
   it("returns the real encoding error, not a generic wrapper, for content that doesn't match its contentType", async () => {
     const { store } = createFakeArtifactStorePort();
     const { repository } = createFakeArtifactRepositoryPort();
@@ -120,6 +141,26 @@ describe("ArtifactWriter save()", () => {
     const row = rows.get(result.hash);
     expect(row?.curated).toBe(false);
     expect(row?.label).toBe("my label");
-    expect(row?.format).toBeUndefined();
+    expect(row?.format).toBe("json");
+  });
+
+  it("passes full curated metadata (paramCurations, flowVersionId) through to the repository", async () => {
+    const { store } = createFakeArtifactStorePort();
+    const { repository, rows } = createFakeArtifactRepositoryPort();
+    const writer = new ArtifactWriter(store, repository);
+
+    const result = await writer.save({ a: 1 }, "application/json", {
+      curated: true,
+      label: "curated label",
+      flowVersionId: "flow-version-1",
+      paramCurations: ["someParam"],
+    });
+
+    expect(result.status).toBe("saved");
+    if (result.status !== "saved") return;
+    const row = rows.get(result.hash);
+    expect(row?.curated).toBe(true);
+    expect(row?.label).toBe("curated label");
+    expect(row?.flowVersionId).toBe("flow-version-1");
   });
 });

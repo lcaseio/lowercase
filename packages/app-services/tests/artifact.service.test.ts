@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ArtifactService } from "../src/artifact.service.js";
 import type {
   ArtifactRepositoryPort,
-  ArtifactsPort,
+  ArtifactReadWritePort,
   FlowRepositoryPort,
 } from "@lcase/ports";
 import type { ArtifactIndex, FlowDefinition } from "@lcase/types";
@@ -11,7 +11,7 @@ function makeArtifactService(options?: {
   flow?: FlowDefinition;
   artifact?: ArtifactIndex;
   updateMetadata?: ReturnType<typeof vi.fn>;
-  write?: ReturnType<typeof vi.fn>;
+  save?: ReturnType<typeof vi.fn>;
 }) {
   const flow =
     options?.flow ??
@@ -30,23 +30,20 @@ function makeArtifactService(options?: {
   const artifact: ArtifactIndex = options?.artifact ?? {
     hash: "artifact-hash",
     time: new Date().toISOString(),
+    contentType: "text/plain",
     format: "text",
     curated: false,
   };
 
   const artifacts = {
-    getJson: vi.fn().mockResolvedValue({ ok: true, value: flow }),
-    write:
-      options?.write ??
+    load: vi.fn().mockResolvedValue({ ok: true, value: flow }),
+    save:
+      options?.save ??
       vi.fn().mockResolvedValue({
-        ok: true,
-        value: {
-          hash: "new-hash",
-          time: new Date().toISOString(),
-          curated: true,
-        },
+        status: "saved",
+        hash: "new-hash",
       }),
-  } as unknown as ArtifactsPort;
+  } as unknown as ArtifactReadWritePort;
 
   const artifactRepository = {
     listArtifacts: vi.fn().mockResolvedValue([]),
@@ -91,7 +88,7 @@ describe("ArtifactService.createArtifact", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(artifacts.write).not.toHaveBeenCalled();
+    expect(artifacts.save).not.toHaveBeenCalled();
   });
 
   it("forces curated: true even with no metadata at all", async () => {
@@ -103,10 +100,9 @@ describe("ArtifactService.createArtifact", () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(artifacts.write).toHaveBeenCalledWith(
-      { format: "text", value: "hello" },
-      { curated: true },
-    );
+    expect(artifacts.save).toHaveBeenCalledWith("hello", "text/plain", {
+      curated: true,
+    });
   });
 
   it("forces curated: true even if metadata smuggles its own curated key at runtime", async () => {
@@ -120,10 +116,10 @@ describe("ArtifactService.createArtifact", () => {
       label: "sneaky",
     } as never);
 
-    expect(artifacts.write).toHaveBeenCalledWith(
-      { format: "text", value: "hello" },
-      { curated: true, label: "sneaky" },
-    );
+    expect(artifacts.save).toHaveBeenCalledWith("hello", "text/plain", {
+      curated: true,
+      label: "sneaky",
+    });
   });
 
   it("merges curated: true into caller-supplied metadata rather than replacing it", async () => {
@@ -134,14 +130,11 @@ describe("ArtifactService.createArtifact", () => {
       { flowVersionId: "version-1", paramCurations: ["weatherApiKey"] },
     );
 
-    expect(artifacts.write).toHaveBeenCalledWith(
-      { format: "text", value: "hello" },
-      {
-        curated: true,
-        flowVersionId: "version-1",
-        paramCurations: ["weatherApiKey"],
-      },
-    );
+    expect(artifacts.save).toHaveBeenCalledWith("hello", "text/plain", {
+      curated: true,
+      flowVersionId: "version-1",
+      paramCurations: ["weatherApiKey"],
+    });
   });
 
   it("rejects a param that isn't declared on the flow version's definition, without writing anything", async () => {
@@ -153,7 +146,7 @@ describe("ArtifactService.createArtifact", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(artifacts.write).not.toHaveBeenCalled();
+    expect(artifacts.save).not.toHaveBeenCalled();
   });
 
   it("rejects a param whose declared type doesn't match the input's own format, without writing anything", async () => {
@@ -165,10 +158,10 @@ describe("ArtifactService.createArtifact", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(artifacts.write).not.toHaveBeenCalled();
+    expect(artifacts.save).not.toHaveBeenCalled();
   });
 
-  it("never calls write when the flow version can't be found", async () => {
+  it("never calls save when the flow version can't be found", async () => {
     const { service, artifacts, flowRepository } = makeArtifactService();
     (
       flowRepository.getFlowVersion as ReturnType<typeof vi.fn>
@@ -180,7 +173,36 @@ describe("ArtifactService.createArtifact", () => {
     );
 
     expect(result.ok).toBe(false);
-    expect(artifacts.write).not.toHaveBeenCalled();
+    expect(artifacts.save).not.toHaveBeenCalled();
+  });
+
+  it("fetches the full index from the repository after a successful save", async () => {
+    const { service, artifactRepository } = makeArtifactService();
+
+    const result = await service.createArtifact({
+      format: "text",
+      value: "hello",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(artifactRepository.getArtifact).toHaveBeenCalledWith("new-hash");
+    if (result.ok) expect(result.value.hash).toBe("artifact-hash");
+  });
+
+  it("returns an error when the save itself fails", async () => {
+    const { service } = makeArtifactService({
+      save: vi.fn().mockResolvedValue({
+        status: "failed",
+        error: { code: "STORE_PUT_FAILED", message: "disk full" },
+      }),
+    });
+
+    const result = await service.createArtifact({
+      format: "text",
+      value: "hello",
+    });
+
+    expect(result).toEqual({ ok: false, error: "disk full" });
   });
 });
 
@@ -213,12 +235,13 @@ describe("ArtifactService.updateArtifactMetadata", () => {
     expect(artifactRepository.updateMetadata).not.toHaveBeenCalled();
   });
 
-  it("rejects a param whose declared type doesn't match the artifact's contentType/format", async () => {
+  it("rejects a param whose declared type doesn't match the artifact's contentType", async () => {
     const { service, artifactRepository } = makeArtifactService({
       artifact: {
         hash: "artifact-hash",
         time: new Date().toISOString(),
-        format: "json", // incompatible with the declared "text/plain" param
+        contentType: "application/json", // incompatible with the declared "text/plain" param
+        format: "json",
         curated: false,
       },
     });

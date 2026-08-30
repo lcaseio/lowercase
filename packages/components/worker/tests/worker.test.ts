@@ -31,7 +31,12 @@ describe("Worker", () => {
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: { foo: "bar" } }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -92,7 +97,12 @@ describe("Worker", () => {
       error: protocolError,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -124,7 +134,12 @@ describe("Worker", () => {
       payload: { detail: "server exploded" },
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
 
@@ -147,7 +162,12 @@ describe("Worker", () => {
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -178,7 +198,12 @@ describe("Worker", () => {
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -211,7 +236,7 @@ describe("Worker", () => {
         permits,
         lifecycle: sink,
         protocol,
-        artifacts: { reader, writer },
+        artifacts: { ...reader, ...writer },
         resourceKeyResolver,
       },
       GENEROUS_CONFIG,
@@ -242,7 +267,12 @@ describe("Worker", () => {
         payload: { foo: "bar" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();
@@ -279,7 +309,12 @@ describe("Worker", () => {
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -316,7 +351,12 @@ describe("Worker", () => {
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -360,7 +400,12 @@ describe("Worker", () => {
         payload: { message: "hello" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -400,7 +445,12 @@ describe("Worker", () => {
       payload: null,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
     const badCommand = makeCommand({ stepId: "" });
@@ -420,7 +470,12 @@ describe("Worker", () => {
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -467,7 +522,12 @@ describe("Worker", () => {
         }),
     );
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       { maxConcurrentJobs: 10, protocolTimeoutMs: 20 },
     );
 
@@ -501,7 +561,12 @@ describe("Worker", () => {
     });
 
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts: { ...reader, ...writer },
+      },
       GENEROUS_CONFIG,
     );
     const command = makeCommand({
@@ -548,7 +613,12 @@ describe("Worker", () => {
       const thrown = new Error("permit unavailable");
       acquire.mockRejectedValueOnce(thrown);
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
 
@@ -570,7 +640,12 @@ describe("Worker", () => {
         payload: null,
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
 
@@ -590,7 +665,12 @@ describe("Worker", () => {
         error: { code: "HTTP_STATUS_FAILED", message: "x", retryable: false },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
 
@@ -610,7 +690,12 @@ describe("Worker", () => {
         throw thrown;
       });
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();
@@ -639,7 +724,12 @@ describe("Worker", () => {
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       seed("hash-param", "text/plain", "42");
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -679,7 +769,12 @@ describe("Worker", () => {
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       seed("hash-step", "application/json", { output: { id: "99" } });
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        {
+          permits,
+          lifecycle: sink,
+          protocol,
+          artifacts: { ...reader, ...writer },
+        },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({

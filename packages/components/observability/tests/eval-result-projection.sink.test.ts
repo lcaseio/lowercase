@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EvalResultRepositoryPort,
   RunQueryPort,
 } from "@lcase/ports";
@@ -82,10 +82,10 @@ function makeRunQuery(
   } as unknown as RunQueryPort;
 }
 
-function makeArtifacts(value: unknown = validPayload): ArtifactsPort {
+function makeArtifacts(value: unknown = validPayload): ArtifactReaderPort {
   return {
-    getJson: vi.fn().mockResolvedValue({ ok: true, value }),
-  } as unknown as ArtifactsPort;
+    load: vi.fn().mockResolvedValue({ ok: true, value }),
+  } as unknown as ArtifactReaderPort;
 }
 
 async function waitForMicrotasks() {
@@ -110,7 +110,10 @@ describe("EvalResultProjectionSink", () => {
     await waitForMicrotasks();
 
     expect(runQuery.getRunDetail).toHaveBeenCalledWith("run-eval");
-    expect(artifacts.getJson).toHaveBeenCalledWith("b".repeat(64));
+    expect(artifacts.load).toHaveBeenCalledWith(
+      "b".repeat(64),
+      "application/json",
+    );
     expect(evalResults.createEvalResult).toHaveBeenCalledWith(
       expect.objectContaining({
         targetRunId: "run-subject",

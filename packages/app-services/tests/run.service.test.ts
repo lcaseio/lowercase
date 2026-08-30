@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { RunService } from "../src/run.service.js";
 import type {
   ArtifactRepositoryPort,
-  ArtifactsPort,
+  ArtifactReaderPort,
   EmitterFactoryPort,
   RunQueryPort,
   RunRepositoryPort,
@@ -44,7 +44,7 @@ function makeRunService(options?: {
     } satisfies FlowDefinition);
 
   const artifacts = {
-    getJson: vi.fn().mockImplementation(async (hash: string) => {
+    load: vi.fn().mockImplementation(async (hash: string) => {
       if (hash === "flow-hash") {
         return { ok: true as const, value: flow };
       }
@@ -53,7 +53,7 @@ function makeRunService(options?: {
         error: { code: "STORE_GET_FAILED" as const, message: "missing" },
       };
     }),
-  } as unknown as ArtifactsPort;
+  } as unknown as ArtifactReaderPort;
 
   const artifactRepository = {
     getArtifact: vi.fn().mockResolvedValue({
@@ -252,7 +252,7 @@ describe("RunService", () => {
 
     const service = new RunService({
       artifactRepository: {} as ArtifactRepositoryPort,
-      artifacts: {} as ArtifactsPort,
+      artifacts: {} as ArtifactReaderPort,
       ef: makeEmitterFactory(),
       runRepository: {} as RunRepositoryPort,
       runQuery,
@@ -281,7 +281,7 @@ describe("RunService", () => {
 
     const service = new RunService({
       artifactRepository: {} as ArtifactRepositoryPort,
-      artifacts: {} as ArtifactsPort,
+      artifacts: {} as ArtifactReaderPort,
       ef: makeEmitterFactory(),
       runRepository: {} as RunRepositoryPort,
       runQuery,
@@ -306,7 +306,7 @@ describe("RunService", () => {
 
     const service = new RunService({
       artifactRepository: {} as ArtifactRepositoryPort,
-      artifacts: {} as ArtifactsPort,
+      artifacts: {} as ArtifactReaderPort,
       ef: makeEmitterFactory(),
       runRepository: {} as RunRepositoryPort,
       runQuery,
@@ -327,7 +327,7 @@ describe("RunService", () => {
 
     const service = new RunService({
       artifactRepository: {} as ArtifactRepositoryPort,
-      artifacts: {} as ArtifactsPort,
+      artifacts: {} as ArtifactReaderPort,
       ef: makeEmitterFactory(),
       runRepository: {} as RunRepositoryPort,
       runQuery,

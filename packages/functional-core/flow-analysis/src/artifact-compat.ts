@@ -1,17 +1,13 @@
-import type { ArtifactIndex, FlowParamContentType } from "@lcase/types";
+import type { FlowParamContentType } from "@lcase/types";
 
+// Pure contentType equality -- no format-based fallback. Callers that only
+// have a categorical format (upload MIME sniffing, an authored artifact's
+// declared format) resolve a concrete contentType up front via
+// defaultContentTypeForFormat() instead of relying on this function to
+// infer one.
 export function isArtifactCompatible(
-  artifact: ArtifactIndex,
+  contentType: string | undefined,
   type: FlowParamContentType,
 ): boolean {
-  if (artifact.contentType === type) return true;
-
-  switch (type) {
-    case "application/json":
-      return artifact.format === "json";
-    case "text/plain":
-      return artifact.format === "text";
-    case "text/markdown":
-      return artifact.format === "markdown";
-  }
+  return contentType === type;
 }

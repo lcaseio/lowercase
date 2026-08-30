@@ -1,5 +1,5 @@
 import type {
-  ArtifactsPort,
+  ArtifactReaderPort,
   EvalResultRepositoryPort,
   EvalServicePort,
   RunQueryPort,
@@ -19,7 +19,7 @@ type EvalServiceDeps = {
   runService: RunServicePort;
   runQuery: RunQueryPort;
   runRepository: RunRepositoryPort;
-  artifacts: ArtifactsPort;
+  artifacts: ArtifactReaderPort;
   evalResults: EvalResultRepositoryPort;
 };
 
@@ -133,7 +133,10 @@ export class EvalService implements EvalServicePort {
     const definitionHash = detail.flowVersion?.definitionHash;
     if (!definitionHash) return;
 
-    const flowDefResult = await this.deps.artifacts.getJson(definitionHash);
+    const flowDefResult = await this.deps.artifacts.load(
+      definitionHash,
+      "application/json",
+    );
     if (!flowDefResult.ok) return;
 
     const parsedFlow = FlowSchema.safeParse(flowDefResult.value);

@@ -114,7 +114,7 @@ export function useArtifactPanel(
     flowDef && item
       ? Object.fromEntries(
           Object.entries(flowDef.params ?? {}).filter(([, def]) =>
-            isArtifactCompatible(item.artifact, def.type),
+            isArtifactCompatible(item.artifact.contentType, def.type),
           ),
         )
       : undefined;

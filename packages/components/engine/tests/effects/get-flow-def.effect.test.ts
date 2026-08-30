@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ArtifactsPort } from "@lcase/ports";
+import type { ArtifactReaderPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { getFlowDefFx } from "../../src/effects/get-flow-def.effect.js";
 import { GetFlowDefFx } from "../../src/types/effect.types.js";
@@ -34,13 +34,13 @@ describe("getFlowDefFx()", () => {
     };
 
     const returnValue = { ok: true, value: message.def };
-    const getJson = vi.fn().mockResolvedValue(returnValue);
+    const load = vi.fn().mockResolvedValue(returnValue);
     const enqueue = vi.fn().mockReturnValue(undefined) as (
       message: string,
     ) => void;
     const processAll = vi.fn().mockReturnValue(undefined) as () => void;
 
-    const artifacts = { getJson } as unknown as ArtifactsPort;
+    const artifacts = { load } as unknown as ArtifactReaderPort;
     const effect: GetFlowDefFx = {
       type: "GetFlowDef",
       hash: "test-flowdefhash",
@@ -53,7 +53,10 @@ describe("getFlowDefFx()", () => {
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-flowdefhash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-flowdefhash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
   });
 
@@ -66,13 +69,13 @@ describe("getFlowDefFx()", () => {
     };
 
     const returnValue = { ok: false, error: { message: "test-error-message" } };
-    const getJson = vi.fn().mockResolvedValue(returnValue);
+    const load = vi.fn().mockResolvedValue(returnValue);
     const enqueue = vi.fn().mockReturnValue(undefined) as (
       message: string,
     ) => void;
     const processAll = vi.fn().mockReturnValue(undefined) as () => void;
 
-    const artifacts = { getJson } as unknown as ArtifactsPort;
+    const artifacts = { load } as unknown as ArtifactReaderPort;
     const effect: GetFlowDefFx = {
       type: "GetFlowDef",
       hash: "test-flowdefhash",
@@ -85,7 +88,10 @@ describe("getFlowDefFx()", () => {
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-flowdefhash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-flowdefhash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
   });
   it("creates error result message json is not a valid flow definition", async () => {
@@ -124,13 +130,13 @@ describe("getFlowDefFx()", () => {
     };
 
     const returnValue = { ok: true, value: badFlowDef };
-    const getJson = vi.fn().mockResolvedValue(returnValue);
+    const load = vi.fn().mockResolvedValue(returnValue);
     const enqueue = vi.fn().mockReturnValue(undefined) as (
       message: string,
     ) => void;
     const processAll = vi.fn().mockReturnValue(undefined) as () => void;
 
-    const artifacts = { getJson } as unknown as ArtifactsPort;
+    const artifacts = { load } as unknown as ArtifactReaderPort;
     const effect: GetFlowDefFx = {
       type: "GetFlowDef",
       hash: "test-flowdefhash",
@@ -143,7 +149,10 @@ describe("getFlowDefFx()", () => {
       processAll,
     } as unknown as EffectHandlerDeps);
 
-    expect(getJson).toHaveBeenCalledExactlyOnceWith("test-flowdefhash");
+    expect(load).toHaveBeenCalledExactlyOnceWith(
+      "test-flowdefhash",
+      "application/json",
+    );
     expect(enqueue).toHaveBeenCalledExactlyOnceWith(message);
   });
 });

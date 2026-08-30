@@ -6,10 +6,11 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
+import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
-import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
-import { Artifacts } from "@lcase/artifacts";
+import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { createArtifactReadWritePort } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
 import type { RunQueryPort } from "@lcase/ports";
@@ -76,7 +77,10 @@ describe("sim sql routes", () => {
   });
 
   it("stores sim metadata in SQL while reading fork specs from CAS", async () => {
-    const artifacts = new Artifacts(new LegacyFsArtifactStore(artifactDir));
+    const artifacts = createArtifactReadWritePort(
+      new FsArtifactStore(artifactDir),
+      new PrismaArtifactRepository(prisma),
+    );
     const flowRepository = new PrismaFlowRepository(prisma);
     const simRepository = new PrismaSimRepository(prisma);
     const flowResult = await flowRepository.createFlow({
@@ -152,8 +156,9 @@ describe("sim sql routes", () => {
     expect(simRows[0]?.id).toBe(createBody.value.id);
     expect(simRows[0]?.forkSpecHash).toBe(createBody.value.forkSpecHash);
 
-    const storedForkSpec = await artifacts.getJson(
+    const storedForkSpec = await artifacts.load(
       createBody.value.forkSpecHash,
+      "application/json",
     );
     expect(storedForkSpec).toEqual({
       ok: true,

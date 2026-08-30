@@ -1,5 +1,5 @@
 import { resolveJsonPath } from "@lcase/json-ref-binder";
-import type { ArtifactAccessPort } from "@lcase/ports";
+import type { ArtifactReadWritePort } from "@lcase/ports";
 import type { Ref } from "@lcase/types";
 import {
   storeExecutionOutputs,
@@ -47,7 +47,7 @@ export type WorkerDeps = {
   permits: ResourcePermitPort;
   lifecycle: WorkerLifecycleEventSink;
   protocol: ProtocolExecutor;
-  artifacts: ArtifactAccessPort;
+  artifacts: ArtifactReadWritePort;
   resourceKeyResolver?: ResourceKeyResolver;
 };
 
@@ -160,16 +160,13 @@ class Worker implements JobExecutionPort {
       // primary, more important protocol error.
       const output =
         protocolResult.payload !== undefined
-          ? await tryStoreOutput(
-              this.#deps.artifacts.writer,
-              protocolResult.payload,
-            )
+          ? await tryStoreOutput(this.#deps.artifacts, protocolResult.payload)
           : undefined;
       return this.#finishFailedExecution(command, protocolResult.error, output);
     }
 
     const stored = await storeExecutionOutputs(
-      this.#deps.artifacts.writer,
+      this.#deps.artifacts,
       protocolResult.payload,
       command.exports,
     );
@@ -321,7 +318,7 @@ class Worker implements JobExecutionPort {
 
   async #resolveOneRef(ref: Ref): Promise<unknown> {
     if (ref.hash === null) return undefined;
-    const { reader } = this.#deps.artifacts;
+    const { artifacts } = this.#deps;
 
     // Only params/steps refs carry a declared type; anything else (and any
     // undeclared type) defaults to JSON, matching the old getJson() fallback.
@@ -330,12 +327,12 @@ class Worker implements JobExecutionPort {
       "application/json";
 
     if (contentType === "application/json") {
-      const result = await reader.load(ref.hash, "application/json");
+      const result = await artifacts.load(ref.hash, "application/json");
       if (!result.ok) return undefined;
       return resolveJsonPath(ref.valuePath, result.value);
     }
 
-    const result = await reader.load(ref.hash, contentType);
+    const result = await artifacts.load(ref.hash, contentType);
     return result.ok ? result.value : undefined;
   }
 }

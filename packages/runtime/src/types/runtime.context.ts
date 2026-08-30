@@ -3,7 +3,7 @@ import type {
   RouterPort,
   QueuePort,
   LimiterPort,
-  ArtifactsPort,
+  ArtifactReadWritePort,
 } from "@lcase/ports";
 import { Engine } from "@lcase/engine";
 import {
@@ -31,5 +31,5 @@ export type RuntimeContext = {
   ef: EmitterFactory;
   replay: ReplayEngine;
   limiter: LimiterPort;
-  artifacts: ArtifactsPort;
+  artifacts: ArtifactReadWritePort;
 };

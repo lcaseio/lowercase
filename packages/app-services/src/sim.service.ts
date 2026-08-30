@@ -1,5 +1,5 @@
 import type {
-  ArtifactsPort,
+  ArtifactReadWritePort,
   EmitterFactoryPort,
   FlowRepositoryPort,
   RunQueryPort,
@@ -18,7 +18,7 @@ import { startForkedSim } from "@lcase/run-flow";
 
 export class SimService implements SimServicePort {
   constructor(
-    private readonly artifacts: ArtifactsPort,
+    private readonly artifacts: ArtifactReadWritePort,
     private readonly ef: EmitterFactoryPort,
     private readonly runQuery: RunQueryPort,
     private readonly simRepository: SimRepositoryPort,
@@ -52,7 +52,7 @@ export class SimService implements SimServicePort {
       source,
       {
         ef: this.ef,
-        artifacts: this.artifacts,
+        writer: this.artifacts,
       },
     );
   }
@@ -69,8 +69,9 @@ export class SimService implements SimServicePort {
     const simResult = await this.simRepository.getSim(simId);
     if (!simResult.ok) return simResult;
 
-    const specResult = await this.artifacts.getJson(
+    const specResult = await this.artifacts.load(
       simResult.value.forkSpecHash,
+      "application/json",
     );
     if (!specResult.ok) {
       return { ok: false, error: specResult.error.message };
@@ -101,12 +102,17 @@ export class SimService implements SimServicePort {
       };
     }
 
-    const result = await this.artifacts.putJson(details.forkSpec);
-    if (!result.ok) return { ok: false, error: result.error.message };
+    const result = await this.artifacts.save(
+      details.forkSpec,
+      "application/json",
+    );
+    if (result.status === "failed") {
+      return { ok: false, error: result.error.message };
+    }
 
     return this.simRepository.createSim({
       name: details.name,
-      forkSpecHash: result.value,
+      forkSpecHash: result.hash,
       flowId: details.flowId,
       flowVersionId: details.flowVersionId,
       description: details.description,
