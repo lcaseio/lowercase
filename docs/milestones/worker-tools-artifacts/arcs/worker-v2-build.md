@@ -1,6 +1,7 @@
 # Worker, Tools, and Artifacts Milestone — Arc: Worker V2 Build (PRs 2–6)
 
 **Previous:** [`worker-investigation.md`](./worker-investigation.md) (PR 1)
+**Next:** [`artifacts-investigation.md`](./artifacts-investigation.md) (PR 7)
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Covers the actual build of Worker V2, seeded from [`docs/component-architecture/worker-v2/README.md`](../../../component-architecture/worker-v2/README.md)'s phased plan — a starting reference synthesized from PR 1's investigation plus a larger-model review, not a commitment. Each PR below still gets discussed on its own terms before being planned, and may split further once that happens.
 

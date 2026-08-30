@@ -13,7 +13,7 @@ import {
   createControllablePermitPort,
   createFakePermitPort,
 } from "./helpers/fake-resource-permit.js";
-import { createFakeArtifactsPort } from "./helpers/fake-artifacts.js";
+import { createFakeArtifactReaderPort } from "./helpers/fake-artifact-reader.js";
 import { createFakeArtifactWriterPort } from "./helpers/fake-artifact-writer.js";
 import { createFakeProtocolExecutor } from "./helpers/fake-protocol-executor.js";
 
@@ -26,12 +26,12 @@ describe("Worker", () => {
   it("success: completes, stores output, records started+completed facts, releases the permit", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: { foo: "bar" } }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -80,7 +80,7 @@ describe("Worker", () => {
   it("expected failure: resolves (not rejects) a failed JobResult, records started+failed facts, releases the permit", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, release } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     const protocolError = {
       code: "HTTP_STATUS_FAILED" as const,
@@ -92,7 +92,7 @@ describe("Worker", () => {
       error: protocolError,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -116,7 +116,7 @@ describe("Worker", () => {
   it("a parseable failure payload from the protocol becomes the failed result's optional output", async () => {
     const { sink } = createFakeLifecycleSink();
     const { port: permits } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer, store } = createFakeArtifactWriterPort();
     const { executor: protocol } = createFakeProtocolExecutor(() => ({
       ok: false,
@@ -124,7 +124,7 @@ describe("Worker", () => {
       payload: { detail: "server exploded" },
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
 
@@ -142,12 +142,12 @@ describe("Worker", () => {
     it("GET with a body is rejected before the protocol executor is ever called", async () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -173,12 +173,12 @@ describe("Worker", () => {
     it("a non-http(s) URL scheme is rejected before the protocol executor is ever called", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -198,7 +198,7 @@ describe("Worker", () => {
   it("resource-key resolution failure short-circuits before any permit or protocol interaction", async () => {
     const { sink } = createFakeLifecycleSink();
     const { port: permits, acquire } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
@@ -211,8 +211,7 @@ describe("Worker", () => {
         permits,
         lifecycle: sink,
         protocol,
-        artifacts,
-        writer,
+        artifacts: { reader, writer },
         resourceKeyResolver,
       },
       GENEROUS_CONFIG,
@@ -232,7 +231,7 @@ describe("Worker", () => {
     it("translates a primary output storage failure into a failed execution", async () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       vi.spyOn(writer, "save").mockResolvedValueOnce({
         status: "failed",
@@ -243,7 +242,7 @@ describe("Worker", () => {
         payload: { foo: "bar" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();
@@ -273,14 +272,14 @@ describe("Worker", () => {
     it("resolves, validates, and stores a text/plain export alongside the primary output", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer, store } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -310,14 +309,14 @@ describe("Worker", () => {
     it("resolves, validates, and stores an application/json export with a schema", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer, store } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -354,14 +353,14 @@ describe("Worker", () => {
     it("a schema-invalid export fails the job while retaining the already-stored primary output", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -394,14 +393,14 @@ describe("Worker", () => {
   it("thrown invariant failure: rejects before ever touching lifecycle or permits", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol } = createFakeProtocolExecutor(() => ({
       ok: true,
       payload: null,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
     const badCommand = makeCommand({ stepId: "" });
@@ -416,12 +415,12 @@ describe("Worker", () => {
   it("cancellation: aborting mid-wait-for-permit resolves a failed JobResult with a distinct cancelled fact, never acquires/releases/calls the protocol", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createControllablePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -457,7 +456,7 @@ describe("Worker", () => {
   it("timeout: a protocol call exceeding protocolTimeoutMs produces a distinct TIMEOUT failure, never CANCELLED", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, release } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer } = createFakeArtifactWriterPort();
     // Never resolves on its own -- only the worker's own timeout signal
     // firing settles this call.
@@ -468,7 +467,7 @@ describe("Worker", () => {
         }),
     );
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       { maxConcurrentJobs: 10, protocolTimeoutMs: 20 },
     );
 
@@ -486,7 +485,7 @@ describe("Worker", () => {
   it("end to end: a real HTTP JSON job (fake fetch) completes through createWorker with an export", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits } = createFakePermitPort();
-    const { artifacts } = createFakeArtifactsPort();
+    const { reader } = createFakeArtifactReaderPort();
     const { writer, store } = createFakeArtifactWriterPort();
     const fakeFetch = vi.fn(
       async () =>
@@ -502,7 +501,7 @@ describe("Worker", () => {
     });
 
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, writer },
+      { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
       GENEROUS_CONFIG,
     );
     const command = makeCommand({
@@ -542,14 +541,14 @@ describe("Worker", () => {
     it("does not release or invoke the protocol when permit acquisition fails", async () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits, acquire, release } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const thrown = new Error("permit unavailable");
       acquire.mockRejectedValueOnce(thrown);
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
 
@@ -564,14 +563,14 @@ describe("Worker", () => {
     it("releases on success", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: null,
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
 
@@ -584,14 +583,14 @@ describe("Worker", () => {
     it("releases on an expected (resolved) protocol failure", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: false,
         error: { code: "HTTP_STATUS_FAILED", message: "x", retryable: false },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
 
@@ -604,14 +603,14 @@ describe("Worker", () => {
     it("releases even when the protocol executor throws, and re-throws without recording a completion/failure/cancellation fact", async () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
-      const { artifacts } = createFakeArtifactsPort();
+      const { reader } = createFakeArtifactReaderPort();
       const { writer } = createFakeArtifactWriterPort();
       const thrown = new Error("boom");
       const { executor: protocol } = createFakeProtocolExecutor(() => {
         throw thrown;
       });
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts, writer },
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();
@@ -622,6 +621,92 @@ describe("Worker", () => {
       expect(release).toHaveBeenCalledWith("grant-1");
       expect(events).toHaveLength(1);
       expect(events[0]!.kind).toBe("job-execution-started");
+    });
+  });
+
+  // Real ref-resolution coverage: every other test above uses an empty
+  // `refs` array, so #resolveOneRef's actual reader.load() calls were never
+  // exercised anywhere in this file -- a pre-existing gap, not introduced
+  // here. PR 7's real production bug was specifically a read-path issue no
+  // test caught, so this closes the same kind of gap for the new reader.
+  describe("ref resolution through the reader", () => {
+    it("resolves a params-scope text/plain ref into the materialized request", async () => {
+      const { sink } = createFakeLifecycleSink();
+      const { port: permits } = createFakePermitPort();
+      const { reader, seed } = createFakeArtifactReaderPort();
+      const { writer } = createFakeArtifactWriterPort();
+      const { executor: protocol, execute: protocolExecute } =
+        createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
+      seed("hash-param", "text/plain", "42");
+      const worker = createWorker(
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        GENEROUS_CONFIG,
+      );
+      const command = makeCommand({
+        protocol: {
+          kind: "httpjson",
+          url: "https://example.test/users/{{params.id}}",
+        },
+        refs: [
+          {
+            valuePath: ["url"],
+            scope: "params",
+            stepId: "step-1",
+            bindPath: ["url"],
+            string: "params.id",
+            interpolated: true,
+            hash: "hash-param",
+            paramType: "text/plain",
+          },
+        ],
+      });
+
+      await worker.execute(command);
+
+      expect(protocolExecute).toHaveBeenCalledTimes(1);
+      const [requestArg] = protocolExecute.mock.calls[0]!;
+      expect(requestArg).toMatchObject({
+        url: "https://example.test/users/42",
+      });
+    });
+
+    it("resolves a steps-scope JSON ref into the materialized request via its valuePath", async () => {
+      const { sink } = createFakeLifecycleSink();
+      const { port: permits } = createFakePermitPort();
+      const { reader, seed } = createFakeArtifactReaderPort();
+      const { writer } = createFakeArtifactWriterPort();
+      const { executor: protocol, execute: protocolExecute } =
+        createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
+      seed("hash-step", "application/json", { output: { id: "99" } });
+      const worker = createWorker(
+        { permits, lifecycle: sink, protocol, artifacts: { reader, writer } },
+        GENEROUS_CONFIG,
+      );
+      const command = makeCommand({
+        protocol: {
+          kind: "httpjson",
+          url: "https://example.test/users/{{steps.step-0.output.id}}",
+        },
+        refs: [
+          {
+            valuePath: ["output", "id"],
+            scope: "steps",
+            stepId: "step-0",
+            bindPath: ["url"],
+            string: "steps.step-0.output.id",
+            interpolated: true,
+            hash: "hash-step",
+          },
+        ],
+      });
+
+      await worker.execute(command);
+
+      expect(protocolExecute).toHaveBeenCalledTimes(1);
+      const [requestArg] = protocolExecute.mock.calls[0]!;
+      expect(requestArg).toMatchObject({
+        url: "https://example.test/users/99",
+      });
     });
   });
 });
