@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
-import { ArtifactStorePort, ArtifactStorePutResult } from "@lcase/ports";
+import type {
+  LegacyArtifactStorePort,
+  LegacyArtifactStorePutResult,
+} from "@lcase/ports";
 import { createHash } from "crypto";
 
 describe("Artifacts putJson()", () => {
@@ -10,12 +13,12 @@ describe("Artifacts putJson()", () => {
     const bytes = new TextEncoder().encode(json);
     const hash = createHash("sha256").update(bytes).digest("hex");
 
-    const mockResult: ArtifactStorePutResult = {
+    const mockResult: LegacyArtifactStorePutResult = {
       ok: true,
       path: "test/path",
     };
     const putBytes = vi.fn().mockResolvedValue(mockResult);
-    const store = { putBytes } as unknown as ArtifactStorePort;
+    const store = { putBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.putJson(data);
@@ -30,12 +33,12 @@ describe("Artifacts putJson()", () => {
     const bytes = new TextEncoder().encode(json);
     const hash = createHash("sha256").update(bytes).digest("hex");
 
-    const mockResult: ArtifactStorePutResult = {
+    const mockResult: LegacyArtifactStorePutResult = {
       ok: false,
       cause: "Error cause",
     };
     const putBytes = vi.fn().mockResolvedValue(mockResult);
-    const store = { putBytes } as unknown as ArtifactStorePort;
+    const store = { putBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.putJson(data);

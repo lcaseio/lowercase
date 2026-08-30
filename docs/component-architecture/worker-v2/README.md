@@ -12,7 +12,7 @@ before the relevant parts are promoted into an accepted architecture decision.
 
 ## Read This With
 
-- [Component Architecture Draft](../README.md)
+- [Component Architecture Draft](../model.md)
 - [ADR-0005: Package-tier taxonomy](../../adr/0005-package-tier-taxonomy.md)
 - [ADR-0006: Worker/tool extensibility model](../../adr/0006-worker-tool-extensibility-model.md)
 - [Worker investigation](../../milestones/worker-tools-artifacts/arcs/worker-investigation.md)

@@ -1,6 +1,6 @@
 import type {
   ArtifactsPort,
-  ArtifactStorePort,
+  LegacyArtifactStorePort,
   AutoGetResult,
   GetError,
   PutError,
@@ -28,7 +28,7 @@ export class Artifacts implements ArtifactsPort {
   encoder: TextEncoder;
   decoder: TextDecoder;
   constructor(
-    private readonly store: ArtifactStorePort,
+    private readonly store: LegacyArtifactStorePort,
     private readonly repository?: ArtifactRepositoryPort,
   ) {
     this.encoder = new TextEncoder();

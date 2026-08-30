@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
-import { ArtifactStorePort } from "@lcase/ports";
+import type { LegacyArtifactStorePort } from "@lcase/ports";
 
 describe("Artifacts getJson()", () => {
   it("returns ok result when store returns valid json bytes", async () => {
@@ -10,7 +10,7 @@ describe("Artifacts getJson()", () => {
     const hash = "test-hash";
 
     const getBytes = vi.fn().mockResolvedValue(bytes);
-    const store = { getBytes } as unknown as ArtifactStorePort;
+    const store = { getBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.getJson(hash);
@@ -23,7 +23,7 @@ describe("Artifacts getJson()", () => {
     const hash = "test-hash";
 
     const getBytes = vi.fn().mockResolvedValue(null);
-    const store = { getBytes } as unknown as ArtifactStorePort;
+    const store = { getBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.getJson(hash);
@@ -44,7 +44,7 @@ describe("Artifacts getJson()", () => {
     const hash = "test-hash";
 
     const getBytes = vi.fn().mockResolvedValue(bytes);
-    const store = { getBytes } as unknown as ArtifactStorePort;
+    const store = { getBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.getJson(hash);

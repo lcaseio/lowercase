@@ -8,7 +8,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
-import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { EmitterFactory } from "@lcase/events";
@@ -76,7 +76,7 @@ describe("sim sql routes", () => {
   });
 
   it("stores sim metadata in SQL while reading fork specs from CAS", async () => {
-    const artifacts = new Artifacts(new FsArtifactStore(artifactDir));
+    const artifacts = new Artifacts(new LegacyFsArtifactStore(artifactDir));
     const flowRepository = new PrismaFlowRepository(prisma);
     const simRepository = new PrismaSimRepository(prisma);
     const flowResult = await flowRepository.createFlow({
@@ -99,6 +99,7 @@ describe("sim sql routes", () => {
       new EmitterFactory(new InMemoryEventBus()),
       {
         listRuns: async () => [],
+        listByFlowVersionId: async () => [],
         getRunDetail: async () => ({
           ok: false,
           error: "unused",

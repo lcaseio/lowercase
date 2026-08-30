@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
 import type {
   ArtifactRepositoryPort,
-  ArtifactStorePort,
+  LegacyArtifactStorePort,
   ArtifactStorePutResult,
 } from "@lcase/ports";
 import type { ArtifactIndex } from "@lcase/types";
@@ -13,7 +13,7 @@ function mockStore() {
   return {
     putBytes: vi.fn().mockResolvedValue(mockResult),
     getBytes: vi.fn(),
-  } as unknown as ArtifactStorePort;
+  } as unknown as LegacyArtifactStorePort;
 }
 
 function mockRepository(returnedIndex: Partial<ArtifactIndex> = {}) {

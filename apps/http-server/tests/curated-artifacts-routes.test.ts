@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
-import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
 import { Artifacts } from "@lcase/artifacts";
 import { PrismaClient } from "@lcase/db-prisma";
 import { ArtifactService } from "@lcase/app-services";
@@ -81,7 +81,7 @@ describe("GET .../curated-artifacts", () => {
     const artifactRepository = new PrismaArtifactRepository(prisma);
     const flowRepository = new PrismaFlowRepository(prisma);
     const artifacts = new Artifacts(
-      new FsArtifactStore(artifactDir),
+      new LegacyFsArtifactStore(artifactDir),
       artifactRepository,
     );
     const artifactService = new ArtifactService(

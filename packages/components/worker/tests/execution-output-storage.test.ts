@@ -1,7 +1,7 @@
 import type { ExportRef } from "@lcase/types";
 import { describe, expect, it, vi } from "vitest";
 import { storeExecutionOutputs } from "../src/execution-output-storage.js";
-import { createFakeArtifactsPort } from "./helpers/fake-artifacts.js";
+import { createFakeArtifactWriterPort } from "./helpers/fake-artifact-writer.js";
 
 function makeExport(overrides: Partial<ExportRef> = {}): ExportRef {
   return {
@@ -16,30 +16,30 @@ function makeExport(overrides: Partial<ExportRef> = {}): ExportRef {
 
 describe("storeExecutionOutputs", () => {
   it("parses a JSON string before storing an application/json export", async () => {
-    const { artifacts, store } = createFakeArtifactsPort();
+    const { writer, store } = createFakeArtifactWriterPort();
 
     const result = await storeExecutionOutputs(
-      artifacts,
+      writer,
       { result: '{"answer":42}' },
       { result: makeExport() },
     );
 
     if (!result.ok) throw new Error(result.error.message);
     expect(store.get(result.outputs.output.hash)).toEqual({
-      format: "json",
-      value: { result: '{"answer":42}' },
+      contentType: "application/json",
+      content: { result: '{"answer":42}' },
     });
     expect(store.get(result.outputs.exports!.result!.hash)).toEqual({
-      format: "json",
-      value: { answer: 42 },
+      contentType: "application/json",
+      content: { answer: 42 },
     });
   });
 
   it("classifies malformed JSON as an export-resolution failure", async () => {
-    const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
 
     const result = await storeExecutionOutputs(
-      artifacts,
+      writer,
       { result: "not-json" },
       { result: makeExport() },
     );
@@ -58,10 +58,10 @@ describe("storeExecutionOutputs", () => {
   });
 
   it("retains the primary output when an export path cannot be resolved", async () => {
-    const { artifacts, store } = createFakeArtifactsPort();
+    const { writer, store } = createFakeArtifactWriterPort();
 
     const result = await storeExecutionOutputs(
-      artifacts,
+      writer,
       { other: "value" },
       { result: makeExport() },
     );
@@ -75,16 +75,16 @@ describe("storeExecutionOutputs", () => {
       output: { hash: "fake-hash-1" },
     });
     expect(store.get("fake-hash-1")).toEqual({
-      format: "json",
-      value: { other: "value" },
+      contentType: "application/json",
+      content: { other: "value" },
     });
   });
 
   it("rejects a non-string text export after storing the primary output", async () => {
-    const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
 
     const result = await storeExecutionOutputs(
-      artifacts,
+      writer,
       { result: { answer: 42 } },
       {
         result: makeExport({
@@ -106,14 +106,22 @@ describe("storeExecutionOutputs", () => {
   });
 
   it("retains the primary output when storing an export fails", async () => {
-    const { artifacts } = createFakeArtifactsPort();
-    vi.spyOn(artifacts, "putText").mockResolvedValue({
-      ok: false,
-      error: { code: "STORE_PUT_FAILED", message: "export disk full" },
-    });
+    const { writer } = createFakeArtifactWriterPort();
+    vi.spyOn(writer, "save").mockImplementation((async (
+      content: unknown,
+      contentType: string,
+    ) => {
+      if (contentType === "text/plain") {
+        return {
+          status: "failed" as const,
+          error: { code: "STORE_PUT_FAILED", message: "export disk full" },
+        };
+      }
+      return { status: "saved" as const, hash: "fake-hash-1" };
+    }) as typeof writer.save);
 
     const result = await storeExecutionOutputs(
-      artifacts,
+      writer,
       { result: "hello" },
       {
         result: makeExport({
