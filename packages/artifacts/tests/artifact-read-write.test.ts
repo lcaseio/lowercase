@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createArtifactReadWritePort } from "../../src/v2/artifact-read-write.js";
-import { createFakeArtifactStorePort } from "../helpers/fake-artifact-store.js";
-import { createFakeArtifactRepositoryPort } from "../helpers/fake-artifact-repository.js";
+import { createArtifactReadWritePort } from "../src/artifact-read-write.js";
+import { createFakeArtifactStorePort } from "./helpers/fake-artifact-store.js";
+import { createFakeArtifactRepositoryPort } from "./helpers/fake-artifact-repository.js";
 
 describe("createArtifactReadWritePort()", () => {
   it("saves and loads content through the same flat port", async () => {
