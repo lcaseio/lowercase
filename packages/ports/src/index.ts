@@ -25,6 +25,8 @@ export * from "./limiter/limiter.port.js";
 export * from "./artifacts/artifact-store.port.js";
 export * from "./artifacts/legacy-artifact-store.port.js";
 export * from "./artifacts/artifact-writer.port.js";
+export * from "./artifacts/artifact-reader.port.js";
+export * from "./artifacts/artifact-access.port.js";
 export * from "./artifacts/artifacts.port.js";
 export * from "./artifacts/artifact-repository.port.js";
 export * from "./artifact-index-store/artifact-index-store.port.js";

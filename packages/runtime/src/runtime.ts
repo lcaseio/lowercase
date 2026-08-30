@@ -1,7 +1,8 @@
 import { NodeRouter } from "@lcase/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
-import { ArtifactWriter } from "@lcase/artifacts";
+import { ArtifactReader, ArtifactWriter } from "@lcase/artifacts";
+import type { ArtifactAccessPort } from "@lcase/ports";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
@@ -118,20 +119,24 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
 
-  // New capability-module writer (packages/ports' ArtifactWriterPort) --
-  // reuses the same artifactRepository instance, since the repository port
-  // itself is unchanged. Only worker's writes use this so far; reads still
-  // go through the legacy `artifacts` above.
-  const artifactWriter = new ArtifactWriter(
-    new FsArtifactStore(config.artifacts.path),
-    artifactRepository,
-  );
+  // New capability-module writer/reader (packages/ports' ArtifactWriterPort/
+  // ArtifactReaderPort), sharing one FsArtifactStore instance. Only the
+  // worker depends on this combined ArtifactAccessPort so far; every other
+  // consumer (engine, observability, HTTP routes) still uses the legacy
+  // `artifacts` above.
+  const artifactStore = new FsArtifactStore(config.artifacts.path);
+  const artifactWriter = new ArtifactWriter(artifactStore, artifactRepository);
+  const artifactReader = new ArtifactReader(artifactStore);
+  const artifactAccess: ArtifactAccessPort = {
+    reader: artifactReader,
+    writer: artifactWriter,
+  };
 
   // The engine calls the worker directly via jobExecutor, bypassing the
   // router/queue for the monolith path (mcp still has no consumer -- see
   // docs/todo.md).
   const workerCore = createWorkerCore(
-    { artifacts, writer: artifactWriter },
+    { artifacts: artifactAccess },
     config.worker,
   );
   const jobExecutor: JobExecutorPort = new LocalWorkerJobExecutor(workerCore);

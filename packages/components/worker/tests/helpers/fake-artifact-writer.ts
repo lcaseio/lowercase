@@ -6,7 +6,7 @@ import type {
 import type { JsonValue } from "@lcase/types";
 
 // A genuine in-memory ArtifactWriterPort, matching this test suite's existing
-// no-`as unknown as X` bar (see fake-artifacts.ts). Every overload funnels
+// no-`as unknown as X` bar (see fake-artifact-reader.ts). Every overload funnels
 // through one internal `put`, since the fake doesn't need to distinguish
 // encodings the way the real ArtifactWriter does -- it just needs a stable
 // hash back for whatever was saved.

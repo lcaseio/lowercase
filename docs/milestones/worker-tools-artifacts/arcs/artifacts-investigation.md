@@ -1,5 +1,8 @@
 # Worker, Tools, and Artifacts Milestone — Arc: Artifacts Investigation (PR 7)
 
+**Previous:** [`worker-v2-build.md`](./worker-v2-build.md) (PRs 2–6)
+**Next:** [`artifacts-v2-build.md`](./artifacts-v2-build.md) (PR 8–)
+
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable.
 
 ## PR 7 - Artifacts refactor investigation — API shape, `ArtifactIndex` retirement, infra-vs-component boundary - in progress

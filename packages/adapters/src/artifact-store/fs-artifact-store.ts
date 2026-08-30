@@ -13,6 +13,18 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 
+// Extension -> contentType for LegacyFsArtifactStore's file layout, used only
+// by getLegacyBytes' fallback probe below. Mirrors the legacy Artifacts
+// class's own defaultContentType() mapping, duplicated locally rather than
+// imported -- same small duplication LegacyFsArtifactStore's own
+// artifactFileExtensions constant already accepts.
+const legacyExtensionContentTypes: Record<string, string> = {
+  ".json": "application/json",
+  ".txt": "text/plain",
+  ".md": "text/markdown",
+  ".bin": "application/octet-stream",
+};
+
 // Content-type travels with the blob as a small sidecar file -- local disk
 // has no equivalent to an S3/MinIO object's native Content-Type metadata, so
 // this plays that role instead. Content itself has no extension: there's no
@@ -79,10 +91,37 @@ export class FsArtifactStore implements ArtifactStorePort {
       const { contentType } = JSON.parse(metaRaw) as { contentType: string };
       return { bytes, contentType };
     } catch {
-      // fail closed: content without its sidecar (or vice versa) is treated
-      // as not-found rather than returned with an unknown content-type.
-      return null;
+      return this.getLegacyBytes(hash);
     }
+  }
+
+  // Temporary fallback: params and flow defs are still written exclusively
+  // through LegacyFsArtifactStore's extensioned files (no sidecar), and both
+  // stores share the same root directory during the migration -- without
+  // this, a hash the legacy writer produced would be invisible here.
+  // Symmetric to LegacyFsArtifactStore's own bare-path fallback added for
+  // the same reason. Remove once legacy writers migrate onto
+  // ArtifactWriterPort.
+  private async getLegacyBytes(
+    hash: string,
+  ): Promise<ArtifactStoreGetResult | null> {
+    for (const [extension, contentType] of Object.entries(
+      legacyExtensionContentTypes,
+    )) {
+      const legacyFilePath = path.join(
+        this.getAbsoluteDirPath(hash),
+        hash.slice(4) + extension,
+      );
+      try {
+        const bytes = await readFile(legacyFilePath);
+        return { bytes, contentType };
+      } catch {
+        continue;
+      }
+    }
+    // fail closed: content without a recognizable sidecar or legacy
+    // extension is treated as not-found rather than an unknown content-type.
+    return null;
   }
 
   private getAbsoluteFilePath(hash: string): string {

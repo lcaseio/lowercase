@@ -1,5 +1,5 @@
 import { resolveJsonPath } from "@lcase/json-ref-binder";
-import type { ArtifactsPort, ArtifactWriterPort } from "@lcase/ports";
+import type { ArtifactAccessPort } from "@lcase/ports";
 import type { Ref } from "@lcase/types";
 import {
   storeExecutionOutputs,
@@ -47,10 +47,7 @@ export type WorkerDeps = {
   permits: ResourcePermitPort;
   lifecycle: WorkerLifecycleEventSink;
   protocol: ProtocolExecutor;
-  // reads still resolve through the legacy ArtifactsPort until the reader
-  // side (PR 2) lands; writes go through the new ArtifactWriterPort.
-  artifacts: ArtifactsPort;
-  writer: ArtifactWriterPort;
+  artifacts: ArtifactAccessPort;
   resourceKeyResolver?: ResourceKeyResolver;
 };
 
@@ -163,13 +160,16 @@ class Worker implements JobExecutionPort {
       // primary, more important protocol error.
       const output =
         protocolResult.payload !== undefined
-          ? await tryStoreOutput(this.#deps.writer, protocolResult.payload)
+          ? await tryStoreOutput(
+              this.#deps.artifacts.writer,
+              protocolResult.payload,
+            )
           : undefined;
       return this.#finishFailedExecution(command, protocolResult.error, output);
     }
 
     const stored = await storeExecutionOutputs(
-      this.#deps.writer,
+      this.#deps.artifacts.writer,
       protocolResult.payload,
       command.exports,
     );
@@ -321,28 +321,22 @@ class Worker implements JobExecutionPort {
 
   async #resolveOneRef(ref: Ref): Promise<unknown> {
     if (ref.hash === null) return undefined;
-    const { artifacts } = this.#deps;
+    const { reader } = this.#deps.artifacts;
 
-    if (ref.scope === "params" && ref.paramType === "text/plain") {
-      const result = await artifacts.getText(ref.hash);
-      return result.ok ? result.value : undefined;
-    }
-    if (ref.scope === "params" && ref.paramType === "text/markdown") {
-      const result = await artifacts.getMarkdown(ref.hash);
-      return result.ok ? result.value : undefined;
-    }
-    if (ref.scope === "steps" && ref.exportType === "text/plain") {
-      const result = await artifacts.getText(ref.hash);
-      return result.ok ? result.value : undefined;
-    }
-    if (ref.scope === "steps" && ref.exportType === "text/markdown") {
-      const result = await artifacts.getMarkdown(ref.hash);
-      return result.ok ? result.value : undefined;
+    // Only params/steps refs carry a declared type; anything else (and any
+    // undeclared type) defaults to JSON, matching the old getJson() fallback.
+    const contentType =
+      (ref.scope === "params" ? ref.paramType : ref.exportType) ??
+      "application/json";
+
+    if (contentType === "application/json") {
+      const result = await reader.load(ref.hash, "application/json");
+      if (!result.ok) return undefined;
+      return resolveJsonPath(ref.valuePath, result.value);
     }
 
-    const result = await artifacts.getJson(ref.hash);
-    if (!result.ok) return undefined;
-    return resolveJsonPath(ref.valuePath, result.value);
+    const result = await reader.load(ref.hash, contentType);
+    return result.ok ? result.value : undefined;
   }
 }
 
