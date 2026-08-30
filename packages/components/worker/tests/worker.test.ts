@@ -14,6 +14,7 @@ import {
   createFakePermitPort,
 } from "./helpers/fake-resource-permit.js";
 import { createFakeArtifactsPort } from "./helpers/fake-artifacts.js";
+import { createFakeArtifactWriterPort } from "./helpers/fake-artifact-writer.js";
 import { createFakeProtocolExecutor } from "./helpers/fake-protocol-executor.js";
 
 const GENEROUS_CONFIG: WorkerCoreConfig = {
@@ -26,10 +27,11 @@ describe("Worker", () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createFakePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: { foo: "bar" } }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -79,6 +81,7 @@ describe("Worker", () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, release } = createFakePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     const protocolError = {
       code: "HTTP_STATUS_FAILED" as const,
       message: "upstream said no",
@@ -89,7 +92,7 @@ describe("Worker", () => {
       error: protocolError,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -113,14 +116,15 @@ describe("Worker", () => {
   it("a parseable failure payload from the protocol becomes the failed result's optional output", async () => {
     const { sink } = createFakeLifecycleSink();
     const { port: permits } = createFakePermitPort();
-    const { artifacts, store } = createFakeArtifactsPort();
+    const { artifacts } = createFakeArtifactsPort();
+    const { writer, store } = createFakeArtifactWriterPort();
     const { executor: protocol } = createFakeProtocolExecutor(() => ({
       ok: false,
       error: { code: "HTTP_STATUS_FAILED", message: "500", retryable: true },
       payload: { detail: "server exploded" },
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
 
@@ -129,8 +133,8 @@ describe("Worker", () => {
 
     expect(result.output).toBeDefined();
     expect(store.get(result.output!.hash)).toEqual({
-      format: "json",
-      value: { detail: "server exploded" },
+      contentType: "application/json",
+      content: { detail: "server exploded" },
     });
   });
 
@@ -139,10 +143,11 @@ describe("Worker", () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -169,10 +174,11 @@ describe("Worker", () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -193,6 +199,7 @@ describe("Worker", () => {
     const { sink } = createFakeLifecycleSink();
     const { port: permits, acquire } = createFakePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
     const resourceKeyResolver = vi.fn(() => ({
@@ -200,7 +207,14 @@ describe("Worker", () => {
       message: "no policy configured",
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts, resourceKeyResolver },
+      {
+        permits,
+        lifecycle: sink,
+        protocol,
+        artifacts,
+        writer,
+        resourceKeyResolver,
+      },
       GENEROUS_CONFIG,
     );
 
@@ -219,8 +233,9 @@ describe("Worker", () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
-      vi.spyOn(artifacts, "putJson").mockResolvedValueOnce({
-        ok: false,
+      const { writer } = createFakeArtifactWriterPort();
+      vi.spyOn(writer, "save").mockResolvedValueOnce({
+        status: "failed",
         error: { code: "STORE_PUT_FAILED", message: "disk full" },
       });
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
@@ -228,7 +243,7 @@ describe("Worker", () => {
         payload: { foo: "bar" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();
@@ -258,13 +273,14 @@ describe("Worker", () => {
     it("resolves, validates, and stores a text/plain export alongside the primary output", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts, store } = createFakeArtifactsPort();
+      const { artifacts } = createFakeArtifactsPort();
+      const { writer, store } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -286,21 +302,22 @@ describe("Worker", () => {
 
       expect(result.exports?.summary).toBeDefined();
       expect(store.get(result.exports!.summary!.hash)).toEqual({
-        format: "text",
-        value: "hello",
+        contentType: "text/plain",
+        content: "hello",
       });
     });
 
     it("resolves, validates, and stores an application/json export with a schema", async () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
-      const { artifacts, store } = createFakeArtifactsPort();
+      const { artifacts } = createFakeArtifactsPort();
+      const { writer, store } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -329,8 +346,8 @@ describe("Worker", () => {
       }
 
       expect(store.get(result.exports!.full!.hash)).toEqual({
-        format: "json",
-        value: { message: "hello", count: 3 },
+        contentType: "application/json",
+        content: { message: "hello", count: 3 },
       });
     });
 
@@ -338,12 +355,13 @@ describe("Worker", () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: { message: "hello" },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand({
@@ -377,12 +395,13 @@ describe("Worker", () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createFakePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol } = createFakeProtocolExecutor(() => ({
       ok: true,
       payload: null,
     }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
     const badCommand = makeCommand({ stepId: "" });
@@ -398,10 +417,11 @@ describe("Worker", () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, acquire, release } = createControllablePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
     const command = makeCommand();
@@ -438,6 +458,7 @@ describe("Worker", () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits, release } = createFakePermitPort();
     const { artifacts } = createFakeArtifactsPort();
+    const { writer } = createFakeArtifactWriterPort();
     // Never resolves on its own -- only the worker's own timeout signal
     // firing settles this call.
     const { executor: protocol } = createFakeProtocolExecutor(
@@ -447,7 +468,7 @@ describe("Worker", () => {
         }),
     );
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       { maxConcurrentJobs: 10, protocolTimeoutMs: 20 },
     );
 
@@ -465,7 +486,8 @@ describe("Worker", () => {
   it("end to end: a real HTTP JSON job (fake fetch) completes through createWorker with an export", async () => {
     const { sink, events } = createFakeLifecycleSink();
     const { port: permits } = createFakePermitPort();
-    const { artifacts, store } = createFakeArtifactsPort();
+    const { artifacts } = createFakeArtifactsPort();
+    const { writer, store } = createFakeArtifactWriterPort();
     const fakeFetch = vi.fn(
       async () =>
         new Response(JSON.stringify({ greeting: "hello world" }), {
@@ -480,7 +502,7 @@ describe("Worker", () => {
     });
 
     const worker = createWorker(
-      { permits, lifecycle: sink, protocol, artifacts },
+      { permits, lifecycle: sink, protocol, artifacts, writer },
       GENEROUS_CONFIG,
     );
     const command = makeCommand({
@@ -503,12 +525,12 @@ describe("Worker", () => {
       throw new Error(`expected completed, got ${JSON.stringify(result)}`);
     }
     expect(store.get(result.output.hash)).toEqual({
-      format: "json",
-      value: { greeting: "hello world" },
+      contentType: "application/json",
+      content: { greeting: "hello world" },
     });
     expect(store.get(result.exports!.greeting!.hash)).toEqual({
-      format: "text",
-      value: "hello world",
+      contentType: "text/plain",
+      content: "hello world",
     });
     expect(events.map((e) => e.kind)).toEqual([
       "job-execution-started",
@@ -521,12 +543,13 @@ describe("Worker", () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits, acquire, release } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const thrown = new Error("permit unavailable");
       acquire.mockRejectedValueOnce(thrown);
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
 
@@ -542,12 +565,13 @@ describe("Worker", () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: true,
         payload: null,
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
 
@@ -561,12 +585,13 @@ describe("Worker", () => {
       const { sink } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol } = createFakeProtocolExecutor(() => ({
         ok: false,
         error: { code: "HTTP_STATUS_FAILED", message: "x", retryable: false },
       }));
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
 
@@ -580,12 +605,13 @@ describe("Worker", () => {
       const { sink, events } = createFakeLifecycleSink();
       const { port: permits, release } = createFakePermitPort();
       const { artifacts } = createFakeArtifactsPort();
+      const { writer } = createFakeArtifactWriterPort();
       const thrown = new Error("boom");
       const { executor: protocol } = createFakeProtocolExecutor(() => {
         throw thrown;
       });
       const worker = createWorker(
-        { permits, lifecycle: sink, protocol, artifacts },
+        { permits, lifecycle: sink, protocol, artifacts, writer },
         GENEROUS_CONFIG,
       );
       const command = makeCommand();

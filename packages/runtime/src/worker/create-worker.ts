@@ -1,4 +1,4 @@
-import type { ArtifactsPort } from "@lcase/ports";
+import type { ArtifactsPort, ArtifactWriterPort } from "@lcase/ports";
 import type { JobExecutionPort } from "@lcase/worker";
 import {
   createConsoleWorkerLifecycleEventSink,
@@ -10,6 +10,7 @@ import type { WorkerConfig } from "../types/runtime.config.js";
 
 export type CreateWorkerCoreDeps = {
   artifacts: ArtifactsPort;
+  writer: ArtifactWriterPort;
 };
 
 // Composition only -- construction logic lives in packages/components/worker,
@@ -27,10 +28,18 @@ export function createWorkerCore(
   const protocol = createHttpJsonExecutor({ fetch });
 
   return createWorker(
-    { permits, lifecycle, protocol, artifacts: deps.artifacts },
+    {
+      permits,
+      lifecycle,
+      protocol,
+      artifacts: deps.artifacts,
+      writer: deps.writer,
+    },
     {
       maxConcurrentJobs: config.maxConcurrentJobs,
       protocolTimeoutMs: config.protocolTimeoutMs,
     },
   );
 }
+
+// 3c2b0d67e5f299e7e0cbe858097c801845f974849922885c0f14ab8a5e28fb55

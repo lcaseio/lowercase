@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
-import type { ArtifactRepositoryPort, ArtifactStorePort } from "@lcase/ports";
+import type {
+  ArtifactRepositoryPort,
+  LegacyArtifactStorePort,
+} from "@lcase/ports";
 import type { ArtifactIndex } from "@lcase/types";
 
 describe("Artifacts getAuto()", () => {
@@ -8,7 +11,7 @@ describe("Artifacts getAuto()", () => {
     const bytes = new TextEncoder().encode(JSON.stringify({ a: 1 }));
     const store = {
       getBytes: vi.fn().mockResolvedValue(bytes),
-    } as unknown as ArtifactStorePort;
+    } as unknown as LegacyArtifactStorePort;
     const getArtifact = vi.fn().mockResolvedValue({
       hash: "abc",
       time: "2026-01-01T00:00:00.000Z",
@@ -28,7 +31,7 @@ describe("Artifacts getAuto()", () => {
     const bytes = new Uint8Array([1, 2, 3]);
     const store = {
       getBytes: vi.fn().mockResolvedValue(bytes),
-    } as unknown as ArtifactStorePort;
+    } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     const result = await artifacts.getAuto("abc");

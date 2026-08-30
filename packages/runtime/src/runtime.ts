@@ -1,5 +1,7 @@
 import { NodeRouter } from "@lcase/router";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
+import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { ArtifactWriter } from "@lcase/artifacts";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
@@ -116,10 +118,22 @@ export function makeRuntimeContext(config: RuntimeConfig): RuntimeContext {
   const artifactRepository = new PrismaArtifactRepository(prisma);
   const runQuery = new PrismaRunQuery(prisma, artifactRepository);
 
+  // New capability-module writer (packages/ports' ArtifactWriterPort) --
+  // reuses the same artifactRepository instance, since the repository port
+  // itself is unchanged. Only worker's writes use this so far; reads still
+  // go through the legacy `artifacts` above.
+  const artifactWriter = new ArtifactWriter(
+    new FsArtifactStore(config.artifacts.path),
+    artifactRepository,
+  );
+
   // The engine calls the worker directly via jobExecutor, bypassing the
   // router/queue for the monolith path (mcp still has no consumer -- see
   // docs/todo.md).
-  const workerCore = createWorkerCore({ artifacts }, config.worker);
+  const workerCore = createWorkerCore(
+    { artifacts, writer: artifactWriter },
+    config.worker,
+  );
   const jobExecutor: JobExecutorPort = new LocalWorkerJobExecutor(workerCore);
 
   const engine = createInProcessEngine(

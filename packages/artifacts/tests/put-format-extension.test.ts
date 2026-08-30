@@ -1,12 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
-import { ArtifactStorePort, ArtifactStorePutResult } from "@lcase/ports";
+import type {
+  LegacyArtifactStorePort,
+  LegacyArtifactStorePutResult,
+} from "@lcase/ports";
 
 describe("Artifacts format-specific extensions", () => {
   it("writes text artifacts with .txt", async () => {
-    const mockResult: ArtifactStorePutResult = { ok: true, path: "test/path" };
+    const mockResult: LegacyArtifactStorePutResult = {
+      ok: true,
+      path: "test/path",
+    };
     const putBytes = vi.fn().mockResolvedValue(mockResult);
-    const store = { putBytes } as unknown as ArtifactStorePort;
+    const store = { putBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     await artifacts.putText("hello");
@@ -18,9 +24,12 @@ describe("Artifacts format-specific extensions", () => {
   });
 
   it("writes markdown artifacts with .md", async () => {
-    const mockResult: ArtifactStorePutResult = { ok: true, path: "test/path" };
+    const mockResult: LegacyArtifactStorePutResult = {
+      ok: true,
+      path: "test/path",
+    };
     const putBytes = vi.fn().mockResolvedValue(mockResult);
-    const store = { putBytes } as unknown as ArtifactStorePort;
+    const store = { putBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     await artifacts.putMarkdown("# hello");
@@ -30,9 +39,12 @@ describe("Artifacts format-specific extensions", () => {
   });
 
   it("writes byte artifacts with .bin", async () => {
-    const mockResult: ArtifactStorePutResult = { ok: true, path: "test/path" };
+    const mockResult: LegacyArtifactStorePutResult = {
+      ok: true,
+      path: "test/path",
+    };
     const putBytes = vi.fn().mockResolvedValue(mockResult);
-    const store = { putBytes } as unknown as ArtifactStorePort;
+    const store = { putBytes } as unknown as LegacyArtifactStorePort;
 
     const artifacts = new Artifacts(store);
     await artifacts.putBytes(new Uint8Array([1, 2, 3]));

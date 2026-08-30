@@ -244,7 +244,7 @@ Built largely as planned, with several real refinements and one important correc
 
 **Test suite**: new `packages/integrations` package (2 files, 6 tests: `mapper.test.ts`, `local-worker-job-executor.test.ts`); `packages/components/engine` grew from 80 to 83 tests (`execute-httpjson-job.effect.test.ts` — 2 tests covering completed/failed; `step-planned.planner.httpjson.test.ts` — 1 test asserting both `EmitJobHttpJsonSubmitted` and `ExecuteHttpJsonJob` get pushed together for an httpjson step, with independent `jobid`s). Full repo `pnpm build && pnpm -w turbo run typecheck && pnpm -w turbo run test && pnpm lint` clean (28/27/27/27 tasks).
 
-## PR 6 - Repo-hygiene + dead-code removal - built, pending review
+## PR 6 - Repo-hygiene + dead-code removal - merged (#355)
 
 ### Discussion
 

@@ -1,6 +1,6 @@
 import { resolveJsonPath } from "@lcase/json-ref-binder";
-import type { ArtifactsPort, PutError } from "@lcase/ports";
-import type { ExportRef, JsonValue, Result } from "@lcase/types";
+import type { ArtifactWriterPort, SaveArtifactResult } from "@lcase/ports";
+import type { ExportRef, JsonValue } from "@lcase/types";
 import { validateExportSchema } from "./export-validation.js";
 import type { StoredExecutionOutputs } from "./job-result.factories.js";
 import type {
@@ -31,33 +31,33 @@ type ExportErrorCode = Extract<
 >;
 
 export async function tryStoreOutput(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   payload: JsonValue,
 ): Promise<ArtifactRef | undefined> {
-  const result = await artifacts.putJson(payload);
-  return result.ok ? { hash: result.value } : undefined;
+  const result = await writer.save(payload, "application/json");
+  return result.status === "saved" ? { hash: result.hash } : undefined;
 }
 
 export async function storeExecutionOutputs(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   payload: JsonValue,
   declarations?: Record<string, ExportRef>,
 ): Promise<StoreExecutionOutputsOutcome> {
-  const outputResult = await artifacts.putJson(payload);
-  if (!outputResult.ok) {
+  const outputResult = await writer.save(payload, "application/json");
+  if (outputResult.status !== "saved") {
     return {
       ok: false,
       error: {
         code: "OUTPUT_STORE_FAILED",
-        message: outputResult.error.message,
+        message: saveErrorMessage(outputResult),
         retryable: false,
       },
     };
   }
 
-  const output: ArtifactRef = { hash: outputResult.value };
+  const output: ArtifactRef = { hash: outputResult.hash };
   const storedExports = await storeDeclaredExports(
-    artifacts,
+    writer,
     payload,
     declarations,
   );
@@ -75,7 +75,7 @@ export async function storeExecutionOutputs(
 }
 
 async function storeDeclaredExports(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   payload: JsonValue,
   declarations?: Record<string, ExportRef>,
 ): Promise<StoreExportsOutcome> {
@@ -85,7 +85,7 @@ async function storeDeclaredExports(
   const exports: Record<string, ArtifactRef> = {};
   for (const [exportName, declaration] of entries) {
     const stored = await storeDeclaredExport(
-      artifacts,
+      writer,
       payload,
       exportName,
       declaration,
@@ -98,7 +98,7 @@ async function storeDeclaredExports(
 }
 
 async function storeDeclaredExport(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   payload: JsonValue,
   exportName: string,
   declaration: ExportRef,
@@ -114,14 +114,14 @@ async function storeDeclaredExport(
   }
 
   if (declaration.type === "application/json") {
-    return storeJsonExport(artifacts, exportName, declaration, selected);
+    return storeJsonExport(writer, exportName, declaration, selected);
   }
 
-  return storeTextExport(artifacts, exportName, declaration.type, selected);
+  return storeTextExport(writer, exportName, declaration.type, selected);
 }
 
 async function storeJsonExport(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   exportName: string,
   declaration: ExportRef,
   selected: unknown,
@@ -142,7 +142,9 @@ async function storeJsonExport(
     }
   }
 
-  return storedArtifact(await artifacts.putJson(valueResult.value));
+  return storedArtifact(
+    await writer.save(valueResult.value, "application/json"),
+  );
 }
 
 function jsonExportValue(
@@ -164,7 +166,7 @@ function jsonExportValue(
 }
 
 async function storeTextExport(
-  artifacts: ArtifactsPort,
+  writer: ArtifactWriterPort,
   exportName: string,
   type: "text/plain" | "text/markdown",
   selected: unknown,
@@ -178,16 +180,26 @@ async function storeTextExport(
 
   const result =
     type === "text/plain"
-      ? await artifacts.putText(selected)
-      : await artifacts.putMarkdown(selected);
+      ? await writer.save(selected, "text/plain")
+      : await writer.save(selected, "text/markdown");
   return storedArtifact(result);
 }
 
-function storedArtifact(result: Result<string, PutError>): StoreExportOutcome {
-  if (!result.ok) {
-    return exportFailure("EXPORT_STORE_FAILED", result.error.message);
+// Only a "saved" outcome counts as success here: every artifact still needs
+// its SQL row for real downstream consumers (run-param reuse, previews), so
+// a content-only save (CAS succeeded, SQL metadata didn't) isn't yet a safe
+// success case to hand back. Revisit once those consumers migrate off SQL.
+function storedArtifact(result: SaveArtifactResult): StoreExportOutcome {
+  if (result.status !== "saved") {
+    return exportFailure("EXPORT_STORE_FAILED", saveErrorMessage(result));
   }
-  return { ok: true, artifact: { hash: result.value } };
+  return { ok: true, artifact: { hash: result.hash } };
+}
+
+function saveErrorMessage(
+  result: Extract<SaveArtifactResult, { status: "content-only" | "failed" }>,
+): string {
+  return result.error.message;
 }
 
 function exportFailure(

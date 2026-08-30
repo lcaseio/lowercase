@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { Artifacts } from "../src/artifacts.js";
-import type { ArtifactStorePort, JsonValue } from "@lcase/ports";
+import type { LegacyArtifactStorePort, JsonValue } from "@lcase/ports";
 
 describe("Artifacts sortJson()", () => {
   it("sorts object keys", () => {
     const data: JsonValue = { b: 1, a: 2 };
 
-    const store = {} as ArtifactStorePort;
+    const store = {} as LegacyArtifactStorePort;
     const artifacts = new Artifacts(store);
     const sortedData = artifacts.sortJson(data);
 
@@ -18,7 +18,7 @@ describe("Artifacts sortJson()", () => {
   it("sorts nested object keys", () => {
     const data: JsonValue = { b: { y: 2, x: 1 }, a: 2 };
 
-    const store = {} as ArtifactStorePort;
+    const store = {} as LegacyArtifactStorePort;
     const artifacts = new Artifacts(store);
     const sortedData = artifacts.sortJson(data);
 
@@ -30,7 +30,7 @@ describe("Artifacts sortJson()", () => {
   it("sorts nested object keys", () => {
     const data: JsonValue = { b: { y: 2, x: 1 }, a: 2 };
 
-    const store = {} as ArtifactStorePort;
+    const store = {} as LegacyArtifactStorePort;
     const artifacts = new Artifacts(store);
     const sortedData = artifacts.sortJson(data);
 
@@ -42,7 +42,7 @@ describe("Artifacts sortJson()", () => {
   it("keeps array order intact", () => {
     const data: JsonValue = [{ b: { y: 2, x: "hello" } }, { a: 2 }];
 
-    const store = {} as ArtifactStorePort;
+    const store = {} as LegacyArtifactStorePort;
     const artifacts = new Artifacts(store);
     const sortedData = artifacts.sortJson(data);
 
@@ -52,7 +52,7 @@ describe("Artifacts sortJson()", () => {
     expect(sortedDataStringified).toBe(expectedStringifiedData);
   });
   it("string primitives remain unchainged", () => {
-    const store = {} as ArtifactStorePort;
+    const store = {} as LegacyArtifactStorePort;
     const artifacts = new Artifacts(store);
 
     expect(artifacts.sortJson("x")).toBe("x");

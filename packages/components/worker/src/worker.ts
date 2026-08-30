@@ -1,5 +1,5 @@
 import { resolveJsonPath } from "@lcase/json-ref-binder";
-import type { ArtifactsPort } from "@lcase/ports";
+import type { ArtifactsPort, ArtifactWriterPort } from "@lcase/ports";
 import type { Ref } from "@lcase/types";
 import {
   storeExecutionOutputs,
@@ -47,7 +47,10 @@ export type WorkerDeps = {
   permits: ResourcePermitPort;
   lifecycle: WorkerLifecycleEventSink;
   protocol: ProtocolExecutor;
+  // reads still resolve through the legacy ArtifactsPort until the reader
+  // side (PR 2) lands; writes go through the new ArtifactWriterPort.
   artifacts: ArtifactsPort;
+  writer: ArtifactWriterPort;
   resourceKeyResolver?: ResourceKeyResolver;
 };
 
@@ -160,13 +163,13 @@ class Worker implements JobExecutionPort {
       // primary, more important protocol error.
       const output =
         protocolResult.payload !== undefined
-          ? await tryStoreOutput(this.#deps.artifacts, protocolResult.payload)
+          ? await tryStoreOutput(this.#deps.writer, protocolResult.payload)
           : undefined;
       return this.#finishFailedExecution(command, protocolResult.error, output);
     }
 
     const stored = await storeExecutionOutputs(
-      this.#deps.artifacts,
+      this.#deps.writer,
       protocolResult.payload,
       command.exports,
     );

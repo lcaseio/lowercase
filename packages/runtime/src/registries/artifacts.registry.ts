@@ -1,5 +1,5 @@
 import { ArtifactRepositoryPort } from "@lcase/ports";
-import { FsArtifactStore } from "@lcase/adapters/artifact-store";
+import { LegacyFsArtifactStore } from "@lcase/adapters/artifact-store";
 import type { Registry } from "../types/registry.js";
 import { Artifacts } from "@lcase/artifacts";
 
@@ -7,7 +7,7 @@ export const artifactRegistry = {
   embedded: {
     local: {
       fs: (path: string, repository?: ArtifactRepositoryPort) =>
-        new Artifacts(new FsArtifactStore(path), repository),
+        new Artifacts(new LegacyFsArtifactStore(path), repository),
     },
   },
 } as const satisfies Registry;
