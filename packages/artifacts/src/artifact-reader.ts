@@ -35,33 +35,26 @@ export class ArtifactReader implements ArtifactReaderPort {
     AutoLoadResult | Result<JsonValue | string | Uint8Array, ArtifactLoadError>
   > {
     const stored = await this.store.getBytes(hash);
-    if (stored === null) {
-      return {
-        ok: false,
-        error: {
-          code: "NOT_FOUND",
-          message: `No artifact found for hash "${hash}"`,
-        },
-      };
+    if (!stored.ok) {
+      return { ok: false, error: stored.error };
     }
 
-    if (contentType !== undefined && contentType !== stored.contentType) {
+    const { bytes, contentType: storedContentType } = stored.value;
+
+    if (contentType !== undefined && contentType !== storedContentType) {
       return {
         ok: false,
         error: {
           code: "TYPE_MISMATCH",
-          message: `Expected contentType "${contentType}" but stored artifact has "${stored.contentType}"`,
+          message: `Expected contentType "${contentType}" but stored artifact has "${storedContentType}"`,
         },
       };
     }
 
     try {
-      const value = this.decodeContent(
-        stored.bytes,
-        contentType ?? stored.contentType,
-      );
+      const value = this.decodeContent(bytes, contentType ?? storedContentType);
       if (contentType === undefined) {
-        return { ok: true, contentType: stored.contentType, value };
+        return { ok: true, contentType: storedContentType, value };
       }
       return { ok: true, value };
     } catch (e) {

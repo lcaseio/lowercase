@@ -9,6 +9,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "test:integration": "docker compose up -d --wait && S3_TEST_ENDPOINT=http://localhost:9000 S3_TEST_BUCKET=artifacts-test S3_TEST_ACCESS_KEY_ID=minioadmin S3_TEST_SECRET_ACCESS_KEY=minioadmin turbo run test:integration",
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
