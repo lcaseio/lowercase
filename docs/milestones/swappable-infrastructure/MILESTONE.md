@@ -26,14 +26,14 @@ No natural single starting point among the three candidate adapters (queue/messa
 
 ## PR index
 
-| PR  | Description                                | Status      | Where                        | See also |
-| --- | ------------------------------------------ | ----------- | ---------------------------- | -------- |
-| 1   | S3 CAS adapter (MinIO-backed) + tests      | in progress | [`arcs/cas-adapter.md`][1]   |          |
-| 2   | Wire CAS adapter into `packages/runtime`   | not started | [`arcs/cas-adapter.md`][1]   |          |
-| 3   | Redis Streams adapter (queue)              | not started | [`arcs/queue-adapter.md`][2] |          |
-| 4   | Wire queue adapter into `packages/runtime` | not started | [`arcs/queue-adapter.md`][2] |          |
-| 5   | Postgres adapter (Prisma)                  | not started | [`arcs/sql-adapter.md`][3]   |          |
-| 6   | Wire SQL adapter into `packages/runtime`   | not started | [`arcs/sql-adapter.md`][3]   |          |
+| PR  | Description                                | Status        | Where | See also |
+| --- | ------------------------------------------ | ------------- | ----- | -------- |
+| 1   | S3 CAS adapter (MinIO-backed) + tests      | merged (#360) | [1]   |          |
+| 2   | Wire CAS adapter into `packages/runtime`   | not started   | [1]   |          |
+| 3   | Redis Streams adapter (queue)              | not started   | [2]   |          |
+| 4   | Wire queue adapter into `packages/runtime` | not started   | [2]   |          |
+| 5   | Postgres adapter (Prisma)                  | not started   | [3]   |          |
+| 6   | Wire SQL adapter into `packages/runtime`   | not started   | [3]   |          |
 
 ## Not yet scoped
 

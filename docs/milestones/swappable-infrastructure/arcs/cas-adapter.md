@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Builds a real S3-compatible CAS adapter (backed by MinIO for local/dev), replacing `FsArtifactStore`, and wires it into `packages/runtime`'s config selection.
 
-## PR 1 - S3-compatible CAS adapter (MinIO-backed) + local/CI scaffolding - in progress
+## PR 1 - S3-compatible CAS adapter (MinIO-backed) + local/CI scaffolding - merged (#360)
 
 Picked as this milestone's starting adapter — `ArtifactStorePort`'s surface (`getBytes`/`putBytes`, content-addressed) is the narrowest of the three candidate ports and already hardened by the `worker-tools-artifacts` refactor, making it the lowest-risk way to prove the pattern before tackling the queue or SQL.
 
