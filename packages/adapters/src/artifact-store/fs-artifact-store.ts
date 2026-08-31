@@ -1,8 +1,10 @@
 import type {
   ArtifactStorePort,
-  ArtifactStoreGetResult,
+  ArtifactStoreGetSuccess,
   ArtifactStorePutResult,
+  ArtifactStoreGetError,
 } from "@lcase/ports";
+import type { Result } from "@lcase/types";
 import {
   readFile,
   writeFile,
@@ -79,19 +81,36 @@ export class FsArtifactStore implements ArtifactStorePort {
     return { ok: true, path: absoluteFilePath };
   }
 
-  async getBytes(hash: string): Promise<ArtifactStoreGetResult | null> {
+  async getBytes(
+    hash: string,
+  ): Promise<Result<ArtifactStoreGetSuccess, ArtifactStoreGetError>> {
     const absoluteFilePath = this.getAbsoluteFilePath(hash);
     const absoluteMetaPath = this.getAbsoluteMetaPath(hash);
 
+    // Read content and meta sequentially, not via Promise.all, so a missing
+    // content file (-> try the legacy layout) can be told apart from a
+    // present content file with a missing/corrupt sidecar (-> a real error,
+    // see below) -- a single combined catch can't distinguish the two.
+    let bytes: Uint8Array;
     try {
-      const [bytes, metaRaw] = await Promise.all([
-        readFile(absoluteFilePath),
-        readFile(absoluteMetaPath, "utf-8"),
-      ]);
+      bytes = await readFile(absoluteFilePath);
+    } catch (e) {
+      if (this.isEnoent(e)) {
+        return this.getLegacyBytes(hash);
+      }
+      return this.readError(e);
+    }
+
+    try {
+      const metaRaw = await readFile(absoluteMetaPath, "utf-8");
       const { contentType } = JSON.parse(metaRaw) as { contentType: string };
-      return { bytes, contentType };
-    } catch {
-      return this.getLegacyBytes(hash);
+      return { ok: true, value: { bytes, contentType } };
+    } catch (e) {
+      // Content present but the sidecar is missing/corrupt: a genuine
+      // inconsistency, not "not found" -- legacy files never share this
+      // path (they're extensioned, this one isn't), so there's nothing to
+      // fall back to.
+      return this.readError(e);
     }
   }
 
@@ -104,7 +123,7 @@ export class FsArtifactStore implements ArtifactStorePort {
   // ArtifactWriterPort.
   private async getLegacyBytes(
     hash: string,
-  ): Promise<ArtifactStoreGetResult | null> {
+  ): Promise<Result<ArtifactStoreGetSuccess, ArtifactStoreGetError>> {
     for (const [extension, contentType] of Object.entries(
       legacyExtensionContentTypes,
     )) {
@@ -114,14 +133,39 @@ export class FsArtifactStore implements ArtifactStorePort {
       );
       try {
         const bytes = await readFile(legacyFilePath);
-        return { bytes, contentType };
+        return { ok: true, value: { bytes, contentType } };
       } catch {
         continue;
       }
     }
     // fail closed: content without a recognizable sidecar or legacy
     // extension is treated as not-found rather than an unknown content-type.
-    return null;
+    return {
+      ok: false,
+      error: {
+        code: "NOT_FOUND",
+        message: `No artifact found for hash "${hash}"`,
+      },
+    };
+  }
+
+  private isEnoent(e: unknown): boolean {
+    return (
+      e instanceof Error &&
+      "code" in e &&
+      (e as NodeJS.ErrnoException).code === "ENOENT"
+    );
+  }
+
+  private readError(e: unknown): Result<never, ArtifactStoreGetError> {
+    return {
+      ok: false,
+      error: {
+        code: "STORE_ERROR",
+        message: e instanceof Error ? e.message : "Error reading artifact",
+        cause: e instanceof Error ? e.message : String(e),
+      },
+    };
   }
 
   private getAbsoluteFilePath(hash: string): string {

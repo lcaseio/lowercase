@@ -20,11 +20,11 @@ Started with a long discussion-first research pass across the whole of `packages
 
 ## PR index
 
-| PR  | Description                                                                                      | Status        | Where                                                                  | See also                                                                           |
-| --- | ------------------------------------------------------------------------------------------------ | ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 1   | Event-emission core: single `emit()`, context propagation, span-per-entity model                 | merged (#347) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)         | [`research/history-and-current-shape.md`](./research/history-and-current-shape.md) |
-| 2   | Prove the core out: wire `step` emission in the engine onto `emit()`/`deriveTraceHeaderFields()` | merged (#348) | [`arcs/step-emission-in-engine.md`](./arcs/step-emission-in-engine.md) | [`arcs/event-emission-core.md`](./arcs/event-emission-core.md)                     |
-| 3   | Give `packages/events` a real ESLint config, then clean/rebuild/fix                              | merged (#349) | [`arcs/events-lint-and-rebuild.md`](./arcs/events-lint-and-rebuild.md) |                                                                                    |
+| PR  | Description                               | Status        | Where | See also |
+| --- | ----------------------------------------- | ------------- | ----- | -------- |
+| 1   | Event-emission core: single `emit()`      | merged (#347) | [1]   | [4]      |
+| 2   | Engine `step` emission onto new core      | merged (#348) | [2]   | [1]      |
+| 3   | `packages/events` ESLint config + rebuild | merged (#349) | [3]   |          |
 
 ## Not yet scoped
 
@@ -34,3 +34,8 @@ Started with a long discussion-first research pass across the whole of `packages
 - **Error propagation across the whole event-bus-adjacent backend — bigger than this milestone, not just `packages/events`.** Surfaced directly from `buildEvent()`'s current behavior (throws on schema-validation failure, which can halt whatever handler called it) — but the real question is broader: should a failure like this instead emit an event and/or return a Result-shaped value (mirroring the existing, deliberate `{ok,value}`/`{ok,error}` envelope convention already used on API responses) so callers across `engine`/`worker`/`router`/`limiter` can react without crashing? Explicitly named as needing its own research and design pass, not a `buildEvent()` tweak — touches `engine-hardening`'s territory too (currently scoped to `packages/engine` specifically, per its own `MILESTONE.md`, not this broader cross-cutting question). Not scoped or started; may end up as its own future milestone rather than fitting inside an existing one.
 
 Scaffolded now, not yet scoped in full detail.
+
+[1]: ./arcs/event-emission-core.md
+[2]: ./arcs/step-emission-in-engine.md
+[3]: ./arcs/events-lint-and-rebuild.md
+[4]: ./research/history-and-current-shape.md

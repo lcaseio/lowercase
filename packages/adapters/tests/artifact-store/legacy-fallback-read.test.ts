@@ -40,9 +40,10 @@ describe("FsArtifactStore reads content written in the legacy extensioned format
 
     const result = await newStore.getBytes(testHash);
 
-    expect(result).not.toBeNull();
-    expect(result?.contentType).toBe("text/plain");
-    expect(new TextDecoder().decode(result?.bytes)).toBe("hello");
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    expect(result.value.contentType).toBe("text/plain");
+    expect(new TextDecoder().decode(result.value.bytes)).toBe("hello");
   });
 
   it("still prefers the new sidecar-backed format over a legacy file when both exist", async () => {
@@ -56,6 +57,7 @@ describe("FsArtifactStore reads content written in the legacy extensioned format
 
     const result = await newStore.getBytes(testHash);
 
-    expect(new TextDecoder().decode(result?.bytes)).toBe("new content");
+    if (!result.ok) throw new Error("expected ok result");
+    expect(new TextDecoder().decode(result.value.bytes)).toBe("new content");
   });
 });

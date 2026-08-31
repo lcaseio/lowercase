@@ -1,8 +1,10 @@
+// generic helper types
 export * from "./result.type.js";
+export * from "./errors/domain-error.type.js";
 export * from "./json-simple-value.js";
 export * from "./json-value.js";
-export * from "./events/shared/index.js";
 
+export * from "./events/shared/index.js";
 export * from "./events/flow/data.js";
 
 export * from "./events/any-event.js";

@@ -91,7 +91,7 @@ Built matching the plan. `ArtifactReadWritePort` (`packages/ports/src/artifacts/
 
 **Test-fixture gaps of exactly the kind flagged in the discussion above, caught by the full suite, not missed**: two `apps/http-server` integration tests inserted artifact rows with `format` but no `contentType` (fine under the old fallback, broken under the new contentType-only check) — fixed by adding real `contentType` values, the same fix the discussion already anticipated for production code, just also needed in test fixtures.
 
-## PR 10 - Flatten `packages/artifacts/src/v2` into the package root - in progress
+## PR 10 - Flatten `packages/artifacts/src/v2` into the package root - merged (#359)
 
 ### Discussion
 

@@ -1,4 +1,4 @@
-import type { JsonValue, Result } from "@lcase/types";
+import type { DomainError, JsonValue, Result } from "@lcase/types";
 
 // Capability-module inbound port (see docs/component-architecture/research/
 // capability-modules.md): the narrower read half of the writer/reader split
@@ -37,8 +37,6 @@ export type AutoLoadResult =
   | { ok: true; contentType: string; value: JsonValue | string | Uint8Array }
   | { ok: false; error: ArtifactLoadError };
 
-export type ArtifactLoadError = {
-  code: "NOT_FOUND" | "TYPE_MISMATCH" | "DECODING_FAILED";
-  message: string;
-  cause?: string;
-};
+export type ArtifactLoadError = DomainError<
+  "NOT_FOUND" | "TYPE_MISMATCH" | "DECODING_FAILED" | "STORE_ERROR"
+>;

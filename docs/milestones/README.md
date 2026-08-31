@@ -9,12 +9,12 @@ One directory per milestone. See the convention below for shape, naming, and the
 | 1   | ui-workspace                  | complete (v0.1.0-alpha.13, #339) | [`ui-workspace/MILESTONE.md`](./ui-workspace/MILESTONE.md)                                   |
 | 2   | architecture-boundaries       | complete (#341–#346)             | [`architecture-boundaries/MILESTONE.md`](./architecture-boundaries/MILESTONE.md)             |
 | 3   | events-refactor               | complete (#347–#349)             | [`events-refactor/MILESTONE.md`](./events-refactor/MILESTONE.md)                             |
-| 4   | worker-tools-artifacts        | in progress                      | [`worker-tools-artifacts/MILESTONE.md`](./worker-tools-artifacts/MILESTONE.md)               |
-| 5   | json-schema-migration         | not started, scaffolded          | [`json-schema-migration/MILESTONE.md`](./json-schema-migration/MILESTONE.md)                 |
-| 6   | rate-limiting                 | not started, scaffolded          | [`rate-limiting/MILESTONE.md`](./rate-limiting/MILESTONE.md)                                 |
-| 7   | engine-hardening              | not started, scaffolded          | [`engine-hardening/MILESTONE.md`](./engine-hardening/MILESTONE.md)                           |
-| 8   | runtime-storage-consolidation | not started, scaffolded          | [`runtime-storage-consolidation/MILESTONE.md`](./runtime-storage-consolidation/MILESTONE.md) |
-| 9   | swappable-infrastructure      | not started, scaffolded          | [`swappable-infrastructure/MILESTONE.md`](./swappable-infrastructure/MILESTONE.md)           |
+| 4   | worker-tools-artifacts        | complete (#350–#359)             | [`worker-tools-artifacts/MILESTONE.md`](./worker-tools-artifacts/MILESTONE.md)               |
+| 5   | swappable-infrastructure      | in progress                      | [`swappable-infrastructure/MILESTONE.md`](./swappable-infrastructure/MILESTONE.md)           |
+| 6   | json-schema-migration         | not started, scaffolded          | [`json-schema-migration/MILESTONE.md`](./json-schema-migration/MILESTONE.md)                 |
+| 7   | rate-limiting                 | not started, scaffolded          | [`rate-limiting/MILESTONE.md`](./rate-limiting/MILESTONE.md)                                 |
+| 8   | engine-hardening              | not started, scaffolded          | [`engine-hardening/MILESTONE.md`](./engine-hardening/MILESTONE.md)                           |
+| 9   | runtime-storage-consolidation | not started, scaffolded          | [`runtime-storage-consolidation/MILESTONE.md`](./runtime-storage-consolidation/MILESTONE.md) |
 | 10  | evals                         | not started, scaffolded          | [`evals/MILESTONE.md`](./evals/MILESTONE.md)                                                 |
 
 (Order here is start/intended-start order, not priority within a milestone — that's what each milestone's own `Next up` list is for.)
@@ -30,7 +30,7 @@ One directory per milestone. See the convention below for shape, naming, and the
 - `Summary` — synchronic snapshot: what this milestone is/has built, as of now, stated as fact — the default home for "what's built today." Present tense, overview level, no history.
 - `Evolution` — the chronological narrative of how the design got here: original plan, pivots, motivation, longer-term context not yet built. Optional while a milestone is young/thin — its few sentences can live briefly inside Summary until there's an actual pivot or backstory worth naming; split out once Summary would otherwise have to carry both "what it is" and "why it changed" at once. The PR index below is this narrative's detail layer — Evolution names the beats, individual PR entries carry the specifics behind each one. Expect to periodically re-summarize/compress it as it grows, the same recurring maintenance PR 36 established for the whole doc — a beat that's fully absorbed into Summary's present-tense description, or fully superseded by a later pivot, doesn't need to keep its own paragraph forever.
 - `Design principles` — durable heuristics ongoing/future PRs should follow. Optional.
-- `PR index` — table: `PR | Description | Status | Where | See also`.
+- `PR index` — table: `PR | Description | Status | Where | See also`. `Description` stays terse — aim for roughly 50 characters, not a hard cap; the full framing belongs in the arc file's own PR entry, not the table.
 - `Next up` — ordered, committed upcoming PR slots. Detail level tapers with distance: the next PR up gets real substance, ones further out are often just a title/one-liner.
 - `Not yet scoped` — ideas with no PR number yet, no ordering commitment. This is also where "further out"/parking-lot material belongs — not its own section.
 - `Skipped or superseded` — see below. Only present if a PR has actually hit the rare number-collision case.
@@ -42,7 +42,9 @@ One directory per milestone. See the convention below for shape, naming, and the
 
 Neither category should keep growing going forward for its own sake — (1) is legitimate indefinitely; (2) is closed by construction (nothing new can predate a log that already exists) and exists only because real content already does.
 
-**`arcs/<descriptive-name>.md`** — zero or more, one per narratively-related group of PRs from this milestone's own numbered log. Never numbered filenames (the PR index table maps number → file, not filename order). A PR whose story doesn't fit its neighbors gets its own file. Content is written directly into its arc file from the moment it's written (during discussion, before planning) — never staged in `MILESTONE.md` first, even while a PR is still in progress.
+**`arcs/<descriptive-name>.md`** — zero or more, one per narratively-related group of PRs from this milestone's own numbered log. Never numbered filenames (the PR index table maps number → file, not filename order). A PR whose story doesn't fit its neighbors gets its own file. Content is written directly into its arc file from the moment it's written (during discussion, before planning) — never staged in `MILESTONE.md` first, even while a PR is still in progress. Aim for a short stem — roughly 15 characters, 18 with `.md` — not a hard rule, and applies going forward only; don't rename existing arc files to fit.
+
+**PR index table — keep the raw markdown narrow, not just the rendered preview.** `Where` and `See also` use reference-style links (`[N]`, defined once in a block at the end of the file, e.g. `[1]: ./arcs/cas-adapter.md`) instead of inline `[text](url)` — an inline link repeated across several rows for the same arc file, or a `See also` link with real anchor text, renders fine but is unreadable as raw markdown without a wide terminal/editor. One shared numbering sequence for the whole table, in order of first appearance — `Where` and `See also` both draw from it rather than each getting a separate scheme. This is specifically for the PR index table: arc file prose, `Discussion`/`What actually landed` content, and everywhere else keep ordinary inline links — reference-style there too only if it happens to be convenient, never as a rule.
 
 **Arc file header, fixed shape:**
 
