@@ -26,19 +26,22 @@ No natural single starting point among the three candidate adapters (queue/messa
 
 ## PR index
 
-| PR  | Description                                | Status      | Where                        | See also |
-| --- | ------------------------------------------ | ----------- | ---------------------------- | -------- |
-| 1   | S3 CAS adapter (MinIO-backed) + tests      | in progress | [`arcs/cas-adapter.md`][1]   |          |
-| 2   | Wire CAS adapter into `packages/runtime`   | not started | [`arcs/cas-adapter.md`][1]   |          |
-| 3   | Redis Streams adapter (queue)              | not started | [`arcs/queue-adapter.md`][2] |          |
-| 4   | Wire queue adapter into `packages/runtime` | not started | [`arcs/queue-adapter.md`][2] |          |
-| 5   | Postgres adapter (Prisma)                  | not started | [`arcs/sql-adapter.md`][3]   |          |
-| 6   | Wire SQL adapter into `packages/runtime`   | not started | [`arcs/sql-adapter.md`][3]   |          |
+Reordered from the original scaffold after runtime-composition research (see `arcs/cas-adapter.md`'s PR 2 discussion) replaced the original single "wire CAS into runtime" step with a bigger, more honest sequence. This is expected — the original list was a best-effort scaffold, not a commitment; incrementing as real scope becomes clear is the normal process, not a sign of drift.
+
+| PR  | Description                                                                    | Status        | Where | See also |
+| --- | ------------------------------------------------------------------------------ | ------------- | ----- | -------- |
+| 1   | S3 CAS adapter (MinIO-backed) + tests                                          | merged (#360) | [1]   |          |
+| 2   | Shared assembly layer + leaf config types in `packages/runtime`                | not started   | [1]   |          |
+| 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | not started   | [1]   |          |
+| 4   | Redis Streams adapter (queue)                                                  | not started   | [2]   |          |
+| 5   | Extend `local-system` profile with `redis-streams` messaging branch            | not started   | [2]   |          |
+| 6   | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |
+| 7   | Extend `local-system` profile with `postgres` SQL branch                       | not started   | [3]   |          |
 
 ## Not yet scoped
 
 - **Migrating the worker (and engine, as necessary) to real inbound/outbound adapters for an actual remote deployment** — the point of this whole milestone, but deliberately not numbered as PRs 7+ yet. These six PRs build and wire the infrastructure a remote worker would need; actually moving the worker out-of-process is real, separate design work (per Worker V2 plan's Phase 6) that should get its own discussion once the infrastructure underneath it is real, not planned speculatively now.
-- **`LifecycleEventIngress`** (tracked in `worker-tools-artifacts`'s own "Not yet scoped") — if ever built, Redis Streams is now the named transport for it, per PR 3's discussion above. Still not scoped or started here.
+- **`LifecycleEventIngress`** (tracked in `worker-tools-artifacts`'s own "Not yet scoped") — if ever built, Redis Streams is now the named transport for it, per PR 4's discussion in `arcs/queue-adapter.md`. Still not scoped or started here.
 
 Scaffolded now, work not yet started.
 
