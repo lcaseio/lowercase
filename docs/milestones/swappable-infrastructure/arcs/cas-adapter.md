@@ -43,7 +43,7 @@ Matches the design above on every structural point — flat keys, injected `S3Cl
 - **Local dev tooling, not originally scoped**: root `pnpm test:integration` (`docker compose up -d --wait` + fixed local MinIO creds, then `turbo run test:integration`), scoped to just the infra-gated test file via a `.contract.integration.test.ts` filename convention (composing two independent axes — "uses the shared contract suite" and "needs real infra" — so `test:integration` targets only the second without re-running the rest of a package's unit suite). Needed one non-obvious fix: Turborepo 2.x strips undeclared env vars from tasks by default, so the `S3_TEST_*` vars had to be explicitly listed under the task's own `env` in `turbo.json`, or the integration test silently skipped even with MinIO running.
 - **Verified against live MinIO, not just typechecked** — full contract suite (round-trip, `NOT_FOUND`, idempotency) run against a real `docker compose`-started container, both from a cold start (image pull + healthcheck wait) and already-running, confirming `docker compose up -d --wait` is a correct no-op either way.
 
-## PR 2 - Shared assembly layer + leaf config types in `packages/runtime` - not started
+## PR 2 - Shared assembly layer + leaf config types in `packages/runtime` - merged (#361)
 
 Originally scoped as one PR ("wire CAS adapter into `packages/runtime` config"). Split into this PR plus PR 3 once the runtime-composition research (below) made clear the real work is building the assembler/profile system generally, with CAS just being the first, and so far only, port with a real choice behind it. This PR is the foundational half: the shared, adapter-agnostic assembly machinery and config vocabulary, no concrete profile yet.
 
