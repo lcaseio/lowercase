@@ -7,7 +7,6 @@ export async function cliSimAction(
   reusedSteps: string[],
 ): Promise<void> {
   console.log("[cli] running replay command");
-  await services.system.startSystem();
   await services.sim.startForkedRunSim(runId, reusedSteps, "lowercase://cli");
 }
 

@@ -1,4 +1,4 @@
-import type { ServicesPort } from "@lcase/ports";
+import type { ServicesPort, ObservabilityTapPort } from "@lcase/ports";
 import "fastify";
 
 /**
@@ -7,5 +7,6 @@ import "fastify";
 declare module "fastify" {
   interface FastifyInstance {
     services: ServicesPort;
+    tap: ObservabilityTapPort;
   }
 }

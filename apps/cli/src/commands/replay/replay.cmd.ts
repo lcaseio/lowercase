@@ -6,9 +6,7 @@ export async function cliReplayAction(
   runId: string,
 ): Promise<void> {
   console.log("[cli] running replay command");
-  await services.system.startSystem();
   await services.replay.replayRun(runId);
-  await services.system.startSystem();
 }
 
 export function registerReplayCmd(

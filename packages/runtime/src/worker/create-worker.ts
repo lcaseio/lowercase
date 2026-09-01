@@ -6,7 +6,7 @@ import {
   createLocalResourcePermit,
   createWorker,
 } from "@lcase/worker";
-import type { WorkerConfig } from "../types/runtime.config.js";
+import type { WorkerConfig } from "../config/worker.config.js";
 
 export type CreateWorkerCoreDeps = {
   artifacts: ArtifactReadWritePort;
