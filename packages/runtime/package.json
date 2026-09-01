@@ -19,6 +19,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
     "@lcase/worker": "workspace:*",
     "@lcase/integrations": "workspace:*",
     "@lcase/engine": "workspace:*",

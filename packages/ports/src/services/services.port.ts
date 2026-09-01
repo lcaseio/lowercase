@@ -23,8 +23,6 @@ import type {
   SimRecord,
 } from "@lcase/types";
 import type { ArtifactLoadError } from "../artifacts/artifact-reader.port.js";
-import type { EventSink } from "../observability/observability-sink.port.js";
-import type { RuntimeStatus } from "../controller.port.js";
 
 // Relocated from the now-deleted artifacts.port.ts (legacy ArtifactsPort) --
 // ArtifactServicePort.getArtifact is its only remaining consumer. Error
@@ -42,7 +40,6 @@ export interface ServicesPort {
   flow: FlowServicePort;
   sim: SimServicePort;
   replay: ReplayServicePort;
-  system: SystemServicePort;
   run: RunServicePort;
   artifact: ArtifactServicePort;
   eval: EvalServicePort;
@@ -83,13 +80,6 @@ export interface ReplayServicePort {
   getAllEvents(runId: string): Promise<{
     events: AnyEvent[];
   }>;
-}
-
-export interface SystemServicePort {
-  startSystem(): Promise<RuntimeStatus>;
-  stopSystem(): Promise<RuntimeStatus>;
-  attachSink(sink: EventSink): void;
-  detachSink(sink: EventSink): void;
 }
 
 export type RunRequest = {

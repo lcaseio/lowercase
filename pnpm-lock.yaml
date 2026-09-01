@@ -66,9 +66,6 @@ importers:
       '@lcase/controller':
         specifier: workspace:*
         version: link:../../packages/archive/controller
-      '@lcase/runtime':
-        specifier: workspace:*
-        version: link:../../packages/runtime
       bufferutil:
         specifier: ^4.0.9
         version: 4.0.9
@@ -423,9 +420,6 @@ importers:
       '@lcase/run-flow':
         specifier: workspace:*
         version: link:../../use-cases/run-flow
-      '@lcase/runtime':
-        specifier: workspace:*
-        version: link:../../runtime
     devDependencies:
       '@lcase/ports':
         specifier: workspace:*
@@ -734,6 +728,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1121.0
+        version: 3.1121.0
       '@lcase/adapters':
         specifier: workspace:*
         version: link:../adapters

@@ -9,7 +9,6 @@ export async function cliAddAction(
   console.log("[cli] add command");
 
   const absolutePath = resolveCliPath(pathToFlow);
-  await services.system.startSystem();
   await services.flow.storeFlowInCas(absolutePath);
 }
 

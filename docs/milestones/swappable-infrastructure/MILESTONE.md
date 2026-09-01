@@ -31,8 +31,8 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | PR  | Description                                                                    | Status        | Where | See also |
 | --- | ------------------------------------------------------------------------------ | ------------- | ----- | -------- |
 | 1   | S3 CAS adapter (MinIO-backed) + tests                                          | merged (#360) | [1]   |          |
-| 2   | Shared assembly layer + leaf config types in `packages/runtime`                | not started   | [1]   |          |
-| 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | not started   | [1]   |          |
+| 2   | Shared assembly layer + leaf config types in `packages/runtime`                | merged (#361) | [1]   |          |
+| 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | in progress   | [1]   |          |
 | 4   | Redis Streams adapter (queue)                                                  | not started   | [2]   |          |
 | 5   | Extend `local-system` profile with `redis-streams` messaging branch            | not started   | [2]   |          |
 | 6   | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |

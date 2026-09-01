@@ -8,7 +8,6 @@ export async function cliRunAction(
   flowDefHash: string,
 ): Promise<void> {
   console.log("[cli] running run command");
-  await services.system.startSystem();
   await services.run.requestRun({
     flowId,
     flowVersionId,

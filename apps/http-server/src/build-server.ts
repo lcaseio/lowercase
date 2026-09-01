@@ -2,7 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import { config } from "./runtime.config.js";
-import { createServices } from "@lcase/runtime";
+import { createLocalSystem } from "@lcase/runtime";
 import { routes } from "./routes/routes.js";
 import { eventsRoute } from "./routes/events-route.js";
 
@@ -10,8 +10,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify();
   // NOTE:  order matters when registering plugins
 
-  const services = createServices(config);
+  const { services, runtime, tap } = createLocalSystem(config);
   app.decorate("services", services);
+  app.decorate("tap", tap);
 
   await app.register(cors, {
     origin: "*",
@@ -23,11 +24,11 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(routes);
   await app.register(eventsRoute);
 
-  const system = await app.services.system.startSystem();
-  console.log("System status: ", system);
+  const startOutcome = await runtime.start();
+  console.log("System start outcome: ", startOutcome);
 
-  app.addHook("onClose", async (app) => {
-    await app.services.system.stopSystem();
+  app.addHook("onClose", async () => {
+    await runtime.stop();
     console.log("Stopped system runtime.");
   });
 

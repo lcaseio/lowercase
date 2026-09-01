@@ -57,13 +57,13 @@ export const eventsRoute: FastifyPluginAsync = async (app: FastifyInstance) => {
       }
     }, HEARTBEAT_INTERVAL_MS);
 
-    app.services.system.attachSink(sink);
+    app.tap.attachSink(sink);
     void sink.start();
 
     req.raw.on("close", () => {
       clearInterval(heartbeat);
       void sink.stop();
-      app.services.system.detachSink(sink);
+      app.tap.detachSink(sink);
     });
   });
 };
