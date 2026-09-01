@@ -78,7 +78,7 @@ Matches the design above on every structural point — `ManagedResource<T>`/`Pro
 - **Also bundled, but really a PR 1 bugfix rather than new-to-this-PR work: CI silently wasn't testing what it appeared to, since PR 1.** The `services.minio` block, health-check wait, and job-level `S3_TEST_*` env vars were all real, but the actual test step ran `pnpm turbo run test`, not `test:integration` — and since the `test` task declares no `env` array in `turbo.json`, those job-level vars never reached the vitest process, so `s3-artifact-store.contract.integration.test.ts` has been skipping silently in CI since it was introduced. Found while checking whether the root `verify` script should run integration tests too (it didn't either, same root cause). Fixed by adding a dedicated `pnpm turbo run test:integration` step to `ci.yaml` (calling the turbo task directly, not the root `pnpm test:integration` script — that script's own `docker compose up` would conflict with CI's already-running `services:`-managed MinIO on the same port) and adding `test:integration` to the root `verify` script. Verified directly: forced a non-cached `turbo run test:integration` run with the env vars set and got `3 passed`, not skipped.
 - Full-repo build/typecheck/test all pass with zero changes to `createServices()`/`createRuntime()`/`workflow.runtime.ts` or any existing consumer — confirmed via `pnpm -w turbo run build/typecheck/test`, including `apps/http-server`'s full route suite (23 tests) passing unchanged.
 
-## PR 3 - Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` - in progress
+## PR 3 - Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` - merged (#362)
 
 ### Discussion
 
