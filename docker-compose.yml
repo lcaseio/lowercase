@@ -1,3 +1,5 @@
+name: lowercase
+
 services:
   minio:
     image: bitnamilegacy/minio:latest
