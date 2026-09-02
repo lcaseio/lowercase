@@ -20,12 +20,17 @@ jobs:
           MINIO_ROOT_PASSWORD: minioadmin
         ports:
           - 9000:9000
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
 
     env:
       S3_TEST_ENDPOINT: http://localhost:9000
       S3_TEST_BUCKET: artifacts-test
       S3_TEST_ACCESS_KEY_ID: minioadmin
       S3_TEST_SECRET_ACCESS_KEY: minioadmin
+      REDIS_TEST_URL: redis://localhost:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +52,9 @@ jobs:
 
       - name: Wait for MinIO
         run: until curl -sf http://localhost:9000/minio/health/live; do sleep 1; done
+
+      - name: Wait for Redis
+        run: until (exec 3<>/dev/tcp/localhost/6379) 2>/dev/null; do sleep 1; done
 
       - run: pnpm turbo run test
       - run: pnpm turbo run test:integration
