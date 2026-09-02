@@ -33,7 +33,7 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | 1   | S3 CAS adapter (MinIO-backed) + tests                                          | merged (#360) | [1]   |          |
 | 2   | Shared assembly layer + leaf config types in `packages/runtime`                | merged (#361) | [1]   |          |
 | 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | merged (#362) | [1]   |          |
-| 4   | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | in progress   | [2]   |          |
+| 4   | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (#363) | [2]   |          |
 | 5   | Extend `local-system` profile with `redis-streams` messaging branch            | not started   | [2]   |          |
 | 6   | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |
 | 7   | Extend `local-system` profile with `postgres` SQL branch                       | not started   | [3]   |          |

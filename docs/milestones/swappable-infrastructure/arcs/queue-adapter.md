@@ -4,7 +4,7 @@
 
 Part of the [`MILESTONE.md`](../MILESTONE.md) PR log, split out to keep that doc scannable. Builds a Redis Streams adapter for job dispatch, replacing `InMemoryQueue`, and wires it into `packages/runtime`'s config selection. Also settles what would otherwise have been a separate "event bus" decision — see below.
 
-## PR 4 - `MessageLogPort` + Redis-backed adapter - in progress
+## PR 4 - `MessageLogPort` + Redis-backed adapter - merged (#363)
 
 ### Discussion
 
