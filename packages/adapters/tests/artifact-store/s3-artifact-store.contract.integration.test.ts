@@ -5,10 +5,11 @@ import { runArtifactStoreContractTests } from "./artifact-store.contract.js";
 
 // Real integration test against a live MinIO instance -- gated on
 // S3_TEST_ENDPOINT since there's no way to run this without one. Run
-// `docker compose up -d minio` and export the S3_TEST_* vars (see
-// .env.example) to exercise this locally; CI provides them via the
-// workflow's minio service. See s3-artifact-store.test.ts for the
-// mocked-client unit tests that always run regardless.
+// `docker compose up -d minio` and copy .env.test.local.example to
+// .env.test.local (loaded automatically, see tests/setup-env.ts) to
+// exercise this locally; CI provides the vars directly via the workflow's
+// minio service. See s3-artifact-store.test.ts for the mocked-client unit
+// tests that always run regardless.
 const endpoint = process.env.S3_TEST_ENDPOINT;
 const bucket = process.env.S3_TEST_BUCKET ?? "artifacts-test";
 
