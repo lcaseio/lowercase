@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import type {
   EffectHandler,
   EffectHandlerDeps,
@@ -6,9 +5,9 @@ import type {
 } from "../engine.types.js";
 
 /**
- * Emits a `step.planned` event, used to a stepPlanned
- * reducer + planner + effect combo.
- * @param effect EmitStepPlannedFx
+ * Publishes the job.httpjson.submitted event for observability/replay,
+ * using the canonical envelope (including jobid) the planner already built.
+ * @param effect EmitJobHttpJsonSubmittedFx
  * @param deps EffectHandlerDeps
  */
 export const emitJobHttpJsonSubmittedFx: EffectHandler<
@@ -18,7 +17,6 @@ export const emitJobHttpJsonSubmittedFx: EffectHandler<
     {
       ...effect.scope,
       source: "lowercase://engine",
-      jobid: "job-" + String(randomUUID()),
     },
     effect.traceId,
   );

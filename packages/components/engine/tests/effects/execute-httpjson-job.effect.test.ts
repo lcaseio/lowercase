@@ -10,11 +10,15 @@ function makeEffect(): ExecuteHttpJsonJobFx {
   return {
     type: "ExecuteHttpJsonJob",
     request: {
-      jobId: "job-1",
-      runId: "run-1",
-      stepId: "step-1",
+      flowid: "flow-1",
+      flowversionid: "flowversion-1",
+      runid: "run-1",
+      stepid: "step-1",
+      jobid: "job-1",
+      capid: "httpjson",
+      toolid: "httpjson",
       traceId: "trace-1",
-      protocol: { kind: "httpjson", url: "https://example.test/resource" },
+      url: "https://example.test/resource",
       refs: [],
     },
     scope: {

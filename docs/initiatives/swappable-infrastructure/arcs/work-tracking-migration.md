@@ -4,9 +4,9 @@
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Establishes unambiguous internal work identifiers and migrates the living documentation to the resulting layout and terminology.
 
-## Change C6 - Work-tracking terminology + documentation migration - in progress
+## Change C6 - Work-tracking terminology + documentation migration - merged (PR #365)
 
-This Change separates internal planning IDs from GitHub objects, then makes the current repository consistently teach the new system. The documentation work is implemented locally; this record remains in progress until it has a GitHub PR and merge reference.
+This Change separates internal planning IDs from GitHub objects, then makes the current repository consistently teach the new system. It merged through PR #365.
 
 ### Discussion
 
@@ -23,4 +23,4 @@ This Change separates internal planning IDs from GitHub objects, then makes the 
 - Replaced the old internal Milestone/PR terminology throughout current documentation and active guidance with Initiative/Arc/Change; preserved real GitHub PR references as `PR #N`.
 - Added [`docs/work-tracking.md`](../../work-tracking.md) as the concise, canonical rule set and pointed repository guidance at it so future agents follow the same convention.
 - Removed internal tracking labels from ordinary code comments, audited dated planning/process prose, and updated living documentation and tooling references from `pipewarp` to `lowercase`.
-- Kept old public GitHub PR descriptions unchanged. The implementation is recorded in local commits `716da1b` (structural move) and `18a61f9` (terminology and cleanup); add the GitHub PR number here once this Change is merged.
+- Kept old public GitHub PR descriptions unchanged. The implementation landed in PR #365 through local commits `716da1b` (structural move) and `18a61f9` (terminology and cleanup).

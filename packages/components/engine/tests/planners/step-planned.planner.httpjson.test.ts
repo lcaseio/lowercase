@@ -13,8 +13,8 @@ import { flowAnalysisB } from "../fixtures/flow-analysis.state.js";
 // Worker V2 plan Phase 4: the shared step-planned.state.ts fixture puts step
 // "b" in runPlan.reuse, which takes stepPlannedPlanner's early-return
 // EmitStepReused branch -- this fixture instead reaches the real httpjson
-// dispatch branch, to assert both EmitJobHttpJsonSubmittedFx (unchanged) and
-// the new ExecuteHttpJsonJobFx get pushed together.
+// dispatch branch, to assert both EmitJobHttpJsonSubmittedFx and the
+// ExecuteHttpJsonJobFx get pushed together, sharing one jobid.
 function makeNewState(): EngineState {
   return {
     runs: {
@@ -89,7 +89,7 @@ function makeMessage(): StepPlannedMsg {
 }
 
 describe("stepPlannedPlanner() -- httpjson step", () => {
-  it("pushes both EmitJobHttpJsonSubmitted (unchanged) and ExecuteHttpJsonJob", () => {
+  it("pushes both EmitJobHttpJsonSubmitted and ExecuteHttpJsonJob, sharing one jobid", () => {
     const oldState = makeNewState();
     const newState = makeNewState();
     const message = makeMessage();
@@ -108,9 +108,9 @@ describe("stepPlannedPlanner() -- httpjson step", () => {
     expect(executed).toBeDefined();
     expect(executed).toMatchObject({
       request: {
-        runId: "test-runid",
-        stepId: "b",
-        protocol: { kind: "httpjson", url: "test-url" },
+        runid: "test-runid",
+        stepid: "b",
+        url: "test-url",
       },
       scope: {
         flowid: "test-flowid",
@@ -121,9 +121,10 @@ describe("stepPlannedPlanner() -- httpjson step", () => {
         toolid: "httpjson",
       },
     });
-    // The dispatch's own jobId is generated fresh, independent of whatever
-    // EmitJobHttpJsonSubmittedFx's own handler later generates for itself --
-    // documented divergence, see step-planned.planner.ts's comment.
-    expect(executed?.request.jobId).toEqual(executed?.scope.jobid);
+    // The whole point of the envelope-fidelity fix: the observability
+    // record and the actual dispatch request share one jobid, built once in
+    // the planner, instead of each independently generating its own.
+    expect(submitted?.scope.jobid).toEqual(executed?.request.jobid);
+    expect(executed?.request.jobid).toEqual(executed?.scope.jobid);
   });
 });
