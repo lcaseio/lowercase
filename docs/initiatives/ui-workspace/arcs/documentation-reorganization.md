@@ -87,11 +87,11 @@ Only `Discussion` and `What actually landed` are real headings — genuine per-e
 
 **The Change index table — lives inside `INITIATIVE.md`, near the top, not a separate file.** A markdown table (style matches this repo's own `README.md` package table — aligned pipes, short phrases), one row per Change number, covering _all_ Changes from 1 through current, not just archived ones:
 
-| Change  | Description                                          | Status        | Where                      |
-| --- | ---------------------------------------------------- | ------------- | -------------------------- |
-| 9   | Right Panel Icon Rail (Params/Sim migrated first)    | merged (PR #292) | `arcs/right-panel-rail.md` |
-| 16  | EventGraph, spawned from the Flow Graph panel itself | merged (PR #299) | `arcs/event-graph.md`      |
-| 35  | Flow graph replay for completed runs                 | merged (PR #318) | `arcs/replay.md`           |
+| Change | Description                                          | Status           | Where                      |
+| ------ | ---------------------------------------------------- | ---------------- | -------------------------- |
+| 9      | Right Panel Icon Rail (Params/Sim migrated first)    | merged (PR #292) | `arcs/right-panel-rail.md` |
+| 16     | EventGraph, spawned from the Flow Graph panel itself | merged (PR #299) | `arcs/event-graph.md`      |
+| 35     | Flow graph replay for completed runs                 | merged (PR #318) | `arcs/replay.md`           |
 
 Columns, in order of how essential they are:
 

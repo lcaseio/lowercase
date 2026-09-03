@@ -57,63 +57,63 @@ Durable guidance for this arc's ongoing and future work, carried over from the "
 
 ## Change index
 
-| Change  | Description                                                       | Status        | Where | See also  |
-| --- | ----------------------------------------------------------------- | ------------- | ----- | --------- |
-| C1  | Explorer Mini Spike                                               | merged (PR #284) | [1]   |           |
-| C2  | Tab/Panel Skeleton                                                | merged (PR #285) | [1]   |           |
-| C3  | Content In Tab                                                    | merged (PR #286) | [1]   |           |
-| C4  | Run Toolbar + Right Panel                                         | merged (PR #287) | [1]   |           |
-| C5  | Dockview Added and Implemented                                    | merged (PR #288) | [1]   |           |
-| C6  | Migrate Flow Graph Panel State to Redux                           | merged (PR #289) | [1]   | [25]      |
-| C7  | Serialize Redux State + Dockview Layout                           | merged (PR #290) | [1]   | [25]      |
-| C8  | ADR-0004: Panel State Management and Persistence                  | merged (PR #291) | [1]   | [26]      |
-| C9  | Right Panel Icon Rail (Params/Sim migrated first)                 | merged (PR #292) | [2]   |           |
-| C10  | Problems + Parameters migrated to the rail                        | merged (PR #293) | [2]   |           |
-| C11  | Step Details migrated to the rail                                 | merged (PR #294) | [2]   |           |
-| C12  | Settings migrated to the rail, removed from the tree              | merged (PR #295) | [2]   |           |
-| C13  | Step Results migrated to the rail                                 | merged (PR #296) | [2]   |           |
-| C14  | Runs list in tree, opens own Flow Graph panel                     | merged (PR #297) | [3]   |           |
-| C15  | Sims list in tree, click opens own panel                          | merged (PR #298) | [3]   |           |
-| C16  | EventGraph, spawned from the Flow Graph panel itself              | merged (PR #299) | [4]   | Change C35     |
-| C17  | Event Details side panel for the Event Graph                      | merged (PR #300) | [4]   |           |
-| C18  | Simulate — author a sim from a run                                | merged (PR #301) | [3]   |           |
-| C19  | Panel/tab identity icons                                          | merged (PR #302) | [5]   |           |
-| C20  | Postman-style fixed-width main nav rail                           | merged (PR #303) | [5]   |           |
-| C21  | Artifacts — list per-version artifacts                            | merged (PR #304) | [6]   |           |
-| C22  | Artifacts — view an artifact                                      | merged (PR #305) | [6]   |           |
-| C23  | Artifacts — rail + metadata tab (view + edit)                     | merged (PR #306) | [6]   |           |
-| C24  | Artifacts — create an artifact                                    | merged (PR #307) | [6]   |           |
-| C25  | Run Input Params — run-opened, read-only                          | merged (PR #308) | [7]   |           |
-| C26  | Run Input Params — curated picker                                 | merged (PR #309) | [7]   |           |
-| C27  | Expand content into its own tab, part 1 — real artifacts          | merged (PR #310) | [8]   |           |
-| C28  | Expand content into own tab, part 2                               | merged (PR #311) | [8]   |           |
-| C29  | Flow graph — swap to a real layout library (dagre), two layouts   | merged (PR #312) | [9]   |           |
-| C30  | Flow graph — one toolbar, fix fitView                             | merged (PR #313) | [9]   |           |
-| C31  | Flow graph — custom node types                                    | merged (PR #314) | [9]   |           |
-| C32  | Flow graph — custom nodes for mcp + join                          | merged (PR #315) | [9]   |           |
-| C33  | Flow graph — branch step details + polish                         | merged (PR #316) | [9]   |           |
-| C34  | Flow graph — branch step details + side-panel field visual polish | merged (PR #317) | [9]   |           |
-| C35  | Flow graph — replay                                               | merged (PR #318) | [10]  | Change C16     |
-| C36  | Documentation reorganization                                      | merged (PR #319) | [11]  |           |
-| C37  | Sync the EventGraph panel with Flow Graph replay                  | merged (PR #320) | [10]  | Change C35     |
-| C38  | Basic flow authoring in the modern dockview UI, from the tree     | merged (PR #321) | [12]  | Change C24     |
-| C39  | Fix CodeEditor (Monaco) spacebar input bug                        | merged (PR #322) | [13]  |           |
-| C40  | Replace the WebSocket live-events transport with SSE              | merged (PR #323) | [14]  |           |
-| C41  | Sim/reuse badge on runs with reused steps                         | merged (PR #324) | [15]  | Changes C29-C34 |
-| C42  | Prune old pages — dead-code sweep                                 | merged (PR #325) | [16]  |           |
-| C43  | Prune old pages — Runner/RunDetails/Runs cluster                  | merged (PR #326) | [16]  |           |
-| C44  | Prune old pages — Sims/Artifacts clusters                         | merged (PR #327) | [16]  |           |
-| C45  | Prune old pages — Flows/FlowVersion cluster                       | merged (PR #328) | [16]  |           |
-| C46  | Rehome shared survivors out of old tree                           | merged (PR #329) | [16]  | [17]      |
-| C47  | Rename Explorer → Workbench/Dock/FlowExplorer                     | merged (PR #330) | [17]  | Change C46     |
-| C48  | `flow-graph-panel` split + `shared/flow-graph/`                   | merged (PR #331) | [17]  |           |
-| C49  | Remaining structure review, outside `components/`                 | merged (PR #332) | [18]  |           |
-| C50  | CSS visual polish + theme logic review                            | merged (PR #333) | [19]  | Change C49     |
-| C51  | Server API reference, swagger-style                               | merged (PR #334) | [20]  | Change C52     |
-| C52  | Web app endpoint usage audit                                      | merged (PR #335) | [21]  | Change C51     |
-| C53  | Activate `apps/web-app`'s real production build                   | merged (PR #336) | [22]  |           |
-| C54  | `apps/web-app`/`http-server` READMEs                              | merged (PR #337) | [23]  |           |
-| C55  | Repo version bump, prep for merge to `main`                       | merged (PR #338) | [24]  |           |
+| Change | Description                                                       | Status           | Where | See also        |
+| ------ | ----------------------------------------------------------------- | ---------------- | ----- | --------------- |
+| C1     | Explorer Mini Spike                                               | merged (PR #284) | [1]   |                 |
+| C2     | Tab/Panel Skeleton                                                | merged (PR #285) | [1]   |                 |
+| C3     | Content In Tab                                                    | merged (PR #286) | [1]   |                 |
+| C4     | Run Toolbar + Right Panel                                         | merged (PR #287) | [1]   |                 |
+| C5     | Dockview Added and Implemented                                    | merged (PR #288) | [1]   |                 |
+| C6     | Migrate Flow Graph Panel State to Redux                           | merged (PR #289) | [1]   | [25]            |
+| C7     | Serialize Redux State + Dockview Layout                           | merged (PR #290) | [1]   | [25]            |
+| C8     | ADR-0004: Panel State Management and Persistence                  | merged (PR #291) | [1]   | [26]            |
+| C9     | Right Panel Icon Rail (Params/Sim migrated first)                 | merged (PR #292) | [2]   |                 |
+| C10    | Problems + Parameters migrated to the rail                        | merged (PR #293) | [2]   |                 |
+| C11    | Step Details migrated to the rail                                 | merged (PR #294) | [2]   |                 |
+| C12    | Settings migrated to the rail, removed from the tree              | merged (PR #295) | [2]   |                 |
+| C13    | Step Results migrated to the rail                                 | merged (PR #296) | [2]   |                 |
+| C14    | Runs list in tree, opens own Flow Graph panel                     | merged (PR #297) | [3]   |                 |
+| C15    | Sims list in tree, click opens own panel                          | merged (PR #298) | [3]   |                 |
+| C16    | EventGraph, spawned from the Flow Graph panel itself              | merged (PR #299) | [4]   | Change C35      |
+| C17    | Event Details side panel for the Event Graph                      | merged (PR #300) | [4]   |                 |
+| C18    | Simulate — author a sim from a run                                | merged (PR #301) | [3]   |                 |
+| C19    | Panel/tab identity icons                                          | merged (PR #302) | [5]   |                 |
+| C20    | Postman-style fixed-width main nav rail                           | merged (PR #303) | [5]   |                 |
+| C21    | Artifacts — list per-version artifacts                            | merged (PR #304) | [6]   |                 |
+| C22    | Artifacts — view an artifact                                      | merged (PR #305) | [6]   |                 |
+| C23    | Artifacts — rail + metadata tab (view + edit)                     | merged (PR #306) | [6]   |                 |
+| C24    | Artifacts — create an artifact                                    | merged (PR #307) | [6]   |                 |
+| C25    | Run Input Params — run-opened, read-only                          | merged (PR #308) | [7]   |                 |
+| C26    | Run Input Params — curated picker                                 | merged (PR #309) | [7]   |                 |
+| C27    | Expand content into its own tab, part 1 — real artifacts          | merged (PR #310) | [8]   |                 |
+| C28    | Expand content into own tab, part 2                               | merged (PR #311) | [8]   |                 |
+| C29    | Flow graph — swap to a real layout library (dagre), two layouts   | merged (PR #312) | [9]   |                 |
+| C30    | Flow graph — one toolbar, fix fitView                             | merged (PR #313) | [9]   |                 |
+| C31    | Flow graph — custom node types                                    | merged (PR #314) | [9]   |                 |
+| C32    | Flow graph — custom nodes for mcp + join                          | merged (PR #315) | [9]   |                 |
+| C33    | Flow graph — branch step details + polish                         | merged (PR #316) | [9]   |                 |
+| C34    | Flow graph — branch step details + side-panel field visual polish | merged (PR #317) | [9]   |                 |
+| C35    | Flow graph — replay                                               | merged (PR #318) | [10]  | Change C16      |
+| C36    | Documentation reorganization                                      | merged (PR #319) | [11]  |                 |
+| C37    | Sync the EventGraph panel with Flow Graph replay                  | merged (PR #320) | [10]  | Change C35      |
+| C38    | Basic flow authoring in the modern dockview UI, from the tree     | merged (PR #321) | [12]  | Change C24      |
+| C39    | Fix CodeEditor (Monaco) spacebar input bug                        | merged (PR #322) | [13]  |                 |
+| C40    | Replace the WebSocket live-events transport with SSE              | merged (PR #323) | [14]  |                 |
+| C41    | Sim/reuse badge on runs with reused steps                         | merged (PR #324) | [15]  | Changes C29-C34 |
+| C42    | Prune old pages — dead-code sweep                                 | merged (PR #325) | [16]  |                 |
+| C43    | Prune old pages — Runner/RunDetails/Runs cluster                  | merged (PR #326) | [16]  |                 |
+| C44    | Prune old pages — Sims/Artifacts clusters                         | merged (PR #327) | [16]  |                 |
+| C45    | Prune old pages — Flows/FlowVersion cluster                       | merged (PR #328) | [16]  |                 |
+| C46    | Rehome shared survivors out of old tree                           | merged (PR #329) | [16]  | [17]            |
+| C47    | Rename Explorer → Workbench/Dock/FlowExplorer                     | merged (PR #330) | [17]  | Change C46      |
+| C48    | `flow-graph-panel` split + `shared/flow-graph/`                   | merged (PR #331) | [17]  |                 |
+| C49    | Remaining structure review, outside `components/`                 | merged (PR #332) | [18]  |                 |
+| C50    | CSS visual polish + theme logic review                            | merged (PR #333) | [19]  | Change C49      |
+| C51    | Server API reference, swagger-style                               | merged (PR #334) | [20]  | Change C52      |
+| C52    | Web app endpoint usage audit                                      | merged (PR #335) | [21]  | Change C51      |
+| C53    | Activate `apps/web-app`'s real production build                   | merged (PR #336) | [22]  |                 |
+| C54    | `apps/web-app`/`http-server` READMEs                              | merged (PR #337) | [23]  |                 |
+| C55    | Repo version bump, prep for merge to `main`                       | merged (PR #338) | [24]  |                 |
 
 ## Not yet scoped
 

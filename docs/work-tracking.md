@@ -37,7 +37,7 @@ index, not filename numbering, maps IDs to documents.
 
 - Refer to an internal unit as `Change C4`, not `PR 4`.
 - Refer to the external object as `GitHub PR #381` or `PR #381`, never `PR
-  381` when ambiguity is likely.
+381` when ambiguity is likely.
 - In a GitHub PR description, add `Internal tracking: I3 / A2 / C4` when the
   documentation link is useful. Keep these IDs out of PR titles and
   user-facing text.

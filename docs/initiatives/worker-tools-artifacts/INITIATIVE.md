@@ -34,18 +34,18 @@ Changes C2 and onward are additionally governed by [`docs/component-architecture
 
 ## Change index
 
-| Change  | Description                                      | Status        | Where | See also           |
-| --- | ------------------------------------------------ | ------------- | ----- | ------------------ |
-| C1  | Worker/tools investigation                       | merged (PR #350) | [1]   |                    |
-| C2  | Worker V2 core contract + fakes                  | merged (PR #351) | [2]   | [5]                |
-| C3  | HTTP JSON vertical slice                         | merged (PR #352) | [2]   | [6]                |
-| C4  | Legacy compatibility adapter                     | merged (PR #353) | [2]   | [7]                |
-| C5  | Engine migrates to `WorkerDispatch`              | merged (PR #354) | [2]   | [8]                |
-| C6  | Repo-hygiene + dead-code removal                 | merged (PR #355) | [2]   | [9] (removal only) |
-| C7  | Artifacts research + v2 writer built             | merged (PR #356) | [3]   | [10]               |
-| C8  | Artifacts read side + worker migration           | merged (PR #357) | [4]   |                    |
-| C9  | Migrate all consumers to v2, retire legacy stack | merged (PR #358) | [4]   |                    |
-| C10  | Flatten `src/v2` to artifacts `src/`             | merged (PR #359) | [4]   |                    |
+| Change | Description                                      | Status           | Where | See also           |
+| ------ | ------------------------------------------------ | ---------------- | ----- | ------------------ |
+| C1     | Worker/tools investigation                       | merged (PR #350) | [1]   |                    |
+| C2     | Worker V2 core contract + fakes                  | merged (PR #351) | [2]   | [5]                |
+| C3     | HTTP JSON vertical slice                         | merged (PR #352) | [2]   | [6]                |
+| C4     | Legacy compatibility adapter                     | merged (PR #353) | [2]   | [7]                |
+| C5     | Engine migrates to `WorkerDispatch`              | merged (PR #354) | [2]   | [8]                |
+| C6     | Repo-hygiene + dead-code removal                 | merged (PR #355) | [2]   | [9] (removal only) |
+| C7     | Artifacts research + v2 writer built             | merged (PR #356) | [3]   | [10]               |
+| C8     | Artifacts read side + worker migration           | merged (PR #357) | [4]   |                    |
+| C9     | Migrate all consumers to v2, retire legacy stack | merged (PR #358) | [4]   |                    |
+| C10    | Flatten `src/v2` to artifacts `src/`             | merged (PR #359) | [4]   |                    |
 
 ## Next up
 

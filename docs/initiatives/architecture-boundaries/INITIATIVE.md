@@ -14,14 +14,14 @@ Originally scoped as decision-first, ADR-only — no execution pass across the r
 
 ## Change index
 
-| Change  | Description                                     | Status        | Where | See also   |
-| --- | ----------------------------------------------- | ------------- | ----- | ---------- |
-| C1  | Package-tier taxonomy + control-plane research  | merged (PR #341) | [1]   | [7], [8]   |
-| C2  | Physical moves: functional-core/_, components/_ | merged (PR #342) | [2]   |            |
-| C3  | Renames + dead-code cleanup                     | merged (PR #343) | [3]   |            |
-| C4  | Worker/tool extensibility research              | merged (PR #344) | [4]   | [9]        |
-| C5  | ADR(s) reflecting the settled, now-real shape   | merged (PR #345) | [5]   | [10], [11] |
-| C6  | Package-boundaries README                       | merged (PR #346) | [6]   | [12]       |
+| Change | Description                                     | Status           | Where | See also   |
+| ------ | ----------------------------------------------- | ---------------- | ----- | ---------- |
+| C1     | Package-tier taxonomy + control-plane research  | merged (PR #341) | [1]   | [7], [8]   |
+| C2     | Physical moves: functional-core/_, components/_ | merged (PR #342) | [2]   |            |
+| C3     | Renames + dead-code cleanup                     | merged (PR #343) | [3]   |            |
+| C4     | Worker/tool extensibility research              | merged (PR #344) | [4]   | [9]        |
+| C5     | ADR(s) reflecting the settled, now-real shape   | merged (PR #345) | [5]   | [10], [11] |
+| C6     | Package-boundaries README                       | merged (PR #346) | [6]   | [12]       |
 
 ## Next up
 

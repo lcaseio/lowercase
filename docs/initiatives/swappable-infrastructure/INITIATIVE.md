@@ -28,20 +28,20 @@ No natural single starting point among the three candidate adapters (queue/messa
 
 Reordered from the original scaffold after runtime-composition research (see `arcs/cas-adapter.md`'s Change C2 discussion) replaced the original single "wire CAS into runtime" step with a bigger, more honest sequence. This is expected — the original list was a best-effort scaffold, not a commitment; incrementing as real scope becomes clear is the normal process, not a sign of drift.
 
-| Change  | Description                                                                    | Status        | Where | See also |
-| --- | ------------------------------------------------------------------------------ | ------------- | ----- | -------- |
-| C1  | S3 CAS adapter (MinIO-backed) + tests                                          | merged (PR #360) | [1]   |          |
-| C2  | Shared assembly layer + leaf config types in `packages/runtime`                | merged (PR #361) | [1]   |          |
-| C3  | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | merged (PR #362) | [1]   |          |
-| C4  | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (PR #363) | [2]   |          |
-| C5  | Package hygiene: delete `NodeRouter`/`QueuePort`, real ESLint for `adapters`   | merged (PR #364)   | [2]   |          |
-| C6  | Work-tracking terminology + documentation migration                            | in progress   | [3]   |          |
-| C7  | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 8)       | not started   | [2]   |          |
-| C8  | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)            | not started   | [2]   |          |
-| C9  | Worker lifecycle sink (Redis-backed) + temporary lifecycle bridge to bus       | not started   | [2]   |          |
-| C10  | Extend `local-system`'s `jobExecution` binding with a `redis-streams` branch   | not started   | [2]   |          |
-| C11  | Postgres adapter (Prisma)                                                      | not started   | [4]   |          |
-| C12  | Extend `local-system` profile with `postgres` SQL branch                       | not started   | [4]   |          |
+| Change | Description                                                                    | Status           | Where | See also |
+| ------ | ------------------------------------------------------------------------------ | ---------------- | ----- | -------- |
+| C1     | S3 CAS adapter (MinIO-backed) + tests                                          | merged (PR #360) | [1]   |          |
+| C2     | Shared assembly layer + leaf config types in `packages/runtime`                | merged (PR #361) | [1]   |          |
+| C3     | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | merged (PR #362) | [1]   |          |
+| C4     | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (PR #363) | [2]   |          |
+| C5     | Package hygiene: delete `NodeRouter`/`QueuePort`, real ESLint for `adapters`   | merged (PR #364) | [2]   |          |
+| C6     | Work-tracking terminology + documentation migration                            | in progress      | [3]   |          |
+| C7     | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 8)       | not started      | [2]   |          |
+| C8     | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)            | not started      | [2]   |          |
+| C9     | Worker lifecycle sink (Redis-backed) + temporary lifecycle bridge to bus       | not started      | [2]   |          |
+| C10    | Extend `local-system`'s `jobExecution` binding with a `redis-streams` branch   | not started      | [2]   |          |
+| C11    | Postgres adapter (Prisma)                                                      | not started      | [4]   |          |
+| C12    | Extend `local-system` profile with `postgres` SQL branch                       | not started      | [4]   |          |
 
 ## Not yet scoped
 

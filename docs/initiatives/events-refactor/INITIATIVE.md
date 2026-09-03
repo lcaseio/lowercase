@@ -20,11 +20,11 @@ Started with a long discussion-first research pass across the whole of `packages
 
 ## Change index
 
-| Change  | Description                               | Status        | Where | See also |
-| --- | ----------------------------------------- | ------------- | ----- | -------- |
-| C1  | Event-emission core: single `emit()`      | merged (PR #347) | [1]   | [4]      |
-| C2  | Engine `step` emission onto new core      | merged (PR #348) | [2]   | [1]      |
-| C3  | `packages/events` ESLint config + rebuild | merged (PR #349) | [3]   |          |
+| Change | Description                               | Status           | Where | See also |
+| ------ | ----------------------------------------- | ---------------- | ----- | -------- |
+| C1     | Event-emission core: single `emit()`      | merged (PR #347) | [1]   | [4]      |
+| C2     | Engine `step` emission onto new core      | merged (PR #348) | [2]   | [1]      |
+| C3     | `packages/events` ESLint config + rebuild | merged (PR #349) | [3]   |          |
 
 ## Not yet scoped
 
