@@ -5,11 +5,8 @@ import type {
   ArtifactStoreGetError,
 } from "@lcase/ports";
 import type { Result } from "@lcase/types";
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import type { S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
 // Built against the standard S3 API, not MinIO-specific -- MinIO differs
 // only in how the injected S3Client is configured (endpoint, path-style

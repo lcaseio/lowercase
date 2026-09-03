@@ -1,6 +1,4 @@
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
-import { InMemoryQueue } from "@lcase/adapters/queue";
-import { NodeRouter } from "@lcase/router";
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import { JobParser } from "@lcase/events/parsers";
 import { LocalWorkerJobExecutor } from "@lcase/integrations/engine-worker";
@@ -52,9 +50,7 @@ export type LocalSystem = {
 // or registries.
 export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   const bus = new InMemoryEventBus();
-  const queue = new InMemoryQueue();
   const ef = new EmitterFactory(bus);
-  const router = new NodeRouter(bus, queue, ef);
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
@@ -108,10 +104,6 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
       stop: async (b) => {
         await b.close();
       },
-    }),
-    router: managedResource("router", router, {
-      start: (r) => r.start(),
-      stop: (r) => r.stop(),
     }),
     sinks: Object.entries(sinks).map(([id, sink]) =>
       managedResource(id, sink, {

@@ -36,7 +36,6 @@ function testInput(
 ): EmbeddedSystemAssemblyInput {
   return {
     bus: overrides.bus ?? testResource("bus", callOrder),
-    router: overrides.router ?? testResource("router", callOrder),
     sinks: [testResource("sink1", callOrder), testResource("sink2", callOrder)],
     tap: overrides.tap ?? testResource("tap", callOrder),
     engine: overrides.engine ?? testResource("engine", callOrder),
@@ -45,7 +44,7 @@ function testInput(
 }
 
 describe("assembleEmbeddedSystem", () => {
-  it("starts resources in fixed order: bus, router, sinks, tap, engine, limiter", async () => {
+  it("starts resources in fixed order: bus, sinks, tap, engine, limiter", async () => {
     const callOrder: string[] = [];
     const runtime = assembleEmbeddedSystem(testInput(callOrder));
 
@@ -53,7 +52,6 @@ describe("assembleEmbeddedSystem", () => {
 
     expect(callOrder).toEqual([
       "start:bus",
-      "start:router",
       "start:sink1",
       "start:sink2",
       "start:tap",
@@ -76,7 +74,6 @@ describe("assembleEmbeddedSystem", () => {
       "stop:tap",
       "stop:sink2",
       "stop:sink1",
-      "stop:router",
       "stop:bus",
     ]);
   });
@@ -96,14 +93,12 @@ describe("assembleEmbeddedSystem", () => {
     // Everything started before `engine` gets rolled back; `limiter` never starts.
     expect(callOrder).toEqual([
       "start:bus",
-      "start:router",
       "start:sink1",
       "start:sink2",
       "start:tap",
       "stop:tap",
       "stop:sink2",
       "stop:sink1",
-      "stop:router",
       "stop:bus",
     ]);
   });

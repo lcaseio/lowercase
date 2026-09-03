@@ -33,15 +33,20 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | 1   | S3 CAS adapter (MinIO-backed) + tests                                          | merged (#360) | [1]   |          |
 | 2   | Shared assembly layer + leaf config types in `packages/runtime`                | merged (#361) | [1]   |          |
 | 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | merged (#362) | [1]   |          |
-| 4   | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | in progress   | [2]   |          |
-| 5   | Extend `local-system` profile with `redis-streams` messaging branch            | not started   | [2]   |          |
-| 6   | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |
-| 7   | Extend `local-system` profile with `postgres` SQL branch                       | not started   | [3]   |          |
+| 4   | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (#363) | [2]   |          |
+| 5   | Package hygiene: delete `NodeRouter`/`QueuePort`, real ESLint for `adapters`   | in progress   | [2]   |          |
+| 6   | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 7)       | not started   | [2]   |          |
+| 7   | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)            | not started   | [2]   |          |
+| 8   | Worker lifecycle sink (Redis-backed) + temporary lifecycle bridge to bus       | not started   | [2]   |          |
+| 9   | Extend `local-system`'s `jobExecution` binding with a `redis-streams` branch   | not started   | [2]   |          |
+| 10  | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |
+| 11  | Extend `local-system` profile with `postgres` SQL branch                       | not started   | [3]   |          |
 
 ## Not yet scoped
 
-- **Migrating the worker (and engine, as necessary) to real inbound/outbound adapters for an actual remote deployment** — the point of this whole milestone, but deliberately not numbered as PRs 7+ yet. These six PRs build and wire the infrastructure a remote worker would need; actually moving the worker out-of-process is real, separate design work (per Worker V2 plan's Phase 6) that should get its own discussion once the infrastructure underneath it is real, not planned speculatively now.
-- **`LifecycleEventIngress`** (tracked in `worker-tools-artifacts`'s own "Not yet scoped") — if ever built, Redis Streams is now the named transport for it, per PR 4's discussion in `arcs/queue-adapter.md`. Still not scoped or started here.
+- **Migrating the worker to run genuinely out-of-process (a separate deployment, not just a separate Redis-backed binding while still embedded)** — the point of this whole milestone, but deliberately not numbered as a PR yet. PR 9 keeps the worker in-process even once it's Redis-backed; actually moving it to a separate deployment is real, separate design work (per Worker V2 plan's Phase 6) that should get its own discussion once the infrastructure underneath it is real, not planned speculatively now.
+- **The engine's own step/run self-loop (subscribing to events it publishes itself, purely to advance its own internal state)** — a real, precedented, low-risk fix (mirroring how `ExecuteHttpJsonJobFx` already avoids this), but decoupled from every PR in this milestone: nothing here depends on it, and it doesn't ease anything here either, since the self-loop never touches `MessageLogPort`/Redis at all. Deferred to whenever the engine gets its real core/inbound-outbound refactor. See `arcs/queue-adapter.md`'s PR 5-9 discussion for the full reasoning.
+- **`LifecycleEventIngress`** — no longer unscoped: PR 8 is exactly this (a Redis-backed worker lifecycle sink + a temporary bridge republishing onto the existing bus). See `arcs/queue-adapter.md`.
 
 Scaffolded now, work not yet started.
 
