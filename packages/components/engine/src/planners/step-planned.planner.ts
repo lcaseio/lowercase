@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import type { JsonValue } from "@lcase/types";
 import type {
   EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
@@ -97,66 +96,53 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       flow.definition.steps,
     );
     const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
+
+    // One canonical envelope built once per submission (JobExecutorPort
+    // envelope-fidelity fix): a single jobid and a single copy of the job
+    // data, shared by both the observability publish below and the actual
+    // dispatch request, so the two can never drift into different job
+    // identities the way two independently-constructed objects used to.
+    const jobId = "job-" + randomUUID();
+    const jobScope = {
+      flowid: newRun.flowId,
+      flowversionid: newRun.flowVersionId,
+      runid: runId,
+      stepid: stepId,
+      jobid: jobId,
+      capid: "httpjson" as const,
+      toolid: "httpjson",
+    };
+    const jobData = {
+      url: step.url,
+      ...(step.body ? { body: step.body } : {}),
+      ...(step.headers ? { headers: step.headers } : {}),
+      ...(step.method ? { method: step.method } : {}),
+      ...(step.args ? { args: step.args } : {}),
+      refs: jobRefs,
+      ...(Object.keys(exportRefs).length > 0 ? { exportRefs } : {}),
+    };
+
     const emitJob: EmitJobHttpJsonSubmittedFx = {
       type: "EmitJobHttpJsonSubmitted",
-      scope: {
-        flowid: newRun.flowId,
-        flowversionid: newRun.flowVersionId,
-        runid: runId,
-        stepid: stepId,
-        capid: "httpjson",
-        toolid: "httpjson",
-      },
-      data: {
-        url: step.url,
-        ...(step.body ? { body: step.body } : {}),
-        ...(step.headers ? { headers: step.headers } : {}),
-        ...(step.method ? { method: step.method } : {}),
-        ...(step.args ? { args: step.args } : {}),
-        refs: jobRefs,
-        ...(Object.keys(exportRefs).length > 0 ? { exportRefs } : {}),
-      },
+      scope: jobScope,
+      data: jobData,
       traceId: newRun.traceId,
     };
     effects.push(emitJob);
 
     // Worker V2 plan Phase 4: a second, independent effect that actually
-    // dispatches the job -- EmitJobHttpJsonSubmittedFx above is left
-    // untouched (still generates its own jobid internally), so this path
-    // generates its own jobid too. Their jobid values no longer correlate --
-    // a small, known, accepted divergence from keeping the submitted
-    // handler untouched, not something worth routing around here.
-    const dispatchJobId = "job-" + randomUUID();
+    // dispatches the job -- EmitJobHttpJsonSubmittedFx above still publishes
+    // for observability, this is what actually advances the run. Built from
+    // the same jobScope/jobData as the submitted event above, so
+    // request.jobid always equals the observability record's jobid.
     const executeJob: ExecuteHttpJsonJobFx = {
       type: "ExecuteHttpJsonJob",
       request: {
-        jobId: dispatchJobId,
-        runId,
-        stepId,
+        ...jobScope,
+        ...jobData,
         traceId: newRun.traceId,
-        protocol: {
-          kind: "httpjson",
-          url: step.url,
-          ...(step.method ? { method: step.method } : {}),
-          ...(step.headers ? { headers: step.headers } : {}),
-          // ShallowJsonValue -> JsonValue: correct by construction (a step's
-          // body is only ever JSON.parse'd/authored JSON), but not
-          // structurally assignable -- same precedent as the related change
-          // materialize-http-json-request.ts and the related change compat mapper.
-          ...(step.body !== undefined ? { body: step.body as JsonValue } : {}),
-        },
-        refs: jobRefs,
-        ...(Object.keys(exportRefs).length > 0 ? { exports: exportRefs } : {}),
       },
-      scope: {
-        flowid: newRun.flowId,
-        flowversionid: newRun.flowVersionId,
-        runid: runId,
-        stepid: stepId,
-        jobid: dispatchJobId,
-        capid: "httpjson",
-        toolid: "httpjson",
-      },
+      scope: jobScope,
       traceId: newRun.traceId,
     };
     effects.push(executeJob);

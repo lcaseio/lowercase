@@ -1,4 +1,4 @@
-import type { ExportRef, JsonValue, Ref } from "@lcase/types";
+import type { JobScope, JobHttpJsonSubmittedData } from "@lcase/types";
 
 // Engine-owned outbound port (Worker V2 plan, Phase 4): the engine's own
 // vocabulary for asking something to execute a job and awaiting the terminal
@@ -18,24 +18,15 @@ export type JobExecutorOptions = {
   signal?: AbortSignal;
 };
 
-export type HttpJsonMethod =
-  "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
-
-export type JobExecutionRequest = {
-  jobId: string;
-  runId: string;
-  stepId: string;
-  traceId?: string;
-  protocol: {
-    kind: "httpjson";
-    url: string;
-    method?: HttpJsonMethod;
-    headers?: Record<string, string>;
-    body?: JsonValue;
-  };
-  refs: Ref[];
-  exports?: Record<string, ExportRef>;
-};
+// Identity-matched with the real `job.httpjson.submitted` envelope
+// (JobScope + JobHttpJsonSubmittedData) rather than a bespoke shape --
+// dispatch and the observability record it's paired with are now built from
+// the same object, so they can't drift into different job identities the
+// way JobExecutionRequest's old independently-shaped nested `protocol`
+// field used to allow.
+export type JobExecutionRequest = JobScope & {
+  traceId: string;
+} & JobHttpJsonSubmittedData;
 
 export type JobExecutionOutcome =
   | {

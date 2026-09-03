@@ -203,23 +203,29 @@ export type EmitStepFailedFx = {
 };
 export type EmitJobHttpJsonSubmittedFx = {
   type: "EmitJobHttpJsonSubmitted";
-  scope: Omit<JobScope, "jobid"> & Omit<CloudScope, "source">;
+  // jobid included, not omitted: the planner generates one jobid per
+  // submission and shares it with ExecuteHttpJsonJobFx below, so the
+  // observability record and the actual dispatch always correlate.
+  scope: JobScope & Omit<CloudScope, "source">;
   data: JobHttpJsonSubmittedData;
   traceId: string;
 };
 
 // Worker V2 plan Phase 4: calls the engine-owned JobExecutorPort directly
 // instead of waiting on a job.httpjson.completed bus event. Deliberately a
-// second, separate effect alongside EmitJobHttpJsonSubmittedFx (left
-// untouched) rather than a replacement -- job.httpjson.submitted keeps
-// publishing for observability, this is what actually advances the run.
+// second, separate effect alongside EmitJobHttpJsonSubmittedFx rather than a
+// replacement -- job.httpjson.submitted keeps publishing for observability,
+// this is what actually advances the run. Both effects are now built from
+// the same shared jobid/data in the planner (JobExecutorPort envelope-
+// fidelity fix), rather than each independently constructing its own.
 export type ExecuteHttpJsonJobFx = {
   type: "ExecuteHttpJsonJob";
   request: JobExecutionRequest;
-  // Carried separately from `request` -- JobExecutionRequest deliberately
-  // doesn't need flowid/flowversionid/capid/toolid to execute a job, but the
-  // handler needs them to build the compat job.httpjson.completed/.failed
-  // event it still publishes for the event log/UI graph.
+  // Carried separately from `request` -- JobExecutionRequest is the
+  // job.httpjson.submitted envelope shape (already has flowid/flowversionid/
+  // capid/toolid/jobid via JobScope), but the handler needs its own copy to
+  // build the compat job.httpjson.completed/.failed event it still
+  // publishes for the event log/UI graph.
   scope: JobScope & Omit<CloudScope, "source">;
   traceId: string;
 };

@@ -10,29 +10,26 @@ function makeRequest(
   overrides?: Partial<JobExecutionRequest>,
 ): JobExecutionRequest {
   return {
-    jobId: "job-1",
-    runId: "run-1",
-    stepId: "step-1",
+    flowid: "flow-1",
+    flowversionid: "flowversion-1",
+    runid: "run-1",
+    stepid: "step-1",
+    jobid: "job-1",
+    capid: "httpjson",
+    toolid: "httpjson",
     traceId: "trace-1",
-    protocol: {
-      kind: "httpjson",
-      url: "https://example.test/resource",
-    },
+    url: "https://example.test/resource",
     refs: [],
     ...overrides,
   };
 }
 
 describe("toExecuteJobCommand", () => {
-  it("maps request fields onto ExecuteJobCommand, reusing jobId as executionId", () => {
+  it("maps request fields onto ExecuteJobCommand, reusing jobid as executionId", () => {
     const request = makeRequest({
-      protocol: {
-        kind: "httpjson",
-        url: "https://example.test/resource",
-        method: "POST",
-        headers: { "x-test": "1" },
-        body: { hello: "world" },
-      },
+      method: "POST",
+      headers: { "x-test": "1" },
+      body: { hello: "world" },
       refs: [
         {
           valuePath: [],
@@ -44,7 +41,7 @@ describe("toExecuteJobCommand", () => {
           hash: "hash-1",
         },
       ],
-      exports: {
+      exportRefs: {
         thing: {
           exportName: "thing",
           valuePath: ["output", "thing"],
@@ -61,9 +58,15 @@ describe("toExecuteJobCommand", () => {
       runId: "run-1",
       stepId: "step-1",
       traceId: "trace-1",
-      protocol: request.protocol,
+      protocol: {
+        kind: "httpjson",
+        url: request.url,
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      },
       refs: request.refs,
-      exports: request.exports,
+      exports: request.exportRefs,
     });
   });
 
