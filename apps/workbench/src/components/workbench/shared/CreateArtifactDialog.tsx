@@ -59,7 +59,7 @@ type Props = {
 
 // "Upload a file" stays entirely in this dialog -- small enough that a
 // modal is plenty, no dockview panel needed (see PR 24 in
-// docs/milestones/ui-workspace/MILESTONE.md). "Create" instead closes this and
+// docs/initiatives/ui-workspace/INITIATIVE.md). "Create" instead closes this and
 // opens a real panel (needs Monaco, needs real room) -- see
 // artifact-authoring-panel/Content.tsx.
 export function CreateArtifactDialog({

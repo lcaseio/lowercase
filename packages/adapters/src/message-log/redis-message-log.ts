@@ -34,7 +34,7 @@ function decodeEntry(
 // Built against Redis Streams' real distributed protocol (XADD, XREADGROUP,
 // XACK, XAUTOCLAIM) -- not the passive claim/reserve shape QueuePort has,
 // and not EventBusPort's fire-and-forget in-process delivery. See
-// docs/milestones/swappable-infrastructure/arcs/queue-adapter.md's PR 4
+// docs/initiatives/swappable-infrastructure/arcs/queue-adapter.md's PR 4
 // discussion for why this is its own port rather than an adapter for
 // either of those.
 export class RedisMessageLog implements MessageLogPort {

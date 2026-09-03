@@ -5,7 +5,7 @@ Status: Accepted
 
 ## Context
 
-This project has been through many real design decisions — made through research, discussion, and rejected alternatives — that aren't captured anywhere durable once the moment passes. `docs/todo.md` and per-feature milestone docs (e.g. `docs/milestones/ui-workspace/MILESTONE.md`) already capture a lot of reasoning, but they're living documents: continuously rewritten as plans evolve, not point-in-time records of one specific decision. There's no artifact that answers "why is this built this way" for a settled, cross-cutting decision without digging through docs that have since moved on, or conversation history that isn't part of the repo at all.
+This project has been through many real design decisions — made through research, discussion, and rejected alternatives — that aren't captured anywhere durable once the moment passes. `docs/todo.md` and per-feature milestone docs (e.g. `docs/initiatives/ui-workspace/INITIATIVE.md`) already capture a lot of reasoning, but they're living documents: continuously rewritten as plans evolve, not point-in-time records of one specific decision. There's no artifact that answers "why is this built this way" for a settled, cross-cutting decision without digging through docs that have since moved on, or conversation history that isn't part of the repo at all.
 
 ## Decision
 

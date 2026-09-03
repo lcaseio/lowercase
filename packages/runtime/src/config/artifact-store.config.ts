@@ -5,7 +5,7 @@ export type FilesystemArtifactStoreConfig = {
 
 // Fields cover what's needed to construct an S3Client -- S3ArtifactStore
 // takes an already-built client + bucket, deliberately not config it
-// builds internally (see docs/milestones/swappable-infrastructure/arcs/
+// builds internally (see docs/initiatives/swappable-infrastructure/arcs/
 // cas-adapter.md's PR 1 discussion).
 export type S3ArtifactStoreConfig = {
   kind: "s3";

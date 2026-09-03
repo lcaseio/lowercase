@@ -18,7 +18,7 @@ import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 // a blind overwrite with no pre-check: same hash always means same bytes, so
 // overwriting is always a correctness no-op, and a HeadObject round-trip
 // isn't worth paying on every write given today's artifacts are small
-// JSON/text (see docs/milestones/swappable-infrastructure/arcs/cas-adapter.md).
+// JSON/text (see docs/initiatives/swappable-infrastructure/arcs/cas-adapter.md).
 export class S3ArtifactStore implements ArtifactStorePort {
   constructor(
     private readonly client: S3Client,

@@ -30,7 +30,7 @@ export interface ArtifactReaderPort {
 
 // contentType and value travel as siblings here, not nested inside Result's
 // own `value` (which would produce `result.value.value`) -- see
-// docs/milestones/worker-tools-artifacts/arcs/artifacts-v2-build.md's
+// docs/initiatives/worker-tools-artifacts/arcs/artifacts-v2-build.md's
 // discussion of why `value` doesn't hold up as a name once the payload needs
 // to travel with a sibling field.
 export type AutoLoadResult =

@@ -43,7 +43,7 @@ export type LocalSystem = {
 };
 
 // A clean rewrite of composition, not a retrofit of createServices()/
-// createRuntime() -- see docs/milestones/swappable-infrastructure/arcs/
+// createRuntime() -- see docs/initiatives/swappable-infrastructure/arcs/
 // cas-adapter.md's PR 3 discussion. packages/app-services stays untouched;
 // this just constructs those same classes against freshly-assembled
 // instances instead of reusing any of the old wiring functions, factories,
