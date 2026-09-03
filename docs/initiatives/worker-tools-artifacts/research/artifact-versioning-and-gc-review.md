@@ -18,7 +18,7 @@ The proposal contains several good ideas worth retaining:
 - intrinsic content facts, mutable presentation metadata, and usage provenance
   are different concepts.
 
-The Git analogy stops helping after those points. Pipewarp already has a
+The Git analogy stops helping after those points. Lowercase already has a
 central SQL database containing the ownership and occurrence records that Git
 has to encode into objects because Git is decentralized. Runs, steps, exports,
 parameters, flow versions, and simulations are relational entities here. A CAS

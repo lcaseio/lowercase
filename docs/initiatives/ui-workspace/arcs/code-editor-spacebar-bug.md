@@ -1,16 +1,16 @@
-# UI Workspace Milestone — Arc: CodeEditor (Monaco) spacebar bug (PR 39)
+# UI Workspace Initiative — Arc: CodeEditor (Monaco) spacebar bug (Change C39)
 
-**Previous:** [Flow authoring](./flow-authoring.md) (PR 38) · **Next:** [WebSocket → SSE for live events](./websocket-to-sse.md) (PR 40)
+**Previous:** [Flow authoring](./flow-authoring.md) (Change C38) · **Next:** [WebSocket → SSE for live events](./websocket-to-sse.md) (Change C40)
 
-Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log, split out to keep that doc scannable. Continues from [`flow-authoring.md`](./flow-authoring.md) (PR 38) — a standalone infrastructure fix, not a continuation of that arc's own feature narrative, surfaced while testing it.
+Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Continues from [`flow-authoring.md`](./flow-authoring.md) (Change C38) — a standalone infrastructure fix, not a continuation of that arc's own feature narrative, surfaced while testing it.
 
-## PR 39 - Fix CodeEditor (Monaco)'s spacebar input bug - merged (#322)
+## Change C39 - Fix CodeEditor (Monaco)'s spacebar input bug - merged (PR #322)
 
 `CodeEditor.tsx` (the shared Monaco wrapper used by both the flow-authoring and artifact-authoring editors, plus several read-only viewers) sometimes stops accepting spacebar input entirely. Real-priority, not a polish item — this blocks typing at all in an editor a user is actively relying on, not a narrow edge case. Re-sequenced ahead of its original slot in `Next up` specifically for that reason.
 
 ### Discussion
 
-Everything below carries forward from PR 38's own testing (2026-08-19), not re-derived — see `docs/todo.md` for the same trace.
+Everything below carries forward from Change C38's own testing (2026-08-19), not re-derived — see `docs/todo.md` for the same trace.
 
 **Reported symptom, precise**: typing a space _immediately_ after a letter lands; pausing before pressing space causes it to silently do nothing. Not even the browser-native double-space-period substitution — that only shows up as a side effect of the user re-pressing space while already stuck, not an independent cause. Once it starts happening in a given editor instance, it can persist across many further keystrokes, not a one-off dropped character.
 

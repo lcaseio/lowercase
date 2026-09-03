@@ -1,10 +1,10 @@
-# UI Workspace Milestone — Arc: Web app API usage audit (PR 52)
+# UI Workspace Initiative — Arc: Web app API usage audit (Change C52)
 
-**Previous:** [Server API reference docs](./api-reference-docs.md) (PR 51) · **Next:** [Activate the real production build](./production-build.md) (PR 53)
+**Previous:** [Server API reference docs](./api-reference-docs.md) (Change C51) · **Next:** [Activate the real production build](./production-build.md) (Change C53)
 
-Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log. Follows directly from PR 51 (`arcs/api-reference-docs.md`) — having the real API surface written down first is what makes this audit possible at all.
+Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log. Follows directly from Change C51 (`arcs/api-reference-docs.md`) — having the real API surface written down first is what makes this audit possible at all.
 
-## PR 52 — Web app endpoint usage audit — merged (#335)
+## Change C52 — Web app endpoint usage audit — merged (PR #335)
 
 ### Discussion
 
@@ -16,21 +16,21 @@ Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log. Follows directly from PR
 
 **Format concept, not yet built:** per endpoint, name the consuming RTK Query hook(s) and their call site(s), then a field-by-field table (field / used? / where / notes) against the response type already documented in `docs/api-reference.md`.
 
-**Starting with a pilot on `GET /api/runs/:runId` (`RunDetail`), not a full sweep.** Doing the full field-by-field version for all 21 routes is a lot of mechanical grep work and most routes are small enough that it'd be obviously all-used. `RunDetail` is the real suspect — already flagged during PR 51 as having sprawled well past what was intended (five nested record types plus a shared `ArtifactIndex`; see `arcs/api-reference-docs.md`'s Discussion section). Treating it as the hardest case and a pilot: build it for real, see what it actually turns up, then decide whether the exhaustive version across the other 20 routes is worth repeating or whether a few targeted passes on suspected offenders is enough.
+**Starting with a pilot on `GET /api/runs/:runId` (`RunDetail`), not a full sweep.** Doing the full field-by-field version for all 21 routes is a lot of mechanical grep work and most routes are small enough that it'd be obviously all-used. `RunDetail` is the real suspect — already flagged during Change C51 as having sprawled well past what was intended (five nested record types plus a shared `ArtifactIndex`; see `arcs/api-reference-docs.md`'s Discussion section). Treating it as the hardest case and a pilot: build it for real, see what it actually turns up, then decide whether the exhaustive version across the other 20 routes is worth repeating or whether a few targeted passes on suspected offenders is enough.
 
-**Written as a real file in `docs/`, not scratch, so it can be reviewed as an actual artifact** — same reasoning as PR 51's live prototype: judge it on disk/in an editor, not inside a chat transcript.
+**Written as a real file in `docs/`, not scratch, so it can be reviewed as an actual artifact** — same reasoning as Change C51's live prototype: judge it on disk/in an editor, not inside a chat transcript.
 
 ### What actually landed
 
 `docs/api-usage-audit.md` — a field-level usage audit covering all 21 endpoints, same order and accordion (`<details>`/`<summary>`) format as `docs/api-reference.md`, plus a top `## Summary` section rolling up the headline findings so they're visible without opening every entry. The pilot (`RunDetail`) started as a plain markdown table for review; once approved, the user asked for the same accordion treatment `docs/api-reference.md` uses, specifically so 21 entries stay scannable rather than one long scroll — and for links from each field table back to the real type definitions in `packages/types`, mirroring the call-site links already in place, so a reader can jump to source without a manual grep.
 
-Full sweep built by tracing every RTK Query hook's real call sites against the response shapes already documented in PR 51 — every claim backed by an actual line of code, not inferred from the type alone. The four resource-section sweeps (Evals, Flows, Runs, Sims — Artifacts and the `RunDetail` pilot were done directly first) were delegated to parallel research passes and then spot-verified against the real files before being written in, consistent with this milestone's standing "verify mechanics empirically" practice.
+Full sweep built by tracing every RTK Query hook's real call sites against the response shapes already documented in Change C51 — every claim backed by an actual line of code, not inferred from the type alone. The four resource-section sweeps (Evals, Flows, Runs, Sims — Artifacts and the `RunDetail` pilot were done directly first) were delegated to parallel research passes and then spot-verified against the real files before being written in, consistent with this initiative's standing "verify mechanics empirically" practice.
 
-**Explicit framing, the user's own words (2026-08-22):** "even though I'm not fixing this now, this helps me revisit this type of thing and help redesign the frontend + backend later, and keeps a record of what the UI milestone rework is shipping with." Not a todo list — a snapshot for later reference.
+**Explicit framing, the user's own words (2026-08-22):** "even though I'm not fixing this now, this helps me revisit this type of thing and help redesign the frontend + backend later, and keeps a record of what the UI initiative rework is shipping with." Not a todo list — a snapshot for later reference.
 
 Headline findings (full detail lives in `docs/api-usage-audit.md`'s own Summary, not re-explained here):
 
-- **4 of 21 endpoints have zero live frontend consumers**: `POST /api/evals` (its only caller, `EvaluateExportModal.tsx`, has been orphaned dead code since PR 43), `POST /api/flows/files`, `GET /api/flows/:flowId`, and the per-param curated-artifacts route (`GET /api/flows/versions/:versionId/params/:paramName/curated-artifacts` — the web app gets curated artifacts a different way entirely, via `GET /api/artifacts` filtered client-side).
+- **4 of 21 endpoints have zero live frontend consumers**: `POST /api/evals` (its only caller, `EvaluateExportModal.tsx`, has been orphaned dead code since Change C43), `POST /api/flows/files`, `GET /api/flows/:flowId`, and the per-param curated-artifacts route (`GET /api/flows/versions/:versionId/params/:paramName/curated-artifacts` — the web app gets curated artifacts a different way entirely, via `GET /api/artifacts` filtered client-side).
 - `RunDetail` (the pilot) confirmed as the worst case — 2 of ~20 `run` fields used, `steps`/`params`/`flow`/`flowVersion` entirely unread, each already covered by a narrower endpoint or the event stream instead.
 - Two more sizeable waste cases: `GET /api/sims` (3 of 21 leaf fields used) and `GET /api/flows` (`latestVersion` fetched on every item, unused everywhere live).
 - One fully-clean endpoint: `GET /api/artifacts/:hash` — every response branch has a real consumer.

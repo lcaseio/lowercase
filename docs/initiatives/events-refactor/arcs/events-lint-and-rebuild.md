@@ -1,10 +1,10 @@
-# Events Package Refactor Milestone — Arc: Lint Config + Clean/Rebuild Pass (PR 3)
+# Events Package Refactor Initiative — Arc: Lint Config + Clean/Rebuild Pass (Change C3)
 
-**Previous:** [`step-emission-in-engine.md`](./step-emission-in-engine.md) (PR 2)
+**Previous:** [`step-emission-in-engine.md`](./step-emission-in-engine.md) (Change C2)
 
-Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log, split out to keep that doc scannable.
+Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable.
 
-## PR 3 - Give `packages/events` a real ESLint config, then clean/rebuild/fix - merged (#349)
+## Change C3 - Give `packages/events` a real ESLint config, then clean/rebuild/fix - merged (PR #349)
 
 ### Discussion
 
@@ -18,7 +18,7 @@ _Starting point, carried over from `INITIATIVE.md`'s `Next up`:_
 
 Raised mid-discussion, not part of the original scope: every package's `tsconfig.json` has `"include": ["src"]` only, so `pnpm typecheck` (`tsc --noEmit`) never actually type-checks anything under `tests/`, repo-wide. Vitest doesn't backstop this either (it transpiles `.test.ts` via esbuild, which strips types without checking them).
 
-Turned out to already be a known, tracked, _solved_ problem (`docs/todo.md`) — not a new discovery. A working fix already landed in `packages/artifacts`/`packages/adapters`: a sibling `tsconfig.typecheck.json` per package (`extends: "./tsconfig.json"`, `rootDir: "."`, `include: ["src", "tests"]`, `noEmit: true`), with `package.json`'s `typecheck` script pointed at it via `-p`. The base `tsconfig.json`/`pnpm build` stay untouched. Deliberately incremental rollout, adopted as packages get touched for other reasons — `packages/events` being mid-PR-3 was exactly that trigger, so applied here too rather than deferred.
+Turned out to already be a known, tracked, _solved_ problem (`docs/todo.md`) — not a new discovery. A working fix already landed in `packages/artifacts`/`packages/adapters`: a sibling `tsconfig.typecheck.json` per package (`extends: "./tsconfig.json"`, `rootDir: "."`, `include: ["src", "tests"]`, `noEmit: true`), with `package.json`'s `typecheck` script pointed at it via `-p`. The base `tsconfig.json`/`pnpm build` stay untouched. Deliberately incremental rollout, adopted as packages get touched for other reasons — `packages/events` being mid-Change-3 was exactly that trigger, so applied here too rather than deferred.
 
 Turning it on caught one real, previously-invisible bug: `tests/parser.test.ts` imported `AnyEvent` via `import { AnyEvent } from "../../types/src"` — a relative path reaching straight into `@lcase/types`' `src/` directory, bypassing the package boundary entirely (worse than the plain missing-`.js`-extension failures this same fix caught in `artifacts`/`adapters`). Fixed to match every other import site in the package: `import type { AnyEvent } from "@lcase/types"`.
 
@@ -37,7 +37,7 @@ Verified: `pnpm typecheck`/`pnpm vitest run` clean in `packages/events`, `pnpm -
 1. **Config-level, not code** (~15 errors) — the underscore-prefix `no-unused-vars` exception above; no file touched.
 2. **Mechanical, `--fix`-safe** (51 errors) — 45 `consistent-type-imports`, plus 6 `no-useless-escape` (two regexes in `emitter.test.ts` with unnecessary `\-` escapes — not actually auto-fixed by this ESLint version despite being flagged fixable, so hand-fixed).
 3. **Genuine dead code, deleted** (8 symbols): `RunDescriptorSchema` (`run.data.schema.ts` — its own comment already said _"removed descriptor for now to reduce duplication of data"_, i.e. already self-marked superseded), `JobDescriptorDataSchema`/`PipeDataSchema` (`job.data.schema.ts`, same unused-descriptor shape, never exported) plus their now-orphaned type imports (`JobDescriptor`, `PipeData`), and unused imports `ZodSchema` (`event-schema.registry.ts`), `EventType`/`JobResumedParsed`/`JobSubmittedParsed`/`z` (`job.parser.ts`), `StepEmitter` (`emitter.test.ts`), and a pointless unused `const e = expect(...).toThrow()` assignment in `parser.test.ts`.
-4. **One real `any`** — `step-emitter.test.ts`'s `testId as any` → `testId as ReturnType<typeof crypto.randomUUID>`. Fixed alongside it, spotted while in the file rather than caught by lint: `import { afterEach } from "node:test"` instead of `"vitest"` — the exact bug PR 1's plan notes had already flagged as existing in this file and deliberately not copied into new tests, apparently never fixed here until now.
+4. **One real `any`** — `step-emitter.test.ts`'s `testId as any` → `testId as ReturnType<typeof crypto.randomUUID>`. Fixed alongside it, spotted while in the file rather than caught by lint: `import { afterEach } from "node:test"` instead of `"vitest"` — the exact bug Change C1's plan notes had already flagged as existing in this file and deliberately not copied into new tests, apparently never fixed here until now.
 5. **A real bug, held back for explicit review before touching**: `EventParser`'s constructor accepted a `registry: EventSchemaRegistry` parameter but never stored it — `parse()` read the module-level `eventSchemaRegistry` singleton directly instead, silently discarding whatever was passed in. Inconsistent with its sibling `JobParser` in the same file's package, which does this correctly (`constructor(private readonly eventRegistry...)`, `this.eventRegistry` at use time). Checked blast radius before fixing: `EventParserPort` isn't wired into `runtime.ts` or any app anywhere, and the only two real call sites (`parser.test.ts`) both happen to pass the exact same singleton the class already hardcoded — so the bug was inert, not live, today. Fixed anyway to be correct by construction (`private readonly registry`, `this.registry` at use time) rather than left as a latent trap for whenever real injection is needed.
 
 **Verified after every stage**: `pnpm lint`/`pnpm typecheck`/`pnpm vitest run` clean in `packages/events` (23/23 tests), `pnpm -w typecheck` clean across all 26 packages, `pnpm -w build` clean workspace-wide.

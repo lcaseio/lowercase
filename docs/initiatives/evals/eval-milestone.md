@@ -4,7 +4,7 @@ GitHub Milestone: https://github.com/lcaseio/lowercase/milestone/9
 
 ## Summary
 
-This milestone proves the engine's intended experimentation loop end-to-end for the first time: run a flow, judge its output, store the score, and compare results — treating measurement as a first-class part of the system rather than something inferred after the fact from logs.
+This initiative proves the engine's intended experimentation loop end-to-end for the first time: run a flow, judge its output, store the score, and compare results — treating measurement as a first-class part of the system rather than something inferred after the fact from logs.
 
 Background research that fed into this scope: [eval-research.md](./eval-research.md).
 
@@ -24,7 +24,7 @@ Tracked as real follow-on work, not forgotten:
 - **Pairwise/comparative judging** — the fork/sim system makes this cheap later, but it needs its own result shape and prompt design. Schema note: pairwise results need a second nullable target (e.g. `comparedToRunId`) rather than forcing a single-target row to represent a comparison.
 - **Trace/process evaluation** of a run's execution path — a distinct, more differentiated follow-on. Mostly deterministic assertions against event history/run projections (branch resolution, step ordering, retry counts, artifact existence), configured per-flow via small declarative specs rather than bespoke code per flow. The qualitative slice of this ("was this retry actually justified") is really an LLM-judge variant fed trace context instead of final output, not a new mechanism.
 - **Reference-based metrics** (BLEU/ROUGE, golden datasets) — gated behind a future decision on whether golden datasets are worth building at all. Not worth adopting a library for until that decision is made.
-- **A general-purpose relational browser** across flows/runs/artifacts/evals (folder-style drill-down) — this milestone's comparison needs are a narrow slice of that larger idea.
+- **A general-purpose relational browser** across flows/runs/artifacts/evals (folder-style drill-down) — this initiative's comparison needs are a narrow slice of that larger idea.
 - **Bulk/batch experiment orchestration** — this proves the single-run loop first; running N variants automatically comes after.
 - **DuckDB / Parquet analytical storage** — SQLite + JSON column is sufficient at v1 volume. DuckDB can attach to the same SQLite file or read Parquet exports later as a downstream analytical layer without migrating the system of record now. Revisit only if a specific dimension's aggregate queries become a real bottleneck (mitigation before that: SQLite expression indexes / generated columns on a hot JSON path).
 
@@ -39,9 +39,9 @@ Tracked as real follow-on work, not forgotten:
 
 ## Open questions for implementation planning
 
-Not blocking milestone scope, but flagged for when this gets broken into PRs:
+Not blocking initiative scope, but flagged for when this gets broken into Changes:
 
 - Exact mechanism for inserting `EvalResult` rows into SQL — likely a new sink alongside `SqlRunProjectionSink`, tapping the bus the same way. Unclear yet whether any event payloads (`run.completed`/`failed`/`denied`) need new fields to make this cheap to consume.
 - Chart/table implementation specifics in the web app (echarts config, which comparison views ship first).
 - Whether `RunQueryPort` already exposes "get a named export's value for a completed run" or needs a small addition.
-- How this decomposes into PRs — unknown yet, likely more than one given the surface area (schema/migration, first eval flow + judge prompt, orchestration service, UI panel).
+- How this decomposes into Changes — unknown yet, likely more than one given the surface area (schema/migration, first eval flow + judge prompt, orchestration service, UI panel).

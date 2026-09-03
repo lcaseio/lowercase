@@ -1,12 +1,12 @@
-# UI Workspace Milestone — Arc: Panel icons and the main nav rail (PRs 19, 20)
+# UI Workspace Initiative — Arc: Panel icons and the main nav rail (Changes C19, C20)
 
-**Previous:** [Event Graph](./event-graph.md) (PRs 16, 17) · **Next:** [Artifacts in Explorer](./artifacts-in-explorer.md) (PRs 21–24)
+**Previous:** [Event Graph](./event-graph.md) (Changes C16, C17) · **Next:** [Artifacts in Explorer](./artifacts-in-explorer.md) (Changes C21–C24)
 
-Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log, split out to keep that doc scannable. Continues from [`event-graph.md`](./event-graph.md). Two small, unrelated pieces of visual identity work bundled together only because they landed back to back: distinguishing panel/tab kinds by icon, and replacing the app's outer left nav with a fixed-width rail. Continues in [`artifacts-in-explorer.md`](./artifacts-in-explorer.md).
+Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Continues from [`event-graph.md`](./event-graph.md). Two small, unrelated pieces of visual identity work bundled together only because they landed back to back: distinguishing panel/tab kinds by icon, and replacing the app's outer left nav with a fixed-width rail. Continues in [`artifacts-in-explorer.md`](./artifacts-in-explorer.md).
 
-## PR 19 - Panel/tab identity icons - merged (#302)
+## Change C19 - Panel/tab identity icons - merged (PR #302)
 
-Ties each dockview panel/tab (and the tree row it came from) to the _kind_ of thing it actually is — a plain flow graph, a run, or a sim — with a small colored icon, rather than relying on tab-title text format alone. Cosmetic, but a real, already-felt pain point: today's titles distinguish these only by format (`"{version} Graph"` vs. `"{version} — {timestamp}"` vs. `"{version} — {sim.name}"`), so a run and a sim can look identical at a glance. This is PR 18's "general 'what am I looking at' signal" note, now scoped.
+Ties each dockview panel/tab (and the tree row it came from) to the _kind_ of thing it actually is — a plain flow graph, a run, or a sim — with a small colored icon, rather than relying on tab-title text format alone. Cosmetic, but a real, already-felt pain point: today's titles distinguish these only by format (`"{version} Graph"` vs. `"{version} — {timestamp}"` vs. `"{version} — {sim.name}"`), so a run and a sim can look identical at a glance. This is Change C18's "general 'what am I looking at' signal" note, now scoped.
 
 ### Discussion
 
@@ -42,7 +42,7 @@ The design above landed as planned: `explorer-panels.ts`'s `openedAs` union, `ex
   - The chevron-to-folder gap tightened to a dedicated `gap-0.5` wrapper around just that pair, applied everywhere the pairing occurs.
   - `py-1` → `py-0.5` applied uniformly across every row in the tree for a more compact overall density.
 
-## PR 20 - Postman-style fixed-width main nav rail - merged (#303)
+## Change C20 - Postman-style fixed-width main nav rail - merged (PR #303)
 
 A side-track, unrelated to the Explorer work above — the app's outer, top-level left navigation (`layout/AppShell.tsx`), not the Explorer tree. Today it's built on shadcn's `Sidebar` primitive (`components/ui/sidebar.tsx`) with `collapsible="icon"`. In practice this means constantly resizing/toggling a panel that should just be fixed — the actual goal, Postman-style: a permanently fixed-width rail, a little-larger icon with a tiny label underneath each, that never expands.
 

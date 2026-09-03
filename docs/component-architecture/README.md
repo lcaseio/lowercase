@@ -36,7 +36,7 @@ Concrete, phased plans that apply the model to one real package, written once a
 plan is actually being executed:
 
 - [`worker-v2/`](./worker-v2/) — the plan behind `packages/components/worker`'s
-  rebuild (`worker-tools-artifacts` milestone, PRs 2–6, merged). Seeded from the
+  rebuild (`worker-tools-artifacts` initiative, PRs 2–6, merged). Seeded from the
   model plus `review-results.md`.
 
 Further plans (e.g. an artifacts migration) get added here the same way, as they

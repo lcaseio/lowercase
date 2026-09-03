@@ -43,7 +43,7 @@ type Props = {
   // so it stays false there and old-mode is unaffected.
   readOnly?: boolean;
   // Below: all optional, all unused by old-mode's caller -- additive,
-  // zero-touch for FlowVersionRunParamsPanel.tsx (PR 26).
+  // zero-touch for FlowVersionRunParamsPanel.tsx (the related change).
   versionId?: string;
   curatedArtifacts?: ArtifactListItem[];
   // when true, the Select's offered candidates come from curatedArtifacts

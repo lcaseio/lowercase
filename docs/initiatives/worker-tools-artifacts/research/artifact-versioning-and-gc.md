@@ -1,9 +1,9 @@
 # Artifact Versioning, Grouping, and Garbage Collection — a Git-Inspired Model
 
-Status: exploratory research, not scoped to any current PR. Raised while
-designing PR 7's writer/reader ports (see
+Status: exploratory research, not scoped to any current Change. Raised while
+designing Change C7's writer/reader ports (see
 [`arcs/artifacts-investigation.md`](../arcs/artifacts-investigation.md)), but the
-model here is a longer-term direction, not a commitment for this milestone.
+model here is a longer-term direction, not a commitment for this initiative.
 
 ## Motivation
 
@@ -248,7 +248,7 @@ today. Revisit only if it becomes a real, frequent, latency-sensitive need —
 same "build the index only when a specific query shape earns it" principle as
 the revision-chain case above.
 
-## Consequence for PR 7's actual port design
+## Consequence for Change C7's actual port design
 
 This narrows what `ArtifactWriterPort` (the fused CAS+SQL capability from
 `capability-modules.md`) is actually for. It is **not** the general write path —

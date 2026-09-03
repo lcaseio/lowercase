@@ -1000,7 +1000,7 @@ Repository context:
 - [Component architecture model](../../../component-architecture/model.md)
 - [Capability modules research](../../../component-architecture/research/capability-modules.md)
 - [Worker V2 architecture](../../../component-architecture/worker-v2/README.md)
-- [Swappable infrastructure milestone](../INITIATIVE.md)
+- [Swappable infrastructure initiative](../INITIATIVE.md)
 - [CAS adapter arc](../arcs/cas-adapter.md)
 - [Queue adapter arc](../arcs/queue-adapter.md)
 - [SQL adapter arc](../arcs/sql-adapter.md)

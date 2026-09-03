@@ -1,10 +1,10 @@
-# UI Workspace Milestone — Arc: Expand content into its own tab (PRs 27, 28)
+# UI Workspace Initiative — Arc: Expand content into its own tab (Changes C27, C28)
 
-**Previous:** [Run Input params](./run-input-params.md) (PRs 25, 26) · **Next:** [Flow graph visual rework](./flow-graph-visual-rework.md) (PRs 29–34)
+**Previous:** [Run Input params](./run-input-params.md) (Changes C25, C26) · **Next:** [Flow graph visual rework](./flow-graph-visual-rework.md) (Changes C29–C34)
 
-Part of the [`INITIATIVE.md`](../INITIATIVE.md) PR log, split out to keep that doc scannable. Continues from [`run-input-params.md`](./run-input-params.md). Two parts of the same effort: wiring up the `onOpenInMainPanel` stubs that have sat inert since PR 11/13, now that opening a new dockview panel from inside another panel's content is a proven pattern. Continues in [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md).
+Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Continues from [`run-input-params.md`](./run-input-params.md). Two parts of the same effort: wiring up the `onOpenInMainPanel` stubs that have sat inert since Change C11/13, now that opening a new dockview panel from inside another panel's content is a proven pattern. Continues in [`flow-graph-visual-rework.md`](./flow-graph-visual-rework.md).
 
-## PR 27 - Expand content into its own tab, part 1 — real artifacts - merged (#310)
+## Change C27 - Expand content into its own tab, part 1 — real artifacts - merged (PR #310)
 
 Wires up the `onOpenInMainPanel` stubs for content that already has a CAS hash (`StepOutputExportsPanel`'s output/export, `FlowVersionRunParamRow`'s Preview button) by routing them into the existing `artifact` panel kind.
 
@@ -12,8 +12,8 @@ Wires up the `onOpenInMainPanel` stubs for content that already has a CAS hash (
 
 **Full inventory, traced directly from every current `onOpenInMainPanel` call site rather than assumed — this is what settled the split below.** Eight sources total, splitting cleanly into two families:
 
-- **Real artifacts** (already have a CAS hash, fetched via `useLazyGetArtifactQuery`): `StepOutputExportsPanel` and `FlowVersionRunParamRow`'s Preview button. Two sources — this PR.
-- **Inline values** (no hash, nothing to look up): `StepHttpJsonDetails`, `ExportsField`, `FieldResolutionRow`, `ReferenceRow`, `FlowVersionRunParamRow`'s Show-usages, and `EventDetails`. Six sources — split across PR 28 and explicitly deferred (the reference-resolution family, see below).
+- **Real artifacts** (already have a CAS hash, fetched via `useLazyGetArtifactQuery`): `StepOutputExportsPanel` and `FlowVersionRunParamRow`'s Preview button. Two sources — this Change.
+- **Inline values** (no hash, nothing to look up): `StepHttpJsonDetails`, `ExportsField`, `FieldResolutionRow`, `ReferenceRow`, `FlowVersionRunParamRow`'s Show-usages, and `EventDetails`. Six sources — split across Change C28 and explicitly deferred (the reference-resolution family, see below).
 
 **Organizing principle: every existing panel kind here (flow-graph, artifact, json-definition) is keyed by something it can refetch — a hash, a versionId, a runId — never by carrying a content blob through dockview's own persisted params/layout state.** That's why the two real-artifact sources route into the existing `artifact` panel kind rather than a new kind.
 
@@ -21,10 +21,10 @@ Wires up the `onOpenInMainPanel` stubs for content that already has a CAS hash (
 
 **Routing mechanism for the two real-artifact previews.** New optional prop on the shared components alongside the existing `onOpenInMainPanel` — `onOpenArtifact?: (hash: string) => void` — preferred over the inline-text path when present. Old-mode's callers pass neither and keep today's inline-text behavior untouched.
 
-**Explicitly not this PR:**
+**Explicitly not this Change:**
 
 - The reference-resolution family (`FieldResolutionRow`, `ReferenceRow`, `FlowVersionRunParamRow`'s Show-usages) — genuinely deferred, not just sequenced later. This isn't really a "where does it open" question; it's "how should raw-vs-resolved step viewing work at all," now that `StepDetailsTab` and the params picker can coexist in the same panel. Needs its own discussion pass.
-- Step body / exports listing and the event payload — moved to PR 28.
+- Step body / exports listing and the event payload — moved to Change C28.
 
 ### What actually landed
 
@@ -34,7 +34,7 @@ The prop-threading/routing exactly as designed, plus one real gap found only onc
 
 **The metadata-lookup fix as originally planned (drop `curated: "true"`, keep `flowVersionId`) did not work.** The real root cause was one layer deeper: a step's run output/export never gets a `flowVersionId` association _at all_ — confirmed directly in `packages/worker/src/worker.ts`, the worker calls `this.artifacts.putJson(output)` with no metadata argument, and `ArtifactIndexInput` deliberately excludes `flowId`/`flowVersionId`/`curated` entirely. So a `{flowVersionId: versionId}`-scoped query — curated or not — can never find these rows.
 
-Considered and rejected: having the worker assign `flowVersionId` at write time instead. Confirmed genuinely bigger than a quick fix — job-payload changes across `packages/engine`/`packages/worker` plus switching the write path — and named directly by the user as a known-bad area already slated for its own future rework, not something to fix as a side effect of this PR.
+Considered and rejected: having the worker assign `flowVersionId` at write time instead. Confirmed genuinely bigger than a quick fix — job-payload changes across `packages/engine`/`packages/worker` plus switching the write path — and named directly by the user as a known-bad area already slated for its own future rework, not something to fix as a side effect of this Change.
 
 **Actual fix: a `hash` filter on the existing `listArtifacts` endpoint/query, reused everywhere else this shape already existed, rather than a new route.** `ArtifactListFilter`/`GetArtifactsReq` gained an optional `hash`; `PrismaArtifactRepository.listArtifacts` uses it to take over row-selection entirely when present, ignoring `flowId`/`curated`/`flowVersionId` for that purpose. `use-artifact-panel.ts` now queries `useListArtifactsQuery({hash, flowVersionId: versionId})`. Verified against a real repository test mirroring the exact worker-produced shape plus three more covering the edges.
 
@@ -46,7 +46,7 @@ Noted but explicitly parked: the artifact endpoint layer bothering the user long
 
 Verified: typecheck/lint/test clean across all 25 workspace packages, plus manual browser testing of both preview paths, including the uncurated case and a full dev-server restart.
 
-## PR 28 - Expand content into its own tab, part 2 — navigate into the definition, event payload - merged (#311)
+## Change C28 - Expand content into its own tab, part 2 — navigate into the definition, event payload - merged (PR #311)
 
 Step body / exports listing → navigate into the existing `json-definition` panel, not a new panel kind. Event payload → one genuinely new, minimal panel kind, since a raw event has no other "document" to navigate into.
 
@@ -60,11 +60,11 @@ Step body / exports listing → navigate into the existing `json-definition` pan
 
 **Event payload.** Keyed by `{runId, eventId}`, not `eventId` alone — revised during planning once it became clear the events slice is genuinely refetchable via REST (`useGetAllRunEventsQuery({runId})`), not just live-websocket-ephemeral; self-fetching on `runId` keeps the panel correct across a reload instead of showing "not found" forever.
 
-**Explicitly not this PR either**: the reference-resolution family, same exclusion as PR 27 — deferred past both PRs pending its own design pass.
+**Explicitly not this Change either**: the reference-resolution family, same exclusion as Change C27 — deferred past both Changes pending its own design pass.
 
 ### What actually landed
 
-Both mechanisms landed close to plan, with prop-threading following the exact same additive pattern as PR 27 throughout, plus one design correction made mid-implementation.
+Both mechanisms landed close to plan, with prop-threading following the exact same additive pattern as Change C27 throughout, plus one design correction made mid-implementation.
 
 - **`CodeEditor.tsx` needed one small new capability it didn't have before**: an `onMount?: (editor) => void` prop, forwarded from its existing internal `handleMount`.
 - **The reveal mechanism ended up needing two independent triggers in one effect, not one** — a real wrinkle, since Monaco's mount is async and can complete either before or after a reveal request already exists. `ExplorerJsonDefinitionContent.tsx` holds the mounted editor in `useState` (not a ref) specifically so the moment it becomes available is itself a dependency-array change.

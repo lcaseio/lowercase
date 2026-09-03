@@ -49,7 +49,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   versionId: string;
   // pre-checks this param in the curation field on fresh open -- set by the
-  // Run Input picker's create-shortcut (PR 26), unset for the tree's plain
+  // Run Input picker's create-shortcut (the related change), unset for the tree's plain
   // "+" entry point.
   initialCuratedParamName?: string;
   // where to auto-select the created artifact's hash, if this dialog was
@@ -58,7 +58,7 @@ type Props = {
 };
 
 // "Upload a file" stays entirely in this dialog -- small enough that a
-// modal is plenty, no dockview panel needed (see PR 24 in
+// modal is plenty, no dockview panel needed (see the related change in
 // docs/initiatives/ui-workspace/INITIATIVE.md). "Create" instead closes this and
 // opens a real panel (needs Monaco, needs real room) -- see
 // artifact-authoring-panel/Content.tsx.

@@ -1140,7 +1140,7 @@ type RunParamManifest = Record<string, string>; // paramName -> artifactHash
 Derivable from `GET /api/runs/:runId`'s own `params` field, so used only where a
 panel hasn't already fetched full run detail — e.g. seeding a run-opened Flow
 Graph panel's Run Input tab display (`use-flow-graph-panel.ts`, see
-`arcs/run-input-params.md` PR 25) without pulling the whole `RunDetail` payload.
+`arcs/run-input-params.md` Change C25) without pulling the whole `RunDetail` payload.
 
 ##### Example response
 

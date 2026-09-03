@@ -124,7 +124,7 @@ export function Content({
   // Opens (or focuses) a new event-payload panel keyed by {runId, eventId}
   // -- closes over the already-in-scope runId so EventDetails.tsx only
   // ever needs to pass (eventId, label), mirroring handleOpenArtifact's
-  // closure-over-versionId shape in the Flow Graph panel (PR 27).
+  // closure-over-versionId shape in the Flow Graph panel (the related change).
   const handleOpenEventPayload = (eventId: string, label: string) => {
     if (!dockviewApi || !runId) return;
     openOrFocusPanel(dockviewApi, {

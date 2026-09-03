@@ -63,7 +63,7 @@ function readGatedPanelState<T>(
 // real LoadedDockState, not a signal to fall back to the next source.
 // Deliberately shallow validation (typeof checks, not a schema validator) --
 // proportionate for low-stakes local UI state. dockview's own tree shape is
-// not validated at all here; see docs/initiatives/ui-workspace/INITIATIVE.md's PR 7 entry for
+// not validated at all here; see docs/initiatives/ui-workspace/INITIATIVE.md's the related change entry for
 // why that's deferred.
 function readSnapshot(storage: DockStorage): LoadedDockState | null {
   let raw: string | null;

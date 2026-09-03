@@ -8,7 +8,7 @@ import { Maximize2Icon } from "lucide-react";
 // stays a deliberate no-op stub (still used by the deferred reference-
 // resolution family, not this tab's own concern). Its httpjson body/exports
 // preview buttons instead navigate into the json-definition panel via
-// onNavigateToDefinition (PR 28). See docs/initiatives/ui-workspace/INITIATIVE.md.
+// onNavigateToDefinition (the related change). See docs/initiatives/ui-workspace/INITIATIVE.md.
 export function StepDetailsTab({
   stepId,
   flowDef,

@@ -35,7 +35,7 @@ main recommendation.
 
 ## 1. Four message categories without one generic message channel
 
-The milestone already commits to four semantic categories on four distinct Redis
+The initiative already commits to four semantic categories on four distinct Redis
 Streams:
 
 - commands
@@ -161,7 +161,7 @@ remote worker protocol. The
 classifies a reply/result separately, and the
 [`Worker V2 plan`](../../../component-architecture/worker-v2/README.md#result-semantics)
 says explicitly that `JobResult` is the caller's control-flow answer rather than a
-lifecycle event. The milestone's four-category list does not name replies, while
+lifecycle event. The initiative's four-category list does not name replies, while
 also saying the engine consumes worker lifecycle events to advance the run.
 
 Do not resolve that conflict by silently treating a job result as a lifecycle
@@ -305,7 +305,7 @@ a logical consuming concern, and independent groups do not change how the produc
 performs `XADD`.
 
 Consumer configuration should therefore be separate now. This is not premature:
-the milestone already requires engine and observability to consume the same stream
+the initiative already requires engine and observability to consume the same stream
 independently, and publication and pending-entry recovery have intrinsically
 different ownership even with one consumer.
 
@@ -343,11 +343,11 @@ The logical group name must be stable across restarts. Replica-specific consumer
 identity must be unique within that group. For example:
 
 ```text
-stream: pipewarp.lifecycle.v1
+stream: lowercase.lifecycle.v1
 group:  engine.lifecycle.v1
 member: engine-api-7f8d9c-2
 
-stream: pipewarp.lifecycle.v1
+stream: lowercase.lifecycle.v1
 group:  observability.lifecycle.v1
 member: observability-6b478f-1
 ```

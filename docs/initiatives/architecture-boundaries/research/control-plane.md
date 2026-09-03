@@ -28,7 +28,7 @@ This resolves the apparent chicken-and-egg problem with making control event-dri
 
 ## Scope decision: event-driven now, in-process; out-of-process extraction stays deferred
 
-Explicit: "we aren't to the point of building the peeled-off version." The near-term, actually-scoped work is making control-plane commands travel over the same bus abstraction the data plane already uses, even while everything still runs in one process — the same shape as the data plane's own in-memory-today/swappable-later design (see the `swappable-infrastructure` milestone). Not designing or building the actual out-of-process deployment here.
+Explicit: "we aren't to the point of building the peeled-off version." The near-term, actually-scoped work is making control-plane commands travel over the same bus abstraction the data plane already uses, even while everything still runs in one process — the same shape as the data plane's own in-memory-today/swappable-later design (see the `swappable-infrastructure` initiative). Not designing or building the actual out-of-process deployment here.
 
 ## HTTP vs. events — resolved, not left open
 

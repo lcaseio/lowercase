@@ -1,6 +1,6 @@
 # Architecture
 
-A map of what's here and where things go — not the reasoning behind it. For why things are shaped this way, see the ADRs ([`docs/adr/`](./adr/)) and, for the full evidence trail, the `architecture-boundaries` milestone's research docs ([`docs/initiatives/architecture-boundaries/research/`](./milestones/architecture-boundaries/research/)).
+A map of what's here and where things go — not the reasoning behind it. For why things are shaped this way, see the ADRs ([`docs/adr/`](./adr/)) and, for the full evidence trail, the `architecture-boundaries` initiative's research docs ([`docs/initiatives/architecture-boundaries/research/`](./initiatives/architecture-boundaries/research/)).
 
 **lowercase** is an event-driven workflow engine, built hexagonally (ports/adapters), with a reducer → planner → effect core (`packages/components/engine`) driving each run.
 
@@ -47,7 +47,7 @@ Each depends on the foundation above, but not on each other (except where noted)
 | **`events`**                  | Per-domain Zod schemas plus `EmitterFactory` (the concrete class behind `EmitterFactoryPort`). Straddles `functional core`/`adapter`, stays one package for cohesion.                                                                                                                                          |
 | **`tools`**                   | The worker's built-in protocol bindings (`httpjson`, `mcp`) — not a plugin system or registry. See ADR-0006 for why there's no third-party tool registration.                                                                                                                                                  |
 | **`db-prisma`**               | Prisma schema, migrations, and generated client. Doesn't fit any tier above — a project-owned, codegen-based dependency real adapters build on.                                                                                                                                                                |
-| **`replay`**                  | Raw event history (JSONL log), separate from the SQL metadata store. Its exact tier is still an open question (adapter vs. something closer to Operations/application services) — see the [`architecture-boundaries` milestone](./milestones/architecture-boundaries/INITIATIVE.md)'s "Not yet scoped" section. |
+| **`replay`**                  | Raw event history (JSONL log), separate from the SQL metadata store. Its exact tier is still an open question (adapter vs. something closer to Operations/application services) — see the [`architecture-boundaries` initiative](./initiatives/architecture-boundaries/INITIATIVE.md)'s "Not yet scoped" section. |
 | **`use-cases/*`**             | Small, focused pieces (`run-flow`, `run-history`) whose internal shape predates the current taxonomy and needs further decomposition — don't treat today's layout as settled.                                                                                                                                  |
 | **`archive/{controller,ui}`** | Real, unmaintained dependencies of `apps/desktop`'s older Electron bootstrap — kept as reference, not deleted, not actively developed.                                                                                                                                                                         |
 

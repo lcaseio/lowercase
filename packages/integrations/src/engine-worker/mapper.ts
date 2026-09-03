@@ -15,7 +15,7 @@ export function toExecuteJobCommand(
     // No retry loop exists on this local path yet -- one dispatch is always
     // exactly one execution attempt, so reusing jobId here is a temporary
     // mapping, not a decision that executionId should permanently equal
-    // jobId long-term (same call PR 4's compat mapper already made).
+    // jobId long-term (same call the related change compat mapper already made).
     executionId: request.jobId,
     jobId: request.jobId,
     runId: request.runId,

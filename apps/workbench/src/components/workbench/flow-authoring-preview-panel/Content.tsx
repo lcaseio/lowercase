@@ -22,7 +22,7 @@ import { useFlowAuthoringPreviewPanel } from "./use-flow-authoring-preview-panel
 // Only the tabs a not-yet-saved draft can actually support: Problems and
 // Parameters are pure flowDef-derived, Step Details too (with its own
 // "jump to definition" button deliberately inert here -- see
-// docs/initiatives/ui-workspace/arcs/flow-authoring.md's PR 38 entry).
+// docs/initiatives/ui-workspace/arcs/flow-authoring.md's the related change entry).
 // Settings/Run Input/Simulate/Step Results all need a real persisted
 // version or an actual run, neither of which exist yet.
 const RAIL_ITEMS: RailItem[] = [

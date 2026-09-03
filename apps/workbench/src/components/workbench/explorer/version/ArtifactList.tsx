@@ -15,8 +15,8 @@ import { useDelayedLoading } from "@/hooks/use-delayed-loading";
 // Scoped to one flow version's own curated artifacts -- no flow-wide
 // "shared" artifacts included (no way to create more than one version of a
 // flow yet, so that distinction has no real case to serve today). Every row
-// is clickable, including bytes-format ones -- PR 22 kept those inert since
-// there was nothing to view, but PR 23's metadata tab gives them something
+// is clickable, including bytes-format ones -- the related change kept those inert since
+// there was nothing to view, but the related change metadata tab gives them something
 // real to show even without a content preview.
 export function ArtifactList({
   versionId,
