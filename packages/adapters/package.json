@@ -28,10 +28,6 @@
       "types": "./dist/run-query/index.d.ts",
       "import": "./dist/run-query/index.js"
     },
-    "./queue": {
-      "types": "./dist/queue/index.d.ts",
-      "import": "./dist/queue/index.js"
-    },
     "./stream": {
       "types": "./dist/stream/index.d.ts",
       "import": "./dist/stream/index.js"
@@ -60,10 +56,11 @@
   "scripts": {
     "build": "tsc",
     "clean-dist": "rm -rf dist",
+    "clean-node-modules": "rm -rf ./node_modules",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest",
     "test:integration": "vitest run integration.test.ts",
-    "lint": "echo lint"
+    "lint": "eslint ."
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
@@ -75,11 +72,14 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@lcase/ports": "workspace:*",
     "@lcase/types": "workspace:*",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@smithy/util-stream": "^4.8.2",
     "aws-sdk-client-mock": "^4.1.0",
+    "eslint": "^9.39.1",
+    "typescript-eslint": "^8.46.4",
     "vitest": "^3.2.4"
   }
 }

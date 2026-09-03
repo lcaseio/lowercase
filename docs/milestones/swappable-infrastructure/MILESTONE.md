@@ -34,9 +34,9 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | 2   | Shared assembly layer + leaf config types in `packages/runtime`                | merged (#361) | [1]   |          |
 | 3   | Shared `local-system` profile (real CAS choice) + retrofit `http-server`/`cli` | merged (#362) | [1]   |          |
 | 4   | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (#363) | [2]   |          |
-| 5   | Delete `NodeRouter`/`QueuePort` (confirmed fully dead, not just bypassed)      | not started   | [2]   |          |
+| 5   | Package hygiene: delete `NodeRouter`/`QueuePort`, real ESLint for `adapters`   | in progress   | [2]   |          |
 | 6   | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 7)       | not started   | [2]   |          |
-| 7   | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)           | not started   | [2]   |          |
+| 7   | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)            | not started   | [2]   |          |
 | 8   | Worker lifecycle sink (Redis-backed) + temporary lifecycle bridge to bus       | not started   | [2]   |          |
 | 9   | Extend `local-system`'s `jobExecution` binding with a `redis-streams` branch   | not started   | [2]   |          |
 | 10  | Postgres adapter (Prisma)                                                      | not started   | [3]   |          |

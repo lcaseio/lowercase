@@ -18,9 +18,8 @@ export type LifecycleHooks<T> = {
 // Normalizes heterogeneous lifecycle shapes (sync start/stop, missing
 // start entirely, missing everything) into one uniform async surface --
 // without requiring any change to the wrapped class. This is how
-// InMemoryEventBus (only close()), InMemoryQueue (nothing), and
-// ObservabilityTap (sync start/stop) all become ManagedResource<T> with
-// zero edits to those classes.
+// InMemoryEventBus (only close()) and ObservabilityTap (sync start/stop)
+// both become ManagedResource<T> with zero edits to those classes.
 export function managedResource<T>(
   id: string,
   instance: T,

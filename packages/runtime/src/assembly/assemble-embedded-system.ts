@@ -6,7 +6,6 @@ import {
 import type {
   EventBusPort,
   EventSink,
-  RouterPort,
   EnginePort,
   LimiterPort,
   ObservabilityTapPort,
@@ -17,6 +16,9 @@ import type {
 // folded in as the base dependency -- started first, stopped last --
 // resolving that code's old drift (limiter.stop() was never called; bus had
 // no start() counterpart at all) via one symmetric start/reverse-stop policy.
+// `router` dropped from that sequence once `NodeRouter`/`QueuePort` were
+// confirmed fully dead (swappable-infrastructure PR 5) -- bus->sinks->tap->
+// engine->limiter is the sequence now.
 //
 // Every field is required -- completeness is enforced by TypeScript here,
 // not by a raw config type: a caller missing e.g. `limiter` fails to
@@ -26,7 +28,6 @@ import type {
 // casting.
 export type EmbeddedSystemAssemblyInput = {
   bus: ManagedResource<EventBusPort>;
-  router: ManagedResource<RouterPort>;
   sinks: readonly ManagedResource<EventSink>[];
   tap: ManagedResource<ObservabilityTapPort>;
   engine: ManagedResource<EnginePort>;
@@ -38,7 +39,6 @@ export function assembleEmbeddedSystem(
 ): ManagedRuntime {
   const resources: ManagedResource<unknown>[] = [
     input.bus,
-    input.router,
     ...input.sinks,
     input.tap,
     input.engine,
