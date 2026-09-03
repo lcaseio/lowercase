@@ -27,8 +27,8 @@ type Props = {
 // stays entirely in a modal) -- a flow definition has a structural preview
 // (the graph) that a plain artifact upload doesn't, so both paths benefit
 // from the same live validation rather than upload being a dead end if the
-// file has a fixable problem. See docs/milestones/ui-workspace/arcs/
-// flow-authoring.md's PR 38 entry for the full discussion.
+// file has a fixable problem. See docs/initiatives/ui-workspace/arcs/
+// flow-authoring.md's the related change entry for the full discussion.
 export function CreateFlowDialog({ open, onOpenChange }: Props) {
   const [step, setStep] = useState<"choose" | "upload">("choose");
   const dispatch = useAppDispatch();

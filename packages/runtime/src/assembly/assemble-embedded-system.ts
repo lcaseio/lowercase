@@ -17,14 +17,14 @@ import type {
 // resolving that code's old drift (limiter.stop() was never called; bus had
 // no start() counterpart at all) via one symmetric start/reverse-stop policy.
 // `router` dropped from that sequence once `NodeRouter`/`QueuePort` were
-// confirmed fully dead (swappable-infrastructure PR 5) -- bus->sinks->tap->
+// confirmed fully dead (swappable-infrastructure the related change) -- bus->sinks->tap->
 // engine->limiter is the sequence now.
 //
 // Every field is required -- completeness is enforced by TypeScript here,
 // not by a raw config type: a caller missing e.g. `limiter` fails to
 // typecheck, it does not silently assemble an incomplete system. Fields are
 // typed against each resource's real port (not `ManagedResource<unknown>`)
-// now that PR 3 has a real caller to confirm this doesn't force awkward
+// now that the related change has a real caller to confirm this doesn't force awkward
 // casting.
 export type EmbeddedSystemAssemblyInput = {
   bus: ManagedResource<EventBusPort>;

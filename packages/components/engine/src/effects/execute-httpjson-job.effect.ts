@@ -13,7 +13,7 @@ import type {
 // job.httpjson.completed bus event. JobFinishedMsg's shape stays exactly as
 // today (a real AnyEvent) so the existing reducer/planner need no changes --
 // a deliberately minimal engine change, not the full engine refactor this
-// milestone gave the worker.
+// work gave the worker.
 //
 // The synthetic event built below is used twice: once to feed JobFinishedMsg
 // for the engine's own internal progression, and once published on the bus
@@ -38,8 +38,8 @@ export const executeHttpJsonJobFx: EffectHandler<"ExecuteHttpJsonJob"> = async (
   // Built per-branch, not via a shared union-typed `type`/`data` pair --
   // buildEvent's generic can't correlate a union type with a union data
   // shape across a function-call boundary, so narrowing inside each branch
-  // avoids needing a cast (same underlying limitation PR 4's compat mapper
-  // hit, resolved there with a documented cast instead).
+  // avoids needing a cast (the compatibility mapper hit the same limitation
+  // and uses a documented cast instead).
   const event =
     outcome.status === "completed"
       ? buildEvent(
@@ -59,7 +59,7 @@ export const executeHttpJsonJobFx: EffectHandler<"ExecuteHttpJsonJob"> = async (
   await publishEvent(deps.bus, event);
 };
 
-// Mirrors the shape of PR 4's toCompatibilityCompletedData/
+// Mirrors the shape of the related change toCompatibilityCompletedData/
 // toCompatibilityFailedData (legacy-httpjson-job.mapper.ts), but not shared
 // code with it -- that pair translates from worker's own JobResult, this one
 // translates from JobExecutionOutcome (engine's own port vocabulary,

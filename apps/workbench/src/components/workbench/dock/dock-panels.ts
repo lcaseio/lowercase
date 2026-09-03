@@ -16,7 +16,7 @@ export type OpenPanelRequest =
       // updateParameters below, same as artifact-authoring's returnTo, but
       // also has to guarantee two clicks are never shallowEqual-identical
       // even when they target the same path, or the second click's refocus
-      // would silently no-op. See PR 28 in docs/milestones/ui-workspace/MILESTONE.md.
+      // would silently no-op. See the related change in docs/initiatives/ui-workspace/INITIATIVE.md.
       revealPath?: string[];
       revealAt?: number;
     }
@@ -25,7 +25,7 @@ export type OpenPanelRequest =
       label: string;
       versionId: string;
       // fixed at open time, never re-derived from live state -- see
-      // PR 19 in docs/milestones/ui-workspace/MILESTONE.md for why this is a real
+      // the related change in docs/initiatives/ui-workspace/INITIATIVE.md for why this is a real
       // discriminated union rather than optional runId?/simId? fields.
       openedAs:
         | { type: "plain" }
@@ -51,7 +51,7 @@ export type OpenPanelRequest =
       kind: "artifact-authoring";
       label: string;
       versionId: string;
-      // set only by the Run Input picker's create-shortcut (PR 26) -- rides
+      // set only by the Run Input picker's create-shortcut (the related change) -- rides
       // along on refocus via updateParameters below, doesn't affect this
       // panel's identity (contentId still keys on versionId alone), so a
       // second create-shortcut click for the same version just retargets

@@ -14,7 +14,7 @@ export type ConsumerGroupOptions = { startAt: "beginning" | "latest" };
 // consumer-group-read + ack + pending-recovery primitive. Payload is
 // AnyEvent, matching EventBusPort, since one shared envelope carries every
 // message this system produces (commands included, once those exist). See
-// docs/milestones/swappable-infrastructure/arcs/queue-adapter.md's PR 4
+// docs/initiatives/swappable-infrastructure/arcs/queue-adapter.md's the related change
 // discussion for the full reasoning.
 export interface MessageLogPort {
   ensureStream(stream: string): Promise<void>;

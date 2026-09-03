@@ -5,7 +5,7 @@ import type { ArtifactPanelsState } from "@/redux/slices/artifact-panels-slice";
 import type { ArtifactAuthoringPanelsState } from "@/redux/slices/artifact-authoring-panels-slice";
 import type { FlowAuthoringPanelsState } from "@/redux/slices/flow-authoring-panels-slice";
 
-// workspace id hardcoded for now -- see docs/milestones/ui-workspace/research/state-management.md's
+// workspace id hardcoded for now -- see docs/initiatives/ui-workspace/research/state-management.md's
 // workspace-switching notes for why this is still the right seam to leave in
 // place even with only one implicit workspace today
 const STORAGE_KEY = "dock-workspace:default";
@@ -63,7 +63,7 @@ function readGatedPanelState<T>(
 // real LoadedDockState, not a signal to fall back to the next source.
 // Deliberately shallow validation (typeof checks, not a schema validator) --
 // proportionate for low-stakes local UI state. dockview's own tree shape is
-// not validated at all here; see docs/milestones/ui-workspace/MILESTONE.md's PR 7 entry for
+// not validated at all here; see docs/initiatives/ui-workspace/INITIATIVE.md's the related change entry for
 // why that's deferred.
 function readSnapshot(storage: DockStorage): LoadedDockState | null {
   let raw: string | null;

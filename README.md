@@ -28,7 +28,7 @@ It runs locally today, as a single process: SQL (SQLite) holds metadata (flows, 
 - **Sims and Artifacts** are first-class tree branches and panels, not separate top-level pages.
 - **Panel state** (params, run selection, layout, replay position, and more) persists across tab switches, in-app navigation, and a real reload.
 
-Full design history: [`docs/milestones/ui-workspace/MILESTONE.md`](docs/milestones/ui-workspace/MILESTONE.md).
+Full design history: [`docs/initiatives/ui-workspace/INITIATIVE.md`](docs/initiatives/ui-workspace/INITIATIVE.md).
 
 ## Quickstart
 
@@ -106,7 +106,7 @@ Further test coverage will grow as the architecture is cemented. Large breaking 
 
 ## Next
 
-No committed next milestone yet — real candidates on the table: an evals rework (today's eval is a flow-embedded v1 slice; the goal is standalone, reusable eval entities — see [`docs/milestones/evals/MILESTONE.md`](docs/milestones/evals/MILESTONE.md)), a `packages/components/worker`/tool-interaction refactor (already flagged as unsettled), real binary artifact support, and general architecture-hardening work (the `packages/events` schema boilerplate + EmitterFactory rework, `packages/runtime`'s two incomplete wiring paths, a few engine bugs/enhancements). See [`docs/todo.md`](docs/todo.md) for the fuller backlog.
+No committed next initiative yet — real candidates on the table: an evals rework (today's eval is a flow-embedded v1 slice; the goal is standalone, reusable eval entities — see [`docs/initiatives/evals/INITIATIVE.md`](docs/initiatives/evals/INITIATIVE.md)), a `packages/components/worker`/tool-interaction refactor (already flagged as unsettled), real binary artifact support, and general architecture-hardening work (the `packages/events` schema boilerplate + EmitterFactory rework, `packages/runtime`'s two incomplete wiring paths, a few engine bugs/enhancements). See [`docs/todo.md`](docs/todo.md) for the fuller backlog.
 
 ## License
 

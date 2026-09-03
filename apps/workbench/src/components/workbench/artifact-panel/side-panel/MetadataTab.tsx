@@ -12,8 +12,8 @@ import type { ArtifactMetadataDraft } from "@/redux/slices/artifact-panels-slice
 // from use-artifact-panel.ts via Content.tsx, matching how
 // flow-graph-panel's side-panel tabs (e.g. SettingsTab.tsx) are fed. JSX
 // ported from the old mode's ArtifactMetadataPanel.tsx; its Redux
-// draft/isEditing plumbing did not carry over -- see PR 23 in
-// docs/milestones/ui-workspace/MILESTONE.md for why.
+// draft/isEditing plumbing did not carry over -- see the related change in
+// docs/initiatives/ui-workspace/INITIATIVE.md for why.
 export function MetadataTab({
   item,
   compatibleParams,

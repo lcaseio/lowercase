@@ -10,14 +10,14 @@ Sections and route order mirror `docs/api-reference.md` (alphabetical by resourc
 
 **Zero live frontend consumers (4 of 21 endpoints):**
 
-- `POST /api/evals` — its only call site, `EvaluateExportModal.tsx`, has been an orphaned, unimported component since PR 43.
+- `POST /api/evals` — its only call site, `EvaluateExportModal.tsx`, has been an orphaned, unimported component since Change C43.
 - `POST /api/flows/files` — hook exported, never called.
 - `GET /api/flows/:flowId` — hook exported, never called; `GET /api/flows/versions/:versionId` covers every real need instead.
 - `GET /api/flows/versions/:versionId/params/:paramName/curated-artifacts` — never called; the UI gets curated artifacts a different way entirely (`GET /api/artifacts?flowVersionId&curated=true`, filtered client-side).
 
 **Most fetched-but-unused response data:**
 
-- `GET /api/runs/:runId` (`RunDetail`) — 2 of ~20 `run` fields used, `steps`/`params`/`flow`/`flowVersion` (all nested, several fields deep) entirely unread. The worst case by far, and the one PR 51 already flagged as sprawling.
+- `GET /api/runs/:runId` (`RunDetail`) — 2 of ~20 `run` fields used, `steps`/`params`/`flow`/`flowVersion` (all nested, several fields deep) entirely unread. The worst case by far, and the one Change C51 already flagged as sprawling.
 - `GET /api/sims` (`SimListItem[]`) — 3 of 21 leaf fields used; `flow`/`flowVersion` fetched on every sim and discarded at the list-mapping call site.
 - `GET /api/flows` (`FlowListItem[]`) — `flow` fully used, but `latestVersion` is fetched on every item and unused everywhere live.
 
@@ -79,7 +79,7 @@ Well-utilized relative to `RunDetail` below — 9 of 12 leaf fields genuinely re
 - [`use-artifact-authoring-panel.ts:176`](../apps/workbench/src/components/workbench/artifact-authoring-panel/use-artifact-authoring-panel.ts#L176)
 - [`CreateArtifactDialog.tsx:192`](../apps/workbench/src/components/workbench/shared/CreateArtifactDialog.tsx#L192)
 
-A third call site, [`EvaluateExportModal.tsx:103`](../apps/workbench/src/components/evals/EvaluateExportModal.tsx#L103), is dead — that component has had zero importers since PR 43 (its own header comment: "kept intentionally, not dead code to sweep," preserved as a reference for a future real evals rework). Not counted as a live consumer.
+A third call site, [`EvaluateExportModal.tsx:103`](../apps/workbench/src/components/evals/EvaluateExportModal.tsx#L103), is dead — that component has had zero importers since Change C43 (its own header comment: "kept intentionally, not dead code to sweep," preserved as a reference for a future real evals rework). Not counted as a live consumer.
 
 ##### Usage, both live call sites
 
@@ -157,15 +157,15 @@ Same pattern as `POST /api/artifacts`: `result.ok` checked, `result.value` (the 
 
 ##### Takeaway
 
-The `overall`/`passed` duplication (flattened on the record and nested again in `payload`, flagged during PR 51) resolves cleanly on the read side — the frontend exclusively reads the flattened copies; the nested duplicates are dead weight. Within `payload`, only `dimensions[*].score` is read; `rationale` at both levels is never shown anywhere.
+The `overall`/`passed` duplication (flattened on the record and nested again in `payload`, flagged during Change C51) resolves cleanly on the read side — the frontend exclusively reads the flattened copies; the nested duplicates are dead weight. Within `payload`, only `dimensions[*].score` is read; `rationale` at both levels is never shown anywhere.
 
 </details>
 
 <details>
-<summary><code>POST</code> <code><b>/api/evals</b></code> — its only call site is orphaned dead code, unreachable since PR 43</summary>
+<summary><code>POST</code> <code><b>/api/evals</b></code> — its only call site is orphaned dead code, unreachable since Change C43</summary>
 <br>
 
-**Consumed by:** `useRequestEvalMutation`, one call site: [`EvaluateExportModal.tsx:91`](../apps/workbench/src/components/evals/EvaluateExportModal.tsx#L91). That component has zero importers anywhere in `apps/workbench/src` — its own header comment explains why: "Unused as of the UI Workspace milestone's PR 43 (pruning old pages)... kept intentionally, not dead code to sweep. This is v1 evals' judge-trigger UI, preserved as a reference for what to compare against when building the real evals rework."
+**Consumed by:** `useRequestEvalMutation`, one call site: [`EvaluateExportModal.tsx:91`](../apps/workbench/src/components/evals/EvaluateExportModal.tsx#L91). That component has zero importers anywhere in `apps/workbench/src` — its own header comment explains why: "Unused as of the UI Workspace initiative's Change C43 (pruning old pages)... kept intentionally, not dead code to sweep. This is v1 evals' judge-trigger UI, preserved as a reference for what to compare against when building the real evals rework."
 
 Within that dead code, the response is fully handled — `result.ok`/`result.error` checked, and on success `result.evalRunId` drives a `navigate(...)` call — so nothing here is a usage gap in the code itself. It's simply not reachable from any live page today, which makes this the only endpoint in the whole API with **zero live consumers**.
 
@@ -238,7 +238,7 @@ Genuinely dead. The one file-upload flow that does exist in the live UI (`Create
 
 ##### Takeaway
 
-Also genuinely dead. Every place the frontend needs a `FlowDefinition`, it goes through `GET /api/flows/versions/:versionId` (below) instead, which nests the definition inside a version record. This flow-level shortcut has no live caller — consistent with the `PostFlowReq`/`getFlowDef()` naming trap flagged in PR 51 (`docs/todo.md`), where this same "flowId-or-hash" service method was already flagged as loosely specified; it turns out the frontend doesn't even reach it via this route at all.
+Also genuinely dead. Every place the frontend needs a `FlowDefinition`, it goes through `GET /api/flows/versions/:versionId` (below) instead, which nests the definition inside a version record. This flow-level shortcut has no live caller — consistent with the `PostFlowReq`/`getFlowDef()` naming trap flagged in Change C51 (`docs/todo.md`), where this same "flowId-or-hash" service method was already flagged as loosely specified; it turns out the frontend doesn't even reach it via this route at all.
 
 </details>
 
@@ -268,7 +268,7 @@ Also genuinely dead. Every place the frontend needs a `FlowDefinition`, it goes 
 
 **Consumed by:** `useGetFlowVersionDefQuery`, called from 7 places: `json-definition-panel/Content.tsx`, `event-graph-panel/Content.tsx`, `artifact-authoring-panel/use-artifact-authoring-panel.ts`, `shared/CreateArtifactDialog.tsx`, `artifact-panel/use-artifact-panel.ts`, `flow-graph-panel/use-flow-graph-panel.ts`, `evals/EvalTargetPicker.tsx`.
 
-##### `definition` ([`FlowDefinition`](../packages/types/src/flow/flow-definition.ts), top-level keys only — see PR 51 on why this large/evolving type isn't expanded further)
+##### `definition` ([`FlowDefinition`](../packages/types/src/flow/flow-definition.ts), top-level keys only — see Change C51 on why this large/evolving type isn't expanded further)
 
 | Key           | Used? | Where                                                                                                           |
 | ------------- | ----- | --------------------------------------------------------------------------------------------------------------- |
@@ -390,12 +390,12 @@ All four entirely unread — zero fields from any of them, including their own n
 Not incidental — both consumers get the equivalent information from elsewhere already:
 
 - Step status/results: `useRunEventsWithStatus` (event-sourced, live) in `use-flow-graph-panel.ts`, not `steps`.
-- Run params: a dedicated `useGetRunParamsQuery` call, not `params` (this is the same derivability noted in PR 51 — `GET /api/runs/:runId/params` is itself just a projection of this same `RunDetail.params`, and even that dedicated lightweight endpoint isn't fed from this call).
+- Run params: a dedicated `useGetRunParamsQuery` call, not `params` (this is the same derivability noted in Change C51 — `GET /api/runs/:runId/params` is itself just a projection of this same `RunDetail.params`, and even that dedicated lightweight endpoint isn't fed from this call).
 - Flow/flow version: `useGetFlowVersionDefQuery`, not `flow`/`flowVersion`.
 
 ##### Takeaway
 
-Two call sites, both fetch the full `RunDetail`, both use it for exactly one thing: resolving `run.simId` (to look up a sim) and, in one of the two, `run.startTime` for a display label. Everything else — 18 of 20 `run` fields plus all of `steps`, `params`, `flow`, `flowVersion` — is dead weight on the wire for every request, and in three of those four cases (`steps`, `params`, `flow`/`flowVersion`) there's already a narrower, purpose-built endpoint or event stream supplying the real data instead. This is the endpoint PR 51 flagged as having "expanded way beyond what I wanted it to" — this confirms it's not just verbose, it's mostly unused by the only two things that call it today.
+Two call sites, both fetch the full `RunDetail`, both use it for exactly one thing: resolving `run.simId` (to look up a sim) and, in one of the two, `run.startTime` for a display label. Everything else — 18 of 20 `run` fields plus all of `steps`, `params`, `flow`, `flowVersion` — is dead weight on the wire for every request, and in three of those four cases (`steps`, `params`, `flow`/`flowVersion`) there's already a narrower, purpose-built endpoint or event stream supplying the real data instead. This is the endpoint Change C51 flagged as having "expanded way beyond what I wanted it to" — this confirms it's not just verbose, it's mostly unused by the only two things that call it today.
 
 </details>
 

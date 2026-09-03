@@ -1,6 +1,5 @@
-// Unused as of the UI Workspace milestone's PR 43 (pruning old pages, see
-// docs/milestones/ui-workspace/arcs/prune-old-pages.md), which removed its
-// only caller -- kept intentionally, not dead code to sweep. This is v1
+// Kept intentionally after the old-page cleanup removed its only caller; this
+// is not dead code to sweep. It is v1
 // evals' judge-trigger UI, preserved as a reference for what to compare
 // against when building the real evals rework. See docs/todo.md for what's
 // actually wrong with it and what a real fix looks like.

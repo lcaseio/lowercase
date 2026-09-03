@@ -21,6 +21,13 @@ pnpm vitest run tests/value-refs.test.ts
 pnpm vitest run tests/value-refs.test.ts -t "test name substring"
 ```
 
+## Work-tracking documentation
+
+Before changing the work-tracking system or its documentation, read
+[`docs/work-tracking.md`](docs/work-tracking.md). It defines the canonical
+Initiative / Arc / Change terminology and the required migration sequence. Do
+not partially migrate that terminology unless the task explicitly requests it.
+
 ## Architecture
 
 This is an event-driven workflow engine (package scope `@lcase`) built around hexagonal ports/adapters, with a reducer→planner→effect execution core.
@@ -67,6 +74,6 @@ This is an event-driven workflow engine (package scope `@lcase`) built around he
 
 **Other things worth knowing:**
 
-- `packages/scheduler` was removed (`architecture-boundaries` milestone) — it mirrored the engine's reducer/planner/effect shape as an old idea for deterministic-state-based job routing, superseded by the simpler concurrency/rate-limiting approach in `packages/components/limiter` (infra-level job routing doesn't need deterministic state). `@lcase/router` (`packages/components/router`) does the simpler version of that job. Don't reintroduce this pattern.
+- `packages/scheduler` was removed (`architecture-boundaries` initiative) — it mirrored the engine's reducer/planner/effect shape as an old idea for deterministic-state-based job routing, superseded by the simpler concurrency/rate-limiting approach in `packages/components/limiter` (infra-level job routing doesn't need deterministic state). `@lcase/router` (`packages/components/router`) does the simpler version of that job. Don't reintroduce this pattern.
 - `packages/archive/` holds `controller` and `ui` — real but unmaintained dependencies of `apps/desktop` (its Electron IPC bootstrap and root React shell, respectively), kept as reference scaffolding for a possible future Electron rebuild rather than deleted outright. `apps/desktop` itself has no `typecheck`/`lint`/`test` script, so nothing in CI currently verifies this code still compiles.
 - `packages/events` defines per-domain zod schemas (`*.event.schema.ts` + `*.data.schema.ts`) and an `EmitterFactory` with a repeated per-domain method pattern. This is a known, acknowledged rough edge (see doc comments in `packages/events/src/emitter-factory.ts` and `base.emitter.ts`) and an active refactor target — possible directions under consideration include generating this boilerplate from a single source of truth, or moving from Zod to AJV JSON Schema (e.g. if that integrates cleanly with Fastify validation). Nothing is decided yet, so don't casually restructure it while doing unrelated work, but don't be surprised if it changes.

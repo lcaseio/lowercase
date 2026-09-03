@@ -141,8 +141,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
           ...(step.headers ? { headers: step.headers } : {}),
           // ShallowJsonValue -> JsonValue: correct by construction (a step's
           // body is only ever JSON.parse'd/authored JSON), but not
-          // structurally assignable -- same precedent as PR 3's
-          // materialize-http-json-request.ts and PR 4's compat mapper.
+          // structurally assignable -- same precedent as the related change
+          // materialize-http-json-request.ts and the related change compat mapper.
           ...(step.body !== undefined ? { body: step.body as JsonValue } : {}),
         },
         refs: jobRefs,

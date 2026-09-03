@@ -712,7 +712,7 @@ describe("Worker", () => {
   // Real ref-resolution coverage: every other test above uses an empty
   // `refs` array, so #resolveOneRef's actual reader.load() calls were never
   // exercised anywhere in this file -- a pre-existing gap, not introduced
-  // here. PR 7's real production bug was specifically a read-path issue no
+  // here. the related change real production bug was specifically a read-path issue no
   // test caught, so this closes the same kind of gap for the new reader.
   describe("ref resolution through the reader", () => {
     it("resolves a params-scope text/plain ref into the materialized request", async () => {

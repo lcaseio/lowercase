@@ -17,7 +17,7 @@ export type ArtifactStoreGetSuccess = {
 // error (permissions, network, corrupt metadata) was indistinguishable from
 // a genuine miss. Widened once this port gained its second real
 // implementation (S3ArtifactStore), see
-// docs/milestones/swappable-infrastructure/arcs/cas-adapter.md.
+// docs/initiatives/swappable-infrastructure/arcs/cas-adapter.md.
 export type ArtifactStoreGetError = DomainError<"NOT_FOUND" | "STORE_ERROR">;
 
 export type ArtifactStorePort = {

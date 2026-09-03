@@ -126,8 +126,8 @@ describe("artifactPanelsSlice", () => {
     });
   });
 
-  // the actual bug this slice exists to fix (see PR 23 in
-  // docs/milestones/ui-workspace/MILESTONE.md): flow-version-artifacts-slice.ts's old
+  // the actual bug this slice exists to fix (see the related change in
+  // docs/initiatives/ui-workspace/INITIATIVE.md): flow-version-artifacts-slice.ts's old
   // singleton draft would collide between two simultaneously open panels --
   // this asserts the two panelIds stay fully independent instead.
   it("keeps two panels' edit sessions fully independent", () => {

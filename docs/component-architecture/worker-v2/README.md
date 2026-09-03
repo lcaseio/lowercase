@@ -15,7 +15,7 @@ before the relevant parts are promoted into an accepted architecture decision.
 - [Component Architecture Draft](../model.md)
 - [ADR-0005: Package-tier taxonomy](../../adr/0005-package-tier-taxonomy.md)
 - [ADR-0006: Worker/tool extensibility model](../../adr/0006-worker-tool-extensibility-model.md)
-- [Worker investigation](../../milestones/worker-tools-artifacts/arcs/worker-investigation.md)
+- [Worker investigation](../../initiatives/worker-tools-artifacts/arcs/worker-investigation.md)
 - [Limiter port/adapters sketch](../../../packages/components/limiter/src/limiter.next.temp.ts)
   (local design sketch, intentionally ignored by Git)
 

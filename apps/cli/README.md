@@ -1,8 +1,8 @@
 # @lcase/cli
 
-Command line interface for running and validating pipewarp flows.
+Command line interface for running and validating lowercase flows.
 
-May expand later to a general application layer to manage pipewarp processes as an alternative to a future gui.
+May expand later to a general application layer to manage lowercase processes as an alternative to a future GUI.
 
 ## Examples
 
