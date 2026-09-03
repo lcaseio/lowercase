@@ -36,7 +36,7 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C4     | `MessageLogPort` + Redis-backed adapter (retitled from "queue" -- see [2])     | merged (PR #363) | [2]   |          |
 | C5     | Package hygiene: delete `NodeRouter`/`QueuePort`, real ESLint for `adapters`   | merged (PR #364) | [2]   |          |
 | C6     | Work-tracking terminology + documentation migration                            | merged (PR #365) | [3]   |          |
-| C7     | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 8)       | in progress      | [2]   |          |
+| C7     | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for 8)       | merged (PR #366) | [2]   |          |
 | C8     | Redis-backed `JobExecutorPort` adapter (engine <-> worker dispatch)            | not started      | [2]   |          |
 | C9     | Worker lifecycle sink (Redis-backed) + temporary lifecycle bridge to bus       | not started      | [2]   |          |
 | C10    | Extend `local-system`'s `jobExecution` binding with a `redis-streams` branch   | not started      | [2]   |          |
