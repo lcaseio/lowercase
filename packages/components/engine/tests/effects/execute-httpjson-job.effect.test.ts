@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { JobExecutorPort } from "@lcase/ports/engine";
+import type { JobExecutionPort } from "@lcase/ports";
 import type {
   EffectHandlerDeps,
   ExecuteHttpJsonJobFx,
@@ -40,14 +40,14 @@ describe("executeHttpJsonJobFx()", () => {
       status: "completed",
       output: { hash: "output-hash" },
     });
-    const jobExecutor = { execute } as unknown as JobExecutorPort;
+    const jobExecution = { execute } as unknown as JobExecutionPort;
     const publish = vi.fn().mockResolvedValue(undefined);
     const bus = { publish } as unknown as EffectHandlerDeps["bus"];
     const enqueue = vi.fn();
     const processAll = vi.fn();
 
     await executeHttpJsonJobFx(makeEffect(), {
-      jobExecutor,
+      jobExecution,
       bus,
       enqueue,
       processAll,
@@ -89,14 +89,14 @@ describe("executeHttpJsonJobFx()", () => {
       status: "failed",
       error: { code: "TIMEOUT", message: "took too long", retryable: true },
     });
-    const jobExecutor = { execute } as unknown as JobExecutorPort;
+    const jobExecution = { execute } as unknown as JobExecutionPort;
     const publish = vi.fn().mockResolvedValue(undefined);
     const bus = { publish } as unknown as EffectHandlerDeps["bus"];
     const enqueue = vi.fn();
     const processAll = vi.fn();
 
     await executeHttpJsonJobFx(makeEffect(), {
-      jobExecutor,
+      jobExecution,
       bus,
       enqueue,
       processAll,

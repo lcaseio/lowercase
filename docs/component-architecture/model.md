@@ -82,12 +82,16 @@ Examples:
 
 An interface a component depends on because it needs a capability outside itself.
 
-The caller owns the outbound port because the port should be named in the caller's
-language, not the provider's language.
+Name it in the caller's language rather than the provider's — `WorkAdmission`,
+not `LimiterClient`. Naming it after the provider bakes one implementation into
+the contract.
+
+The caller does not automatically _own_ a separate port, though. When caller and
+provider agree on the operation, they should share one capability contract; see
+Port Ownership below for when to split them instead.
 
 Examples:
 
-- `WorkerDispatch`
 - `WorkAdmission`
 - `RunStore`
 - `JobStore`
@@ -125,10 +129,18 @@ Examples:
 An adapter that is allowed to know about two components because it connects one
 component's outbound port to another component's inbound port.
 
+Reach for this only when the two sides genuinely speak different vocabularies —
+a real semantic or policy translation, not just two names for the same
+operation. Where caller and provider agree on the operation, share one
+capability contract instead and skip the adapter entirely: a bridge that only
+renames fields buys no isolation, and the pattern compounds, because it implies
+one such adapter per component _pair_.
+
 Example:
 
 - `LocalWorkAdmission` implements the worker's `WorkAdmission` outbound port by
-  calling the limiter's `PermitAcquisition` inbound port.
+  calling the limiter's `PermitAcquisition` inbound port — justified only if
+  admission and permit acquisition really are different operations.
 
 ### Message
 
@@ -532,19 +544,50 @@ Worker owns outbound port: LimiterClient
 - static local capacity gate
 - future cloud service
 
-The same rule applies to engine-to-worker communication.
+### One shared contract, or two ports plus a translation
 
-Prefer:
+Naming from the consumer's perspective does not mean every relationship gets two
+ports. Use a shared capability contract when caller and provider agree on the
+operation. Introduce separate ports plus an integration adapter only when there
+is a real semantic or policy translation between them.
+
+Engine-to-worker job execution is the shared-contract case, and is what the code
+does today:
 
 ```text
-Engine owns outbound port: WorkerDispatch
-Worker owns inbound port: JobExecution
+One JobExecutionPort, defined in packages/ports.
+The worker provides it. The engine consumes it. Neither imports the other.
 ```
+
+It was previously modelled the other way — an engine-owned `WorkerDispatch`
+outbound port, a worker-owned `JobExecution` inbound port, and a
+`LocalWorkerJobExecutor` integration adapter between them. That was retired
+because the adapter only renamed fields and reshaped a request; it bought no
+isolation, and the rule that produced it would have minted another such bridge
+for worker-to-limiter and worker-to-observability in turn.
+
+The shared vocabulary is the **message**, not either component's internal type.
+`JobExecutionRequest` is the real `job.httpjson.submitted` envelope; each core
+translates it at its own boundary into whatever it uses internally. That keeps
+local and remote paths honest — the same translation runs whether the message
+came from a direct call or off a message log — and it keeps what observability
+records identical to what the components actually exchanged.
+
+A component still _owns_ its capability in the sense that matters: the worker
+decides what job execution means. The contract just lives somewhere both sides
+can name without depending on each other.
 
 Avoid making the engine emit `job.<capability>.submitted` as its primary IO
 mechanism. That topic can remain as a lifecycle or compatibility event if it is a
-durable fact worth keeping, but the engine's control flow should call a
-`WorkerDispatch` port.
+durable fact worth keeping, but the engine's control flow should call the
+job-execution port.
+
+> **Sections written against the older two-port model.** `In-Process Adapter
+Shape`, `Engine To Worker Example`, and the `Target Package Shape` tree still
+> describe an engine-owned `WorkerDispatch` port with a `LocalWorkerDispatch`
+> adapter. Their general points (prefer a direct call over a simulated bus
+> round-trip; adapters belong at real transport boundaries) still hold; their
+> specific engine-to-worker shapes are superseded by this section.
 
 ## Event Categories
 

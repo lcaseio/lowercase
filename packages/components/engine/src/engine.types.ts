@@ -4,7 +4,7 @@ import type {
   EventBusPort,
   RunQueryPort,
 } from "@lcase/ports";
-import type { JobExecutionRequest, JobExecutorPort } from "@lcase/ports/engine";
+import type { JobExecutionRequest, JobExecutionPort } from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
@@ -211,13 +211,13 @@ export type EmitJobHttpJsonSubmittedFx = {
   traceId: string;
 };
 
-// Worker V2 plan Phase 4: calls the engine-owned JobExecutorPort directly
-// instead of waiting on a job.httpjson.completed bus event. Deliberately a
-// second, separate effect alongside EmitJobHttpJsonSubmittedFx rather than a
-// replacement -- job.httpjson.submitted keeps publishing for observability,
-// this is what actually advances the run. Both effects are now built from
-// the same shared jobid/data in the planner (JobExecutorPort envelope-
-// fidelity fix), rather than each independently constructing its own.
+// Worker V2 plan Phase 4: calls JobExecutionPort directly instead of waiting
+// on a job.httpjson.completed bus event. Deliberately a second, separate
+// effect alongside EmitJobHttpJsonSubmittedFx rather than a replacement --
+// job.httpjson.submitted keeps publishing for observability, this is what
+// actually advances the run. Both effects are built from the same shared
+// jobid/data in the planner (the envelope-fidelity fix), rather than each
+// independently constructing its own.
 export type ExecuteHttpJsonJobFx = {
   type: "ExecuteHttpJsonJob";
   request: JobExecutionRequest;
@@ -336,6 +336,6 @@ export type EffectHandlerDeps = {
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactReaderPort;
-  jobExecutor: JobExecutorPort;
+  jobExecution: JobExecutionPort;
   source: string;
 };

@@ -1,3 +1,4 @@
+import type { JobExecutionOptions } from "@lcase/ports";
 import type { ExportRef, JsonValue, Ref } from "@lcase/types";
 import type { ResourceHint } from "./resource-key-resolver.js";
 
@@ -75,6 +76,14 @@ export type JobResult =
       output?: ArtifactRef;
     };
 
-export type JobExecutionOptions = {
-  signal?: AbortSignal;
-};
+// Worker's internal execution seam, deliberately not a port: the boundary
+// contract is JobExecutionPort (@lcase/ports), which speaks messages. This is
+// what the layers *inside* that boundary speak to each other -- Worker itself
+// and the capacity decorator wrapped around it -- in worker's own command
+// vocabulary. withMessageJobExecution is the one place the two meet.
+export interface JobCommandExecutor {
+  execute(
+    command: ExecuteJobCommand,
+    options?: JobExecutionOptions,
+  ): Promise<JobResult>;
+}

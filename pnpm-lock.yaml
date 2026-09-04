@@ -671,30 +671,6 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
 
-  packages/integrations:
-    devDependencies:
-      '@eslint/js':
-        specifier: ^9.39.1
-        version: 9.39.1
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
-      '@lcase/worker':
-        specifier: workspace:*
-        version: link:../components/worker
-      eslint:
-        specifier: ^9.39.1
-        version: 9.39.1(jiti@2.6.1)
-      typescript-eslint:
-        specifier: ^8.46.4
-        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
-
   packages/ports:
     devDependencies:
       '@eslint/js':
@@ -745,9 +721,6 @@ importers:
       '@lcase/events':
         specifier: workspace:*
         version: link:../events
-      '@lcase/integrations':
-        specifier: workspace:*
-        version: link:../integrations
       '@lcase/limiter':
         specifier: workspace:*
         version: link:../components/limiter

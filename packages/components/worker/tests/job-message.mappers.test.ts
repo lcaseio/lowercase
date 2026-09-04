@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   toExecuteJobCommand,
   toJobExecutionOutcome,
-} from "../../src/engine-worker/mapper.js";
-import type { JobExecutionRequest } from "@lcase/ports/engine";
-import type { JobResult } from "@lcase/worker";
+} from "../src/job-message.mappers.js";
+import type { JobExecutionRequest } from "@lcase/ports";
+import type { JobResult } from "../src/job.contracts.js";
 
 function makeRequest(
   overrides?: Partial<JobExecutionRequest>,

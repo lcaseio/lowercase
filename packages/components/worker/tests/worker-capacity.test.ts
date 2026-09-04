@@ -1,13 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { withWorkerCapacity } from "../src/worker-capacity.js";
-import type { JobExecutionPort } from "../src/ports/inbound/job-execution.port.js";
-import type { JobResult } from "../src/job.contracts.js";
+import type { JobCommandExecutor, JobResult } from "../src/job.contracts.js";
 import { makeCommand } from "./helpers/fixtures.js";
 
 function makeControllableCore() {
   const releases: Array<() => void> = [];
   const executeCalls: number[] = [];
-  const core: JobExecutionPort = {
+  const core: JobCommandExecutor = {
     execute: vi.fn(async (command): Promise<JobResult> => {
       executeCalls.push(executeCalls.length);
       await new Promise<void>((resolve) => releases.push(resolve));
@@ -24,7 +23,7 @@ function makeControllableCore() {
 
 describe("withWorkerCapacity", () => {
   it("passes a single job straight through", async () => {
-    const core: JobExecutionPort = {
+    const core: JobCommandExecutor = {
       execute: vi.fn(async (command): Promise<JobResult> => ({
         status: "completed",
         executionId: command.executionId,
@@ -100,7 +99,7 @@ describe("withWorkerCapacity", () => {
 
   it("releases capacity even when the wrapped core throws", async () => {
     const thrown = new Error("boom");
-    const core: JobExecutionPort = {
+    const core: JobCommandExecutor = {
       execute: vi.fn(async () => {
         throw thrown;
       }),

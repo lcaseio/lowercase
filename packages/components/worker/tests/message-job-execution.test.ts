@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { LocalWorkerJobExecutor } from "../../src/engine-worker/local-worker-job-executor.js";
+import { withMessageJobExecution } from "../src/message-job-execution.js";
 import type {
-  JobExecutionPort,
   ExecuteJobCommand,
+  JobCommandExecutor,
   JobResult,
-} from "@lcase/worker";
-import type { JobExecutionRequest } from "@lcase/ports/engine";
+} from "../src/job.contracts.js";
+import type { JobExecutionRequest } from "@lcase/ports";
 
 function makeRequest(): JobExecutionRequest {
   return {
@@ -22,7 +22,7 @@ function makeRequest(): JobExecutionRequest {
   };
 }
 
-class FakeJobExecution implements JobExecutionPort {
+class FakeCommandExecutor implements JobCommandExecutor {
   received: ExecuteJobCommand[] = [];
   constructor(private readonly result: JobResult) {}
   async execute(command: ExecuteJobCommand): Promise<JobResult> {
@@ -31,20 +31,20 @@ class FakeJobExecution implements JobExecutionPort {
   }
 }
 
-describe("LocalWorkerJobExecutor", () => {
-  it("translates the request into an ExecuteJobCommand and calls worker.execute()", async () => {
-    const fakeWorker = new FakeJobExecution({
+describe("withMessageJobExecution", () => {
+  it("translates the request into an ExecuteJobCommand and calls the core", async () => {
+    const core = new FakeCommandExecutor({
       status: "completed",
       executionId: "job-1",
       jobId: "job-1",
       output: { hash: "output-hash" },
     });
-    const executor = new LocalWorkerJobExecutor(fakeWorker);
+    const jobExecution = withMessageJobExecution(core);
 
-    const outcome = await executor.execute(makeRequest());
+    const outcome = await jobExecution.execute(makeRequest());
 
-    expect(fakeWorker.received).toHaveLength(1);
-    expect(fakeWorker.received[0]).toMatchObject({
+    expect(core.received).toHaveLength(1);
+    expect(core.received[0]).toMatchObject({
       jobId: "job-1",
       executionId: "job-1",
       runId: "run-1",
@@ -58,15 +58,15 @@ describe("LocalWorkerJobExecutor", () => {
   });
 
   it("translates a failed JobResult into a failed JobExecutionOutcome", async () => {
-    const fakeWorker = new FakeJobExecution({
+    const core = new FakeCommandExecutor({
       status: "failed",
       executionId: "job-1",
       jobId: "job-1",
       error: { code: "TIMEOUT", message: "took too long", retryable: true },
     });
-    const executor = new LocalWorkerJobExecutor(fakeWorker);
+    const jobExecution = withMessageJobExecution(core);
 
-    const outcome = await executor.execute(makeRequest());
+    const outcome = await jobExecution.execute(makeRequest());
 
     expect(outcome).toEqual({
       status: "failed",

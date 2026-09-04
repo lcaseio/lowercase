@@ -2,10 +2,10 @@ import { Engine } from "@lcase/engine";
 import type {
   ArtifactReaderPort,
   EventBusPort,
+  JobExecutionPort,
   JobParserPort,
   RunQueryPort,
 } from "@lcase/ports";
-import type { JobExecutorPort } from "@lcase/ports/engine";
 import type { EmitterFactory } from "@lcase/events";
 
 // Relocated from packages/runtime/src/runtime.ts unchanged -- same reasoning
@@ -17,7 +17,7 @@ export function buildEngine(
   jobParser: JobParserPort,
   runQuery: RunQueryPort,
   artifacts: ArtifactReaderPort,
-  jobExecutor: JobExecutorPort,
+  jobExecution: JobExecutionPort,
 ): Engine {
   return new Engine({
     bus,
@@ -25,6 +25,6 @@ export function buildEngine(
     jobParser,
     runQuery,
     artifacts,
-    jobExecutor,
+    jobExecution,
   });
 }
