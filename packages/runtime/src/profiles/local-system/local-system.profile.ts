@@ -1,7 +1,6 @@
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
 import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
 import { JobParser } from "@lcase/events/parsers";
-import { LocalWorkerJobExecutor } from "@lcase/integrations/engine-worker";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
 import { ConcurrencyLimiter, Limiter } from "@lcase/limiter";
 import { ReplayEngine } from "@lcase/replay";
@@ -22,7 +21,6 @@ import {
   SimService,
 } from "@lcase/app-services";
 import type { ServicesPort } from "@lcase/ports";
-import type { JobExecutorPort } from "@lcase/ports/engine";
 import type { ObservabilityTapPort } from "@lcase/ports";
 import {
   managedResource,
@@ -67,8 +65,9 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     artifactRepository,
   );
 
-  const workerCore = createWorkerCore({ artifacts }, config.worker);
-  const jobExecutor: JobExecutorPort = new LocalWorkerJobExecutor(workerCore);
+  // The worker provides JobExecutionPort itself -- no adapter in between,
+  // because in-process there is no transport boundary to adapt.
+  const jobExecution = createWorkerCore({ artifacts }, config.worker);
 
   const engine = buildEngine(
     bus,
@@ -76,7 +75,7 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     jobParser,
     runQuery,
     artifacts,
-    jobExecutor,
+    jobExecution,
   );
 
   const { tap, sinks } = buildObservability(

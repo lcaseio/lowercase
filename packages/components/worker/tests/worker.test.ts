@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createWorker } from "../src/worker.js";
+import { createCommandWorker } from "../src/worker.js";
 import type { WorkerCoreConfig } from "../src/worker.js";
 import {
   makeJobExecutionCancelledEvent,
@@ -30,7 +30,7 @@ describe("Worker", () => {
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: { foo: "bar" } }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -96,7 +96,7 @@ describe("Worker", () => {
       ok: false,
       error: protocolError,
     }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -133,7 +133,7 @@ describe("Worker", () => {
       error: { code: "HTTP_STATUS_FAILED", message: "500", retryable: true },
       payload: { detail: "server exploded" },
     }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -161,7 +161,7 @@ describe("Worker", () => {
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -197,7 +197,7 @@ describe("Worker", () => {
       const { writer } = createFakeArtifactWriterPort();
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -231,7 +231,7 @@ describe("Worker", () => {
       ok: false as const,
       message: "no policy configured",
     }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -266,7 +266,7 @@ describe("Worker", () => {
         ok: true,
         payload: { foo: "bar" },
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -308,7 +308,7 @@ describe("Worker", () => {
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -350,7 +350,7 @@ describe("Worker", () => {
         ok: true,
         payload: { message: "hello", count: 3 },
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -399,7 +399,7 @@ describe("Worker", () => {
         ok: true,
         payload: { message: "hello" },
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -444,7 +444,7 @@ describe("Worker", () => {
       ok: true,
       payload: null,
     }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -469,7 +469,7 @@ describe("Worker", () => {
     const { writer } = createFakeArtifactWriterPort();
     const { executor: protocol, execute: protocolExecute } =
       createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -521,7 +521,7 @@ describe("Worker", () => {
           // intentionally never settles
         }),
     );
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -560,7 +560,7 @@ describe("Worker", () => {
       fetch: fakeFetch as unknown as typeof fetch,
     });
 
-    const worker = createWorker(
+    const worker = createCommandWorker(
       {
         permits,
         lifecycle: sink,
@@ -612,7 +612,7 @@ describe("Worker", () => {
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       const thrown = new Error("permit unavailable");
       acquire.mockRejectedValueOnce(thrown);
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -639,7 +639,7 @@ describe("Worker", () => {
         ok: true,
         payload: null,
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -664,7 +664,7 @@ describe("Worker", () => {
         ok: false,
         error: { code: "HTTP_STATUS_FAILED", message: "x", retryable: false },
       }));
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -689,7 +689,7 @@ describe("Worker", () => {
       const { executor: protocol } = createFakeProtocolExecutor(() => {
         throw thrown;
       });
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -723,7 +723,7 @@ describe("Worker", () => {
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       seed("hash-param", "text/plain", "42");
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,
@@ -768,7 +768,7 @@ describe("Worker", () => {
       const { executor: protocol, execute: protocolExecute } =
         createFakeProtocolExecutor(() => ({ ok: true, payload: null }));
       seed("hash-step", "application/json", { output: { id: "99" } });
-      const worker = createWorker(
+      const worker = createCommandWorker(
         {
           permits,
           lifecycle: sink,

@@ -1,5 +1,4 @@
-import type { ArtifactReadWritePort } from "@lcase/ports";
-import type { JobExecutionPort } from "@lcase/worker";
+import type { ArtifactReadWritePort, JobExecutionPort } from "@lcase/ports";
 import {
   createConsoleWorkerLifecycleEventSink,
   createHttpJsonExecutor,
@@ -12,10 +11,10 @@ export type CreateWorkerCoreDeps = {
   artifacts: ArtifactReadWritePort;
 };
 
-// Composition only -- construction logic lives in packages/components/worker,
-// translation logic lives in packages/integrations' engine-worker subpath.
-// Exposes the raw, callable core directly -- packages/integrations'
-// LocalWorkerJobExecutor needs a real reference to call.
+// Composition only -- construction and message translation both live in
+// packages/components/worker. What comes back already satisfies the shared
+// JobExecutionPort, so the engine can be handed it directly with no adapter
+// in between.
 export function createWorkerCore(
   deps: CreateWorkerCoreDeps,
   config: WorkerConfig,

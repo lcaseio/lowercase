@@ -1,6 +1,6 @@
 # Prove Swappable Infrastructure Initiative — Arc: Work-tracking migration (Change C6)
 
-**Context:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C10) · **Next:** [`sql-adapter.md`](./sql-adapter.md) (Changes C11–C12)
+**Context:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C11) · **Next:** [`sql-adapter.md`](./sql-adapter.md) (Changes C12–C13)
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Establishes unambiguous internal work identifiers and migrates the living documentation to the resulting layout and terminology.
 

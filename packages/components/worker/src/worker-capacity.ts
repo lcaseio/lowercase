@@ -1,11 +1,11 @@
+import type { JobExecutionOptions } from "@lcase/ports";
 import { createSemaphore } from "./concurrency/semaphore.js";
 import { cancelledResult } from "./job-result.factories.js";
 import type {
   ExecuteJobCommand,
-  JobExecutionOptions,
+  JobCommandExecutor,
   JobResult,
 } from "./job.contracts.js";
-import type { JobExecutionPort } from "./ports/inbound/job-execution.port.js";
 
 export type WorkerCapacityConfig = {
   maxConcurrentJobs: number;
@@ -25,10 +25,10 @@ export type WorkerCapacityTelemetry = {
 // running one job, with capacity as a separate, composable concern wrapped
 // around it.
 export function withWorkerCapacity(
-  core: JobExecutionPort,
+  core: JobCommandExecutor,
   config: WorkerCapacityConfig,
   telemetry?: WorkerCapacityTelemetry,
-): JobExecutionPort {
+): JobCommandExecutor {
   const semaphore = createSemaphore(config.maxConcurrentJobs);
 
   return {

@@ -97,8 +97,8 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     );
     const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
 
-    // One canonical envelope built once per submission (JobExecutorPort
-    // envelope-fidelity fix): a single jobid and a single copy of the job
+    // One canonical envelope built once per submission (the envelope-fidelity
+    // fix): a single jobid and a single copy of the job
     // data, shared by both the observability publish below and the actual
     // dispatch request, so the two can never drift into different job
     // identities the way two independently-constructed objects used to.

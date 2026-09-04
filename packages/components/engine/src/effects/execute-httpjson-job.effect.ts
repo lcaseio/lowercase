@@ -1,6 +1,6 @@
 import { buildEvent, publishEvent } from "@lcase/events";
 import type { JobCompletedData, JobFailedData } from "@lcase/types";
-import type { JobExecutionOutcome } from "@lcase/ports/engine";
+import type { JobExecutionOutcome } from "@lcase/ports";
 import type {
   EffectHandler,
   EffectHandlerDeps,
@@ -8,27 +8,26 @@ import type {
   JobFinishedMsg,
 } from "../engine.types.js";
 
-// Worker V2 plan Phase 4: calls the engine-owned JobExecutorPort directly and
-// advances the run from its returned result, instead of waiting on a
-// job.httpjson.completed bus event. JobFinishedMsg's shape stays exactly as
-// today (a real AnyEvent) so the existing reducer/planner need no changes --
-// a deliberately minimal engine change, not the full engine refactor this
-// work gave the worker.
+// Worker V2 plan Phase 4: calls JobExecutionPort directly and advances the
+// run from its returned result, instead of waiting on a job.httpjson.completed
+// bus event. JobFinishedMsg's shape stays exactly as today (a real AnyEvent)
+// so the existing reducer/planner need no changes -- a deliberately minimal
+// engine change, not the full engine refactor this work gave the worker.
 //
 // The synthetic event built below is used twice: once to feed JobFinishedMsg
 // for the engine's own internal progression, and once published on the bus
 // so the event log/UI graph still see job.httpjson.completed/.failed -- the
 // same reasoning that keeps EmitJobHttpJsonSubmittedFx's bus publish alive
-// unchanged. Not published by LocalWorkerJobExecutor itself (packages/
-// integrations' engine-worker subpath) -- that adapter is a pure translator
-// with no bus dependency; this effect already builds the AnyEvent it needs
-// for JobFinishedMsg, so publishing the same object here is the smallest
-// addition, not a second responsibility bolted onto the adapter.
+// unchanged. Deliberately published here rather than by whatever implements
+// JobExecutionPort: this effect already builds the AnyEvent it needs for
+// JobFinishedMsg, so publishing that same object costs nothing, and it means
+// the observability record doesn't depend on which implementation is wired
+// in -- a local in-process worker and a future remote one behave identically.
 export const executeHttpJsonJobFx: EffectHandler<"ExecuteHttpJsonJob"> = async (
   effect: ExecuteHttpJsonJobFx,
   deps: EffectHandlerDeps,
 ) => {
-  const outcome = await deps.jobExecutor.execute(effect.request);
+  const outcome = await deps.jobExecution.execute(effect.request);
 
   const emitOptions = {
     ...effect.scope,

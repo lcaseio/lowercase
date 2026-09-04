@@ -1,5 +1,9 @@
 import { resolveJsonPath } from "@lcase/json-ref-binder";
-import type { ArtifactReadWritePort } from "@lcase/ports";
+import type {
+  ArtifactReadWritePort,
+  JobExecutionOptions,
+  JobExecutionPort,
+} from "@lcase/ports";
 import type { Ref } from "@lcase/types";
 import {
   storeExecutionOutputs,
@@ -14,11 +18,10 @@ import {
 import type {
   ArtifactRef,
   ExecuteJobCommand,
+  JobCommandExecutor,
   JobExecutionError,
-  JobExecutionOptions,
   JobResult,
 } from "./job.contracts.js";
-import type { JobExecutionPort } from "./ports/inbound/job-execution.port.js";
 import type { ResourcePermitPort } from "./ports/outbound/resource-permit.port.js";
 import type { WorkerLifecycleEventSink } from "./ports/outbound/worker-event-sink.port.js";
 import { combineForProtocolRun } from "./protocol/combine-for-protocol-run.js";
@@ -36,6 +39,7 @@ import {
   type WorkerCapacityTelemetry,
   withWorkerCapacity,
 } from "./worker-capacity.js";
+import { withMessageJobExecution } from "./message-job-execution.js";
 import {
   makeJobExecutionCancelledEvent,
   makeJobExecutionCompletedEvent,
@@ -103,7 +107,7 @@ function nonRetryableError(
   return { code, message, retryable: false };
 }
 
-class Worker implements JobExecutionPort {
+class Worker implements JobCommandExecutor {
   readonly #deps: WorkerDeps;
   readonly #config: WorkerCoreConfig;
   readonly #resolveKey: ResourceKeyResolver;
@@ -337,14 +341,30 @@ class Worker implements JobExecutionPort {
   }
 }
 
-export function createWorker(
+// Everything inside the message boundary: the core runs one job, the capacity
+// decorator gates concurrency around it, both speaking worker's own command
+// vocabulary. Exported separately from createWorker so worker's own tests can
+// drive job execution in command terms -- which is the level they actually
+// exercise (refs, protocol, storage, cancellation) -- without every fixture
+// having to be dressed up as a message first.
+export function createCommandWorker(
   deps: WorkerDeps,
   config: WorkerCoreConfig,
   telemetry?: WorkerCapacityTelemetry,
-): JobExecutionPort {
+): JobCommandExecutor {
   return withWorkerCapacity(
     new Worker(deps, config),
     { maxConcurrentJobs: config.maxConcurrentJobs },
     telemetry,
   );
+}
+
+// The worker as callers depend on it: the command layers above, wrapped in
+// the message translation that provides the shared JobExecutionPort.
+export function createWorker(
+  deps: WorkerDeps,
+  config: WorkerCoreConfig,
+  telemetry?: WorkerCapacityTelemetry,
+): JobExecutionPort {
+  return withMessageJobExecution(createCommandWorker(deps, config, telemetry));
 }
