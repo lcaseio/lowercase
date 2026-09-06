@@ -30,6 +30,14 @@ implementation gave real evidence to check it against:
   services and components, worked out against `packages/artifacts` and checked
   against two other real/hypothetical cases.
 
+## Cross-component build guides
+
+- [`in-process-messaging/`](./in-process-messaging/) — a deliberately small,
+  runtime-owned Message router and per-subscription mailbox, plus the first
+  Engine/Worker/Observability vertical slice. It preserves a growth path to the
+  fuller local and Redis-backed carrier without requiring all of that machinery
+  in the MVP.
+
 ## Per-component build plans
 
 Concrete, phased plans that apply the model to one real package, written once a
