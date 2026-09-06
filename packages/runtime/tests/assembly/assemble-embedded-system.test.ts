@@ -5,14 +5,17 @@ import {
   type EmbeddedSystemAssemblyInput,
 } from "../../src/assembly/assemble-embedded-system.js";
 
-function testResource(
+function testResource<T = unknown>(
   id: string,
   callOrder: string[],
   opts: { failStart?: boolean; unhealthy?: string } = {},
-): ManagedResource<unknown> {
+): ManagedResource<T> {
   return {
     id,
-    instance: undefined,
+    // These doubles only exercise start/stop ordering and health, so the
+    // instance is never read -- the cast keeps one helper usable for every
+    // typed slot instead of inventing a fake per port.
+    instance: undefined as T,
     async start() {
       if (opts.failStart) throw new Error(`${id} failed to start`);
       callOrder.push(`start:${id}`);
@@ -30,9 +33,7 @@ function testResource(
 
 function testInput(
   callOrder: string[],
-  overrides: Partial<
-    Record<keyof EmbeddedSystemAssemblyInput, ManagedResource<unknown>>
-  > = {},
+  overrides: Partial<EmbeddedSystemAssemblyInput> = {},
 ): EmbeddedSystemAssemblyInput {
   return {
     bus: overrides.bus ?? testResource("bus", callOrder),
