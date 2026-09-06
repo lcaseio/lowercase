@@ -53,7 +53,7 @@ export function buildObservability(
     for (const sink of config.sinks) {
       // TODO: move sink settings to config, not hardcoded
       switch (sink) {
-        case "console-log-sink":
+        case "console-log-sink": {
           const consoleSink = new ConsoleSink({
             allVerbose: false,
             verboseEvents: new Set([
@@ -65,6 +65,7 @@ export function buildObservability(
           sinks["console-log-sink"] = consoleSink;
           tap.attachSink(consoleSink);
           break;
+        }
         case "websocket-sink":
           if (config.webSocketPort !== undefined) {
             const webSocketServerSink = new WebSocketServerSink(
@@ -74,7 +75,7 @@ export function buildObservability(
             tap.attachSink(webSocketServerSink);
           }
           break;
-        case "replay-jsonl-sink":
+        case "replay-jsonl-sink": {
           const absoluteDirPath = path.resolve(
             process.cwd(),
             "lcase-db/replay",
@@ -82,8 +83,8 @@ export function buildObservability(
           const replaySink = new ReplaySink(new JsonlEventLog(absoluteDirPath));
           sinks["replay-jsonl-sink"] = replaySink;
           tap.attachSink(replaySink);
-
           break;
+        }
         default:
           break;
       }
