@@ -10,9 +10,9 @@ export const jobFinishedReducer: Reducer<JobFinishedMsg> = (
     const stepId = message.event.stepid;
 
     const run = draft.runs[runId];
-    const step = run.steps[stepId];
-
     if (!run) return;
+
+    const step = run.steps[stepId];
     if (!step) return;
 
     if (message.event.data.status === "success") {

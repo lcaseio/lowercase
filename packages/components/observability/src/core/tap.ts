@@ -17,17 +17,30 @@ export class ObservabilityTap implements ObservabilityTapPort {
   }
 
   start() {
-    this.bus.subscribe(this.#subscribeTopic, async (event: AnyEvent) => {
-      for (const sink of this.#sinks.values()) {
-        try {
-          await sink.handle(event);
-        } catch (err) {
-          console.error(
-            `[observability-tap] sink '${sink.id}' failed to handle event: ${err}`,
-          );
-        }
+    this.bus.subscribe(this.#subscribeTopic, (event: AnyEvent) =>
+      this.ingest(event),
+    );
+  }
+
+  /**
+   * Fan one event to every configured sink, best-effort: a failing sink is
+   * reported and the rest still run.
+   *
+   * Public and bus-independent so an event can reach observability by any
+   * route -- the legacy bus subscription above is one caller, and a Message
+   * subscription is another. Both get identical fan-out because there is only
+   * one loop.
+   */
+  async ingest(event: AnyEvent): Promise<void> {
+    for (const sink of this.#sinks.values()) {
+      try {
+        await sink.handle(event);
+      } catch (err) {
+        console.error(
+          `[observability-tap] sink '${sink.id}' failed to handle event: ${err}`,
+        );
       }
-    });
+    }
   }
 
   attachSink(sink: EventSink) {

@@ -8,8 +8,9 @@ import {
 import type { StoredExecutionOutputs } from "./job-result.factories.js";
 import type {
   ArtifactRef,
-  ExecuteJobCommand,
+  HttpJsonWork,
   JobExecutionError,
+  JobRunContext,
 } from "./job.contracts.js";
 import type { ResourcePermitPort } from "./ports/outbound/resource-permit.port.js";
 import { combineForProtocolRun } from "./protocol/combine-for-protocol-run.js";
@@ -85,19 +86,18 @@ export class JobRunner {
   }
 
   async run(
-    command: ExecuteJobCommand,
-    callerSignal?: AbortSignal,
+    work: HttpJsonWork,
+    context: JobRunContext,
   ): Promise<JobRunOutcome> {
-    const prepared = await this.#prepareProtocolRun(command);
+    const prepared = await this.#prepareProtocolRun(work);
     if (!prepared.ok) {
       return { kind: "failed", error: prepared.error };
     }
 
     const protocolRun = await this.#runProtocol(
-      command,
+      context,
       prepared.request,
       prepared.resourceKey,
-      callerSignal,
     );
 
     if (protocolRun.kind === "cancelled") {
@@ -127,7 +127,7 @@ export class JobRunner {
     const stored = await storeExecutionOutputs(
       this.#deps.artifacts,
       protocolResult.payload,
-      command.exports,
+      work.exportRefs,
     );
     if (!stored.ok) {
       return { kind: "failed", error: stored.error, output: stored.output };
@@ -137,14 +137,14 @@ export class JobRunner {
   }
 
   async #prepareProtocolRun(
-    command: ExecuteJobCommand,
+    work: HttpJsonWork,
   ): Promise<PrepareProtocolRunOutcome> {
-    const refsOutcome = await this.#resolveRefs(command.refs);
+    const refsOutcome = await this.#resolveRefs(work.refs);
     if (!refsOutcome.ok) return refsOutcome;
 
     const materialized = materializeHttpJsonRequest(
-      command.protocol,
-      command.refs,
+      work.protocol,
+      work.refs,
       refsOutcome.resolved,
     );
     if (!materialized.ok) {
@@ -154,10 +154,11 @@ export class JobRunner {
       };
     }
 
-    const keyResult = this.#resolveKey(
-      materialized.request,
-      command.resourceHint,
-    );
+    // No hint argument: nothing in the system has ever produced a
+    // ResourceHint, so every key derives from the request's own origin. A
+    // named-credential hint needs a real producer before the parameter earns
+    // its place back here.
+    const keyResult = this.#resolveKey(materialized.request);
     if (!keyResult.ok) {
       return {
         ok: false,
@@ -176,23 +177,21 @@ export class JobRunner {
   }
 
   async #runProtocol(
-    command: ExecuteJobCommand,
+    context: JobRunContext,
     request: ResolvedHttpJsonRequest,
     resourceKey: string,
-    callerSignal: AbortSignal | undefined,
   ): Promise<ProtocolRunOutcome> {
     const combined = combineForProtocolRun(
-      callerSignal,
+      context.signal,
       this.#config.protocolTimeoutMs,
     );
     try {
       return {
         kind: "result",
         result: await this.#runProtocolWithPermit(
-          command,
+          context,
           request,
           resourceKey,
-          callerSignal,
           combined.signal,
         ),
       };
@@ -207,16 +206,15 @@ export class JobRunner {
   }
 
   async #runProtocolWithPermit(
-    command: ExecuteJobCommand,
+    context: JobRunContext,
     request: ResolvedHttpJsonRequest,
     resourceKey: string,
-    callerSignal: AbortSignal | undefined,
     protocolSignal: AbortSignal,
   ): Promise<ProtocolResult> {
     const { permits, protocol } = this.#deps;
     const grant = await permits.acquire(
-      { requestId: command.executionId, resourceKey },
-      { signal: callerSignal },
+      { requestId: context.permitRequestId, resourceKey },
+      { signal: context.signal },
     );
 
     try {

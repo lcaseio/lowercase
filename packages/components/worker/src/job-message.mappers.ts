@@ -15,10 +15,6 @@ export function toExecuteJobCommand(
   request: JobExecutionRequest,
 ): ExecuteJobCommand {
   return {
-    // No retry loop exists on this path yet -- one dispatch is always exactly
-    // one execution attempt, so reusing jobid here is a temporary mapping,
-    // not a decision that executionId should permanently equal jobId.
-    executionId: request.jobid,
     jobId: request.jobid,
     runId: request.runid,
     stepId: request.stepid,
@@ -36,7 +32,7 @@ export function toExecuteJobCommand(
         : {}),
     },
     refs: request.refs,
-    exports: request.exportRefs,
+    exportRefs: request.exportRefs,
   };
 }
 

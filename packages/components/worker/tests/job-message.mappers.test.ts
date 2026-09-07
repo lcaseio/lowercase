@@ -25,7 +25,7 @@ function makeRequest(
 }
 
 describe("toExecuteJobCommand", () => {
-  it("maps request fields onto ExecuteJobCommand, reusing jobid as executionId", () => {
+  it("maps request fields onto ExecuteJobCommand without renaming any of them", () => {
     const request = makeRequest({
       method: "POST",
       headers: { "x-test": "1" },
@@ -53,7 +53,6 @@ describe("toExecuteJobCommand", () => {
     });
 
     expect(toExecuteJobCommand(request)).toEqual({
-      executionId: "job-1",
       jobId: "job-1",
       runId: "run-1",
       stepId: "step-1",
@@ -66,13 +65,27 @@ describe("toExecuteJobCommand", () => {
         body: request.body,
       },
       refs: request.refs,
-      exports: request.exportRefs,
+      exportRefs: request.exportRefs,
     });
   });
 
-  it("passes exports as undefined when the request has none", () => {
+  it("passes exportRefs as undefined when the request has none", () => {
     const command = toExecuteJobCommand(makeRequest());
-    expect(command.exports).toBeUndefined();
+    expect(command.exportRefs).toBeUndefined();
+  });
+
+  // Documenting a deliberately preserved gap rather than a desired behavior:
+  // `args` is part of the submitted schema and has never had any HTTP
+  // execution semantics. It is dropped here, and nothing downstream of this
+  // point can see it. Giving it meaning, or removing it from the schema, is
+  // separate work -- this test exists so the silence is a decision.
+  it("drops args, which has no HTTP execution semantics anywhere in worker", () => {
+    const command = toExecuteJobCommand(
+      makeRequest({ args: { retries: 3, mode: "fast" } }),
+    );
+
+    expect(command).not.toHaveProperty("args");
+    expect(command.protocol).not.toHaveProperty("args");
   });
 });
 
@@ -80,7 +93,6 @@ describe("toJobExecutionOutcome", () => {
   it("passes a completed JobResult through unchanged in shape", () => {
     const result: JobResult = {
       status: "completed",
-      executionId: "job-1",
       jobId: "job-1",
       output: { hash: "output-hash" },
       exports: { thing: { hash: "thing-hash" } },
@@ -95,7 +107,6 @@ describe("toJobExecutionOutcome", () => {
   it("passes a failed JobResult through unchanged in shape", () => {
     const result: JobResult = {
       status: "failed",
-      executionId: "job-1",
       jobId: "job-1",
       error: { code: "HTTP_NETWORK_FAILED", message: "boom", retryable: true },
     };

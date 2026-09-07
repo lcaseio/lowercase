@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import type { StepScope } from "@lcase/types";
+import type { JobScope, StepScope } from "@lcase/types";
 
 // Unit-separator control character (0x1F), not a plain string join:
 // identity-key parts (ids) could in principle contain other characters but
@@ -47,6 +47,18 @@ export const stepSpanConfig: SpanIdentityConfig<StepScope> = {
 // `unknown`, not `any`:
 // `unknown` keeps the one necessary cast confined to deriveSpanFor's read site
 // below instead of letting `any` spread.
+// A job's parent is the step that submitted it. `parent.identityKey` derives
+// exactly what stepSpanConfig derives for the same scope, so a job event's
+// parentspanid *is* the step event's spanid -- the linkage holds by matching
+// derivation, with no coordinator or span store.
+export const jobSpanConfig: SpanIdentityConfig<JobScope> = {
+  domain: "job",
+  // jobid included: a step may submit more than one job over its life (retry,
+  // fan-out), and each submission is its own span under the step.
+  identityKey: (s) => [s.runid, s.stepid, s.jobid],
+  parent: { domain: "step", identityKey: (s) => [s.runid, s.stepid] },
+};
+
 export const spanConfigByDomain: Partial<
   Record<string, SpanIdentityConfig<unknown>>
 > = {
@@ -58,6 +70,7 @@ export const spanConfigByDomain: Partial<
   // ever populated with a domain's own config under its own key, same reasoning
   // as deriveSpanFor's cast below.
   step: stepSpanConfig as SpanIdentityConfig<unknown>,
+  job: jobSpanConfig as SpanIdentityConfig<unknown>,
 };
 
 /**

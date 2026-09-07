@@ -44,9 +44,6 @@ export type WorkerConfig = {
 };
 
 function validateCommand(command: ExecuteJobCommand): void {
-  if (!command.executionId) {
-    throw new Error("ExecuteJobCommand.executionId is required");
-  }
   if (!command.jobId) {
     throw new Error("ExecuteJobCommand.jobId is required");
   }
@@ -132,7 +129,18 @@ export class Worker {
 
     await this.#lifecycle.record(makeJobExecutionStartedEvent(command));
 
-    const outcome = await this.#runner.run(command, callerSignal);
+    // The one place job identity stops travelling: JobRunner receives the work
+    // and the mechanics for this invocation, never run/step/trace/source.
+    // Worker keeps those to record facts and, once the Message boundary is
+    // live, to construct the terminal from the submission it retains.
+    const outcome = await this.#runner.run(
+      {
+        protocol: command.protocol,
+        refs: command.refs,
+        exportRefs: command.exportRefs,
+      },
+      { permitRequestId: command.jobId, signal: callerSignal },
+    );
     switch (outcome.kind) {
       case "completed": {
         const { output, exports } = outcome.outputs;

@@ -48,7 +48,6 @@ describe("Worker", () => {
     if (result.status !== "completed") {
       throw new Error(`expected completed, got ${result.status}`);
     }
-    expect(result.executionId).toBe(command.executionId);
     expect(result.jobId).toBe(command.jobId);
     expect(result.output.hash).toMatch(/^fake-hash-/);
 
@@ -75,7 +74,6 @@ describe("Worker", () => {
 
     await expect(worker.executeCommand(command)).resolves.toMatchObject({
       status: "failed",
-      executionId: command.executionId,
       jobId: command.jobId,
       error: protocolError,
     });
@@ -101,7 +99,6 @@ describe("Worker", () => {
 
     expect(result).toMatchObject({
       status: "failed",
-      executionId: command.executionId,
       jobId: command.jobId,
       error: { code: "CANCELLED", retryable: false },
     });
@@ -166,7 +163,7 @@ describe("Worker", () => {
     );
     const command = makeCommand({
       protocol: { kind: "httpjson", url: "https://example.test/greet" },
-      exports: {
+      exportRefs: {
         greeting: {
           exportName: "greeting",
           valuePath: ["output", "greeting"],
@@ -214,8 +211,8 @@ describe("Worker", () => {
         contentType: "application/json",
         content: { greeting: "hi" },
       });
-      expect(outcome).not.toHaveProperty("executionId");
       expect(outcome).not.toHaveProperty("jobId");
+      expect(outcome).not.toHaveProperty("runId");
       expect(protocolExecute).toHaveBeenCalledTimes(1);
       const [requestArg] = protocolExecute.mock.calls[0]!;
       expect(requestArg).toMatchObject({

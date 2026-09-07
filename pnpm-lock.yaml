@@ -571,6 +571,9 @@ importers:
 
   packages/components/worker:
     dependencies:
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../events
       '@lcase/json-ref-binder':
         specifier: workspace:*
         version: link:../../functional-core/json-ref-binder
