@@ -4,7 +4,7 @@
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Finishes the incremental real-ESLint and test-typechecking migrations package by package, and fills the remaining gaps in the `clean-*` script convention. Its own arc rather than a section of an adapter arc because none of this work swaps an infrastructure backend — it is the verification floor the rest of the initiative gets built on.
 
-## Change C10 - Engine package tooling: real ESLint, test typecheck, `clean-*` scripts - in progress
+## Change C10 - Engine package tooling: real ESLint, test typecheck, `clean-*` scripts - merged (PR #369)
 
 ### Discussion
 

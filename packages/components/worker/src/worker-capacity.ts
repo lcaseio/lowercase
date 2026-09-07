@@ -1,11 +1,5 @@
-import type { JobExecutionOptions } from "@lcase/ports";
-import { createSemaphore } from "./concurrency/semaphore.js";
-import { cancelledResult } from "./job-result.factories.js";
-import type {
-  ExecuteJobCommand,
-  JobCommandExecutor,
-  JobResult,
-} from "./job.contracts.js";
+import { createSemaphore, type Semaphore } from "./concurrency/semaphore.js";
+import type { ExecuteJobCommand } from "./job.contracts.js";
 
 export type WorkerCapacityConfig = {
   maxConcurrentJobs: number;
@@ -21,41 +15,60 @@ export type WorkerCapacityTelemetry = {
   onReleased?(command: ExecuteJobCommand): void;
 };
 
-// A decorator, not internal Worker state -- keeps the core focused on
-// running one job, with capacity as a separate, composable concern wrapped
-// around it.
-export function withWorkerCapacity(
-  core: JobCommandExecutor,
-  config: WorkerCapacityConfig,
-  telemetry?: WorkerCapacityTelemetry,
-): JobCommandExecutor {
-  const semaphore = createSemaphore(config.maxConcurrentJobs);
+export type CapacityAcquisition =
+  { kind: "granted"; release(): void } | { kind: "cancelled" };
 
-  return {
-    async execute(
-      command: ExecuteJobCommand,
-      options?: JobExecutionOptions,
-    ): Promise<JobResult> {
-      const signal = options?.signal;
-      if (signal?.aborted) {
-        return cancelledResult(command);
-      }
+// Worker's component-wide active-job bound, owned by Worker rather than
+// wrapped around it. The invariant has to stay Worker's regardless of how
+// work arrives: a carrier's own in-flight limit bounds what that carrier
+// presents, which stops being the same gate the moment a second subscription
+// binds to the same Worker or a log-backed host reads in batches.
+export class WorkerCapacity {
+  readonly #semaphore: Semaphore;
+  readonly #telemetry: WorkerCapacityTelemetry | undefined;
 
-      telemetry?.onWaitStart?.(command);
-      const outcome = await semaphore.acquire(signal);
-      if (outcome.kind === "cancelled") {
-        telemetry?.onCancelled?.(command);
-        // No lifecycle facts recorded -- execution never reached "started".
-        return cancelledResult(command);
-      }
-      telemetry?.onGranted?.(command);
+  constructor(
+    config: WorkerCapacityConfig,
+    telemetry?: WorkerCapacityTelemetry,
+  ) {
+    this.#semaphore = createSemaphore(config.maxConcurrentJobs);
+    this.#telemetry = telemetry;
+  }
 
-      try {
-        return await core.execute(command, options);
-      } finally {
+  get available(): number {
+    return this.#semaphore.available;
+  }
+
+  async acquire(
+    command: ExecuteJobCommand,
+    callerSignal?: AbortSignal,
+  ): Promise<CapacityAcquisition> {
+    // An already-abandoned job never joins the queue, so it produces no wait
+    // or cancellation telemetry -- there was nothing to wait for or cancel.
+    if (callerSignal?.aborted) {
+      return { kind: "cancelled" };
+    }
+
+    this.#telemetry?.onWaitStart?.(command);
+    const outcome = await this.#semaphore.acquire(callerSignal);
+    if (outcome.kind === "cancelled") {
+      this.#telemetry?.onCancelled?.(command);
+      return { kind: "cancelled" };
+    }
+    this.#telemetry?.onGranted?.(command);
+
+    // Handing `release` out makes double-release expressible in a way the
+    // previous decorator's internal `finally` did not, so guard it here
+    // rather than trusting every future call site not to inflate capacity.
+    let released = false;
+    return {
+      kind: "granted",
+      release: () => {
+        if (released) return;
+        released = true;
         outcome.release();
-        telemetry?.onReleased?.(command);
-      }
-    },
-  };
+        this.#telemetry?.onReleased?.(command);
+      },
+    };
+  }
 }

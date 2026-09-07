@@ -5,9 +5,10 @@ import type {
   JobResult,
 } from "./job.contracts.js";
 
-// Extracted out of worker.ts so worker-capacity.ts (which wraps Worker from
-// the outside) can build a CANCELLED result without an awkward import
-// direction back into the file it wraps.
+// Worker's terminal result construction, kept beside the command contracts
+// rather than inside worker.ts: JobRunner reports a modelled outcome and
+// Worker turns it into one of these, so the mapping from outcome to result is
+// worth reading in one place.
 
 export type StoredExecutionOutputs = {
   output: ArtifactRef;

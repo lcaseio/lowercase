@@ -41,8 +41,8 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C7     | `JobExecutorPort` envelope-fidelity fix (local only, prerequisite for C12)     | merged (PR #366) | [2]   |          |
 | C8     | Consolidate onto one `JobExecutionPort`; retire `packages/integrations`        | merged (PR #367) | [2]   |          |
 | C9     | In-process Message router + mailbox foundation (inert)                         | merged (PR #368) | [2]   |          |
-| C10    | Engine package tooling: real ESLint, test typecheck, `clean-*` scripts         | in progress      | [5]   |          |
-| C11    | Worker component root + `JobRunner` (behavior-preserving runway)               | not started      | [2]   |          |
+| C10    | Engine package tooling: real ESLint, test typecheck, `clean-*` scripts         | merged (PR #369) | [5]   |          |
+| C11    | Worker component root + `JobRunner` (behavior-preserving runway)               | in progress      | [2]   |          |
 | C12    | Cut the HTTP JSON job conversation onto Messages                               | not started      | [2]   |          |
 | C13    | Log-backed (Redis) delivery under the same Message boundary                    | not started      | [2]   |          |
 | C14    | Postgres adapter (Prisma)                                                      | not started      | [4]   |          |
