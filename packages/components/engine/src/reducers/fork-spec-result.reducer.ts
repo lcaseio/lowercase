@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { EngineState, Reducer } from "../engine.types.js";
-import { ForkSpecResultMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
+import type { ForkSpecResultMsg } from "../types/message.types.js";
 
 export const forkSpecResultReducer: Reducer<ForkSpecResultMsg> = (
   state: EngineState,

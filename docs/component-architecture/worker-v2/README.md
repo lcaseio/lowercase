@@ -1,6 +1,13 @@
 # Worker V2 Architecture And Migration Guide
 
-Status: proposed implementation guide.
+Status: superseded implementation guide.
+
+> This guide is preserved as the point-in-time plan behind the merged Worker V2
+> rebuild in Initiative I4. For the current Worker direction, see
+> [Worker Component Architecture](../worker/README.md) and its
+> [migration guide](../worker/MIGRATION.md). In particular, the direct
+> request/return boundary and wrapper-based public Worker shape below must not
+> direct new work.
 
 This document describes how to build a new worker alongside the current backend and
 move toward port-driven component interaction without requiring a one-shot rewrite of

@@ -3,7 +3,6 @@ import type {
   EngineEffect,
   EngineState,
   EmitFlowCompletedFx,
-  WriteContextToDiskFx,
   RunFinishedMsg,
   EmitFlowFailedFx,
 } from "../engine.types.js";

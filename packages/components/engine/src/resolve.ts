@@ -1,5 +1,5 @@
 import type { StepArgs } from "@lcase/specs";
-import type { RunContext, StepContext } from "@lcase/types";
+import type { StepContext } from "@lcase/types";
 
 /**
  * internally here language is currently evolving.
@@ -77,7 +77,7 @@ export function extractPathValue<T = unknown>(
 export function parseArray(part: string): { key?: string; index?: string[] } {
   // pull out the name and any array index
   // not robust, just simple
-  const regex = /([a-zA-Z0-9\-\_]+)/gm;
+  const regex = /([a-zA-Z0-9\-_]+)/gm;
   const match = part.match(regex);
   if (!match) return {};
 
@@ -106,7 +106,7 @@ export function resolveStepArgs(
 
 // see if a string is a selector
 export function getSelector(arg: string): string | false {
-  const regex = /^\${([a-zA-Z0-9\-\[\]_\.]+)}$/; // ${text.like.this[3][3].ok}
+  const regex = /^\${([a-zA-Z0-9\-[\]_.]+)}$/; // ${text.like.this[3][3].ok}
   const match = arg.match(regex);
 
   if (!match) return false;

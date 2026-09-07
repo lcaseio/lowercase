@@ -1,7 +1,7 @@
 import type { RunContext } from "@lcase/types";
-import type { EngineState } from "../../src/engine.types";
-import { flowAnalysisB } from "./flow-analysis.state";
-import { flowDef } from "./flow-definition";
+import type { EngineState } from "../../src/engine.types.js";
+import { flowAnalysisB } from "./flow-analysis.state.js";
+import { flowDef } from "./flow-definition.js";
 
 export const runStartedNewState: EngineState = {
   runs: {

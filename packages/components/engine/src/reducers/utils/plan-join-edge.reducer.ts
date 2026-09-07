@@ -1,6 +1,6 @@
-import { Edge } from "@lcase/types";
-import { RunContext } from "@lcase/types";
-import { WritableDraft } from "immer";
+import type { Edge } from "@lcase/types";
+import type { RunContext } from "@lcase/types";
+import type { WritableDraft } from "immer";
 import { planControlEdge } from "./plan-control-edge.reducer.js";
 
 export function planJoinEdge(
@@ -26,7 +26,7 @@ export function planJoinEdge(
     }
   }
   if (allCompleted) {
-    run.steps[edge.endStepId].status === "completed";
+    run.steps[edge.endStepId].status = "completed";
     run.completedSteps[edge.endStepId] = true;
 
     if (!fa.outEdges[edge.endStepId]) return;
@@ -34,7 +34,7 @@ export function planJoinEdge(
 
     planControlEdge(joinOutEdge, run, "onSuccess");
   } else if (allFinished === true) {
-    run.steps[edge.endStepId].status === "failed";
+    run.steps[edge.endStepId].status = "failed";
     run.failedSteps[edge.endStepId] = true;
   }
 }

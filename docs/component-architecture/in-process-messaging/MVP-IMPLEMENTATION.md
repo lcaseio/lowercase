@@ -1,6 +1,7 @@
 # In-Process Messaging MVP — First Project Slice
 
-Status: proposed first-slice implementation guide.
+Status: active first-slice guide; the C9 mailbox foundation is implemented and
+the Worker runway plus live component cutover remain proposed.
 
 This document applies the in-process Message mailbox design to the repository as
 it exists now. It records the intended pivot, the first useful vertical slice,
@@ -20,10 +21,11 @@ and “What actually landed” workflow in
   delivery health, and Redis runner are intentionally deferred here.
 - [Swappable Infrastructure (I5)](../../initiatives/swappable-infrastructure/INITIATIVE.md)
   and its [Queue Adapter Arc](../../initiatives/swappable-infrastructure/arcs/queue-adapter.md)
-  hold the authoritative Change history and must record the pivot before the
-  implementation is planned.
-- [Worker V2](../worker-v2/README.md) defines the Worker core and capacity layers
-  this slice should reuse rather than rewrite.
+  hold the authoritative Change history and current implementation scope.
+- [Worker Component Architecture](../worker/README.md) defines the current
+  Worker root, collaborators, and Message boundary.
+- [Worker Migration](../worker/MIGRATION.md) defines the minimum structural
+  runway and the atomic live cutover this guide relies on.
 - [ADR-0005](../../adr/0005-package-tier-taxonomy.md) defines package ownership.
 
 ## Outcome
@@ -69,30 +71,21 @@ The thing to build is not a reusable mailbox framework in isolation. It is one
 small local router/mailbox implementation exercised immediately by one real,
 multi-hop component conversation.
 
-## Record the pivot before planning
+## Current planning boundary
 
-The current I5 Change index lists unstarted Changes C9–C11 for literal-event
-`JobExecutionPort`, a correlated Redis request client, and a runtime
-`direct | redis-streams` binding. Those entries reflect the earlier
-request/return direction and should not be implemented verbatim.
+I5 Change C9 has landed the inert messaging contracts, publication declaration
+helpers, router, and mailbox. It did not wire a component or change runtime
+behavior. The live HTTP JSON cutover remains the next protocol slice.
 
-Before making the code plan:
+The Worker review after C9 found one prerequisite the original slice guide did
+not express: establish a stable Worker component root before attaching the
+Message handler. That behavior-preserving runway may be its own Change or the
+first phase of the cutover, as the authoritative Initiative discussion decides.
+The three Message types must still move atomically in a running profile.
 
-1. Preserve merged Changes C4, C7, and C8 as history. They were useful evidence
-   and their merged descriptions must not be rewritten as if they never
-   happened.
-2. Reframe the still-unstarted sequence around the mailbox decision. Forecast
-   Change numbers may be reordered or replaced while none of those Changes has
-   landed.
-3. Record why local publication now means admission rather than Worker
-   completion, and why the correlated-client design is deferred or
-   superseded.
-4. Link the Change discussion to this guide and the fuller research report.
-5. Only then produce the concrete implementation plan required for the next
-   Change.
-
-This document does not itself assign or edit Change numbers. The Initiative and
-Arc are the authoritative indexes.
+Preserve merged Changes C4 and C7–C9 as point-in-time evidence. This document
+does not assign or edit Change numbers; the Initiative and Arc remain the
+authoritative indexes.
 
 ## Preserve, pause, and replace
 
@@ -101,8 +94,10 @@ Arc are the authoritative indexes.
 - `AnyEvent<T>` and the existing CloudEvent-shaped job schemas.
 - `buildEvent()` as the non-publishing construct-and-validate helper.
 - `MessageLogPort` and `RedisMessageLog` as lower-level remote log machinery.
-- `createCommandWorker()`, `ExecuteJobCommand`, `JobResult`, protocol
-  executors, artifact handling, Worker capacity, and resource permits.
+- Existing one-job behavior: fixed protocol executors, reference resolution,
+  artifact handling, modeled `JobResult`, Worker capacity, and resource permits.
+- `ExecuteJobCommand` as a temporary internal migration seam where it keeps the
+  cutover reviewable, not as the renewed component boundary.
 - Engine's reducer/planner/effect core and its existing `JobFinishedMsg` path.
 - Observability sinks and the EventBus for every unmigrated Message type.
 - Runtime as the only layer that imports and binds multiple components.
@@ -180,17 +175,28 @@ path. A narrow HTTP terminal handler can delegate to it in the first slice.
 
 ### Worker boundary
 
-[`createCommandWorker()`](../../../packages/components/worker/src/worker.ts)
-is the transport-free, capacity-decorated core the new Message handler should
-invoke.
+The current construction chain is approximately:
 
-The current outer wrapper in
-[`message-job-execution.ts`](../../../packages/components/worker/src/message-job-execution.ts)
-implements direct request/return. Its `JobExecutionRequest` is not a literal
-CloudEvent envelope: it flattens job scope and data, carries `traceId`, and omits
-canonical fields such as Message ID, source, time, and spec version. Do not
-reuse that type as the new Message contract despite comments calling it a
-message.
+```text
+new Worker(...)
+  -> withWorkerCapacity(...)
+  -> createCommandWorker(...)
+  -> withMessageJobExecution(...)
+  -> JobExecutionPort
+```
+
+Runtime therefore retains a narrowed direct-call object rather than one stable
+Worker component. Do not add a submitted-Message wrapper outside that chain.
+Follow the Worker migration guide first: make the public Worker own capacity,
+delegate one-job mechanics to a focused JobRunner, and let runtime retain the
+actual Worker. The new handler is a Worker method bound by runtime.
+
+The current direct `JobExecutionRequest` is not a literal CloudEvent envelope:
+it flattens job scope and data, carries `traceId`, and omits canonical fields
+such as Message ID, source, time, and spec version. Do not reuse that type as
+the new Message contract. Worker receives and retains the complete submitted
+Message; an internal projection is justified only where execution meaning
+actually differs.
 
 Worker currently emits a separate internal `WorkerLifecycleEvent` vocabulary
 through a console sink. That diagnostic path is not the authoritative
@@ -199,21 +205,22 @@ boundary constructs the one canonical terminal Message; retiring or unifying
 the internal lifecycle vocabulary can be a focused follow-up.
 
 `JobExecutionOptions` currently lives in the same direct-port file as
-`JobExecutionPort`, but Worker core, capacity, and command contracts still use
-its `AbortSignal`. Before deleting that port file, rehome the option as a
-Worker-internal type such as `ExecuteJobOptions`. This preserves local core
-cancellation without pretending an `AbortSignal` can be carried in a Message.
+`JobExecutionPort`, but Worker execution still uses its `AbortSignal`. Before
+deleting that port file, rehome the option as Worker-internal execution control.
+This preserves local cancellation without pretending an `AbortSignal` can be
+carried in a Message.
 
 `buildEvent()` also requires a Message `source`, while current `WorkerConfig`
 has no Worker identity. The local profile must pass an explicit Worker source
-into the boundary factory—for example, a local Worker source chosen in Change
+into Worker construction—for example, a local Worker source chosen in Change
 discussion. Terminal Messages must identify Worker as their source rather than
 silently retaining Engine attribution.
 
 The Worker architecture test currently bans `AnyEvent` imports across every
-Worker source file. Narrow the rule so core, protocol, storage, capacity, and
-domain files remain Message-transport-free while an explicitly named
-`message-boundary/` directory may import the envelope types it exists to handle.
+Worker source file. Narrow the rule so protocol, storage, permits, and focused
+execution files remain Message-envelope-free while the Worker root and an
+explicit `messaging/` boundary may import the envelope types they exist to
+handle.
 
 ### Observability
 
@@ -307,18 +314,18 @@ packages/
   ports/
     src/
       messaging/
-        message-publisher.port.ts            # add
-        message-handler.ts                   # add
-        message-topology.types.ts             # add stable declarations
-        index.ts                             # add
-      index.ts                               # export messaging contracts
+        message-publisher.port.ts            # landed C9
+        message-handler.ts                   # landed C9
+        message-topology.types.ts            # landed C9
+        index.ts                             # landed C9
+      index.ts                               # messaging exports landed C9
 
   runtime/
     src/
       messaging/
         in-process/
-          in-process-message-router.ts       # add
-          subscription-mailbox.ts            # add
+          in-process-message-router.ts       # landed C9
+          subscription-mailbox.ts            # landed C9
         http-job.topology.ts                  # add declarations/bindings
       profiles/
         local-system/
@@ -330,8 +337,8 @@ packages/
         messaging.config.ts                   # `in-process` vocabulary
     tests/
       messaging/
-        subscription-mailbox.test.ts          # add
-        in-process-message-router.test.ts      # add
+        subscription-mailbox.test.ts          # landed C9
+        in-process-message-router.test.ts      # landed C9
         http-job.vertical-slice.test.ts        # add
 
   components/
@@ -348,10 +355,14 @@ packages/
 
     worker/
       src/
-        message-boundary/
-          httpjson-submitted.handler.ts       # add
-          httpjson-terminal.factory.ts        # add
-        index.ts                              # export boundary factory
+        worker.ts                             # stable component root + handler
+        execution/
+          job-runner.ts                       # focused one-job algorithm
+          worker-capacity.ts                  # owned capacity collaborator
+        messaging/
+          httpjson-submission.ts              # pure interpretation/projection
+          worker-messages.ts                  # canonical envelope construction
+        index.ts                              # export Worker construction
       tests/
         architecture.test.ts                  # permit boundary-only AnyEvent
       package.json                            # add runtime events dependency
@@ -407,9 +418,9 @@ A simple runtime construction order is:
    declarations.
 2. Create the in-process router from those declarations.
 3. Resolve declaration-bound command and terminal publishers.
-4. Build the Worker command core.
-5. Build the Worker Message handler with the command core and terminal
-   publisher.
+4. Build the actual Worker with its JobRunner, owned capacity collaborator,
+   terminal publisher, and explicit source.
+5. Retain that Worker and use its submitted-Message method as the handler.
 6. Build Engine with the command publisher.
 7. Build Observability and expose its bus-independent ingestion handler.
 8. Bind Worker, Engine, and Observability handlers to the four declared
@@ -426,44 +437,53 @@ do not expose registration to components or application code.
 This is durable sequencing guidance. The actual Change plan may combine or
 split steps while preserving the authoritative cutover rule.
 
-### 1. Add contracts and topology declarations
+### 1. Add messaging contracts and declaration helpers — landed in C9
 
-- Add `MessageOf<T>`, `MessagePublisher<T>`, and `MessageHandler<T>` under
+- C9 added `MessageOf<T>`, `MessagePublisher<T>`, and `MessageHandler<T>` under
   `packages/ports/src/messaging`.
-- Add stable publication and logical-subscription declaration types beside
+- It added stable publication and logical-subscription declaration types beside
   them; runtime owns their values even though the shared types live in ports.
-- Export these types from `@lcase/ports` without exposing a router or mailbox.
-- Declare the two HTTP job publications and four subscription IDs.
-- Test duplicate IDs, unknown publication references, missing local handlers,
-  and publication of an undeclared type.
+- It exported these types from `@lcase/ports` without exposing a router or
+  mailbox, and added runtime-owned declaration helpers.
+- It tested type authority and generic completeness without declaring the
+  concrete HTTP job topology values.
 
-Do not add subscription lifecycle, transport IDs, `MessageLogPort` methods,
-capacity, retry, health, or dynamic topic APIs.
+The two HTTP job publications and four subscription IDs are added only during
+the live cutover described below.
 
-### 2. Build the local router and mailbox
+C9 deliberately did not add subscription lifecycle, transport IDs,
+`MessageLogPort` methods, shared component capacity, retry, health, or dynamic
+topic APIs.
 
-- Implement one unbounded FIFO queue per logical subscription.
-- Schedule delivery asynchronously; never invoke a handler within the publish
-  call stack.
-- Process one Message at a time per mailbox.
-- Prepare independent immutable snapshots for all fanout branches before
+### 2. Build the local router and mailbox — landed in C9
+
+- C9 implemented one unbounded FIFO queue per logical subscription.
+- It schedules delivery asynchronously and never invokes a handler within the
+  publish call stack.
+- It processes up to the binding's positive `maxInFlight`, defaulting to one.
+- It prepares independent immutable snapshots for all fanout branches before
   enqueueing any branch.
-- Catch and report handler failures with identity context, then continue.
-- Track global outstanding deliveries and expose runtime/test-only
+- It catches and reports handler failures with identity context, then continues.
+- It tracks global outstanding deliveries and exposes runtime/test-only
   `whenIdle()`.
-- Test the full semantics listed in the architecture README before component
+- Its contract tests cover the implemented semantics before component
   integration.
 
 Do not add backpressure or graceful draining as “small extras.” Their hard part
 is policy, not queue data structures.
 
-### 3. Add the Worker Message edge
+### 3. Establish Worker and add its Message boundary
 
-- Start from `createCommandWorker()` so the existing Worker core, capacity,
-  protocol, storage, cancellation, and result behavior remain unchanged.
-- Accept the literal `AnyEvent<"job.httpjson.submitted">` envelope.
-- Translate it to `ExecuteJobCommand` inside Worker.
-- Execute the core and map a modeled `JobResult` to one literal
+- Complete the minimum structural runway in the Worker migration guide without
+  changing live behavior: runtime must retain one actual Worker, capacity must
+  be an owned collaborator rather than a same-interface decorator, and one-job
+  mechanics must have a focused internal home.
+- Add the submitted-Message handler to that Worker; do not wrap it in another
+  public object or expose the internal runner to runtime.
+- Accept and retain the literal `AnyEvent<"job.httpjson.submitted">` envelope.
+- Project it to `ExecuteJobCommand` only as a temporary internal seam where that
+  keeps existing execution behavior intact.
+- Delegate execution and map a modeled `JobResult` to one literal
   `job.httpjson.completed` or `job.httpjson.failed` Message.
 - Construct that terminal Message once with `buildEvent()` and the submitted
   Message's scope/trace context.
@@ -473,9 +493,10 @@ is policy, not queue data structures.
 - If the core unexpectedly throws instead of returning a modeled result, reject
   the handler and publish no invented business terminal Message.
 
-Narrow Worker's architecture test to permit envelope imports only in the
-message-boundary directory. Do not let Message transport types spread into its
-core, protocol executors, capacity, artifacts, or permit code.
+Narrow Worker's architecture test to permit envelope imports only in the Worker
+root and its explicit messaging boundary. Do not let Message envelope or
+carrier types spread into JobRunner, protocol executors, capacity, artifacts,
+or permit code.
 
 ### 4. Move Engine onto publication and terminal ingestion
 
@@ -559,7 +580,8 @@ The local implementation is not complete without tests proving:
 
 1. `publish()` resolves while a recipient handler remains blocked.
 2. A handler is never called inline during `publish()`.
-3. One subscription processes Messages FIFO with exactly one active handler.
+3. A `maxInFlight: 1` subscription processes Messages FIFO with exactly one
+   active handler, while a larger configured bound is never exceeded.
 4. Two subscriptions receive independent copies of one publication.
 5. A blocked Observability subscription does not block Worker or Engine.
 6. A failed subscription does not affect another subscription's copy.
@@ -630,7 +652,8 @@ Also retain or add architecture tests proving:
 
 - components do not import one another;
 - components do not import runtime or concrete carrier implementations;
-- Worker envelope imports remain isolated to `message-boundary/`;
+- Worker envelope imports remain isolated to the Worker root and its explicit
+  `messaging/` boundary;
 - the EventBus does not receive the three migrated Message types; and
 - no active Engine dependency remains on direct `JobExecutionPort` after
   cutover.
@@ -661,10 +684,12 @@ The first slice is done when:
 
 ### Throughput
 
-The Worker subscription processes one job at a time even though Worker core
-already supports `maxConcurrentJobs`. Correctness comes before restoring local
-parallel throughput. Configurable mailbox concurrency is the likely first
-behavioral improvement after instrumentation.
+The C9 foundation supports per-subscription `maxInFlight`. The Worker binding
+uses `maxConcurrentJobs`, while Engine and Observability remain at one for this
+slice. This preserves current Worker parallelism without pretending mailbox
+configuration is the final component invariant: Worker still owns and enforces
+its execution capacity. Shared capacity across several subscriptions and fair
+scheduling remain later work.
 
 ### Shutdown
 
@@ -729,21 +754,17 @@ Broader truthful completion requires later Engine and Observability hardening.
 
 ## If one Change becomes too large
 
-The protocol slice must be atomic in a running profile, but the code can be
-reviewed in two Changes without creating dual authority:
+The inert messaging foundation already landed in C9. The remaining work may be
+reviewed as a behavior-preserving Worker runway followed by the live protocol
+cutover. The runway may reorganize Worker ownership and preserve the current
+direct route temporarily; it must not add a second live Message route.
 
-1. Add the inert contracts, topology declarations, local router/mailbox, and
-   their contract tests. Do not wire components yet.
-2. Add all three component boundaries and cut the complete HTTP conversation
-   over together.
+The protocol slice itself remains atomic: add all three component boundaries
+and cut the complete HTTP conversation over together.
 
 Do not split the live cutover into “submitted first” and “terminal later,” and
 do not merge a state where Engine can advance from both a direct return and a
 terminal subscription.
-
-If the implementation remains reviewable, one focused Change containing the
-foundation and one vertical use case is preferable because it proves the
-abstraction immediately.
 
 ## After the MVP
 
@@ -753,11 +774,12 @@ and choose the next problem from evidence.
 A reasonable progression is:
 
 1. queue-depth, failure-count, and handler-duration instrumentation;
-2. restore Worker throughput with controlled mailbox concurrency;
-3. strict shared Message codec and size reporting;
-4. graceful intake stop, causal drain, and seal;
-5. bounded capacity with an explicit non-deadlocking overflow policy;
-6. retained failures, health, and explicit retry where handlers are safe;
+2. strict shared Message codec and size reporting;
+3. graceful intake stop, causal drain, and seal;
+4. bounded capacity with an explicit non-deadlocking overflow policy;
+5. retained failures, health, and explicit retry where handlers are safe;
+6. shared capacity and fair scheduling when a component gains several
+   subscriptions;
 7. log-backed runtime delivery over the existing `MessageLogPort`;
 8. a truly separate Worker host with shared artifact infrastructure; and
 9. additional EventBus families migrated one coherent protocol slice at a

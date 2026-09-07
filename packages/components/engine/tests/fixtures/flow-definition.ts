@@ -1,4 +1,4 @@
-import { FlowDefinition } from "@lcase/types";
+import type { FlowDefinition } from "@lcase/types";
 
 export const flowDef: FlowDefinition = {
   name: "test-flowname",

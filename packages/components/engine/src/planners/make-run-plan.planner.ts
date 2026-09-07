@@ -4,7 +4,7 @@ import type {
   EngineState,
   Planner,
 } from "../engine.types.js";
-import { EmitRunDeniedFx } from "../types/effect.types.js";
+import type { EmitRunDeniedFx } from "../types/effect.types.js";
 import type { MakeRunPlanMsg } from "../types/message.types.js";
 
 export const makeRunPlanPlanner: Planner<MakeRunPlanMsg> = (

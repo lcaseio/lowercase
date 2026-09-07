@@ -1,13 +1,13 @@
-import {
+import type {
   EmitRunCompletedFx,
   EmitRunFailedFx,
   EmitStepPlannedFx,
   EngineEffect,
   EngineState,
   Planner,
-  WriteContextToDiskFx,
 } from "../engine.types.js";
-import { StepFinishedMsg } from "../types/message.types.js";
+import {} from "../engine.types.js";
+import type { StepFinishedMsg } from "../types/message.types.js";
 
 export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   oldState: EngineState,
@@ -17,7 +17,6 @@ export const stepFinishedPlanner: Planner<StepFinishedMsg> = (
   const effects: EngineEffect[] = [];
 
   const runId = message.event.runid;
-  const stepId = message.event.stepid;
 
   const oldRun = oldState.runs[runId];
   const newRun = newState.runs[runId];

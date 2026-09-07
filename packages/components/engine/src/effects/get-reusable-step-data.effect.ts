@@ -1,6 +1,6 @@
 import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
 import type { GetReusableStepDataFx } from "../types/effect.types.js";
-import { ReusableStepDataResultMsg } from "../types/message.types.js";
+import type { ReusableStepDataResultMsg } from "../types/message.types.js";
 
 export const getReusableStepDataFx: EffectHandler<
   "GetReusableStepData"

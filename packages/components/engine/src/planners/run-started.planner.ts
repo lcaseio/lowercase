@@ -4,7 +4,6 @@ import type {
   EngineState,
   Planner,
   RunStartedMsg,
-  WriteContextToDiskFx,
 } from "../engine.types.js";
 
 /**

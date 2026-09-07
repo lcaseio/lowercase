@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { reusableStepDataResultPlanner } from "../../src/planners/reusable-step-data-result.planner.js";
 import type { ReusableStepDataResultMsg } from "../../src/types/message.types.js";
 import { forkSpecOkState } from "../fixtures/fork-spec-result.state.js";
-import {
+import type {
   EmitRunDeniedFx,
   MakeRunPlanFx,
 } from "../../src/types/effect.types.js";

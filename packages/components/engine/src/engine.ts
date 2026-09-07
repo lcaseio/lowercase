@@ -21,7 +21,7 @@ import type {
   RunFinishedMsg,
   RunStartedMsg,
 } from "./engine.types.js";
-import {
+import type {
   RunRequestedMsg,
   StepFinishedMsg,
   StepPlannedMsg,

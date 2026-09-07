@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { StepPlannedMsg } from "../types/message.types.js";
-import { EngineState, Reducer } from "../engine.types.js";
+import type { StepPlannedMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
 import { resolvePath } from "@lcase/json-ref-binder";
 
 export const stepPlannedReducer: Reducer<StepPlannedMsg> = (

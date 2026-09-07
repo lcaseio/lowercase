@@ -1,10 +1,10 @@
-import { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import {
+import type { EngineEffect, EngineState, Planner } from "../engine.types.js";
+import type {
   EmitRunDeniedFx,
   GetForkSpecFx,
   MakeRunPlanFx,
 } from "../types/effect.types.js";
-import { FlowDefResultMsg } from "../types/message.types.js";
+import type { FlowDefResultMsg } from "../types/message.types.js";
 
 export const flowDefResultPlanner: Planner<FlowDefResultMsg> = (
   oldState: EngineState,

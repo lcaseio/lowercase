@@ -1,11 +1,11 @@
-import {
+import type {
   EmitStepCompletedFx,
   EmitStepFailedFx,
   EngineEffect,
   EngineState,
   Planner,
 } from "../engine.types.js";
-import { BranchValueResolvedMsg } from "../types/message.types.js";
+import type { BranchValueResolvedMsg } from "../types/message.types.js";
 
 export const branchValueResolvedPlanner: Planner<BranchValueResolvedMsg> = (
   oldState: EngineState,

@@ -1,9 +1,9 @@
-import { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import {
+import type { EngineEffect, EngineState, Planner } from "../engine.types.js";
+import type {
   EmitRunDeniedFx,
   GetReusableStepDataFx,
 } from "../types/effect.types.js";
-import { ForkSpecResultMsg } from "../types/message.types.js";
+import type { ForkSpecResultMsg } from "../types/message.types.js";
 
 export const forkSpecResultPlanner: Planner<ForkSpecResultMsg> = (
   oldState: EngineState,

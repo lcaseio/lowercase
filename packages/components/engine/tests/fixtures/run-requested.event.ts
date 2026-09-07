@@ -1,4 +1,4 @@
-import { AnyEvent } from "@lcase/types";
+import type { AnyEvent } from "@lcase/types";
 
 export const runRequestedEvent: AnyEvent<"run.requested"> = {
   type: "run.requested",

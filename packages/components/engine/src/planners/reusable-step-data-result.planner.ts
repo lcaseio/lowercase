@@ -1,5 +1,5 @@
 import type { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { EmitRunDeniedFx, MakeRunPlanFx } from "../types/effect.types.js";
+import type { EmitRunDeniedFx, MakeRunPlanFx } from "../types/effect.types.js";
 import type { ReusableStepDataResultMsg } from "../types/message.types.js";
 
 export const reusableStepDataResultPlanner: Planner<

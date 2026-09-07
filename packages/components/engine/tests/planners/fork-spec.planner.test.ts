@@ -6,7 +6,7 @@ import {
   forkSpecNotOkState,
   forkSpecOkState,
 } from "../fixtures/fork-spec-result.state.js";
-import {
+import type {
   EmitRunDeniedFx,
   GetReusableStepDataFx,
 } from "../../src/types/effect.types.js";

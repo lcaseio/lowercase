@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { runStartedReducer } from "../../src/reducers/run-started.reducer.js";
-import { EngineState, RunStartedMsg } from "../../src/engine.types.js";
+import type { EngineState, RunStartedMsg } from "../../src/engine.types.js";
 import { runStartedEvent } from "../fixtures/run-started.event.js";
 import { runStartedNewState } from "../fixtures/run-started.state.js";
 import { makeRunPlanNewState } from "../fixtures/make-run-plan.state.js";
@@ -25,7 +25,6 @@ describe("runStartedReducer", () => {
     const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
     delete oldState.runs["test-runid"];
-    const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);
     expect(state).toEqual(oldState);
@@ -40,7 +39,6 @@ describe("runStartedReducer", () => {
     const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
     delete oldState.flows["test-flowversionid"];
-    const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);
     expect(state).toEqual(oldState);
@@ -55,7 +53,6 @@ describe("runStartedReducer", () => {
     const oldState: EngineState = structuredClone(makeRunPlanNewState);
 
     oldState.flows["test-flowversionid"].definition.start = "";
-    const newState: EngineState = runStartedNewState;
 
     const state = runStartedReducer(oldState, message);
     expect(state).toEqual(oldState);

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { EmitterFactoryPort } from "@lcase/ports";
 import { emitRunDeniedFx } from "../../src/effects/emit-run-denied.effect.js";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
-import { EmitRunDeniedFx } from "../../src/types/effect.types.js";
+import type { EmitRunDeniedFx } from "../../src/types/effect.types.js";
 
 describe("emitRunDeniedFx()", () => {
   it("creates an emitter and emits with the correct args", async () => {

@@ -1,5 +1,5 @@
-import { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
-import { GetFlowDefFx } from "../types/effect.types.js";
+import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
+import type { GetFlowDefFx } from "../types/effect.types.js";
 import type { FlowDefResultMsg } from "../types/message.types.js";
 import { parseFlow } from "@lcase/specs";
 

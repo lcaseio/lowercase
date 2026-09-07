@@ -6,8 +6,11 @@ import {
   runRequestedOldState,
 } from "../fixtures/run-requested.state.js";
 import { runRequestedEvent } from "../fixtures/run-requested.event.js";
-import { RunContext } from "@lcase/types";
-import { EmitRunDeniedFx, GetFlowDefFx } from "../../src/types/effect.types.js";
+import type { RunContext } from "@lcase/types";
+import type {
+  EmitRunDeniedFx,
+  GetFlowDefFx,
+} from "../../src/types/effect.types.js";
 describe("runRequestedPlanner", () => {
   it("creates a GetFlowDefFx for a valid new state", () => {
     const message: RunRequestedMsg = {

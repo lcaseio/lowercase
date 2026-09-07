@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { RunQueryPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { getReusableStepDataFx } from "../../src/effects/get-reusable-step-data.effect.js";
-import { GetReusableStepDataFx } from "../../src/types/effect.types.js";
-import { ReusableStepDataResultMsg } from "../../src/types/message.types.js";
+import type { GetReusableStepDataFx } from "../../src/types/effect.types.js";
+import type { ReusableStepDataResultMsg } from "../../src/types/message.types.js";
 
 describe("getReusableStepDataFx()", () => {
   it("parses and enqueues the correct message given valid reusable step data", async () => {

@@ -6,7 +6,7 @@ import {
   runRequestedOldState,
 } from "../fixtures/run-requested.state.js";
 import { runRequestedEvent } from "../fixtures/run-requested.event.js";
-import { RunContext } from "@lcase/types";
+import type { RunContext } from "@lcase/types";
 describe("runRequestedReducer", () => {
   it("creates a valid initial state when given a valid message", () => {
     const message: RunRequestedMsg = {

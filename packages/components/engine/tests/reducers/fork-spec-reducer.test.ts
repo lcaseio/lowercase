@@ -1,15 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { forkSpecResultReducer } from "../../src/reducers/fork-spec-result.reducer.js";
-import type {
-  FlowDefResultMsg,
-  ForkSpecResultMsg,
-} from "../../src/types/message.types.js";
-import { runRequestedNewState } from "../fixtures/run-requested.state.js";
-import { flowDef } from "../fixtures/flow-definition.js";
-import {
-  flowDefResultNotOkState,
-  flowDefResultOkState,
-} from "../fixtures/flow-def-result.state.js";
+import type { ForkSpecResultMsg } from "../../src/types/message.types.js";
+import { flowDefResultOkState } from "../fixtures/flow-def-result.state.js";
 import {
   forkSpecNotOkState,
   forkSpecOkState,

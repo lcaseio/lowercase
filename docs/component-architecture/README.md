@@ -38,14 +38,22 @@ implementation gave real evidence to check it against:
   fuller local and Redis-backed carrier without requiring all of that machinery
   in the MVP.
 
+## Active component architecture
+
+- [`worker/`](./worker/) — the current target shape for Worker as one stable
+  component root, plus the structural runway and Message cutover sequence. This
+  is the active Worker guidance for the Swappable Infrastructure initiative.
+
 ## Per-component build plans
 
 Concrete, phased plans that apply the model to one real package, written once a
 plan is actually being executed:
 
-- [`worker-v2/`](./worker-v2/) — the plan behind `packages/components/worker`'s
-  rebuild (`worker-tools-artifacts` initiative, PRs 2–6, merged). Seeded from the
-  model plus `review-results.md`.
+- [`worker-v2/`](./worker-v2/) — the historical plan behind
+  `packages/components/worker`'s rebuild (`worker-tools-artifacts` initiative,
+  Changes C2–C6, merged). Its future-facing direct-call and wrapper guidance is
+  superseded by [`worker/`](./worker/); the document remains intact as
+  implementation history.
 
 Further plans (e.g. an artifacts migration) get added here the same way, as they
 start.
