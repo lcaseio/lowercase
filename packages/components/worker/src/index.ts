@@ -1,18 +1,10 @@
-export * from "./job.contracts.js";
-export * from "./job-result.factories.js";
-export * from "./worker-lifecycle.events.js";
-export * from "./worker-capacity.js";
-export * from "./resource-key-resolver.js";
-export * from "./concurrency/semaphore.js";
-export * from "./job-message.mappers.js";
-export * from "./message-job-execution.js";
-export * from "./ports/outbound/resource-permit.port.js";
-export * from "./ports/outbound/worker-event-sink.port.js";
-export * from "./adapters/outbound/local-resource-permit.adapter.js";
-export * from "./adapters/outbound/console-worker-lifecycle-event-sink.adapter.js";
-export * from "./protocol/protocol-executor.types.js";
-export * from "./protocol/combine-for-protocol-run.js";
-export * from "./protocol/http-json/http-json.types.js";
-export * from "./protocol/http-json/materialize-http-json-request.js";
-export * from "./protocol/http-json/http-json.executor.js";
-export * from "./worker.js";
+// Narrowed to what composes a worker from outside the package. Everything
+// else -- JobRunner, WorkerCapacity, the command contracts, the protocol and
+// storage internals -- is package-internal and imported directly by worker's
+// own tests. JobRunner in particular must never become an alternate
+// construction path for runtime.
+export { Worker } from "./worker.js";
+export type { WorkerDeps, WorkerConfig } from "./worker.js";
+export { createLocalResourcePermit } from "./adapters/outbound/local-resource-permit.adapter.js";
+export { createConsoleWorkerLifecycleEventSink } from "./adapters/outbound/console-worker-lifecycle-event-sink.adapter.js";
+export { createHttpJsonExecutor } from "./protocol/http-json/http-json.executor.js";

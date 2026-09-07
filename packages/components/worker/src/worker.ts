@@ -1,45 +1,27 @@
-import { resolveJsonPath } from "@lcase/json-ref-binder";
 import type {
   ArtifactReadWritePort,
-  JobExecutionOptions,
-  JobExecutionPort,
+  JobExecutionOutcome,
+  JobExecutionRequest,
 } from "@lcase/ports";
-import type { Ref } from "@lcase/types";
+import { JobRunner } from "./job-runner.js";
 import {
-  storeExecutionOutputs,
-  tryStoreOutput,
-} from "./execution-output-storage.js";
+  toExecuteJobCommand,
+  toJobExecutionOutcome,
+} from "./job-message.mappers.js";
 import {
   cancelledResult,
   completedResult,
   failedResult,
-  type StoredExecutionOutputs,
 } from "./job-result.factories.js";
-import type {
-  ArtifactRef,
-  ExecuteJobCommand,
-  JobCommandExecutor,
-  JobExecutionError,
-  JobResult,
-} from "./job.contracts.js";
+import type { ExecuteJobCommand, JobResult } from "./job.contracts.js";
 import type { ResourcePermitPort } from "./ports/outbound/resource-permit.port.js";
 import type { WorkerLifecycleEventSink } from "./ports/outbound/worker-event-sink.port.js";
-import { combineForProtocolRun } from "./protocol/combine-for-protocol-run.js";
-import type { ResolvedHttpJsonRequest } from "./protocol/http-json/http-json.types.js";
-import { materializeHttpJsonRequest } from "./protocol/http-json/materialize-http-json-request.js";
-import type {
-  ProtocolExecutor,
-  ProtocolResult,
-} from "./protocol/protocol-executor.types.js";
+import type { ProtocolExecutor } from "./protocol/protocol-executor.types.js";
+import type { ResourceKeyResolver } from "./resource-key-resolver.js";
 import {
-  defaultResourceKeyResolver,
-  type ResourceKeyResolver,
-} from "./resource-key-resolver.js";
-import {
+  WorkerCapacity,
   type WorkerCapacityTelemetry,
-  withWorkerCapacity,
 } from "./worker-capacity.js";
-import { withMessageJobExecution } from "./message-job-execution.js";
 import {
   makeJobExecutionCancelledEvent,
   makeJobExecutionCompletedEvent,
@@ -53,29 +35,13 @@ export type WorkerDeps = {
   protocol: ProtocolExecutor;
   artifacts: ArtifactReadWritePort;
   resourceKeyResolver?: ResourceKeyResolver;
+  capacityTelemetry?: WorkerCapacityTelemetry;
 };
 
-export type WorkerCoreConfig = {
+export type WorkerConfig = {
   maxConcurrentJobs: number;
   protocolTimeoutMs: number;
 };
-
-type ProtocolRunOutcome =
-  | { kind: "result"; result: ProtocolResult }
-  | { kind: "cancelled" }
-  | { kind: "timeout" };
-
-type ResolveRefsOutcome =
-  | { ok: true; resolved: Record<string, unknown> }
-  | { ok: false; error: JobExecutionError };
-
-type PrepareProtocolRunOutcome =
-  | {
-      ok: true;
-      request: ResolvedHttpJsonRequest;
-      resourceKey: string;
-    }
-  | { ok: false; error: JobExecutionError };
 
 function validateCommand(command: ExecuteJobCommand): void {
   if (!command.executionId) {
@@ -100,271 +66,89 @@ function validateCommand(command: ExecuteJobCommand): void {
   }
 }
 
-function nonRetryableError(
-  code: JobExecutionError["code"],
-  message: string,
-): JobExecutionError {
-  return { code, message, retryable: false };
-}
+// The worker component itself: the object runtime constructs and retains.
+// It owns the component-wide capacity bound and the accepted/started/terminal
+// lifecycle sequence, and delegates the mechanics of one job to JobRunner.
+// JobRunner and WorkerCapacity are built here rather than injected, so there
+// is no way to compose a Worker that bypasses either.
+export class Worker {
+  readonly #lifecycle: WorkerLifecycleEventSink;
+  readonly #capacity: WorkerCapacity;
+  readonly #runner: JobRunner;
 
-class Worker implements JobCommandExecutor {
-  readonly #deps: WorkerDeps;
-  readonly #config: WorkerCoreConfig;
-  readonly #resolveKey: ResourceKeyResolver;
-
-  constructor(deps: WorkerDeps, config: WorkerCoreConfig) {
-    this.#deps = deps;
-    this.#config = config;
-    this.#resolveKey = deps.resourceKeyResolver ?? defaultResourceKeyResolver;
+  constructor(deps: WorkerDeps, config: WorkerConfig) {
+    this.#lifecycle = deps.lifecycle;
+    this.#capacity = new WorkerCapacity(
+      { maxConcurrentJobs: config.maxConcurrentJobs },
+      deps.capacityTelemetry,
+    );
+    this.#runner = new JobRunner(deps, {
+      protocolTimeoutMs: config.protocolTimeoutMs,
+    });
   }
 
-  async execute(
+  // TEMPORARY, deleted in the HTTP JSON Message cutover. It exists only so
+  // the engine can keep its current direct dependency while worker's
+  // ownership is restructured, which is what makes that restructuring
+  // independently mergeable. Structurally a JobExecutionPort without
+  // declaring it: no caller supplies the port's `options`, so the cancellation
+  // signal is reached through executeCommand() instead. Do not add callers.
+  async execute(request: JobExecutionRequest): Promise<JobExecutionOutcome> {
+    const result = await this.executeCommand(toExecuteJobCommand(request));
+    return toJobExecutionOutcome(result);
+  }
+
+  // Worker's real entry point for one job, in its own command vocabulary.
+  // The Message handler added by the cutover lands here too, after
+  // interpreting the submitted envelope.
+  async executeCommand(
     command: ExecuteJobCommand,
-    options?: JobExecutionOptions,
+    callerSignal?: AbortSignal,
   ): Promise<JobResult> {
-    const { lifecycle } = this.#deps;
-    const signal = options?.signal;
-
-    validateCommand(command);
-
-    if (signal?.aborted) {
+    const acquisition = await this.#capacity.acquire(command, callerSignal);
+    if (acquisition.kind === "cancelled") {
+      // No lifecycle facts recorded -- execution never reached "started".
       return cancelledResult(command);
     }
 
-    await lifecycle.record(makeJobExecutionStartedEvent(command));
-
-    const prepared = await this.#prepareProtocolRun(command);
-    if (!prepared.ok) {
-      return this.#finishFailedExecution(command, prepared.error);
-    }
-
-    const protocolRun = await this.#runProtocol(
-      command,
-      prepared.request,
-      prepared.resourceKey,
-      signal,
-    );
-
-    if (protocolRun.kind === "cancelled") {
-      return this.#finishCancelledExecution(command);
-    }
-    if (protocolRun.kind === "timeout") {
-      return this.#finishFailedExecution(
-        command,
-        nonRetryableError(
-          "TIMEOUT",
-          "Protocol execution exceeded the configured timeout",
-        ),
-      );
-    }
-
-    const protocolResult = protocolRun.result;
-    if (!protocolResult.ok) {
-      // Best-effort: a secondary storage failure here must not mask the
-      // primary, more important protocol error.
-      const output =
-        protocolResult.payload !== undefined
-          ? await tryStoreOutput(this.#deps.artifacts, protocolResult.payload)
-          : undefined;
-      return this.#finishFailedExecution(command, protocolResult.error, output);
-    }
-
-    const stored = await storeExecutionOutputs(
-      this.#deps.artifacts,
-      protocolResult.payload,
-      command.exports,
-    );
-    if (!stored.ok) {
-      return this.#finishFailedExecution(command, stored.error, stored.output);
-    }
-
-    return this.#finishCompletedExecution(command, stored.outputs);
-  }
-
-  async #prepareProtocolRun(
-    command: ExecuteJobCommand,
-  ): Promise<PrepareProtocolRunOutcome> {
-    const refsOutcome = await this.#resolveRefs(command.refs);
-    if (!refsOutcome.ok) return refsOutcome;
-
-    const materialized = materializeHttpJsonRequest(
-      command.protocol,
-      command.refs,
-      refsOutcome.resolved,
-    );
-    if (!materialized.ok) {
-      return {
-        ok: false,
-        error: nonRetryableError("HTTP_REQUEST_INVALID", materialized.message),
-      };
-    }
-
-    const keyResult = this.#resolveKey(
-      materialized.request,
-      command.resourceHint,
-    );
-    if (!keyResult.ok) {
-      return {
-        ok: false,
-        error: nonRetryableError(
-          "RESOURCE_KEY_RESOLUTION_FAILED",
-          keyResult.message,
-        ),
-      };
-    }
-
-    return {
-      ok: true,
-      request: materialized.request,
-      resourceKey: keyResult.resourceKey,
-    };
-  }
-
-  async #finishFailedExecution(
-    command: ExecuteJobCommand,
-    error: JobExecutionError,
-    output?: ArtifactRef,
-  ): Promise<JobResult> {
-    await this.#deps.lifecycle.record(
-      makeJobExecutionFailedEvent(command, error),
-    );
-    return failedResult(command, error, output);
-  }
-
-  async #finishCancelledExecution(
-    command: ExecuteJobCommand,
-  ): Promise<JobResult> {
-    await this.#deps.lifecycle.record(makeJobExecutionCancelledEvent(command));
-    return cancelledResult(command);
-  }
-
-  async #finishCompletedExecution(
-    command: ExecuteJobCommand,
-    outputs: StoredExecutionOutputs,
-  ): Promise<JobResult> {
-    const { output, exports } = outputs;
-    await this.#deps.lifecycle.record(
-      makeJobExecutionCompletedEvent(command, output, exports),
-    );
-    return completedResult(command, outputs);
-  }
-
-  async #runProtocol(
-    command: ExecuteJobCommand,
-    request: ResolvedHttpJsonRequest,
-    resourceKey: string,
-    signal: AbortSignal | undefined,
-  ): Promise<ProtocolRunOutcome> {
-    const combined = combineForProtocolRun(
-      signal,
-      this.#config.protocolTimeoutMs,
-    );
     try {
-      return {
-        kind: "result",
-        result: await this.#runProtocolWithPermit(
-          command,
-          request,
-          resourceKey,
-          signal,
-          combined.signal,
-        ),
-      };
-    } catch (err) {
-      const cause = combined.cause();
-      if (cause === "caller") return { kind: "cancelled" };
-      if (cause === "timeout") return { kind: "timeout" };
-      throw err;
+      return await this.#executeAdmitted(command, callerSignal);
     } finally {
-      combined.dispose();
+      acquisition.release();
     }
   }
 
-  async #runProtocolWithPermit(
+  async #executeAdmitted(
     command: ExecuteJobCommand,
-    request: ResolvedHttpJsonRequest,
-    resourceKey: string,
     callerSignal: AbortSignal | undefined,
-    protocolSignal: AbortSignal,
-  ): Promise<ProtocolResult> {
-    const { permits, protocol } = this.#deps;
-    const grant = await permits.acquire(
-      { requestId: command.executionId, resourceKey },
-      { signal: callerSignal },
-    );
+  ): Promise<JobResult> {
+    validateCommand(command);
 
-    try {
-      return await protocol.execute(request, { signal: protocolSignal });
-    } finally {
-      await permits.release(grant.grantId);
+    // Re-checked after admission: the caller may have abandoned the job while
+    // it was queued for capacity.
+    if (callerSignal?.aborted) {
+      return cancelledResult(command);
     }
-  }
 
-  async #resolveRefs(refs: Ref[]): Promise<ResolveRefsOutcome> {
-    const resolved: Record<string, unknown> = {};
-    for (const ref of refs) {
-      if (ref.hash === null) continue;
-      const value = await this.#resolveOneRef(ref);
-      if (value === undefined) {
-        return {
-          ok: false,
-          error: {
-            code: "INPUT_RESOLUTION_FAILED",
-            message: `Could not resolve reference "${ref.string}"`,
-            retryable: false,
-          },
-        };
+    await this.#lifecycle.record(makeJobExecutionStartedEvent(command));
+
+    const outcome = await this.#runner.run(command, callerSignal);
+    switch (outcome.kind) {
+      case "completed": {
+        const { output, exports } = outcome.outputs;
+        await this.#lifecycle.record(
+          makeJobExecutionCompletedEvent(command, output, exports),
+        );
+        return completedResult(command, outcome.outputs);
       }
-      resolved[ref.string] = value;
+      case "failed":
+        await this.#lifecycle.record(
+          makeJobExecutionFailedEvent(command, outcome.error),
+        );
+        return failedResult(command, outcome.error, outcome.output);
+      case "cancelled":
+        await this.#lifecycle.record(makeJobExecutionCancelledEvent(command));
+        return cancelledResult(command);
     }
-    return { ok: true, resolved };
   }
-
-  async #resolveOneRef(ref: Ref): Promise<unknown> {
-    if (ref.hash === null) return undefined;
-    const { artifacts } = this.#deps;
-
-    // Only params/steps refs carry a declared type; anything else (and any
-    // undeclared type) defaults to JSON, matching the old getJson() fallback.
-    const contentType =
-      (ref.scope === "params" ? ref.paramType : ref.exportType) ??
-      "application/json";
-
-    if (contentType === "application/json") {
-      const result = await artifacts.load(ref.hash, "application/json");
-      if (!result.ok) return undefined;
-      return resolveJsonPath(ref.valuePath, result.value);
-    }
-
-    const result = await artifacts.load(ref.hash, contentType);
-    return result.ok ? result.value : undefined;
-  }
-}
-
-// Everything inside the message boundary: the core runs one job, the capacity
-// decorator gates concurrency around it, both speaking worker's own command
-// vocabulary. Exported separately from createWorker so worker's own tests can
-// drive job execution in command terms -- which is the level they actually
-// exercise (refs, protocol, storage, cancellation) -- without every fixture
-// having to be dressed up as a message first.
-export function createCommandWorker(
-  deps: WorkerDeps,
-  config: WorkerCoreConfig,
-  telemetry?: WorkerCapacityTelemetry,
-): JobCommandExecutor {
-  return withWorkerCapacity(
-    new Worker(deps, config),
-    { maxConcurrentJobs: config.maxConcurrentJobs },
-    telemetry,
-  );
-}
-
-// The worker as callers depend on it: the command layers above, wrapped in
-// the message translation that provides the shared JobExecutionPort.
-export function createWorker(
-  deps: WorkerDeps,
-  config: WorkerCoreConfig,
-  telemetry?: WorkerCapacityTelemetry,
-): JobExecutionPort {
-  return withMessageJobExecution(createCommandWorker(deps, config, telemetry));
 }

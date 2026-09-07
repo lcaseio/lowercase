@@ -27,7 +27,7 @@ import {
   assembleEmbeddedSystem,
 } from "../../assembly/index.js";
 import type { ManagedRuntime } from "../../assembly/index.js";
-import { createWorkerCore } from "../../worker/create-worker.js";
+import { buildWorker } from "../../worker/build-worker.js";
 import { buildArtifactStore } from "./build-artifact-store.js";
 import { buildObservability } from "./build-observability.js";
 import { buildEngine } from "./build-engine.js";
@@ -65,18 +65,12 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     artifactRepository,
   );
 
-  // The worker provides JobExecutionPort itself -- no adapter in between,
-  // because in-process there is no transport boundary to adapt.
-  const jobExecution = createWorkerCore({ artifacts }, config.worker);
+  // Retained as the worker, not as a capability it happens to satisfy. Its
+  // temporary direct execute() is what the engine still depends on; the
+  // Message cutover replaces that dependency without replacing this object.
+  const worker = buildWorker({ artifacts }, config.worker);
 
-  const engine = buildEngine(
-    bus,
-    ef,
-    jobParser,
-    runQuery,
-    artifacts,
-    jobExecution,
-  );
+  const engine = buildEngine(bus, ef, jobParser, runQuery, artifacts, worker);
 
   const { tap, sinks } = buildObservability(
     config.observability,

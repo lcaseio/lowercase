@@ -1,88 +1,88 @@
 import { describe, expect, it, vi } from "vitest";
-import { withWorkerCapacity } from "../src/worker-capacity.js";
-import type { JobCommandExecutor, JobResult } from "../src/job.contracts.js";
+import type { ProtocolResult } from "../src/protocol/protocol-executor.types.js";
 import { makeCommand } from "./helpers/fixtures.js";
+import { makeWorker } from "./helpers/worker-fakes.js";
 
-function makeControllableCore() {
-  const releases: Array<() => void> = [];
-  const executeCalls: number[] = [];
-  const core: JobCommandExecutor = {
-    execute: vi.fn(async (command): Promise<JobResult> => {
-      executeCalls.push(executeCalls.length);
-      await new Promise<void>((resolve) => releases.push(resolve));
-      return {
-        status: "completed",
-        executionId: command.executionId,
-        jobId: command.jobId,
-        output: { hash: "fake-hash" },
-      };
-    }),
+// Capacity is now owned by Worker rather than wrapped around it, so it is
+// exercised through Worker's own entry point. The protocol executor is the
+// gate: each job parks there until the test settles it, which is what holds a
+// capacity slot open.
+function makeGatedWorker(maxConcurrentJobs: number) {
+  const settlers: Array<(result: ProtocolResult) => void> = [];
+  const fakes = makeWorker({
+    maxConcurrentJobs,
+    protocolResult: () =>
+      new Promise<ProtocolResult>((resolve) => settlers.push(resolve)),
+  });
+  const settleNext = () => {
+    const settle = settlers.shift();
+    if (!settle) throw new Error("no parked protocol call to settle");
+    settle({ ok: true, payload: null });
   };
-  return { core, releases, executeCalls };
+  return { ...fakes, settlers, settleNext };
 }
 
-describe("withWorkerCapacity", () => {
-  it("passes a single job straight through", async () => {
-    const core: JobCommandExecutor = {
-      execute: vi.fn(async (command): Promise<JobResult> => ({
-        status: "completed",
-        executionId: command.executionId,
-        jobId: command.jobId,
-        output: { hash: "fake-hash" },
-      })),
-    };
-    const worker = withWorkerCapacity(core, { maxConcurrentJobs: 1 });
-
-    const result = await worker.execute(makeCommand());
-
-    expect(result.status).toBe("completed");
-    expect(core.execute).toHaveBeenCalledTimes(1);
-  });
-
+describe("Worker capacity", () => {
   it("blocks a second job until the first completes and releases capacity", async () => {
-    const { core, releases } = makeControllableCore();
-    const worker = withWorkerCapacity(core, { maxConcurrentJobs: 1 });
+    const { worker, settlers, settleNext, protocolExecute } =
+      makeGatedWorker(1);
 
-    const firstPromise = worker.execute(makeCommand({ executionId: "exec-1" }));
-    await vi.waitFor(() => expect(releases).toHaveLength(1));
+    const firstPromise = worker.executeCommand(
+      makeCommand({ executionId: "exec-1" }),
+    );
+    await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     let secondSettled = false;
     const secondPromise = worker
-      .execute(makeCommand({ executionId: "exec-2" }))
+      .executeCommand(makeCommand({ executionId: "exec-2" }))
       .then((result) => {
         secondSettled = true;
         return result;
       });
 
-    // Give the event loop a chance -- the second call must still be queued.
+    // Give the event loop a chance -- the second job must still be queued.
     await new Promise((resolve) => setTimeout(resolve, 10));
     expect(secondSettled).toBe(false);
-    expect(core.execute).toHaveBeenCalledTimes(1);
+    expect(protocolExecute).toHaveBeenCalledTimes(1);
 
-    releases[0]!();
+    settleNext();
     await firstPromise;
-    await vi.waitFor(() => expect(releases).toHaveLength(2));
-    releases[1]!();
+    await vi.waitFor(() => expect(settlers).toHaveLength(1));
+    settleNext();
     const second = await secondPromise;
 
     expect(secondSettled).toBe(true);
     expect(second.status).toBe("completed");
-    expect(core.execute).toHaveBeenCalledTimes(2);
+    expect(protocolExecute).toHaveBeenCalledTimes(2);
   });
 
-  it("aborting while queued for capacity resolves CANCELLED without ever calling the wrapped core", async () => {
-    const { core, releases } = makeControllableCore();
-    const worker = withWorkerCapacity(core, { maxConcurrentJobs: 1 });
+  it("runs jobs concurrently up to the configured bound", async () => {
+    const { worker, settlers, protocolExecute } = makeGatedWorker(2);
 
-    const firstPromise = worker.execute(makeCommand({ executionId: "exec-1" }));
-    await vi.waitFor(() => expect(releases).toHaveLength(1));
+    void worker.executeCommand(makeCommand({ executionId: "exec-1" }));
+    void worker.executeCommand(makeCommand({ executionId: "exec-2" }));
+    void worker.executeCommand(makeCommand({ executionId: "exec-3" }));
+
+    await vi.waitFor(() => expect(settlers).toHaveLength(2));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(protocolExecute).toHaveBeenCalledTimes(2);
+
+    settlers.forEach((settle) => settle({ ok: true, payload: null }));
+  });
+
+  it("aborting while queued for capacity resolves CANCELLED and records no lifecycle facts for that job", async () => {
+    const { worker, settlers, settleNext, protocolExecute, events } =
+      makeGatedWorker(1);
+
+    const firstPromise = worker.executeCommand(
+      makeCommand({ executionId: "exec-1" }),
+    );
+    await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     const controller = new AbortController();
-    const secondPromise = worker.execute(
+    const secondPromise = worker.executeCommand(
       makeCommand({ executionId: "exec-2" }),
-      {
-        signal: controller.signal,
-      },
+      controller.signal,
     );
     controller.abort();
     const second = await secondPromise;
@@ -91,30 +91,57 @@ describe("withWorkerCapacity", () => {
       status: "failed",
       error: { code: "CANCELLED" },
     });
-    expect(core.execute).toHaveBeenCalledTimes(1); // only the first job ever ran
+    // Only the first job ever ran, and only the first job was ever "started".
+    expect(protocolExecute).toHaveBeenCalledTimes(1);
+    expect(events.map((e) => e.kind)).toEqual(["job-execution-started"]);
 
-    releases[0]!();
+    settleNext();
     await firstPromise;
   });
 
-  it("releases capacity even when the wrapped core throws", async () => {
+  it("a signal already aborted at entry never consumes capacity or reaches the runner", async () => {
+    const { worker, protocolExecute, events } = makeWorker({
+      maxConcurrentJobs: 1,
+    });
+    const controller = new AbortController();
+    controller.abort();
+
+    const result = await worker.executeCommand(
+      makeCommand({ executionId: "exec-1" }),
+      controller.signal,
+    );
+
+    expect(result).toMatchObject({
+      status: "failed",
+      error: { code: "CANCELLED" },
+    });
+    expect(protocolExecute).not.toHaveBeenCalled();
+    expect(events).toHaveLength(0);
+
+    // Capacity was never taken, so an ordinary job still runs.
+    await expect(
+      worker.executeCommand(makeCommand({ executionId: "exec-2" })),
+    ).resolves.toMatchObject({ status: "completed" });
+  });
+
+  it("releases capacity even when execution throws", async () => {
     const thrown = new Error("boom");
-    const core: JobCommandExecutor = {
-      execute: vi.fn(async () => {
+    const { worker, protocolExecute } = makeWorker({
+      maxConcurrentJobs: 1,
+      protocolResult: () => {
         throw thrown;
-      }),
-    };
-    const worker = withWorkerCapacity(core, { maxConcurrentJobs: 1 });
+      },
+    });
 
     await expect(
-      worker.execute(makeCommand({ executionId: "exec-1" })),
+      worker.executeCommand(makeCommand({ executionId: "exec-1" })),
     ).rejects.toBe(thrown);
 
-    // Capacity must have been released -- a second call should reach the
-    // core rather than hang forever queued behind the first.
+    // A second job must reach the runner rather than hang forever queued
+    // behind the first.
     await expect(
-      worker.execute(makeCommand({ executionId: "exec-2" })),
+      worker.executeCommand(makeCommand({ executionId: "exec-2" })),
     ).rejects.toBe(thrown);
-    expect(core.execute).toHaveBeenCalledTimes(2);
+    expect(protocolExecute).toHaveBeenCalledTimes(2);
   });
 });

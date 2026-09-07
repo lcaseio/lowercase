@@ -20,10 +20,11 @@ export type ResourcePermitTelemetry = {
 };
 
 // A real, local, in-process ResourcePermitPort -- one semaphore per
-// resourceKey, lazily created. Deliberately not part of WorkerCoreConfig: this
-// is a separate adapter the runtime composes independently and hands in via
-// WorkerDeps.permits, keeping WorkerCoreConfig scoped to worker's own
-// execution parameters only.
+// resourceKey, lazily created. Deliberately not part of WorkerConfig: this is
+// a separate adapter the runtime composes independently and hands in via
+// WorkerDeps.permits, keeping WorkerConfig scoped to worker's own execution
+// parameters only. These permits constrain a resolved external resource;
+// WorkerCapacity constrains how many jobs one worker runs at once.
 export function createLocalResourcePermit(
   config: LocalResourcePermitConfig,
   telemetry?: ResourcePermitTelemetry,

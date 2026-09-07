@@ -1,31 +1,31 @@
-import type { ArtifactReadWritePort, JobExecutionPort } from "@lcase/ports";
+import type { ArtifactReadWritePort } from "@lcase/ports";
 import {
   createConsoleWorkerLifecycleEventSink,
   createHttpJsonExecutor,
   createLocalResourcePermit,
-  createWorker,
+  Worker,
 } from "@lcase/worker";
 import type { WorkerConfig } from "../config/worker.config.js";
 
-export type CreateWorkerCoreDeps = {
+export type BuildWorkerDeps = {
   artifacts: ArtifactReadWritePort;
 };
 
-// Composition only -- construction and message translation both live in
-// packages/components/worker. What comes back already satisfies the shared
-// JobExecutionPort, so the engine can be handed it directly with no adapter
-// in between.
-export function createWorkerCore(
-  deps: CreateWorkerCoreDeps,
+// Composition only: build the collaborators worker needs from the outside --
+// local resource permits, the lifecycle sink, the protocol executor -- and
+// return the actual Worker. Worker's own internals (capacity, JobRunner) are
+// built by Worker, so runtime cannot compose one that bypasses either.
+export function buildWorker(
+  deps: BuildWorkerDeps,
   config: WorkerConfig,
-): JobExecutionPort {
+): Worker {
   const permits = createLocalResourcePermit({
     maxConcurrencyPerKey: config.maxConcurrencyPerKey,
   });
   const lifecycle = createConsoleWorkerLifecycleEventSink();
   const protocol = createHttpJsonExecutor({ fetch });
 
-  return createWorker(
+  return new Worker(
     {
       permits,
       lifecycle,

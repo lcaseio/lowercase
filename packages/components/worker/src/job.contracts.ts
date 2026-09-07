@@ -1,4 +1,3 @@
-import type { JobExecutionOptions } from "@lcase/ports";
 import type { ExportRef, JsonValue, Ref } from "@lcase/types";
 import type { ResourceHint } from "./resource-key-resolver.js";
 
@@ -76,14 +75,7 @@ export type JobResult =
       output?: ArtifactRef;
     };
 
-// Worker's internal execution seam, deliberately not a port: the boundary
-// contract is JobExecutionPort (@lcase/ports), which speaks messages. This is
-// what the layers *inside* that boundary speak to each other -- Worker itself
-// and the capacity decorator wrapped around it -- in worker's own command
-// vocabulary. withMessageJobExecution is the one place the two meet.
-export interface JobCommandExecutor {
-  execute(
-    command: ExecuteJobCommand,
-    options?: JobExecutionOptions,
-  ): Promise<JobResult>;
-}
+// An internal migration seam. ExecuteJobCommand and JobResult are worker's
+// own vocabulary for one job, not a component boundary -- the boundary is the
+// Message. They survive the cutover as the shape Worker's Message handler
+// projects into, and should not grow into a second inter-component envelope.
