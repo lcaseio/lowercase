@@ -1,6 +1,6 @@
 # Prove Swappable Infrastructure Initiative — Arc: Package Tooling (Change C10)
 
-**Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C13)
+**Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C14)
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Finishes the incremental real-ESLint and test-typechecking migrations package by package, and fills the remaining gaps in the `clean-*` script convention. Its own arc rather than a section of an adapter arc because none of this work swaps an infrastructure backend — it is the verification floor the rest of the initiative gets built on.
 

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeCommand } from "./helpers/fixtures.js";
+import { makeContext, makeWork } from "./helpers/fixtures.js";
 import { createControllablePermitPort } from "./helpers/fake-resource-permit.js";
+import type { ResourceKeyResolver } from "../src/resource-key-resolver.js";
 import { makeJobRunner } from "./helpers/worker-fakes.js";
 
 describe("JobRunner", () => {
@@ -8,9 +9,9 @@ describe("JobRunner", () => {
     const { runner, acquire, release, protocolExecute } = makeJobRunner({
       protocolResult: () => ({ ok: true, payload: { foo: "bar" } }),
     });
-    const command = makeCommand();
+    const work = makeWork();
 
-    const outcome = await runner.run(command);
+    const outcome = await runner.run(work, makeContext());
 
     if (outcome.kind !== "completed") {
       throw new Error(`expected completed, got ${outcome.kind}`);
@@ -25,12 +26,12 @@ describe("JobRunner", () => {
     expect(protocolExecute).toHaveBeenCalledTimes(1);
     const [requestArg] = protocolExecute.mock.calls[0]!;
     expect(requestArg).toEqual({
-      url: command.protocol.url,
+      url: work.protocol.url,
       method: "GET",
       headers: { Accept: "application/json" },
     });
-    expect(requestArg).not.toHaveProperty("executionId");
     expect(requestArg).not.toHaveProperty("jobId");
+    expect(requestArg).not.toHaveProperty("runId");
   });
 
   it("reports an expected protocol failure as a failed outcome rather than throwing", async () => {
@@ -43,7 +44,7 @@ describe("JobRunner", () => {
       protocolResult: () => ({ ok: false, error: protocolError }),
     });
 
-    const outcome = await runner.run(makeCommand());
+    const outcome = await runner.run(makeWork(), makeContext());
 
     expect(outcome).toEqual({ kind: "failed", error: protocolError });
     expect(release).toHaveBeenCalledTimes(1);
@@ -52,7 +53,7 @@ describe("JobRunner", () => {
   describe("HTTP request invariants surfaced as typed failures, not thrown errors", () => {
     it("GET with a body is rejected before the protocol executor is ever called", async () => {
       const { runner, protocolExecute } = makeJobRunner();
-      const command = makeCommand({
+      const work = makeWork({
         protocol: {
           kind: "httpjson",
           url: "https://example.test",
@@ -61,7 +62,7 @@ describe("JobRunner", () => {
         },
       });
 
-      const outcome = await runner.run(command);
+      const outcome = await runner.run(work, makeContext());
 
       expect(outcome).toMatchObject({
         kind: "failed",
@@ -72,11 +73,11 @@ describe("JobRunner", () => {
 
     it("a non-http(s) URL scheme is rejected before the protocol executor is ever called", async () => {
       const { runner, protocolExecute } = makeJobRunner();
-      const command = makeCommand({
+      const work = makeWork({
         protocol: { kind: "httpjson", url: "file:///etc/passwd" },
       });
 
-      const outcome = await runner.run(command);
+      const outcome = await runner.run(work, makeContext());
 
       expect(outcome).toMatchObject({
         kind: "failed",
@@ -95,7 +96,7 @@ describe("JobRunner", () => {
       resourceKeyResolver,
     });
 
-    const outcome = await runner.run(makeCommand());
+    const outcome = await runner.run(makeWork(), makeContext());
 
     expect(outcome).toMatchObject({
       kind: "failed",
@@ -103,6 +104,24 @@ describe("JobRunner", () => {
     });
     expect(acquire).not.toHaveBeenCalled();
     expect(protocolExecute).not.toHaveBeenCalled();
+  });
+
+  // JobRunner no longer forwards a ResourceHint, because nothing has ever
+  // produced one. Asserted at this level rather than on the resolver, since
+  // it is JobRunner's call site that decides no hint exists to pass.
+  it("resolves the resource key from the materialized request alone, passing no hint", async () => {
+    const resourceKeyResolver = vi.fn<ResourceKeyResolver>(() => ({
+      ok: true,
+      resourceKey: "named:whatever",
+    }));
+    const { runner } = makeJobRunner({ resourceKeyResolver });
+
+    await runner.run(makeWork(), makeContext());
+
+    expect(resourceKeyResolver).toHaveBeenCalledTimes(1);
+    const call = resourceKeyResolver.mock.calls[0]!;
+    expect(call).toHaveLength(1);
+    expect(call[0]).toMatchObject({ url: "https://example.test/resource" });
   });
 
   it("a protocol call exceeding protocolTimeoutMs produces a distinct TIMEOUT failure, never a cancellation", async () => {
@@ -116,7 +135,7 @@ describe("JobRunner", () => {
         }),
     });
 
-    const outcome = await runner.run(makeCommand());
+    const outcome = await runner.run(makeWork(), makeContext());
 
     expect(outcome).toMatchObject({
       kind: "failed",
@@ -130,7 +149,10 @@ describe("JobRunner", () => {
     const { runner, protocolExecute, release } = makeJobRunner({ permits });
     const controller = new AbortController();
 
-    const outcomePromise = runner.run(makeCommand(), controller.signal);
+    const outcomePromise = runner.run(
+      makeWork(),
+      makeContext({ signal: controller.signal }),
+    );
     await vi.waitFor(() => expect(permits.acquire).toHaveBeenCalled());
     controller.abort();
 
@@ -146,7 +168,7 @@ describe("JobRunner", () => {
     it("resolves a params-scope text/plain ref into the materialized request", async () => {
       const fakes = makeJobRunner();
       fakes.seed("hash-param", "text/plain", "42");
-      const command = makeCommand({
+      const work = makeWork({
         protocol: {
           kind: "httpjson",
           url: "https://example.test/users/{{params.id}}",
@@ -165,7 +187,7 @@ describe("JobRunner", () => {
         ],
       });
 
-      await fakes.runner.run(command);
+      await fakes.runner.run(work, makeContext());
 
       expect(fakes.protocolExecute).toHaveBeenCalledTimes(1);
       const [requestArg] = fakes.protocolExecute.mock.calls[0]!;
@@ -177,7 +199,7 @@ describe("JobRunner", () => {
     it("resolves a steps-scope JSON ref into the materialized request via its valuePath", async () => {
       const fakes = makeJobRunner();
       fakes.seed("hash-step", "application/json", { output: { id: "99" } });
-      const command = makeCommand({
+      const work = makeWork({
         protocol: {
           kind: "httpjson",
           url: "https://example.test/users/{{steps.step-0.output.id}}",
@@ -195,7 +217,7 @@ describe("JobRunner", () => {
         ],
       });
 
-      await fakes.runner.run(command);
+      await fakes.runner.run(work, makeContext());
 
       expect(fakes.protocolExecute).toHaveBeenCalledTimes(1);
       const [requestArg] = fakes.protocolExecute.mock.calls[0]!;

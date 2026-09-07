@@ -19,6 +19,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
+    "@lcase/events": "workspace:*",
     "@lcase/json-ref-binder": "workspace:*",
     "ajv": "^8.17.1"
   },

@@ -8,7 +8,6 @@ import type {
 // must not read as bus-compatible. Recorded directly via
 // `WorkerLifecycleEventSink.record()`, never published on the bus.
 export type WorkerLifecycleEventBase = {
-  executionId: string;
   jobId: string;
   runId: string;
   stepId: string;
@@ -31,7 +30,6 @@ export type WorkerLifecycleEvent =
 
 function baseFrom(command: ExecuteJobCommand): WorkerLifecycleEventBase {
   return {
-    executionId: command.executionId,
     jobId: command.jobId,
     runId: command.runId,
     stepId: command.stepId,

@@ -76,8 +76,24 @@ describe("deriveTraceHeaderFields()", () => {
   });
 
   it("falls back to a random 16 hex char spanId for a domain with no registered span config", () => {
-    const resolved = deriveTraceHeaderFields<"job.mcp.queued">("job", jobScope);
+    // `run` rather than `job`: job now has a registered config.
+    const resolved = deriveTraceHeaderFields<"run.completed">("run", {
+      flowid: "flow-1",
+      flowversionid: "flowversion-1",
+      runid: "run-1",
+      source: "lowercase://test",
+    });
     expect(resolved.spanId).toMatch(/^[0-9a-f]{16}$/);
     expect(resolved.parentSpanId).toBeUndefined();
+  });
+
+  it("derives a deterministic job spanId parented on its step", () => {
+    const resolved = deriveTraceHeaderFields<"job.mcp.queued">("job", jobScope);
+    expect(resolved.spanId).toBe(
+      deriveSpanId("job", jobScope.runid, jobScope.stepid, jobScope.jobid),
+    );
+    expect(resolved.parentSpanId).toBe(
+      deriveSpanId("step", jobScope.runid, jobScope.stepid),
+    );
   });
 });

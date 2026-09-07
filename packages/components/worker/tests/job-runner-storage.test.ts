@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { JobRunner } from "../src/job-runner.js";
-import { makeCommand } from "./helpers/fixtures.js";
+import { makeContext, makeWork } from "./helpers/fixtures.js";
 import {
   GENEROUS_CONFIG,
   makeJobRunner,
@@ -20,7 +20,7 @@ describe("JobRunner output storage", () => {
     });
     const runner = new JobRunner(fakes.runnerDeps(), GENEROUS_CONFIG);
 
-    const outcome = await runner.run(makeCommand());
+    const outcome = await runner.run(makeWork(), makeContext());
 
     expect(outcome).toEqual({
       kind: "failed",
@@ -42,7 +42,7 @@ describe("JobRunner output storage", () => {
       }),
     });
 
-    const outcome = await runner.run(makeCommand());
+    const outcome = await runner.run(makeWork(), makeContext());
     if (outcome.kind !== "failed") throw new Error("expected failed");
 
     expect(outcome.output).toBeDefined();
@@ -59,8 +59,8 @@ describe("JobRunner output storage", () => {
         payload: { message: "hello", count: 3 },
       }),
     });
-    const command = makeCommand({
-      exports: {
+    const work = makeWork({
+      exportRefs: {
         summary: {
           exportName: "summary",
           valuePath: ["output", "message"],
@@ -71,7 +71,7 @@ describe("JobRunner output storage", () => {
       },
     });
 
-    const outcome = await runner.run(command);
+    const outcome = await runner.run(work, makeContext());
     if (outcome.kind !== "completed") {
       throw new Error(`expected completed, got ${outcome.kind}`);
     }
@@ -90,8 +90,8 @@ describe("JobRunner output storage", () => {
         payload: { message: "hello", count: 3 },
       }),
     });
-    const command = makeCommand({
-      exports: {
+    const work = makeWork({
+      exportRefs: {
         full: {
           exportName: "full",
           valuePath: ["output"],
@@ -110,7 +110,7 @@ describe("JobRunner output storage", () => {
       },
     });
 
-    const outcome = await runner.run(command);
+    const outcome = await runner.run(work, makeContext());
     if (outcome.kind !== "completed") {
       throw new Error(`expected completed, got ${outcome.kind}`);
     }
@@ -125,8 +125,8 @@ describe("JobRunner output storage", () => {
     const { runner } = makeJobRunner({
       protocolResult: () => ({ ok: true, payload: { message: "hello" } }),
     });
-    const command = makeCommand({
-      exports: {
+    const work = makeWork({
+      exportRefs: {
         full: {
           exportName: "full",
           valuePath: ["output"],
@@ -142,7 +142,7 @@ describe("JobRunner output storage", () => {
       },
     });
 
-    const outcome = await runner.run(command);
+    const outcome = await runner.run(work, makeContext());
 
     expect(outcome).toMatchObject({
       kind: "failed",

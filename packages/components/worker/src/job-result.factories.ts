@@ -18,7 +18,6 @@ export type StoredExecutionOutputs = {
 export function cancelledResult(command: ExecuteJobCommand): JobResult {
   return {
     status: "failed",
-    executionId: command.executionId,
     jobId: command.jobId,
     error: {
       code: "CANCELLED",
@@ -35,7 +34,6 @@ export function failedResult(
 ): JobResult {
   return {
     status: "failed",
-    executionId: command.executionId,
     jobId: command.jobId,
     error,
     ...(output ? { output } : {}),
@@ -48,7 +46,6 @@ export function completedResult(
 ): JobResult {
   return {
     status: "completed",
-    executionId: command.executionId,
     jobId: command.jobId,
     ...outputs,
   };

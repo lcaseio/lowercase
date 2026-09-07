@@ -27,14 +27,12 @@ describe("Worker capacity", () => {
     const { worker, settlers, settleNext, protocolExecute } =
       makeGatedWorker(1);
 
-    const firstPromise = worker.executeCommand(
-      makeCommand({ executionId: "exec-1" }),
-    );
+    const firstPromise = worker.executeCommand(makeCommand({ jobId: "job-1" }));
     await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     let secondSettled = false;
     const secondPromise = worker
-      .executeCommand(makeCommand({ executionId: "exec-2" }))
+      .executeCommand(makeCommand({ jobId: "job-2" }))
       .then((result) => {
         secondSettled = true;
         return result;
@@ -59,9 +57,9 @@ describe("Worker capacity", () => {
   it("runs jobs concurrently up to the configured bound", async () => {
     const { worker, settlers, protocolExecute } = makeGatedWorker(2);
 
-    void worker.executeCommand(makeCommand({ executionId: "exec-1" }));
-    void worker.executeCommand(makeCommand({ executionId: "exec-2" }));
-    void worker.executeCommand(makeCommand({ executionId: "exec-3" }));
+    void worker.executeCommand(makeCommand({ jobId: "job-1" }));
+    void worker.executeCommand(makeCommand({ jobId: "job-2" }));
+    void worker.executeCommand(makeCommand({ jobId: "job-3" }));
 
     await vi.waitFor(() => expect(settlers).toHaveLength(2));
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -74,14 +72,12 @@ describe("Worker capacity", () => {
     const { worker, settlers, settleNext, protocolExecute, events } =
       makeGatedWorker(1);
 
-    const firstPromise = worker.executeCommand(
-      makeCommand({ executionId: "exec-1" }),
-    );
+    const firstPromise = worker.executeCommand(makeCommand({ jobId: "job-1" }));
     await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     const controller = new AbortController();
     const secondPromise = worker.executeCommand(
-      makeCommand({ executionId: "exec-2" }),
+      makeCommand({ jobId: "job-2" }),
       controller.signal,
     );
     controller.abort();
@@ -107,7 +103,7 @@ describe("Worker capacity", () => {
     controller.abort();
 
     const result = await worker.executeCommand(
-      makeCommand({ executionId: "exec-1" }),
+      makeCommand({ jobId: "job-1" }),
       controller.signal,
     );
 
@@ -120,7 +116,7 @@ describe("Worker capacity", () => {
 
     // Capacity was never taken, so an ordinary job still runs.
     await expect(
-      worker.executeCommand(makeCommand({ executionId: "exec-2" })),
+      worker.executeCommand(makeCommand({ jobId: "job-2" })),
     ).resolves.toMatchObject({ status: "completed" });
   });
 
@@ -134,13 +130,13 @@ describe("Worker capacity", () => {
     });
 
     await expect(
-      worker.executeCommand(makeCommand({ executionId: "exec-1" })),
+      worker.executeCommand(makeCommand({ jobId: "job-1" })),
     ).rejects.toBe(thrown);
 
     // A second job must reach the runner rather than hang forever queued
     // behind the first.
     await expect(
-      worker.executeCommand(makeCommand({ executionId: "exec-2" })),
+      worker.executeCommand(makeCommand({ jobId: "job-2" })),
     ).rejects.toBe(thrown);
     expect(protocolExecute).toHaveBeenCalledTimes(2);
   });

@@ -30,8 +30,35 @@ describe("deriveSpanId() and deriveSpanFor()", () => {
   });
 
   it("returns undefined for a domain with no registered span config", () => {
-    expect(
-      deriveSpanFor("job", { runid: "run-1", jobid: "job-a" }),
-    ).toBeUndefined();
+    // `run` rather than `job`: job now has a registered config, so it is no
+    // longer an example of an unregistered domain.
+    expect(deriveSpanFor("run", { runid: "run-1" })).toBeUndefined();
+  });
+
+  it("derives a job span whose parent is its step's span", () => {
+    const scope = { runid: "run-1", stepid: "step-a", jobid: "job-1" };
+    const derived = deriveSpanFor("job", scope);
+
+    expect(derived?.spanId).toBe(
+      deriveSpanId("job", "run-1", "step-a", "job-1"),
+    );
+    // The linkage that matters: a job's parentSpanId is exactly the spanId the
+    // step's own config derives, so the two agree without a coordinator.
+    expect(derived?.parentSpanId).toBe(deriveSpanId("step", "run-1", "step-a"));
+    expect(derived?.parentSpanId).toBe(deriveSpanFor("step", scope)?.spanId);
+  });
+
+  it("gives two jobs under one step distinct spans sharing one parent", () => {
+    const base = { runid: "run-1", stepid: "step-a" };
+    const first = deriveSpanFor("job", { ...base, jobid: "job-1" });
+    const second = deriveSpanFor("job", { ...base, jobid: "job-2" });
+
+    expect(first?.spanId).not.toBe(second?.spanId);
+    expect(first?.parentSpanId).toBe(second?.parentSpanId);
+  });
+
+  it("derives the same job span id on every call", () => {
+    const scope = { runid: "run-1", stepid: "step-a", jobid: "job-1" };
+    expect(deriveSpanFor("job", scope)).toEqual(deriveSpanFor("job", scope));
   });
 });
