@@ -2,10 +2,7 @@ import { describe, it, expect } from "vitest";
 import { makeRunPlanReducer } from "../../src/reducers/make-run-plan.reducer.js";
 import type { MakeRunPlanMsg } from "../../src/types/message.types.js";
 
-import {
-  reusableStepDataResultNotOkState,
-  reusableStepDataResultOkState,
-} from "../fixtures/reusable-step-data-result.state.js";
+import { reusableStepDataResultOkState } from "../fixtures/reusable-step-data-result.state.js";
 import {
   makeRunPlanNewState,
   makeRunPlanNewStateFAProblems,

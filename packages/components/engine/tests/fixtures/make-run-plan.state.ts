@@ -1,7 +1,10 @@
-import { RunContext } from "@lcase/types";
-import { EngineState } from "../../src/engine.types";
-import { flowDef, flowDefWithProblems } from "./flow-definition";
-import { flowAnalysisB, flowAnalysisBWithProblem } from "./flow-analysis.state";
+import type { RunContext } from "@lcase/types";
+import type { EngineState } from "../../src/engine.types.js";
+import { flowDef, flowDefWithProblems } from "./flow-definition.js";
+import {
+  flowAnalysisB,
+  flowAnalysisBWithProblem,
+} from "./flow-analysis.state.js";
 
 // changes to state are marked on happy path
 export const makeRunPlanNewState: EngineState = {

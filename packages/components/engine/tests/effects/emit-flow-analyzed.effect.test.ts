@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { EmitterFactoryPort } from "@lcase/ports";
+import type { EmitterFactoryPort } from "@lcase/ports";
 import type {
   EffectHandlerDeps,
   EmitFlowAnalyzedFx,
@@ -15,6 +15,7 @@ describe("emitFlowSubmittedFx()", () => {
       type: "EmitFlowAnalyzed",
       scope: {
         flowid: "test-flowid",
+        flowversionid: "test-flowversionid",
         runid: "test-runid",
         source: "test-source",
       },

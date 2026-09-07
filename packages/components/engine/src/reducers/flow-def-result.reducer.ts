@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { EngineState, Reducer } from "../engine.types.js";
-import { FlowDefResultMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
+import type { FlowDefResultMsg } from "../types/message.types.js";
 
 export const flowDefResultReducer: Reducer<FlowDefResultMsg> = (
   state: EngineState,

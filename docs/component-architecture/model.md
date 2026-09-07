@@ -4,7 +4,14 @@ Status: draft design note.
 
 Implementation guides:
 
-- [Worker V2 migration](./worker-v2/README.md)
+- [Worker Component Architecture](./worker/README.md)
+- [Worker migration sequence](./worker/MIGRATION.md)
+- [In-Process Message Delivery](./in-process-messaging/README.md)
+
+> The Worker-specific direct-call, request/return, and wrapper guidance in this
+> draft is superseded by the active Worker and in-process messaging guides
+> above. The remaining material is preserved as the broader draft model and as
+> design history; accepted ADRs remain authoritative where they apply.
 
 This document captures a candidate direction for moving lowercase components between
 in-process and out-of-process deployments without rewriting component core logic.

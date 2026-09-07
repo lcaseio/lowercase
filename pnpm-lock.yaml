@@ -510,6 +510,9 @@ importers:
         specifier: ^11.0.1
         version: 11.0.1
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
       '@lcase/ports':
         specifier: workspace:*
         version: link:../../ports
@@ -519,6 +522,12 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6))
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript-eslint:
+        specifier: ^8.46.4
+        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)

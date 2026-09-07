@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { makeRunPlanPlanner } from "../../src/planners/make-run-plan.planner.js";
 import type { MakeRunPlanMsg } from "../../src/types/message.types.js";
-import { EmitRunDeniedFx } from "../../src/types/effect.types.js";
+import type { EmitRunDeniedFx } from "../../src/types/effect.types.js";
 import { reusableStepDataResultOkState } from "../fixtures/reusable-step-data-result.state.js";
 import {
   makeRunPlanNewState,
   makeRunPlanNewStateFAProblems,
 } from "../fixtures/make-run-plan.state.js";
-import { EmitRunStartedFx } from "../../src/engine.types.js";
+import type { EmitRunStartedFx } from "../../src/engine.types.js";
 
 describe("makeRunPlanPlanner()", () => {
   it("makes a EmitRunStartedFx effect when run status is 'started'", () => {

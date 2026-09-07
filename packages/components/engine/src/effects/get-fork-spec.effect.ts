@@ -1,7 +1,7 @@
-import { ForkSpec } from "@lcase/types";
-import { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
-import { GetForkSpecFx } from "../types/effect.types.js";
-import { ForkSpecResultMsg } from "../types/message.types.js";
+import type { ForkSpec } from "@lcase/types";
+import type { EffectHandler, EffectHandlerDeps } from "../engine.types.js";
+import type { GetForkSpecFx } from "../types/effect.types.js";
+import type { ForkSpecResultMsg } from "../types/message.types.js";
 
 export const getForkSpec: EffectHandler<"GetForkSpec"> = async (
   effect: GetForkSpecFx,

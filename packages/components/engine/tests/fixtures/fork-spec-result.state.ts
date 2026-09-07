@@ -1,5 +1,5 @@
-import { RunContext } from "@lcase/types";
-import { EngineState } from "../../src/engine.types";
+import type { RunContext } from "@lcase/types";
+import type { EngineState } from "../../src/engine.types.js";
 import { flowDef } from "./flow-definition.js";
 
 export const forkSpecOkState: EngineState = {

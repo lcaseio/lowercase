@@ -4,7 +4,7 @@ import type {
   EffectHandlerDeps,
   EmitRunStartedFx,
 } from "../../src/engine.types.js";
-import { EmitterFactoryPort } from "@lcase/ports";
+import type { EmitterFactoryPort } from "@lcase/ports";
 
 describe("flowSubmittedEffect", () => {
   it("creates an emitter and emits with the correct args", async () => {
@@ -16,6 +16,7 @@ describe("flowSubmittedEffect", () => {
       data: null,
       scope: {
         flowid: "test-flowid",
+        flowversionid: "test-flowversionid",
         runid: "test-runid",
         source: "lowercase://engine",
       },

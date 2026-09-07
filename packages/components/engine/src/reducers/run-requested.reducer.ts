@@ -1,7 +1,7 @@
 import { produce } from "immer";
-import { EngineState, Reducer } from "../engine.types.js";
-import { RunRequestedMsg } from "../types/message.types.js";
-import { RunContext } from "@lcase/types";
+import type { EngineState, Reducer } from "../engine.types.js";
+import type { RunRequestedMsg } from "../types/message.types.js";
+import type { RunContext } from "@lcase/types";
 
 export const runRequestedReducer: Reducer<RunRequestedMsg> = (
   state: EngineState,

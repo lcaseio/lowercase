@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { ArtifactReaderPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { getFlowDefFx } from "../../src/effects/get-flow-def.effect.js";
-import { GetFlowDefFx } from "../../src/types/effect.types.js";
-import { FlowDefResultMsg } from "../../src/types/message.types.js";
-import { FlowDefinition } from "@lcase/types";
+import type { GetFlowDefFx } from "../../src/types/effect.types.js";
+import type { FlowDefResultMsg } from "../../src/types/message.types.js";
+import type { FlowDefinition } from "@lcase/types";
 
 const flowDef: FlowDefinition = {
   name: "test-flowname",

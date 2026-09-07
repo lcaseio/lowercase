@@ -3,11 +3,8 @@ import { flowDefResultPlanner } from "../../src/planners/flow-def-result.planner
 import type { FlowDefResultMsg } from "../../src/types/message.types.js";
 import { runRequestedNewState } from "../fixtures/run-requested.state.js";
 import { flowDef } from "../fixtures/flow-definition.js";
-import {
-  flowDefResultNotOkState,
-  flowDefResultOkState,
-} from "../fixtures/flow-def-result.state.js";
-import {
+import { flowDefResultOkState } from "../fixtures/flow-def-result.state.js";
+import type {
   EmitRunDeniedFx,
   GetForkSpecFx,
   MakeRunPlanFx,

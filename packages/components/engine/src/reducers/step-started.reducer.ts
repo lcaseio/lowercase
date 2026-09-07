@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { StepStartedMsg } from "../types/message.types.js";
-import { EngineState, Reducer } from "../engine.types.js";
+import type { StepStartedMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
 import { completeParallelEdge } from "./utils/complete-parallel-edge.reducer.js";
 
 export const stepStartedReducer: Reducer<StepStartedMsg> = (
@@ -26,6 +26,8 @@ export const stepStartedReducer: Reducer<StepStartedMsg> = (
         }
       }
     } else if (stepType === "join") {
+      // A join step starts no downstream work here -- its readiness is
+      // decided by plan-join-edge as each inbound edge completes.
     } else {
       if (fa.inEdges[stepId] !== undefined) {
         for (const edge of fa.inEdges[stepId]) {

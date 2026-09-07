@@ -1,4 +1,4 @@
-import { FlowAnalysis } from "@lcase/types";
+import type { FlowAnalysis } from "@lcase/types";
 
 const stepId = "test-stepid";
 export const flowAnalysis: FlowAnalysis = {

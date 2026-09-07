@@ -1,6 +1,6 @@
 import { produce } from "immer";
-import { EngineState, Reducer } from "../engine.types.js";
-import { BranchValueResolvedMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
+import type { BranchValueResolvedMsg } from "../types/message.types.js";
 
 export const branchValueResolvedReducer: Reducer<BranchValueResolvedMsg> = (
   state: EngineState,

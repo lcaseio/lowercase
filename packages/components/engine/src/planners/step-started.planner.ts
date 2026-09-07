@@ -4,7 +4,6 @@ import type {
   EngineEffect,
   EngineState,
   Planner,
-  WriteContextToDiskFx,
 } from "../engine.types.js";
 import type { StepStartedMsg } from "../types/message.types.js";
 

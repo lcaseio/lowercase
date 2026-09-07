@@ -6,7 +6,7 @@ import type { EmitStepReusedFx } from "../../src/types/effect.types.js";
 
 describe("emitStepReusedFx", () => {
   it("emits step.reused via the emit() core, sourced from deps.source", async () => {
-    const publish = vi.fn(async () => {});
+    const publish = vi.fn<EventBusPort["publish"]>(async () => {});
     const bus: EventBusPort = {
       publish,
       subscribe: vi.fn(() => () => undefined),

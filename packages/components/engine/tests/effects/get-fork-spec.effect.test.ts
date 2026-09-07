@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { ArtifactReaderPort } from "@lcase/ports";
 import type { EffectHandlerDeps } from "../../src/engine.types.js";
 import { getForkSpec } from "../../src/effects/get-fork-spec.effect.js";
-import { GetForkSpecFx } from "../../src/types/effect.types.js";
-import { ForkSpecResultMsg } from "../../src/types/message.types.js";
-import { ForkSpec } from "@lcase/types";
+import type { GetForkSpecFx } from "../../src/types/effect.types.js";
+import type { ForkSpecResultMsg } from "../../src/types/message.types.js";
+import type { ForkSpec } from "@lcase/types";
 
 const forkSpec: ForkSpec = {
   parentRunId: "test-parentrunid",

@@ -1,8 +1,8 @@
 import { produce } from "immer";
-import { EngineState, Reducer } from "../engine.types.js";
-import { MakeRunPlanMsg } from "../types/message.types.js";
+import type { EngineState, Reducer } from "../engine.types.js";
+import type { MakeRunPlanMsg } from "../types/message.types.js";
 import { analyzeFlow, analyzeRefs } from "@lcase/flow-analysis";
-import { FlowParamDefinition, StepContext } from "@lcase/types";
+import type { FlowParamDefinition, StepContext } from "@lcase/types";
 
 export const makeRunPlanReducer: Reducer<MakeRunPlanMsg> = (
   state: EngineState,

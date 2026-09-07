@@ -8,7 +8,7 @@ import type {
 
 describe("emitStepPlannedFx", () => {
   it("emits step.planned via the emit() core, sourced from deps.source", async () => {
-    const publish = vi.fn(async () => {});
+    const publish = vi.fn<EventBusPort["publish"]>(async () => {});
     const bus: EventBusPort = {
       publish,
       subscribe: vi.fn(() => () => undefined),

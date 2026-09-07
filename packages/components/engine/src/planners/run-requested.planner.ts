@@ -1,5 +1,5 @@
 import type { EngineEffect, EngineState, Planner } from "../engine.types.js";
-import { EmitRunDeniedFx, GetFlowDefFx } from "../types/effect.types.js";
+import type { EmitRunDeniedFx, GetFlowDefFx } from "../types/effect.types.js";
 import type { RunRequestedMsg } from "../types/message.types.js";
 
 export const runRequestedPlanner: Planner<RunRequestedMsg> = (

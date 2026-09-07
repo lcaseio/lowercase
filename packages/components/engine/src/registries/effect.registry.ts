@@ -37,7 +37,7 @@ import type {
   EmitStepStartedFx,
   WriteContextToDiskFx,
 } from "../engine.types.js";
-import {
+import type {
   EmitRunDeniedFx,
   EmitStepReusedFx,
   GetFlowDefFx,

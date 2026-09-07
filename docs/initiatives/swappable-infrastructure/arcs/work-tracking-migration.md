@@ -1,6 +1,6 @@
 # Prove Swappable Infrastructure Initiative — Arc: Work-tracking migration (Change C6)
 
-**Context:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C11) · **Next:** [`sql-adapter.md`](./sql-adapter.md) (Changes C12–C13)
+**Context:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C13) · **Next:** [`package-tooling.md`](./package-tooling.md) (Change C10), [`sql-adapter.md`](./sql-adapter.md) (Changes C14–C15)
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Establishes unambiguous internal work identifiers and migrates the living documentation to the resulting layout and terminology.
 
@@ -21,6 +21,6 @@ This Change separates internal planning IDs from GitHub objects, then makes the 
 
 - Moved the canonical work-tracking tree from `docs/milestones/` to `docs/initiatives/`, renamed each `MILESTONE.md` index to `INITIATIVE.md`, and repaired repository links to the moved records.
 - Replaced the old internal Milestone/PR terminology throughout current documentation and active guidance with Initiative/Arc/Change; preserved real GitHub PR references as `PR #N`.
-- Added [`docs/work-tracking.md`](../../work-tracking.md) as the concise, canonical rule set and pointed repository guidance at it so future agents follow the same convention.
+- Added [`docs/work-tracking.md`](../../../work-tracking.md) as the concise, canonical rule set and pointed repository guidance at it so future agents follow the same convention.
 - Removed internal tracking labels from ordinary code comments, audited dated planning/process prose, and updated living documentation and tooling references from `pipewarp` to `lowercase`.
 - Kept old public GitHub PR descriptions unchanged. The implementation landed in PR #365 through local commits `716da1b` (structural move) and `18a61f9` (terminology and cleanup).

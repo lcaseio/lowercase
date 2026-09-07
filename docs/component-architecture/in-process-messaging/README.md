@@ -1,11 +1,13 @@
 # In-Process Message Delivery
 
-Status: proposed implementation guide.
+Status: active architecture guide; the C9 mailbox foundation is implemented,
+and the first component slice remains proposed.
 
 This document defines the deliberately small in-process Message router and
-mailbox that lowercase should build first. It is the durable guide to the local
-architecture and its growth path, not a claim that every capability described
-here already exists.
+mailbox that lowercase is building first. C9 landed the inert foundation; the
+first live component slice is still proposed. This is the durable guide to the
+local architecture and its growth path, not a claim that every capability
+described here already exists.
 
 ## Read this with
 
@@ -17,8 +19,10 @@ here already exists.
   intentionally chooses a much smaller first implementation.
 - [Component Architecture Draft](../model.md) supplies the broader component,
   host, port, and adapter vocabulary.
-- [Worker V2](../worker-v2/README.md) defines the Worker core that this Message
-  boundary should preserve.
+- [Worker Component Architecture](../worker/README.md) defines the current
+  Worker root, collaborator, and Message-boundary design.
+- [Worker Migration](../worker/MIGRATION.md) sequences the structural runway
+  before the first live Message cutover.
 - [ADR-0005](../../adr/0005-package-tier-taxonomy.md) defines the repository's
   package tiers and dependency direction.
 
@@ -182,21 +186,32 @@ Retain the stable topology nouns from the larger carrier design without taking
 on its lifecycle and scheduling machinery. Conceptually, runtime needs only:
 
 ```ts
-type Publication<T extends EventType = EventType> = {
+type Publication<Types extends readonly EventType[] = readonly EventType[]> = {
   id: string;
-  types: readonly T[];
+  types: Types;
 };
 
-type LogicalSubscription<T extends EventType = EventType> = {
+type LogicalSubscription<
+  Types extends readonly EventType[] = readonly EventType[],
+> = {
   id: string;
-  publication: Publication<T>;
+  publication: Publication<Types>;
 };
 
-type MessageBinding<T extends EventType = EventType> = {
-  subscription: LogicalSubscription<T>;
-  handler: MessageHandler<T>;
-};
+type MessageBinding<Types extends readonly EventType[] = readonly EventType[]> =
+  {
+    subscription: LogicalSubscription<Types>;
+    handler: MessageHandler<Types[number]>;
+    maxInFlight?: number;
+  };
 ```
+
+The tuple is authoritative and its union is derived as
+`Types[number]`. Runtime's `definePublication()` preserves that tuple;
+`definePublicationFor<Union>()` additionally checks that an independently
+defined union is listed completely. Do not annotate a publication as
+`types: readonly T[]`: that proves only that every listed value belongs to `T`,
+not that the list contains every member of `T`.
 
 The declaration types may live beside the messaging ports so a later carrier
 can share them, but runtime alone owns their values. They are not APIs for
@@ -290,18 +305,19 @@ Components must still commit any state required by a resulting Message before
 publishing it. The MVP does not promise whether a scheduled handler or the
 publisher's continuation after `await publish()` receives the next microtask.
 
-### One serial mailbox per subscription
+### One mailbox with explicit concurrency per subscription
 
 Each logical subscription owns:
 
 - one unbounded in-memory FIFO queue;
 - exactly one handler;
 - one scheduled processing loop; and
-- fixed processing concurrency of one.
+- a positive `maxInFlight`, defaulting to one.
 
-One handler attempt must settle before that mailbox starts its next Message.
-This gives FIFO handler starts and completions within one subscription. There is
-no ordering guarantee between different subscriptions.
+With `maxInFlight: 1`, one handler attempt must settle before that mailbox starts
+its next Message, giving FIFO starts and completions. With a larger value,
+assignment and handler starts remain FIFO but completions may be out of order.
+There is no ordering guarantee between different subscriptions.
 
 This does not serialize an entire component. Engine's new terminal mailbox and
 its legacy EventBus ingress remain separate paths; Observability likewise has
@@ -315,10 +331,11 @@ A slow async handler blocks only its own mailbox. A CPU-bound handler still
 blocks the shared JavaScript event loop; this is temporal isolation, not process
 or CPU isolation.
 
-Worker throughput is therefore one job at a time in the first implementation,
-even if the existing Worker core is configured for more concurrency. That is an
-explicit functional-but-slower MVP limitation, not a permanent replacement for
-Worker capacity configuration.
+For the first HTTP slice, Engine and Observability bindings remain at one.
+Worker's binding uses `worker.maxConcurrentJobs`, avoiding a regression from
+its current parallelism. This per-subscription delivery bound is not a
+component-wide capacity group. Worker still owns its final execution-capacity
+invariant, even when both values initially match.
 
 ### Failure isolation
 
@@ -412,14 +429,16 @@ guarantees the implementation does not provide.
 | Component edge   | Interpret inbound Messages and construct canonical outbound Messages    |
 | Runtime topology | Declare publications, subscriptions, fanout, and hosted handler binding |
 | Local router     | Validate publisher authority, snapshot, route, and track idleness       |
-| Mailbox          | Queue serially, invoke one handler asynchronously, isolate failures     |
+| Mailbox          | Queue FIFO, invoke within its concurrency bound, and isolate failures   |
 | Redis log driver | Later: append/read/ack/claim mechanics only                             |
 
-The Worker owns translating `job.httpjson.submitted` into `ExecuteJobCommand`
-and translating a modeled `JobResult` into exactly one canonical terminal
-Message. Engine owns constructing the submitted Message and interpreting the
-terminal Message. Observability owns ingesting Messages into its sinks. Runtime
-only connects those endpoints.
+Worker receives and retains the complete `job.httpjson.submitted` Message as the
+canonical execution origin. It may temporarily project genuinely different
+execution concepts into `ExecuteJobCommand`, then translates a modeled
+`JobResult` into exactly one canonical terminal Message. Engine owns
+constructing the submitted Message and interpreting the literal terminal
+Message. Observability owns ingesting Messages into its sinks. Runtime only
+connects those endpoints.
 
 There is no Engine-Worker integration object and no file named after a pair of
 components.
@@ -446,9 +465,13 @@ packages/
 
     worker/
       src/
-        message-boundary/
-          httpjson-submitted.handler.ts
-          httpjson-terminal.factory.ts
+        worker.ts                         # stable component root + handler
+        execution/
+          job-runner.ts                   # focused one-job algorithm
+          worker-capacity.ts              # Worker-owned capacity policy
+        messaging/
+          httpjson-submission.ts          # pure interpretation/projection
+          worker-messages.ts              # canonical envelope construction
 
     observability/
       src/
@@ -500,7 +523,6 @@ The first implementation deliberately excludes:
 - automatic or operator-triggered retry;
 - retained failed deliveries or dead-letter storage;
 - managed health state;
-- configurable mailbox concurrency;
 - shared component capacity groups;
 - fair scheduling across subscriptions;
 - multiple competing handler instances;
@@ -612,16 +634,16 @@ Alternative policies such as waiting, best-effort dropping, or disk spooling
 must be explicit per use case. A file-backed queue increases backlog capacity;
 it does not solve a sustained producer/consumer rate mismatch.
 
-### Configurable concurrency and shared capacity
+### Shared capacity across subscriptions
 
-First allow `maxInFlight > 1` within a single mailbox. FIFO can then describe
-assignment/start order, not completion order.
+The foundation already supports `maxInFlight > 1` within one mailbox. FIFO then
+describes assignment/start order, not completion order.
 
 Before one stateful component consumes several subscriptions concurrently, add
 a component-level capacity group shared by those subscriptions. Engine and
-Observability should initially serialize all their ingress through one lane;
-Worker can eventually use its existing `maxConcurrentJobs` as the command
-subscription's limit.
+Observability initially serialize each binding independently; Worker uses its
+existing `maxConcurrentJobs` as the command subscription's limit and retains a
+Worker-owned capacity collaborator as its final invariant.
 
 If multiple subscriptions share a capacity group, add fair scheduling so a
 busy mailbox cannot monopolize every lane.
@@ -718,7 +740,8 @@ uses it end to end and proves:
 - Worker constructs and publishes exactly one canonical terminal Message;
 - Observability receives its independent submitted-Message copy;
 - Engine and Observability receive independent terminal deliveries;
-- each logical subscription processes FIFO with concurrency one;
+- each logical subscription starts work FIFO within its declared
+  `maxInFlight` bound;
 - one blocked or failing subscription does not block another;
 - handler execution is never inline with publication;
 - Message snapshots cannot mutate one another;

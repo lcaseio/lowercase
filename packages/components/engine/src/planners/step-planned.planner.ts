@@ -7,11 +7,10 @@ import type {
   EngineState,
   ExecuteHttpJsonJobFx,
   Planner,
-  WriteContextToDiskFx,
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
-import {
+import type {
   EmitStepReusedFx,
   ResolveBranchValueFx,
 } from "../types/effect.types.js";

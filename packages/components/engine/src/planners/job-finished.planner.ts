@@ -1,13 +1,11 @@
-import { JobFailedEvent } from "@lcase/types";
+import type { JobFailedEvent } from "@lcase/types";
 import type {
   Planner,
   EngineEffect,
   EngineState,
-  JobCompletedMsg,
   EmitStepCompletedFx,
   JobFinishedMsg,
   EmitStepFailedFx,
-  WriteContextToDiskFx,
 } from "../engine.types.js";
 
 export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
