@@ -1,23 +1,15 @@
-import type { EventType } from "@lcase/types";
-import type { MessageOf } from "@lcase/ports";
+import type {
+  DeliveredMessage,
+  ReportDeliveryFailure,
+} from "../delivery.types.js";
 
-/** One delivered Message, in the erased form the router moves internally. */
-export type DeliveredMessage = MessageOf<EventType>;
-
-/**
- * What a failed delivery reports. Deliberately identity only -- a Message's
- * `data` can carry request bodies, headers, and other caller-supplied input,
- * so it must not be written to a log by default.
- */
-export type DeliveryFailure = {
-  subscriptionId: string;
-  messageId: string;
-  messageType: EventType;
-  source: string;
-  error: unknown;
-};
-
-export type ReportDeliveryFailure = (failure: DeliveryFailure) => void;
+// Re-exported so the mailbox's own importers keep one import site, while the
+// definitions live where both carriers can reach them.
+export type {
+  DeliveredMessage,
+  DeliveryFailure,
+  ReportDeliveryFailure,
+} from "../delivery.types.js";
 
 export type SubscriptionMailboxDeps = {
   subscriptionId: string;

@@ -19,9 +19,12 @@ import {
 } from "@lcase/worker";
 import { vi } from "vitest";
 import { createInProcessMessageRouter } from "../../src/messaging/in-process/in-process-message-router.js";
+import type { MessageRouter } from "../../src/messaging/message-router.js";
 import {
   engineHttpJobTerminalSubscription,
   httpJobCommandPublication,
+  httpJobPublications,
+  httpJobSubscriptions,
   httpJobTerminalPublication,
   observabilityHttpJobCommandSubscription,
   observabilityHttpJobTerminalSubscription,
@@ -104,6 +107,13 @@ function createRecordingSink(id: string) {
 export type HttpJobGraphOptions = {
   respond?: () => Response;
   maxConcurrentJobs?: number;
+  /**
+   * The carrier to assemble the graph onto. Defaults to a fresh in-process
+   * router; a log-backed one is handed in by the Redis slice, which is the
+   * point -- the same components and the same bindings, moved by something
+   * else entirely.
+   */
+  router?: MessageRouter;
 };
 
 /**
@@ -116,9 +126,12 @@ export type HttpJobGraphOptions = {
  * real component roots, which this reproduces exactly.
  */
 export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
-  const router = createInProcessMessageRouter({
-    publications: [httpJobCommandPublication, httpJobTerminalPublication],
-  });
+  const router =
+    options.router ??
+    createInProcessMessageRouter({
+      publications: httpJobPublications,
+      subscriptions: httpJobSubscriptions,
+    });
   const httpJobCommands = router.publisher(httpJobCommandPublication);
   const httpJobTerminals = router.publisher(httpJobTerminalPublication);
 

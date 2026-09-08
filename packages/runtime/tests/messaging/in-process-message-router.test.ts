@@ -17,8 +17,12 @@ import {
 } from "../../src/messaging/in-process/in-process-message-router.js";
 
 /** A deferred bind, so one array can carry bindings for different
- * publications without needing an erased binding type. */
-type Bind = (router: InProcessMessageRouter) => void;
+ * publications without needing an erased binding type. The subscription is
+ * carried alongside it so a helper can declare exactly what it binds. */
+type Bind = {
+  subscription: LogicalSubscription;
+  apply: (router: InProcessMessageRouter) => void;
+};
 
 // The authoritative-union shape C10 uses: the union is named once and shared
 // by the publication and every handler/publisher signature.
@@ -88,59 +92,104 @@ function binding<const Types extends readonly EventType[]>(
   handler: MessageHandler<Types[number]>,
   maxInFlight?: number,
 ): Bind {
-  return (router) =>
-    router.bind({
-      subscription: subscription(id, publication),
-      handler,
-      maxInFlight,
-    });
+  const sub = subscription(id, publication);
+  return {
+    subscription: sub as LogicalSubscription,
+    apply: (router) => router.bind({ subscription: sub, handler, maxInFlight }),
+  };
 }
 
 /** declare -> bind -> seal, for the majority of tests that need no publisher
- * resolved before binding. */
+ * resolved before binding. The declared subscription list is derived from the
+ * bindings, since these tests are about delivery rather than about declaring
+ * a consumer and then failing to host it. */
 function sealedRouter(
-  config: InProcessMessageRouterConfig & { bindings: readonly Bind[] },
+  config: Omit<InProcessMessageRouterConfig, "subscriptions"> & {
+    bindings: readonly Bind[];
+  },
 ): InProcessMessageRouter {
   const { bindings, ...rest } = config;
-  const router = createInProcessMessageRouter(rest);
-  for (const bind of bindings) bind(router);
+  const router = createInProcessMessageRouter({
+    ...rest,
+    subscriptions: bindings.map((b) => b.subscription),
+  });
+  for (const bind of bindings) bind.apply(router);
   router.seal();
   return router;
 }
 
 describe("createInProcessMessageRouter — topology validation", () => {
   const noop: MessageHandler<EventType> = async () => {};
+  const engineTerminal = subscription("engine.terminal.v1", terminal);
+  const obsTerminal = subscription("obs.terminal.v1", terminal);
 
   it("rejects duplicate publication ids at construction", () => {
     expect(() =>
       createInProcessMessageRouter({
         publications: [terminal, { ...terminal }],
+        subscriptions: [engineTerminal],
       }),
     ).toThrow(/duplicate publication id 'http-job-terminal.v1'/);
   });
 
-  it("rejects a duplicate subscription id at bind", () => {
-    const router = createInProcessMessageRouter({ publications: [terminal] });
-    binding("engine.terminal.v1", terminal, noop)(router);
+  it("rejects a declared subscription referencing an undeclared publication, at construction", () => {
+    expect(() =>
+      createInProcessMessageRouter({
+        publications: [terminal],
+        subscriptions: [subscription("obs.command.v1", completedOnly)],
+      }),
+    ).toThrow(/references undeclared publication 'http-job-completed-only.v1'/);
+  });
 
-    expect(() => binding("engine.terminal.v1", terminal, noop)(router)).toThrow(
-      /duplicate subscription id 'engine.terminal.v1'/,
+  it("rejects a duplicate subscription id at bind", () => {
+    const router = createInProcessMessageRouter({
+      publications: [terminal],
+      subscriptions: [engineTerminal],
+    });
+    binding("engine.terminal.v1", terminal, noop).apply(router);
+
+    expect(() =>
+      binding("engine.terminal.v1", terminal, noop).apply(router),
+    ).toThrow(/duplicate subscription id 'engine.terminal.v1'/);
+  });
+
+  // The declaration is the authority on which consumers exist. A handler bound
+  // for something the topology never named is a wiring mistake even when the
+  // publication itself is real.
+  it("rejects binding a subscription the topology never declared", () => {
+    const router = createInProcessMessageRouter({
+      publications: [terminal],
+      subscriptions: [engineTerminal],
+    });
+
+    expect(() =>
+      binding("undeclared.terminal.v1", terminal, noop).apply(router),
+    ).toThrow(
+      /subscription 'undeclared.terminal.v1' was not declared in this topology/,
     );
   });
 
-  it("rejects a subscription referencing an undeclared publication at bind", () => {
-    const router = createInProcessMessageRouter({ publications: [terminal] });
+  // The failure a publication-level check cannot catch: one bound sibling on
+  // the same publication would have satisfied it, so dropping the engine's
+  // binding would have sealed cleanly and stalled every run.
+  it("rejects a declared subscription nobody bound, at seal", () => {
+    const router = createInProcessMessageRouter({
+      publications: [terminal],
+      subscriptions: [engineTerminal, obsTerminal],
+    });
+    binding("obs.terminal.v1", terminal, noop).apply(router);
 
-    expect(() =>
-      binding("obs.command.v1", completedOnly, noop)(router),
-    ).toThrow(/references undeclared publication 'http-job-completed-only.v1'/);
+    expect(() => router.seal()).toThrow(
+      /subscription 'engine.terminal.v1' was declared but never bound/,
+    );
   });
 
   it("rejects a declared publication nothing subscribes to, at seal", () => {
     const router = createInProcessMessageRouter({
       publications: [terminal, completedOnly],
+      subscriptions: [engineTerminal],
     });
-    binding("engine.terminal.v1", terminal, noop)(router);
+    binding("engine.terminal.v1", terminal, noop).apply(router);
 
     expect(() => router.seal()).toThrow(
       /publication 'http-job-completed-only.v1' has no logical subscriptions/,
@@ -168,9 +217,9 @@ describe("createInProcessMessageRouter — sealing", () => {
       bindings: [binding("engine.terminal.v1", terminal, noop)],
     });
 
-    expect(() => binding("late.terminal.v1", terminal, noop)(router)).toThrow(
-      /cannot bind 'late.terminal.v1' after seal\(\)/,
-    );
+    expect(() =>
+      binding("late.terminal.v1", terminal, noop).apply(router),
+    ).toThrow(/cannot bind 'late.terminal.v1' after seal\(\)/);
   });
 
   it("refuses to seal twice", () => {
@@ -183,8 +232,12 @@ describe("createInProcessMessageRouter — sealing", () => {
   });
 
   it("refuses to publish before seal", async () => {
-    const router = createInProcessMessageRouter({ publications: [terminal] });
-    binding("engine.terminal.v1", terminal, noop)(router);
+    const engineTerminal = binding("engine.terminal.v1", terminal, noop);
+    const router = createInProcessMessageRouter({
+      publications: [terminal],
+      subscriptions: [engineTerminal.subscription],
+    });
+    engineTerminal.apply(router);
 
     await expect(
       router.publisher(terminal).publish(completedEvent()),
@@ -195,15 +248,23 @@ describe("createInProcessMessageRouter — sealing", () => {
 
   it("resolves a publisher before its destinations are bound", async () => {
     const seen: string[] = [];
-    const router = createInProcessMessageRouter({ publications: [terminal] });
+    const engineTerminal = binding(
+      "engine.terminal.v1",
+      terminal,
+      async (m) => {
+        seen.push(m.id);
+      },
+    );
+    const router = createInProcessMessageRouter({
+      publications: [terminal],
+      subscriptions: [engineTerminal.subscription],
+    });
 
     // Resolved first -- this is what lets a component be constructed with its
     // publisher before that component's own handler exists to bind.
     const publisher = router.publisher(terminal);
 
-    binding("engine.terminal.v1", terminal, async (m) => {
-      seen.push(m.id);
-    })(router);
+    engineTerminal.apply(router);
     router.seal();
 
     const published = completedEvent();
@@ -407,15 +468,19 @@ describe("createInProcessMessageRouter — whenIdle", () => {
     // is required to close the cycle.
     const router = createInProcessMessageRouter({
       publications: [terminal, completedOnly],
+      subscriptions: [
+        subscription("worker.terminal.v1", terminal),
+        subscription("engine.completed.v1", completedOnly),
+      ],
     });
     const secondPublisher = router.publisher(completedOnly);
 
     binding("worker.terminal.v1", terminal, async () => {
       await secondPublisher.publish(followUp);
-    })(router);
+    }).apply(router);
     binding("engine.completed.v1", completedOnly, async (m) => {
       downstream.push(m.id);
-    })(router);
+    }).apply(router);
     router.seal();
 
     await router.publisher(terminal).publish(completedEvent("job-1"));

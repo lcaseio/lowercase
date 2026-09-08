@@ -1,4 +1,4 @@
-import type { LogicalSubscription } from "@lcase/ports";
+import type { LogicalSubscription, Publication } from "@lcase/ports";
 import { definePublicationFor } from "./define-publication.js";
 
 /**
@@ -61,3 +61,19 @@ export const observabilityHttpJobTerminalSubscription: LogicalSubscription<Termi
     id: "observability.http-job-terminal.v1",
     publication: httpJobTerminalPublication,
   };
+
+// The declaration a router is handed, and the one place the graph is stated
+// in full. A carrier reads it for more than validation: a log-backed one
+// provisions a stream per publication and a consumer group per subscription
+// straight from these lists.
+export const httpJobPublications: readonly Publication[] = [
+  httpJobCommandPublication,
+  httpJobTerminalPublication,
+];
+
+export const httpJobSubscriptions: readonly LogicalSubscription[] = [
+  workerHttpJobCommandSubscription,
+  observabilityHttpJobCommandSubscription,
+  engineHttpJobTerminalSubscription,
+  observabilityHttpJobTerminalSubscription,
+];

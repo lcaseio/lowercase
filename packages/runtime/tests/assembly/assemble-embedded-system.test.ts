@@ -41,11 +41,12 @@ function testInput(
     tap: overrides.tap ?? testResource("tap", callOrder),
     engine: overrides.engine ?? testResource("engine", callOrder),
     limiter: overrides.limiter ?? testResource("limiter", callOrder),
+    router: overrides.router ?? testResource("router", callOrder),
   };
 }
 
 describe("assembleEmbeddedSystem", () => {
-  it("starts resources in fixed order: bus, sinks, tap, engine, limiter", async () => {
+  it("starts resources in fixed order: bus, sinks, tap, engine, limiter, router", async () => {
     const callOrder: string[] = [];
     const runtime = assembleEmbeddedSystem(testInput(callOrder));
 
@@ -58,6 +59,9 @@ describe("assembleEmbeddedSystem", () => {
       "start:tap",
       "start:engine",
       "start:limiter",
+      // Router last: a carrier that started earlier would deliver into a
+      // component that has not started yet.
+      "start:router",
     ]);
   });
 
@@ -70,6 +74,9 @@ describe("assembleEmbeddedSystem", () => {
     await runtime.stop();
 
     expect(callOrder).toEqual([
+      // Router first, so intake stops before any component handling a
+      // Message does.
+      "stop:router",
       "stop:limiter",
       "stop:engine",
       "stop:tap",
@@ -91,7 +98,8 @@ describe("assembleEmbeddedSystem", () => {
     expect(outcome.ok).toBe(false);
     if (outcome.ok) throw new Error("expected failure");
     expect(outcome.failedResourceId).toBe("engine");
-    // Everything started before `engine` gets rolled back; `limiter` never starts.
+    // Everything started before `engine` gets rolled back; `limiter` and
+    // `router` never start.
     expect(callOrder).toEqual([
       "start:bus",
       "start:sink1",

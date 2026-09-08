@@ -27,6 +27,16 @@ export const jobFinishedPlanner: Planner<JobFinishedMsg> = (
   if (!step) return effects;
   const stepCtx = newRunState.steps[stepId];
 
+  // Plan on the transition, not on the resulting state. `jobFinishedReducer`
+  // is idempotent -- completing an already-completed step produces the same
+  // state -- so without this a second terminal for one step would re-emit
+  // step.completed and fan its dependents out a second time. Reaching the
+  // planner twice for one step requires a carrier that redelivers, which none
+  // does today; the guard is what keeps that from being a silent correctness
+  // bug the moment one does.
+  const oldStatus = oldState.runs[runId]?.steps[stepId]?.status;
+  if (oldStatus === stepCtx.status) return effects;
+
   if (stepCtx.status === "completed") {
     const emitStepCompletedFx: EmitStepCompletedFx = {
       type: "EmitStepCompleted",

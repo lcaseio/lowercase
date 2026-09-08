@@ -1,6 +1,24 @@
-// Single-variant for now: Messages are routed in-process, by mailboxes this
-// process owns. Named for the mechanism, matching the other config axes
-// (`artifacts: { kind: "filesystem" }`, `sql: { kind: "sqlite" }`), so a
-// log-backed `"redis-streams"` branch sits beside it on the same axis rather
-// than describing a different one.
-export type MessagingConfig = { kind: "in-process" };
+// Messages are routed by mailboxes this process owns. Nothing to connect to,
+// nothing to provision, and no delivery survives the process.
+export type InProcessMessagingConfig = { kind: "in-process" };
+
+// Messages travel through Redis Streams: one stream per publication, one
+// consumer group per logical subscription. Fields cover what's needed to
+// construct a client, matching how S3ArtifactStoreConfig carries endpoint and
+// credentials rather than a pre-built client.
+export type RedisStreamsMessagingConfig = {
+  kind: "redis-streams";
+  url: string;
+  /** Namespaces stream keys. Defaults to "lcase:". */
+  keyPrefix?: string;
+  /** This process's consumer name within every group. Defaults to "local". */
+  consumerName?: string;
+  /** How long a read blocks with nothing to read. Bounds shutdown latency. */
+  blockMs?: number;
+};
+
+// Named for the mechanism, matching the other config axes (`artifacts: { kind:
+// "filesystem" }`, `sql: { kind: "sqlite" }`), so the carriers sit on one axis
+// rather than describing different ones.
+export type MessagingConfig =
+  InProcessMessagingConfig | RedisStreamsMessagingConfig;
