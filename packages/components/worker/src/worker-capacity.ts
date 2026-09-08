@@ -1,5 +1,5 @@
 import { createSemaphore, type Semaphore } from "./concurrency/semaphore.js";
-import type { ExecuteJobCommand } from "./job.contracts.js";
+import type { JobIdentity } from "./submitted-message.js";
 
 export type WorkerCapacityConfig = {
   maxConcurrentJobs: number;
@@ -8,11 +8,13 @@ export type WorkerCapacityConfig = {
 // Permit/capacity activity is telemetry, not a durable lifecycle fact --
 // matches the existing worker.job.dequeued precedent (Telemetry, owned by
 // the queue-consumer layer, not worker core). All hooks optional.
+// Typed on JobIdentity rather than the submitted Message: counting active jobs
+// needs which job, never the envelope, and a submission is accepted here as-is.
 export type WorkerCapacityTelemetry = {
-  onWaitStart?(command: ExecuteJobCommand): void;
-  onGranted?(command: ExecuteJobCommand): void;
-  onCancelled?(command: ExecuteJobCommand): void;
-  onReleased?(command: ExecuteJobCommand): void;
+  onWaitStart?(job: JobIdentity): void;
+  onGranted?(job: JobIdentity): void;
+  onCancelled?(job: JobIdentity): void;
+  onReleased?(job: JobIdentity): void;
 };
 
 export type CapacityAcquisition =
@@ -40,7 +42,7 @@ export class WorkerCapacity {
   }
 
   async acquire(
-    command: ExecuteJobCommand,
+    job: JobIdentity,
     callerSignal?: AbortSignal,
   ): Promise<CapacityAcquisition> {
     // An already-abandoned job never joins the queue, so it produces no wait
@@ -49,13 +51,13 @@ export class WorkerCapacity {
       return { kind: "cancelled" };
     }
 
-    this.#telemetry?.onWaitStart?.(command);
+    this.#telemetry?.onWaitStart?.(job);
     const outcome = await this.#semaphore.acquire(callerSignal);
     if (outcome.kind === "cancelled") {
-      this.#telemetry?.onCancelled?.(command);
+      this.#telemetry?.onCancelled?.(job);
       return { kind: "cancelled" };
     }
-    this.#telemetry?.onGranted?.(command);
+    this.#telemetry?.onGranted?.(job);
 
     // Handing `release` out makes double-release expressible in a way the
     // previous decorator's internal `finally` did not, so guard it here
@@ -67,7 +69,7 @@ export class WorkerCapacity {
         if (released) return;
         released = true;
         outcome.release();
-        this.#telemetry?.onReleased?.(command);
+        this.#telemetry?.onReleased?.(job);
       },
     };
   }

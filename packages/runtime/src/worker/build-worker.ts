@@ -1,4 +1,4 @@
-import type { ArtifactReadWritePort } from "@lcase/ports";
+import type { ArtifactReadWritePort, MessagePublisher } from "@lcase/ports";
 import {
   createConsoleWorkerLifecycleEventSink,
   createHttpJsonExecutor,
@@ -6,9 +6,15 @@ import {
   Worker,
 } from "@lcase/worker";
 import type { WorkerConfig } from "../config/worker.config.js";
+import type { HttpJobTerminalType } from "../messaging/http-job.topology.js";
+
+// Component identity is composition's to decide, not the component's, so the
+// source worker stamps on its outbound Messages is supplied from here.
+const WORKER_SOURCE = "lowercase://worker";
 
 export type BuildWorkerDeps = {
   artifacts: ArtifactReadWritePort;
+  terminal: MessagePublisher<HttpJobTerminalType>;
 };
 
 // Composition only: build the collaborators worker needs from the outside --
@@ -31,10 +37,12 @@ export function buildWorker(
       lifecycle,
       protocol,
       artifacts: deps.artifacts,
+      terminal: deps.terminal,
     },
     {
       maxConcurrentJobs: config.maxConcurrentJobs,
       protocolTimeoutMs: config.protocolTimeoutMs,
+      source: WORKER_SOURCE,
     },
   );
 }

@@ -139,7 +139,7 @@ describe("stepPlannedPlanner() branch arm", () => {
     expect(
       effects.some(
         (e) =>
-          e.type === "EmitJobHttpJsonSubmitted" ||
+          e.type === "PublishJobHttpJsonSubmitted" ||
           e.type === "EmitJobMcpSubmitted",
       ),
     ).toBe(false);

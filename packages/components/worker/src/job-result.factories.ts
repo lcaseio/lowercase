@@ -1,6 +1,5 @@
 import type {
   ArtifactRef,
-  ExecuteJobCommand,
   JobExecutionError,
   JobResult,
 } from "./job.contracts.js";
@@ -9,16 +8,18 @@ import type {
 // rather than inside worker.ts: JobRunner reports a modelled outcome and
 // Worker turns it into one of these, so the mapping from outcome to result is
 // worth reading in one place.
+//
+// None of these take job identity: a JobResult says how a job ended, and the
+// submission it ended for is held by whoever is about to build the terminal.
 
 export type StoredExecutionOutputs = {
   output: ArtifactRef;
   exports?: Record<string, ArtifactRef>;
 };
 
-export function cancelledResult(command: ExecuteJobCommand): JobResult {
+export function cancelledResult(): JobResult {
   return {
     status: "failed",
-    jobId: command.jobId,
     error: {
       code: "CANCELLED",
       message: "Job execution was cancelled",
@@ -28,25 +29,19 @@ export function cancelledResult(command: ExecuteJobCommand): JobResult {
 }
 
 export function failedResult(
-  command: ExecuteJobCommand,
   error: JobExecutionError,
   output?: ArtifactRef,
 ): JobResult {
   return {
     status: "failed",
-    jobId: command.jobId,
     error,
     ...(output ? { output } : {}),
   };
 }
 
-export function completedResult(
-  command: ExecuteJobCommand,
-  outputs: StoredExecutionOutputs,
-): JobResult {
+export function completedResult(outputs: StoredExecutionOutputs): JobResult {
   return {
     status: "completed",
-    jobId: command.jobId,
     ...outputs,
   };
 }

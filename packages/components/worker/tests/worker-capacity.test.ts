@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ProtocolResult } from "../src/protocol/protocol-executor.types.js";
-import { makeCommand } from "./helpers/fixtures.js";
+import { makeSubmission } from "./helpers/fixtures.js";
 import { makeWorker } from "./helpers/worker-fakes.js";
 
 // Capacity is now owned by Worker rather than wrapped around it, so it is
@@ -27,12 +27,14 @@ describe("Worker capacity", () => {
     const { worker, settlers, settleNext, protocolExecute } =
       makeGatedWorker(1);
 
-    const firstPromise = worker.executeCommand(makeCommand({ jobId: "job-1" }));
+    const firstPromise = worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-1" } }),
+    );
     await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     let secondSettled = false;
     const secondPromise = worker
-      .executeCommand(makeCommand({ jobId: "job-2" }))
+      .executeSubmission(makeSubmission({ scope: { jobid: "job-2" } }))
       .then((result) => {
         secondSettled = true;
         return result;
@@ -57,9 +59,15 @@ describe("Worker capacity", () => {
   it("runs jobs concurrently up to the configured bound", async () => {
     const { worker, settlers, protocolExecute } = makeGatedWorker(2);
 
-    void worker.executeCommand(makeCommand({ jobId: "job-1" }));
-    void worker.executeCommand(makeCommand({ jobId: "job-2" }));
-    void worker.executeCommand(makeCommand({ jobId: "job-3" }));
+    void worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-1" } }),
+    );
+    void worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-2" } }),
+    );
+    void worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-3" } }),
+    );
 
     await vi.waitFor(() => expect(settlers).toHaveLength(2));
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -72,12 +80,14 @@ describe("Worker capacity", () => {
     const { worker, settlers, settleNext, protocolExecute, events } =
       makeGatedWorker(1);
 
-    const firstPromise = worker.executeCommand(makeCommand({ jobId: "job-1" }));
+    const firstPromise = worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-1" } }),
+    );
     await vi.waitFor(() => expect(settlers).toHaveLength(1));
 
     const controller = new AbortController();
-    const secondPromise = worker.executeCommand(
-      makeCommand({ jobId: "job-2" }),
+    const secondPromise = worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-2" } }),
       controller.signal,
     );
     controller.abort();
@@ -102,8 +112,8 @@ describe("Worker capacity", () => {
     const controller = new AbortController();
     controller.abort();
 
-    const result = await worker.executeCommand(
-      makeCommand({ jobId: "job-1" }),
+    const result = await worker.executeSubmission(
+      makeSubmission({ scope: { jobid: "job-1" } }),
       controller.signal,
     );
 
@@ -116,7 +126,7 @@ describe("Worker capacity", () => {
 
     // Capacity was never taken, so an ordinary job still runs.
     await expect(
-      worker.executeCommand(makeCommand({ jobId: "job-2" })),
+      worker.executeSubmission(makeSubmission({ scope: { jobid: "job-2" } })),
     ).resolves.toMatchObject({ status: "completed" });
   });
 
@@ -130,13 +140,13 @@ describe("Worker capacity", () => {
     });
 
     await expect(
-      worker.executeCommand(makeCommand({ jobId: "job-1" })),
+      worker.executeSubmission(makeSubmission({ scope: { jobid: "job-1" } })),
     ).rejects.toBe(thrown);
 
     // A second job must reach the runner rather than hang forever queued
     // behind the first.
     await expect(
-      worker.executeCommand(makeCommand({ jobId: "job-2" })),
+      worker.executeSubmission(makeSubmission({ scope: { jobid: "job-2" } })),
     ).rejects.toBe(thrown);
     expect(protocolExecute).toHaveBeenCalledTimes(2);
   });

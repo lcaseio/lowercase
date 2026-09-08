@@ -1,12 +1,16 @@
 import { buildEvent } from "@lcase/events";
-import type { AnyEvent, JobCompletedData, JobFailedData } from "@lcase/types";
+import type { MessageOf } from "@lcase/ports";
+import type { JobCompletedData, JobFailedData } from "@lcase/types";
 import type { JobResult } from "./job.contracts.js";
-
-export type JobSubmittedMessage = AnyEvent<"job.httpjson.submitted">;
+import type { HttpJsonSubmission } from "./submitted-message.js";
 
 export type JobTerminalType = "job.httpjson.completed" | "job.httpjson.failed";
 
-export type JobTerminalMessage = AnyEvent<JobTerminalType>;
+// MessageOf, not AnyEvent<JobTerminalType>: the latter collapses into one
+// envelope whose `type` is the union and whose `data` is the union of both
+// data shapes, which loses the correspondence between them. MessageOf
+// distributes into two complete envelopes, which is what a publisher accepts.
+export type JobTerminalMessage = MessageOf<JobTerminalType>;
 
 // Worker's one outbound construction path: a modelled JobResult plus the
 // submission it came from becomes exactly one terminal Message. Deliberately a
@@ -19,7 +23,7 @@ export type JobTerminalMessage = AnyEvent<JobTerminalType>;
 // bus. Construction is where validation belongs; publishing is someone else's
 // concern.
 export function buildJobTerminal(
-  submitted: JobSubmittedMessage,
+  submitted: HttpJsonSubmission,
   result: JobResult,
   source: string,
 ): JobTerminalMessage {

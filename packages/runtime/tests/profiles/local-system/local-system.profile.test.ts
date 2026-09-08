@@ -14,7 +14,7 @@ const config: LocalSystemConfig = {
   limiter: { id: "test-limiter", scope: "test-global" },
   artifacts: { kind: "filesystem", path: "/tmp/lcase-test-artifacts" },
   sql: { kind: "sqlite" },
-  messaging: { kind: "direct" },
+  messaging: { kind: "in-process" },
 };
 
 describe("createLocalSystem", () => {

@@ -43,8 +43,8 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C9     | In-process Message router + mailbox foundation (inert)                         | merged (PR #368) | [2]   |          |
 | C10    | Engine package tooling: real ESLint, test typecheck, `clean-*` scripts         | merged (PR #369) | [5]   |          |
 | C11    | Worker component root + `JobRunner` (behavior-preserving runway)               | merged (PR #370) | [2]   |          |
-| C12    | Worker's Message boundary + terminal construction (inert)                      | complete         | [2]   |          |
-| C13    | Cut the HTTP JSON job conversation onto Messages (atomic flip)                 | not started      | [2]   |          |
+| C12    | Worker's Message boundary + terminal construction (inert)                      | merged (PR #371) | [2]   |          |
+| C13    | Cut the HTTP JSON job conversation onto Messages (atomic flip)                 | implemented      | [2]   |          |
 | C14    | Log-backed (Redis) delivery under the same Message boundary                    | not started      | [2]   |          |
 | C15    | Postgres adapter (Prisma)                                                      | not started      | [4]   |          |
 | C16    | Extend `local-system` profile with `postgres` SQL branch                       | not started      | [4]   |          |

@@ -1,3 +1,4 @@
+import type { MessagePublisher } from "@lcase/ports";
 import type { JobRunnerConfig, JobRunnerDeps } from "../../src/job-runner.js";
 import { JobRunner } from "../../src/job-runner.js";
 import type {
@@ -5,6 +6,10 @@ import type {
   ResolvedProtocolRequest,
 } from "../../src/protocol/protocol-executor.types.js";
 import type { ResourceKeyResolver } from "../../src/resource-key-resolver.js";
+import type {
+  JobTerminalMessage,
+  JobTerminalType,
+} from "../../src/terminal-message.js";
 import type { WorkerConfig, WorkerDeps } from "../../src/worker.js";
 import { Worker } from "../../src/worker.js";
 import { createFakeArtifactReaderPort } from "./fake-artifact-reader.js";
@@ -13,10 +18,36 @@ import { createFakeLifecycleSink } from "./fake-lifecycle-sink.js";
 import { createFakeProtocolExecutor } from "./fake-protocol-executor.js";
 import { createFakePermitPort } from "./fake-resource-permit.js";
 
+export const WORKER_SOURCE = "lowercase://worker/test";
+
 export const GENEROUS_CONFIG: WorkerConfig = {
   maxConcurrentJobs: 10,
   protocolTimeoutMs: 5_000,
+  source: WORKER_SOURCE,
 };
+
+// Records what worker published rather than routing it anywhere: these tests
+// are about worker's boundary, not delivery.
+export function createFakeTerminalPublisher() {
+  const published: JobTerminalMessage[] = [];
+  let reject: Error | undefined;
+  return {
+    published,
+    failNextPublish(err: Error) {
+      reject = err;
+    },
+    publisher: {
+      publish: async (message: JobTerminalMessage) => {
+        if (reject) {
+          const err = reject;
+          reject = undefined;
+          throw err;
+        }
+        published.push(message);
+      },
+    } satisfies MessagePublisher<JobTerminalType>,
+  };
+}
 
 type PermitFakes = ReturnType<typeof createFakePermitPort>;
 
@@ -52,14 +83,18 @@ export function makeWorkerFakes(overrides: WorkerFakeOverrides = {}) {
     };
   }
 
+  const terminal = createFakeTerminalPublisher();
+
   function workerDeps(): WorkerDeps {
-    return { ...runnerDeps(), lifecycle: sink };
+    return { ...runnerDeps(), lifecycle: sink, terminal: terminal.publisher };
   }
 
   return {
     runnerDeps,
     workerDeps,
     events,
+    terminal,
+    published: terminal.published,
     acquire: permits.acquire,
     release: permits.release,
     protocolExecute,
@@ -89,6 +124,7 @@ export function makeWorker(
       overrides.maxConcurrentJobs ?? GENEROUS_CONFIG.maxConcurrentJobs,
     protocolTimeoutMs:
       overrides.protocolTimeoutMs ?? GENEROUS_CONFIG.protocolTimeoutMs,
+    source: overrides.source ?? GENEROUS_CONFIG.source,
   });
   return { worker, ...fakes };
 }

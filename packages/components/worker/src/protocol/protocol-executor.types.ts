@@ -12,9 +12,9 @@ export type ProtocolResult =
   // artifact reference, never a raw response in the lifecycle event).
   | { ok: false; error: JobExecutionError; payload?: JsonValue };
 
-// `execute` deliberately matches JobExecutionPort's own verb -- distinct
-// types, always called through a named receiver (`protocol.execute(...)`
-// vs `worker.execute(...)`), so there's no real ambiguity.
+// `execute` is the plainest verb for "run this request", and it is always
+// called through a named receiver (`protocol.execute(...)`), so it reads
+// unambiguously even though the word is common.
 export interface ProtocolExecutor {
   execute(
     request: ResolvedProtocolRequest,
