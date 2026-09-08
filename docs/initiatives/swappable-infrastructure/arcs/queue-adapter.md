@@ -248,7 +248,7 @@ Matches the plan on every structural point: one publication effect replaces the 
 - **A refused admission is logged and goes no further, recorded in `docs/todo.md` rather than solved.** Effects run fire-and-forget, so the publish effect must catch its own rejection or produce an unhandled one. Catching it is the floor; whether a refused command should fail the step or the run is an engine behaviour decision that does not belong in a wiring Change. Nothing can refuse admission today — the in-process router only throws on composition bugs — so this becomes real with the log-backed carrier.
 - **Test counts: worker 93 to 95, engine 89 to 95, runtime 52 to 54, observability unchanged at 12.** Observability needed no source edit at all, which is Change C12's extraction paying off exactly as intended. Workspace `build` 25/25, `typecheck`/`test`/`lint` 24/24.
 
-## Change C14 - Log-backed (Redis) delivery under the same Message boundary - in review
+## Change C14 - Log-backed (Redis) delivery under the same Message boundary - merged (PR #373)
 
 ### Discussion
 
