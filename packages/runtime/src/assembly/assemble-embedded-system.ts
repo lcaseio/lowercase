@@ -10,6 +10,7 @@ import type {
   LimiterPort,
   ObservabilityTapPort,
 } from "@lcase/ports";
+import type { MessageRouter } from "../messaging/message-router.js";
 
 // Generalizes WorkflowRuntime's hardcoded router->sinks->tap->engine->limiter
 // sequence (packages/runtime/src/workflow.runtime.ts, now deleted), with bus
@@ -32,17 +33,23 @@ export type EmbeddedSystemAssemblyInput = {
   tap: ManagedResource<ObservabilityTapPort>;
   engine: ManagedResource<EnginePort>;
   limiter: ManagedResource<LimiterPort>;
+  router: ManagedResource<MessageRouter>;
 };
 
 export function assembleEmbeddedSystem(
   input: EmbeddedSystemAssemblyInput,
 ): ManagedRuntime {
+  // Router last, which is the mirror of bus first: start order means nothing
+  // is delivered until every component that handles a Message is running, and
+  // reverse-stop order means intake ends before any of them stops. A carrier
+  // that starts early would deliver into a component that has not started.
   const resources: ManagedResource<unknown>[] = [
     input.bus,
     ...input.sinks,
     input.tap,
     input.engine,
     input.limiter,
+    input.router,
   ];
   return createManagedRuntime(resources);
 }

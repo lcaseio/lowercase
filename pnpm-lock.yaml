@@ -745,6 +745,9 @@ importers:
       '@lcase/worker':
         specifier: workspace:*
         version: link:../components/worker
+      redis:
+        specifier: ^6.2.1
+        version: 6.2.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.1
@@ -755,6 +758,9 @@ importers:
       '@lcase/types':
         specifier: workspace:*
         version: link:../types
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       eslint:
         specifier: ^9.39.1
         version: 9.39.1(jiti@2.6.1)

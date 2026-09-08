@@ -5,16 +5,22 @@ import type {
   MessagePublisher,
   Publication,
 } from "@lcase/ports";
-import { snapshotMessage } from "./snapshot-message.js";
 import {
-  SubscriptionMailbox,
+  defaultReportFailure,
   type DeliveredMessage,
-  type DeliveryFailure,
   type ReportDeliveryFailure,
-} from "./subscription-mailbox.js";
+} from "../delivery.types.js";
+import {
+  assertDeclaredSubscriptions,
+  assertDistinctPublications,
+  assertTopologySealable,
+  type MessageRouter,
+  type MessageRouterTopology,
+} from "../message-router.js";
+import { snapshotMessage } from "./snapshot-message.js";
+import { SubscriptionMailbox } from "./subscription-mailbox.js";
 
-export type InProcessMessageRouterConfig = {
-  publications: readonly Publication[];
+export type InProcessMessageRouterConfig = MessageRouterTopology & {
   reportFailure?: ReportDeliveryFailure;
 };
 
@@ -31,18 +37,7 @@ export type InProcessMessageRouterConfig = {
  * can add a route later -- a component never gets the chance to subscribe to
  * something at runtime.
  */
-export interface InProcessMessageRouter {
-  /**
-   * Resolvable before binding: the returned publisher looks its destinations
-   * up when it publishes, not when it is created.
-   */
-  publisher<Types extends readonly EventType[]>(
-    publication: Publication<Types>,
-  ): MessagePublisher<Types[number]>;
-  bind<const Types extends readonly EventType[]>(
-    binding: MessageBinding<Types>,
-  ): void;
-  seal(): void;
+export interface InProcessMessageRouter extends MessageRouter {
   /**
    * Runtime/test diagnostic: resolves when no delivery is queued or running.
    *
@@ -53,27 +48,6 @@ export interface InProcessMessageRouter {
    * count above zero across a hop.
    */
   whenIdle(): Promise<void>;
-}
-
-function defaultReportFailure(failure: DeliveryFailure): void {
-  console.error(
-    `[message-router] subscription '${failure.subscriptionId}' failed to handle ${failure.messageType} (id ${failure.messageId}, source ${failure.source})`,
-    failure.error,
-  );
-}
-
-function assertDistinctPublications(
-  config: InProcessMessageRouterConfig,
-): void {
-  const seen = new Set<string>();
-  for (const publication of config.publications) {
-    if (seen.has(publication.id)) {
-      throw new Error(
-        `[message-router] duplicate publication id '${publication.id}'`,
-      );
-    }
-    seen.add(publication.id);
-  }
 }
 
 /**
@@ -89,11 +63,15 @@ function assertDistinctPublications(
 export function createInProcessMessageRouter(
   config: InProcessMessageRouterConfig,
 ): InProcessMessageRouter {
-  assertDistinctPublications(config);
+  assertDistinctPublications(config.publications);
+  assertDeclaredSubscriptions(config);
 
   const reportFailure = config.reportFailure ?? defaultReportFailure;
   const publicationsById = new Map(
     config.publications.map((publication) => [publication.id, publication]),
+  );
+  const declaredSubscriptionIds = new Set(
+    config.subscriptions.map((subscription) => subscription.id),
   );
 
   let outstanding = 0;
@@ -122,19 +100,19 @@ export function createInProcessMessageRouter(
         );
       }
 
-      // A subscription exists only by being bound, so "a subscription with no
-      // handler" cannot be expressed and "more than one handler" is this
-      // duplicate-id check. Splitting host bindings from deployment-wide
-      // subscription declarations only becomes meaningful with more than one
-      // hosting process.
+      // Binding is hosting a declared subscription, never inventing one: the
+      // topology is the authority on which consumers are expected to exist,
+      // which is what lets seal() name one that nobody wired. Splitting these
+      // host bindings from the declarations across *several* processes only
+      // becomes meaningful with more than one hosting process.
+      if (!declaredSubscriptionIds.has(subscription.id)) {
+        throw new Error(
+          `[message-router] subscription '${subscription.id}' was not declared in this topology`,
+        );
+      }
       if (subscriptionIds.has(subscription.id)) {
         throw new Error(
           `[message-router] duplicate subscription id '${subscription.id}'`,
-        );
-      }
-      if (!publicationsById.has(subscription.publication.id)) {
-        throw new Error(
-          `[message-router] subscription '${subscription.id}' references undeclared publication '${subscription.publication.id}'`,
         );
       }
       subscriptionIds.add(subscription.id);
@@ -164,15 +142,10 @@ export function createInProcessMessageRouter(
     seal(): void {
       if (sealed) throw new Error("[message-router] already sealed");
 
-      // The one check that needs the whole picture: a publication nothing
-      // listens to is a topology mistake, not a quiet no-op delivery.
-      for (const id of publicationsById.keys()) {
-        if (!destinations.has(id)) {
-          throw new Error(
-            `[message-router] publication '${id}' has no logical subscriptions`,
-          );
-        }
-      }
+      // The checks that need the whole picture: a declared subscription
+      // nobody bound is a silently broken consumer, and a publication nothing
+      // listens to is a topology mistake rather than a quiet no-op delivery.
+      assertTopologySealable(config, subscriptionIds);
       sealed = true;
     },
 

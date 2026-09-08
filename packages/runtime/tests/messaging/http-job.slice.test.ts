@@ -2,6 +2,21 @@ import { buildEvent } from "@lcase/events";
 import type { AnyEvent } from "@lcase/types";
 import { describe, expect, it } from "vitest";
 import { buildHttpJobGraph } from "../helpers/http-job-graph.js";
+import { createInProcessMessageRouter } from "../../src/messaging/in-process/in-process-message-router.js";
+import {
+  httpJobPublications,
+  httpJobSubscriptions,
+} from "../../src/messaging/http-job.topology.js";
+
+// Constructed here rather than inside the helper so this test keeps the
+// in-process router's concrete type -- whenIdle() is a local diagnostic that
+// no log-backed carrier can answer, so it is not on the shared interface.
+function inProcessRouter() {
+  return createInProcessMessageRouter({
+    publications: httpJobPublications,
+    subscriptions: httpJobSubscriptions,
+  });
+}
 
 function submitted(): AnyEvent<"job.httpjson.submitted"> {
   return buildEvent(
@@ -26,11 +41,12 @@ function submitted(): AnyEvent<"job.httpjson.submitted"> {
 // recipients -- is not re-asserted through the whole graph here.
 describe("HTTP JSON job vertical slice", () => {
   it("routes a completion: worker executes once, publishes one terminal, engine advances from it", async () => {
-    const graph = buildHttpJobGraph();
+    const router = inProcessRouter();
+    const graph = buildHttpJobGraph({ router });
     const command = submitted();
 
     await graph.httpJobCommands.publish(command);
-    await graph.router.whenIdle();
+    await router.whenIdle();
 
     expect(graph.fetchSpy).toHaveBeenCalledTimes(1);
 
@@ -69,12 +85,14 @@ describe("HTTP JSON job vertical slice", () => {
   });
 
   it("routes a failure: one failed terminal, engine advances from it, fidelity limit holds", async () => {
+    const router = inProcessRouter();
     const graph = buildHttpJobGraph({
+      router,
       respond: () => new Response("nope", { status: 500 }),
     });
 
     await graph.httpJobCommands.publish(submitted());
-    await graph.router.whenIdle();
+    await router.whenIdle();
 
     const terminals = graph.observed.filter(
       (e) => e.type === "job.httpjson.failed",

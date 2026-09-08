@@ -27,15 +27,17 @@ import {
   assembleEmbeddedSystem,
 } from "../../assembly/index.js";
 import type { ManagedRuntime } from "../../assembly/index.js";
-import { createInProcessMessageRouter } from "../../messaging/in-process/in-process-message-router.js";
 import {
   engineHttpJobTerminalSubscription,
   httpJobCommandPublication,
+  httpJobPublications,
+  httpJobSubscriptions,
   httpJobTerminalPublication,
   observabilityHttpJobCommandSubscription,
   observabilityHttpJobTerminalSubscription,
   workerHttpJobCommandSubscription,
 } from "../../messaging/http-job.topology.js";
+import { buildMessageRouter } from "./build-message-router.js";
 import { buildWorker } from "../../worker/build-worker.js";
 import { buildArtifactStore } from "./build-artifact-store.js";
 import { buildObservability } from "./build-observability.js";
@@ -77,11 +79,17 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   // Declare, resolve, build, bind, seal -- in that order, because the graph is
   // cyclic: worker's handler needs the terminal publisher the router hands
   // out, while the router needs worker's handler to route to. The router
-  // enforces this itself (publishing before seal, binding after it, and a
-  // publication nothing listens to all throw), which is why the sequence is
-  // written here in the composition root rather than hidden behind a helper.
-  const router = createInProcessMessageRouter({
-    publications: [httpJobCommandPublication, httpJobTerminalPublication],
+  // enforces this itself (publishing before seal, binding after it, binding
+  // something the topology never declared, and a declared subscription nobody
+  // bound all throw), which is why the sequence is written here in the
+  // composition root rather than hidden behind a helper.
+  //
+  // Which carrier moves the Messages is config's business and appears nowhere
+  // below: the declarations, the bindings, and the components are identical
+  // either way.
+  const { router, hooks: routerHooks } = buildMessageRouter(config.messaging, {
+    publications: httpJobPublications,
+    subscriptions: httpJobSubscriptions,
   });
   const httpJobCommands = router.publisher(httpJobCommandPublication);
   const httpJobTerminals = router.publisher(httpJobTerminalPublication);
@@ -174,6 +182,9 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
       start: (l) => l.start(),
       stop: (l) => l.stop(),
     }),
+    // Hooks come from the carrier: none for in-process, read loops and
+    // connections for a log-backed one.
+    router: managedResource("router", router, routerHooks),
   });
 
   const flow = new FlowService(artifacts, flowRepository);
