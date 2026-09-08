@@ -27,6 +27,15 @@ import {
   assembleEmbeddedSystem,
 } from "../../assembly/index.js";
 import type { ManagedRuntime } from "../../assembly/index.js";
+import { createInProcessMessageRouter } from "../../messaging/in-process/in-process-message-router.js";
+import {
+  engineHttpJobTerminalSubscription,
+  httpJobCommandPublication,
+  httpJobTerminalPublication,
+  observabilityHttpJobCommandSubscription,
+  observabilityHttpJobTerminalSubscription,
+  workerHttpJobCommandSubscription,
+} from "../../messaging/http-job.topology.js";
 import { buildWorker } from "../../worker/build-worker.js";
 import { buildArtifactStore } from "./build-artifact-store.js";
 import { buildObservability } from "./build-observability.js";
@@ -65,12 +74,34 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     artifactRepository,
   );
 
-  // Retained as the worker, not as a capability it happens to satisfy. Its
-  // temporary direct execute() is what the engine still depends on; the
-  // Message cutover replaces that dependency without replacing this object.
-  const worker = buildWorker({ artifacts }, config.worker);
+  // Declare, resolve, build, bind, seal -- in that order, because the graph is
+  // cyclic: worker's handler needs the terminal publisher the router hands
+  // out, while the router needs worker's handler to route to. The router
+  // enforces this itself (publishing before seal, binding after it, and a
+  // publication nothing listens to all throw), which is why the sequence is
+  // written here in the composition root rather than hidden behind a helper.
+  const router = createInProcessMessageRouter({
+    publications: [httpJobCommandPublication, httpJobTerminalPublication],
+  });
+  const httpJobCommands = router.publisher(httpJobCommandPublication);
+  const httpJobTerminals = router.publisher(httpJobTerminalPublication);
 
-  const engine = buildEngine(bus, ef, jobParser, runQuery, artifacts, worker);
+  // Retained as the worker, not as a capability it happens to satisfy: nothing
+  // holds a reference to it in order to call it. It is here so its handler can
+  // be bound, and so it stays alive.
+  const worker = buildWorker(
+    { artifacts, terminal: httpJobTerminals },
+    config.worker,
+  );
+
+  const engine = buildEngine(
+    bus,
+    ef,
+    jobParser,
+    runQuery,
+    artifacts,
+    httpJobCommands,
+  );
 
   const { tap, sinks } = buildObservability(
     config.observability,
@@ -78,6 +109,33 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     artifacts,
     runQuery,
   );
+
+  router.bind({
+    subscription: workerHttpJobCommandSubscription,
+    handler: worker.handleHttpJsonSubmitted,
+    // Worker's own capacity bound still applies underneath this. The two are
+    // not redundant: this bounds what one mailbox presents, and worker's bounds
+    // the component however work arrives.
+    maxInFlight: config.worker.maxConcurrentJobs,
+  });
+  router.bind({
+    subscription: observabilityHttpJobCommandSubscription,
+    // A closure only to keep `ingest` bound to its tap -- it owns no policy,
+    // state, or translation of its own.
+    handler: (message) => tap.ingest(message),
+  });
+  router.bind({
+    subscription: engineHttpJobTerminalSubscription,
+    handler: engine.handleHttpJobTerminal,
+  });
+  router.bind({
+    subscription: observabilityHttpJobTerminalSubscription,
+    handler: (message) => tap.ingest(message),
+  });
+
+  // Nothing can add a route after this point, and nothing published before it
+  // would have been delivered.
+  router.seal();
 
   const cl = new ConcurrencyLimiter(bus, ef);
   const limiter = new Limiter(config.limiter.id, config.limiter.scope, {

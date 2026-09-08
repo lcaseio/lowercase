@@ -2,8 +2,8 @@ import { Engine } from "@lcase/engine";
 import type {
   ArtifactReaderPort,
   EventBusPort,
-  JobExecutionPort,
   JobParserPort,
+  MessagePublisher,
   RunQueryPort,
 } from "@lcase/ports";
 import type { EmitterFactory } from "@lcase/events";
@@ -17,7 +17,7 @@ export function buildEngine(
   jobParser: JobParserPort,
   runQuery: RunQueryPort,
   artifacts: ArtifactReaderPort,
-  jobExecution: JobExecutionPort,
+  httpJobCommands: MessagePublisher<"job.httpjson.submitted">,
 ): Engine {
   return new Engine({
     bus,
@@ -25,6 +25,6 @@ export function buildEngine(
     jobParser,
     runQuery,
     artifacts,
-    jobExecution,
+    httpJobCommands,
   });
 }

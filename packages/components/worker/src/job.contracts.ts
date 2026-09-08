@@ -12,9 +12,9 @@ export type HttpJsonMethod =
 // The template shape -- ref placeholders (`{{...}}`) may still be present in
 // `url`/`headers`/`body`. Deliberately not `StepHttpJson` itself: that type is
 // flow-authoring-shaped (carries `on`, `exports`, routing concerns) and must
-// never reach a ProtocolExecutor. `kind` (not `type`) continues the naming
-// thread from `JobExecutionPort`/`ExecuteJobCommand` rather than reusing flow
-// vocabulary.
+// never reach a ProtocolExecutor. `kind` (not `type`) deliberately avoids flow
+// vocabulary: `type` names a step in a flow definition and an event type on a
+// Message, and this is neither.
 export type ProtocolRequest = {
   kind: "httpjson";
   url: string;
@@ -46,20 +46,6 @@ export type JobRunContext = {
   readonly signal?: AbortSignal;
 };
 
-// Temporary direct-boundary compatibility. This is the shape the still-live
-// Worker.execute(request) path projects into, an amalgam of Message-derived
-// identity and execution data that predates the Message boundary. It must not
-// grow new fields, and it disappears with the direct path.
-export type ExecuteJobCommand = {
-  jobId: string;
-  runId: string;
-  stepId: string;
-  traceId?: string;
-  protocol: ProtocolRequest;
-  refs: Ref[];
-  exportRefs?: Record<string, ExportRef>;
-};
-
 export type JobExecutionErrorCode =
   | "CANCELLED"
   | "TIMEOUT"
@@ -80,23 +66,22 @@ export type JobExecutionError = {
   retryable: boolean;
 };
 
+// Worker's own vocabulary for how one job ended, deliberately carrying no
+// identity: the submission is the only origin, so Worker already holds the ids
+// and a copy here would have nothing to be a copy of. That absence is what
+// lets terminal construction take (submission, result) and have exactly one
+// source for each half.
+//
+// Not a component boundary -- the boundary is the Message -- so this must not
+// grow into a second inter-component envelope.
 export type JobResult =
   | {
       status: "completed";
-      jobId: string;
       output: ArtifactRef;
       exports?: Record<string, ArtifactRef>;
     }
   | {
       status: "failed";
-      jobId: string;
       error: JobExecutionError;
       output?: ArtifactRef;
     };
-
-// An internal migration seam. ExecuteJobCommand and JobResult are worker's
-// own vocabulary for one job, not a component boundary -- the boundary is the
-// Message. They should not grow into a second inter-component envelope, and
-// both retire with the direct request/return path: once the submitted Message
-// is the only origin, Worker reads identity from it and JobResult's copied
-// jobId has nothing left to be a copy of.

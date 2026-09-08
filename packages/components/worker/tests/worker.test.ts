@@ -1,8 +1,7 @@
-import type { JobExecutionRequest } from "@lcase/ports";
 import { describe, expect, it, vi } from "vitest";
 import { createHttpJsonExecutor } from "../src/protocol/http-json/http-json.executor.js";
 import { Worker } from "../src/worker.js";
-import { makeCommand } from "./helpers/fixtures.js";
+import { makeSubmission } from "./helpers/fixtures.js";
 import { createFakeArtifactReaderPort } from "./helpers/fake-artifact-reader.js";
 import { createFakeArtifactWriterPort } from "./helpers/fake-artifact-writer.js";
 import { createFakeLifecycleSink } from "./helpers/fake-lifecycle-sink.js";
@@ -10,27 +9,17 @@ import {
   createControllablePermitPort,
   createFakePermitPort,
 } from "./helpers/fake-resource-permit.js";
-import { GENEROUS_CONFIG, makeWorker } from "./helpers/worker-fakes.js";
+import {
+  createFakeTerminalPublisher,
+  GENEROUS_CONFIG,
+  makeWorker,
+  WORKER_SOURCE,
+} from "./helpers/worker-fakes.js";
 import {
   makeJobExecutionCancelledEvent,
   makeJobExecutionCompletedEvent,
   makeJobExecutionFailedEvent,
 } from "../src/worker-lifecycle.events.js";
-
-function makeRequest(): JobExecutionRequest {
-  return {
-    flowid: "flow-1",
-    flowversionid: "flowversion-1",
-    runid: "run-1",
-    stepid: "step-1",
-    jobid: "job-1",
-    capid: "httpjson",
-    toolid: "httpjson",
-    traceId: "trace-1",
-    url: "https://example.test/resource",
-    refs: [],
-  };
-}
 
 // Worker's own responsibilities: capacity, the accepted/started/terminal
 // lifecycle sequence, and turning JobRunner's modelled outcome into a
@@ -41,20 +30,20 @@ describe("Worker", () => {
     const { worker, events } = makeWorker({
       protocolResult: () => ({ ok: true, payload: { foo: "bar" } }),
     });
-    const command = makeCommand();
+    const submission = makeSubmission();
 
-    const result = await worker.executeCommand(command);
+    const result = await worker.executeSubmission(submission);
 
     if (result.status !== "completed") {
       throw new Error(`expected completed, got ${result.status}`);
     }
-    expect(result.jobId).toBe(command.jobId);
     expect(result.output.hash).toMatch(/^fake-hash-/);
+    expect(result).not.toHaveProperty("jobId");
 
     expect(events).toHaveLength(2);
     expect(events[0]!.kind).toBe("job-execution-started");
     expect(events[1]).toEqual({
-      ...makeJobExecutionCompletedEvent(command, result.output),
+      ...makeJobExecutionCompletedEvent(submission, result.output),
       time: expect.any(String),
     });
     expect(events[1]).not.toHaveProperty("payload");
@@ -70,18 +59,17 @@ describe("Worker", () => {
     const { worker, events } = makeWorker({
       protocolResult: () => ({ ok: false, error: protocolError }),
     });
-    const command = makeCommand();
+    const submission = makeSubmission();
 
-    await expect(worker.executeCommand(command)).resolves.toMatchObject({
+    await expect(worker.executeSubmission(submission)).resolves.toMatchObject({
       status: "failed",
-      jobId: command.jobId,
       error: protocolError,
     });
 
     expect(events).toHaveLength(2);
     expect(events[0]!.kind).toBe("job-execution-started");
     expect(events[1]).toEqual({
-      ...makeJobExecutionFailedEvent(command, protocolError),
+      ...makeJobExecutionFailedEvent(submission, protocolError),
       time: expect.any(String),
     });
   });
@@ -89,17 +77,19 @@ describe("Worker", () => {
   it("cancellation: records a distinct cancelled fact and returns a CANCELLED result without an output", async () => {
     const permits = createControllablePermitPort();
     const { worker, events } = makeWorker({ permits });
-    const command = makeCommand();
+    const submission = makeSubmission();
     const controller = new AbortController();
 
-    const resultPromise = worker.executeCommand(command, controller.signal);
+    const resultPromise = worker.executeSubmission(
+      submission,
+      controller.signal,
+    );
     await vi.waitFor(() => expect(permits.acquire).toHaveBeenCalled());
     controller.abort();
     const result = await resultPromise;
 
     expect(result).toMatchObject({
       status: "failed",
-      jobId: command.jobId,
       error: { code: "CANCELLED", retryable: false },
     });
     expect(result).not.toHaveProperty("output");
@@ -107,7 +97,7 @@ describe("Worker", () => {
     expect(events).toHaveLength(2);
     expect(events[0]!.kind).toBe("job-execution-started");
     expect(events[1]).toEqual({
-      ...makeJobExecutionCancelledEvent(command),
+      ...makeJobExecutionCancelledEvent(submission),
       time: expect.any(String),
     });
   });
@@ -116,7 +106,7 @@ describe("Worker", () => {
     const { worker, events, acquire, release } = makeWorker();
 
     await expect(
-      worker.executeCommand(makeCommand({ stepId: "" })),
+      worker.executeSubmission(makeSubmission({ scope: { stepid: "" } })),
     ).rejects.toThrow();
 
     expect(events).toHaveLength(0);
@@ -132,7 +122,9 @@ describe("Worker", () => {
       },
     });
 
-    await expect(worker.executeCommand(makeCommand())).rejects.toThrow(thrown);
+    await expect(worker.executeSubmission(makeSubmission())).rejects.toThrow(
+      thrown,
+    );
 
     expect(events).toHaveLength(1);
     expect(events[0]!.kind).toBe("job-execution-started");
@@ -158,23 +150,26 @@ describe("Worker", () => {
           fetch: fakeFetch as unknown as typeof fetch,
         }),
         artifacts: { ...reader, ...writer },
+        terminal: createFakeTerminalPublisher().publisher,
       },
       GENEROUS_CONFIG,
     );
-    const command = makeCommand({
-      protocol: { kind: "httpjson", url: "https://example.test/greet" },
-      exportRefs: {
-        greeting: {
-          exportName: "greeting",
-          valuePath: ["output", "greeting"],
-          scope: "output",
-          string: "steps.x.exports.greeting",
-          type: "text/plain",
+    const submission = makeSubmission({
+      data: {
+        url: "https://example.test/greet",
+        exportRefs: {
+          greeting: {
+            exportName: "greeting",
+            valuePath: ["output", "greeting"],
+            scope: "output",
+            string: "steps.x.exports.greeting",
+            type: "text/plain",
+          },
         },
       },
     });
 
-    const result = await worker.executeCommand(command);
+    const result = await worker.executeSubmission(submission);
 
     expect(fakeFetch).toHaveBeenCalledTimes(1);
     if (result.status !== "completed") {
@@ -194,45 +189,72 @@ describe("Worker", () => {
     ]);
   });
 
-  // The temporary direct method, deleted in the Message cutover. Kept honest
-  // in the meantime: the engine still depends on exactly this translation.
-  describe("temporary direct execute(request)", () => {
-    it("translates the request into a command and the result into a completed outcome", async () => {
-      const { worker, store, protocolExecute } = makeWorker({
-        protocolResult: () => ({ ok: true, payload: { greeting: "hi" } }),
+  // Worker's Message boundary: the handler is what runtime binds, so what it
+  // publishes and when it rejects is the contract, not an implementation
+  // detail of executeSubmission.
+  describe("handleHttpJsonSubmitted", () => {
+    it("publishes exactly one terminal Message scoped to the submission", async () => {
+      const { worker, published } = makeWorker({
+        protocolResult: () => ({ ok: true, payload: { foo: "bar" } }),
       });
+      const submission = makeSubmission();
 
-      const outcome = await worker.execute(makeRequest());
+      await worker.handleHttpJsonSubmitted(submission);
 
-      if (outcome.status !== "completed") {
-        throw new Error(`expected completed, got ${outcome.status}`);
-      }
-      expect(store.get(outcome.output.hash)).toEqual({
-        contentType: "application/json",
-        content: { greeting: "hi" },
-      });
-      expect(outcome).not.toHaveProperty("jobId");
-      expect(outcome).not.toHaveProperty("runId");
-      expect(protocolExecute).toHaveBeenCalledTimes(1);
-      const [requestArg] = protocolExecute.mock.calls[0]!;
-      expect(requestArg).toMatchObject({
-        url: "https://example.test/resource",
+      expect(published).toHaveLength(1);
+      expect(published[0]).toMatchObject({
+        type: "job.httpjson.completed",
+        runid: submission.runid,
+        stepid: submission.stepid,
+        jobid: submission.jobid,
+        traceid: submission.traceid,
+        source: WORKER_SOURCE,
       });
     });
 
-    it("translates a failed result into a failed outcome", async () => {
-      const error = {
-        code: "HTTP_STATUS_FAILED" as const,
-        message: "upstream said no",
-        retryable: true,
-      };
-      const { worker } = makeWorker({
-        protocolResult: () => ({ ok: false, error }),
+    it("publishes one failed terminal for a modelled failure", async () => {
+      const { worker, published } = makeWorker({
+        protocolResult: () => ({
+          ok: false,
+          error: {
+            code: "HTTP_STATUS_FAILED" as const,
+            message: "upstream said no",
+            retryable: true,
+          },
+        }),
       });
 
-      const outcome = await worker.execute(makeRequest());
+      await worker.handleHttpJsonSubmitted(makeSubmission());
 
-      expect(outcome).toEqual({ status: "failed", error, output: undefined });
+      expect(published).toHaveLength(1);
+      expect(published[0]!.type).toBe("job.httpjson.failed");
+    });
+
+    // A modelled failure is a published fact; an unexpected throw is not. The
+    // delivery must fail rather than silently end the job with no terminal.
+    it("rejects and publishes nothing when execution throws unexpectedly", async () => {
+      const thrown = new Error("boom");
+      const { worker, published } = makeWorker({
+        protocolResult: () => {
+          throw thrown;
+        },
+      });
+
+      await expect(
+        worker.handleHttpJsonSubmitted(makeSubmission()),
+      ).rejects.toThrow(thrown);
+      expect(published).toHaveLength(0);
+    });
+
+    it("rejects when the terminal is refused admission", async () => {
+      const { worker, terminal } = makeWorker({
+        protocolResult: () => ({ ok: true, payload: null }),
+      });
+      terminal.failNextPublish(new Error("not admitted"));
+
+      await expect(
+        worker.handleHttpJsonSubmitted(makeSubmission()),
+      ).rejects.toThrow("not admitted");
     });
   });
 });

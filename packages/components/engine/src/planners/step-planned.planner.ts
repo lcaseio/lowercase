@@ -1,12 +1,11 @@
 import { randomUUID } from "crypto";
 import type {
-  EmitJobHttpJsonSubmittedFx,
   EmitJobMcpSubmittedFx,
   EmitStepStartedFx,
   EngineEffect,
   EngineState,
-  ExecuteHttpJsonJobFx,
   Planner,
+  PublishJobHttpJsonSubmittedFx,
 } from "../engine.types.js";
 import type { StepPlannedMsg } from "../types/message.types.js";
 import { makeStepRefs } from "../references/value-refs.js";
@@ -96,11 +95,9 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
     );
     const exportRefs = newRun.flowAnalysis.exportRefsByStep?.[stepId] ?? {};
 
-    // One canonical envelope built once per submission (the envelope-fidelity
-    // fix): a single jobid and a single copy of the job
-    // data, shared by both the observability publish below and the actual
-    // dispatch request, so the two can never drift into different job
-    // identities the way two independently-constructed objects used to.
+    // One canonical envelope per submission: one jobid, one copy of the job
+    // data, one effect. Publishing the submitted Message *is* the dispatch, so
+    // there is no second object that could drift into a different identity.
     const jobId = "job-" + randomUUID();
     const jobScope = {
       flowid: newRun.flowId,
@@ -121,30 +118,13 @@ export const stepPlannedPlanner: Planner<StepPlannedMsg> = (
       ...(Object.keys(exportRefs).length > 0 ? { exportRefs } : {}),
     };
 
-    const emitJob: EmitJobHttpJsonSubmittedFx = {
-      type: "EmitJobHttpJsonSubmitted",
+    const publishJob: PublishJobHttpJsonSubmittedFx = {
+      type: "PublishJobHttpJsonSubmitted",
       scope: jobScope,
       data: jobData,
       traceId: newRun.traceId,
     };
-    effects.push(emitJob);
-
-    // Worker V2 plan Phase 4: a second, independent effect that actually
-    // dispatches the job -- EmitJobHttpJsonSubmittedFx above still publishes
-    // for observability, this is what actually advances the run. Built from
-    // the same jobScope/jobData as the submitted event above, so
-    // request.jobid always equals the observability record's jobid.
-    const executeJob: ExecuteHttpJsonJobFx = {
-      type: "ExecuteHttpJsonJob",
-      request: {
-        ...jobScope,
-        ...jobData,
-        traceId: newRun.traceId,
-      },
-      scope: jobScope,
-      traceId: newRun.traceId,
-    };
-    effects.push(executeJob);
+    effects.push(publishJob);
   } else if (stepType === "mcp" && step.type === "mcp") {
     // const materializedStep = bindStepRefs(
     //   refs,

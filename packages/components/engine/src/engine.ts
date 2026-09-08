@@ -62,19 +62,17 @@ export class Engine {
       enqueue: this.enqueue.bind(this),
       processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,
-      jobExecution: deps.jobExecution,
+      httpJobCommands: deps.httpJobCommands,
       source: `lowercase://engine/${this.id}`,
     });
   }
 
   subscribeToTopics(): void {
-    // Worker V2 plan Phase 4: httpjson no longer advances the run from these
-    // subscriptions -- ExecuteHttpJsonJobFx enqueues JobFinished directly
-    // from JobExecutionPort's return value instead. job.httpjson.completed/
-    // .failed still publishes (kept for the event log/UI graph), so this
-    // subscription is narrowed to mcp specifically, which still relies on it,
-    // rather than left as a job.*.completed/.failed wildcard -- otherwise the
-    // still-published httpjson compat event would be double-processed here.
+    // Narrowed to mcp rather than a job.*.completed/.failed wildcard: httpjson
+    // terminals arrive on the engine's own Message subscription (see
+    // handleHttpJobTerminal) and are never published to the bus, so a wildcard
+    // here would only be waiting for something that no longer exists. mcp is
+    // still a bus conversation and still relies on these.
     this.bus.subscribe("job.mcp.completed", async (e: AnyEvent) => {
       this.handleJobFinished(e);
     });
@@ -210,6 +208,24 @@ export class Engine {
     this.queue.push(message);
     this.processAll();
   }
+
+  /**
+   * The engine's half of the HTTP JSON job conversation coming back.
+   *
+   * An arrow property so runtime binds it directly. It feeds the literal
+   * delivered Message into the existing JobFinished path rather than
+   * reconstructing anything -- worker built that Message and the engine has
+   * nothing to add to it.
+   *
+   * `handleJobFinished` -> `enqueue` -> `processAll()` is fully synchronous, so
+   * this resolving means run state has already advanced.
+   */
+  handleHttpJobTerminal = async (
+    message:
+      AnyEvent<"job.httpjson.completed"> | AnyEvent<"job.httpjson.failed">,
+  ): Promise<void> => {
+    this.handleJobFinished(message);
+  };
 
   handleJobFinished(event: AnyEvent): void {
     // parse event

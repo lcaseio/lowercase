@@ -1,20 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { RunContext, AnyEvent } from "@lcase/types";
 import type {
-  EmitJobHttpJsonSubmittedFx,
   EngineState,
-  ExecuteHttpJsonJobFx,
+  PublishJobHttpJsonSubmittedFx,
 } from "../../src/engine.types.js";
 import type { StepPlannedMsg } from "../../src/types/message.types.js";
 import { stepPlannedPlanner } from "../../src/planners/step-planned.planner.js";
 import { flowDef } from "../fixtures/flow-definition.js";
 import { flowAnalysisB } from "../fixtures/flow-analysis.state.js";
 
-// Worker V2 plan Phase 4: the shared step-planned.state.ts fixture puts step
-// "b" in runPlan.reuse, which takes stepPlannedPlanner's early-return
-// EmitStepReused branch -- this fixture instead reaches the real httpjson
-// dispatch branch, to assert both EmitJobHttpJsonSubmittedFx and the
-// ExecuteHttpJsonJobFx get pushed together, sharing one jobid.
+// The shared step-planned.state.ts fixture puts step "b" in runPlan.reuse,
+// which takes stepPlannedPlanner's early-return EmitStepReused branch -- this
+// fixture instead reaches the real httpjson dispatch branch, which is the only
+// place the submitted publication effect is built.
 function makeNewState(): EngineState {
   return {
     runs: {
@@ -89,42 +87,29 @@ function makeMessage(): StepPlannedMsg {
 }
 
 describe("stepPlannedPlanner() -- httpjson step", () => {
-  it("pushes both EmitJobHttpJsonSubmitted and ExecuteHttpJsonJob, sharing one jobid", () => {
+  it("pushes one PublishJobHttpJsonSubmitted effect and no direct execution effect", () => {
     const oldState = makeNewState();
     const newState = makeNewState();
     const message = makeMessage();
 
     const effects = stepPlannedPlanner(oldState, newState, message);
 
-    const submitted = effects.find(
-      (e) => e.type === "EmitJobHttpJsonSubmitted",
-    ) as EmitJobHttpJsonSubmittedFx | undefined;
-    const executed = effects.find((e) => e.type === "ExecuteHttpJsonJob") as
-      ExecuteHttpJsonJobFx | undefined;
+    const published = effects.filter(
+      (e) => e.type === "PublishJobHttpJsonSubmitted",
+    ) as PublishJobHttpJsonSubmittedFx[];
 
-    expect(submitted).toBeDefined();
-    expect(submitted?.data.url).toBe("test-url");
-
-    expect(executed).toBeDefined();
-    expect(executed).toMatchObject({
-      request: {
-        runid: "test-runid",
-        stepid: "b",
-        url: "test-url",
-      },
-      scope: {
-        flowid: "test-flowid",
-        flowversionid: "test-flowversionid",
-        runid: "test-runid",
-        stepid: "b",
-        capid: "httpjson",
-        toolid: "httpjson",
-      },
+    // One effect, not a pair: publishing the submitted Message is the dispatch,
+    // so there is no second object left that could carry a different jobid.
+    expect(published).toHaveLength(1);
+    expect(published[0]!.data.url).toBe("test-url");
+    expect(published[0]!.scope).toMatchObject({
+      flowid: "test-flowid",
+      flowversionid: "test-flowversionid",
+      runid: "test-runid",
+      stepid: "b",
+      capid: "httpjson",
+      toolid: "httpjson",
     });
-    // The whole point of the envelope-fidelity fix: the observability
-    // record and the actual dispatch request share one jobid, built once in
-    // the planner, instead of each independently generating its own.
-    expect(submitted?.scope.jobid).toEqual(executed?.request.jobid);
-    expect(executed?.request.jobid).toEqual(executed?.scope.jobid);
+    expect(published[0]!.scope.jobid).toEqual(expect.any(String));
   });
 });

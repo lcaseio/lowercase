@@ -1,14 +1,12 @@
 import { buildEvent } from "@lcase/events";
 import { describe, expect, it } from "vitest";
 import type { JobResult } from "../src/job.contracts.js";
-import {
-  buildJobTerminal,
-  type JobSubmittedMessage,
-} from "../src/terminal-message.js";
+import type { HttpJsonSubmission } from "../src/submitted-message.js";
+import { buildJobTerminal } from "../src/terminal-message.js";
 
 const WORKER_SOURCE = "lowercase://worker";
 
-function makeSubmitted(): JobSubmittedMessage {
+function makeSubmitted(): HttpJsonSubmission {
   return buildEvent(
     "job.httpjson.submitted",
     {
@@ -39,7 +37,6 @@ function makeSubmitted(): JobSubmittedMessage {
 
 const completed: Extract<JobResult, { status: "completed" }> = {
   status: "completed",
-  jobId: "job-1",
   output: { hash: "output-hash" },
   exports: { greeting: { hash: "greeting-hash" } },
 };
@@ -63,7 +60,7 @@ describe("buildJobTerminal", () => {
   it("omits exportHashes entirely when the job produced no exports", () => {
     const terminal = buildJobTerminal(
       makeSubmitted(),
-      { status: "completed", jobId: "job-1", output: { hash: "output-hash" } },
+      { status: "completed", output: { hash: "output-hash" } },
       WORKER_SOURCE,
     );
 
@@ -75,7 +72,6 @@ describe("buildJobTerminal", () => {
       makeSubmitted(),
       {
         status: "failed",
-        jobId: "job-1",
         error: {
           code: "HTTP_STATUS_FAILED",
           message: "upstream said no",
@@ -99,7 +95,6 @@ describe("buildJobTerminal", () => {
       makeSubmitted(),
       {
         status: "failed",
-        jobId: "job-1",
         error: { code: "TIMEOUT", message: "too slow", retryable: false },
       },
       WORKER_SOURCE,
@@ -159,7 +154,6 @@ describe("buildJobTerminal", () => {
       makeSubmitted(),
       {
         status: "failed",
-        jobId: "job-1",
         error: {
           code: "CANCELLED",
           message: "Job execution was cancelled",
@@ -172,7 +166,6 @@ describe("buildJobTerminal", () => {
       makeSubmitted(),
       {
         status: "failed",
-        jobId: "job-1",
         error: {
           code: "HTTP_NETWORK_FAILED",
           message: "Job execution was cancelled",

@@ -19,5 +19,5 @@ export const config = {
     path: path.resolve(process.cwd(), "lcase-db/artifacts"),
   },
   sql: { kind: "sqlite" },
-  messaging: { kind: "direct" },
+  messaging: { kind: "in-process" },
 } satisfies LocalSystemConfig;

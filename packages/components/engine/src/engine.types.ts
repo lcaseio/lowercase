@@ -4,7 +4,7 @@ import type {
   EventBusPort,
   RunQueryPort,
 } from "@lcase/ports";
-import type { JobExecutionRequest, JobExecutionPort } from "@lcase/ports";
+import type { MessagePublisher } from "@lcase/ports";
 import type {
   AnyEvent,
   CloudScope,
@@ -201,32 +201,18 @@ export type EmitStepFailedFx = {
   data: StepFailedData;
   traceId: string;
 };
-export type EmitJobHttpJsonSubmittedFx = {
-  type: "EmitJobHttpJsonSubmitted";
-  // jobid included, not omitted: the planner generates one jobid per
-  // submission and shares it with ExecuteHttpJsonJobFx below, so the
-  // observability record and the actual dispatch always correlate.
+// "Publish", not "Emit": everywhere else in this package Emit means putting an
+// event on the bus through an EmitterFactory emitter. This builds one canonical
+// Message and hands it to a publication, which is a different act with a
+// different failure mode -- admission can be refused.
+//
+// One effect, not a pair. The submitted Message is both the observability
+// record and the dispatch, so there is nothing left for a second effect to keep
+// correlated with the first.
+export type PublishJobHttpJsonSubmittedFx = {
+  type: "PublishJobHttpJsonSubmitted";
   scope: JobScope & Omit<CloudScope, "source">;
   data: JobHttpJsonSubmittedData;
-  traceId: string;
-};
-
-// Worker V2 plan Phase 4: calls JobExecutionPort directly instead of waiting
-// on a job.httpjson.completed bus event. Deliberately a second, separate
-// effect alongside EmitJobHttpJsonSubmittedFx rather than a replacement --
-// job.httpjson.submitted keeps publishing for observability, this is what
-// actually advances the run. Both effects are built from the same shared
-// jobid/data in the planner (the envelope-fidelity fix), rather than each
-// independently constructing its own.
-export type ExecuteHttpJsonJobFx = {
-  type: "ExecuteHttpJsonJob";
-  request: JobExecutionRequest;
-  // Carried separately from `request` -- JobExecutionRequest is the
-  // job.httpjson.submitted envelope shape (already has flowid/flowversionid/
-  // capid/toolid/jobid via JobScope), but the handler needs its own copy to
-  // build the compat job.httpjson.completed/.failed event it still
-  // publishes for the event log/UI graph.
-  scope: JobScope & Omit<CloudScope, "source">;
   traceId: string;
 };
 
@@ -274,8 +260,7 @@ export type DispatchInternalFx = {
 
 export type EngineEffect =
   | EmitRunStartedFx
-  | EmitJobHttpJsonSubmittedFx
-  | ExecuteHttpJsonJobFx
+  | PublishJobHttpJsonSubmittedFx
   | EmitJobMcpSubmittedFx
   | EmitRunDeniedFx
   | EmitRunCompletedFx
@@ -336,6 +321,6 @@ export type EffectHandlerDeps = {
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactReaderPort;
-  jobExecution: JobExecutionPort;
+  httpJobCommands: MessagePublisher<"job.httpjson.submitted">;
   source: string;
 };
