@@ -34,11 +34,13 @@ services:
   # database on the same server, which the default superuser can do.
   postgres:
     image: postgres:16-alpine
-    # 5433 on the host: a local Postgres install already owning the default
-    # 5432 is common enough that claiming it would make `docker compose up`
-    # fail on a fresh machine for no benefit.
+    # Not 5432, and not 5433 either: a machine with native Postgres installs
+    # can easily have both (an EnterpriseDB 15 and 16 side by side claim
+    # exactly those two), and the failure reads as a Docker fault rather than a
+    # port conflict. Override POSTGRES_HOST_PORT if 5434 is taken too, and set
+    # POSTGRES_DATABASE_URL to match.
     ports:
-      - "5433:5432"
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
     environment:
       POSTGRES_USER: lcase
       POSTGRES_PASSWORD: lcase

@@ -47,7 +47,7 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C13    | Cut the HTTP JSON job conversation onto Messages (atomic flip)                 | merged (PR #372) | [2]   |          |
 | C14    | Log-backed (Redis) delivery under the same Message boundary                    | merged (PR #373) | [2]   |          |
 | C15    | Retire `$transaction` in favour of nested writes (no Postgres)                 | merged (PR #374) | [4]   |          |
-| C16    | Two provider schema roots, generated clients, narrowed seams (inert)           | in review        | [4]   |          |
+| C16    | Two provider schema roots, generated clients, narrowed seams (inert)           | merged (PR #375) | [4]   |          |
 | C17    | Shared repository contract suites against real SQLite and Postgres             | not started      | [4]   |          |
 | C18    | Extend `local-system` profile with `postgres` SQL branch                       | not started      | [4]   |          |
 

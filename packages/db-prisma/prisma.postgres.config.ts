@@ -23,6 +23,6 @@ export default defineConfig({
     // defaults to a file under lcase-db/
     url:
       process.env["POSTGRES_DATABASE_URL"] ??
-      "postgresql://lcase:lcase@localhost:5433/lcase",
+      "postgresql://lcase:lcase@localhost:5434/lcase",
   },
 });
