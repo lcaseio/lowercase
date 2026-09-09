@@ -28,3 +28,23 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # Only the Prisma CLI talks to this today -- nothing in the application
+  # constructs a Postgres client yet. `prisma migrate dev` provisions a shadow
+  # database on the same server, which the default superuser can do.
+  postgres:
+    image: postgres:16-alpine
+    # 5433 on the host: a local Postgres install already owning the default
+    # 5432 is common enough that claiming it would make `docker compose up`
+    # fail on a fresh machine for no benefit.
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: lcase
+      POSTGRES_PASSWORD: lcase
+      POSTGRES_DB: lcase
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lcase -d lcase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

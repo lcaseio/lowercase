@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { PrismaArtifactRepository } from "../../src/artifact-repository/prisma-artifact-repository.js";
 
 async function applySqlFile(
@@ -49,7 +49,7 @@ describe("PrismaArtifactRepository", () => {
 
     await applyMigrations(
       prisma,
-      path.resolve(process.cwd(), "../db-prisma/prisma/migrations"),
+      path.resolve(process.cwd(), "../db-prisma/prisma/sqlite/migrations"),
     );
 
     repository = new PrismaArtifactRepository(prisma);

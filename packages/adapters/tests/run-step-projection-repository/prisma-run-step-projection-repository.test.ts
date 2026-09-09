@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { PrismaRunRepository } from "../../src/run-repository/prisma-run-repository.js";
 import { PrismaRunStepProjectionRepository } from "../../src/run-step-projection-repository/prisma-run-step-projection-repository.js";
 
@@ -55,7 +55,7 @@ describe("PrismaRunStepProjectionRepository", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
 
     runRepository = new PrismaRunRepository(prisma);

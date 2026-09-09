@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@lcase/db-prisma";
+import type { SqlClient } from "@lcase/db-prisma";
 import type {
   Result,
   RunStepExportRecord,
@@ -9,10 +9,13 @@ import type { RunStepProjectionRepositoryPort } from "@lcase/ports";
 
 // runStepExport stays: getStepProjection and listStepProjections both read it
 // directly, only the write path moved onto the parent's nested write.
-type PrismaRunStepProjectionRepositoryDb = Pick<
-  PrismaClient,
-  "runStepProjection" | "runStepExport"
->;
+export type PrismaRunStepProjectionRepositoryDb = {
+  runStepProjection: Pick<
+    SqlClient["runStepProjection"],
+    "findUnique" | "findMany" | "upsert"
+  >;
+  runStepExport: Pick<SqlClient["runStepExport"], "findMany">;
+};
 
 function toRunStepProjectionRecord(
   step: {

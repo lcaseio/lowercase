@@ -9,7 +9,7 @@ import { InMemoryEventBus } from "@lcase/adapters/event-bus";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { EmitterFactory } from "@lcase/events";
 import type { ArtifactReaderPort, ReplayServicePort } from "@lcase/ports";
 import { RunService } from "@lcase/app-services";
@@ -64,7 +64,7 @@ describe("run sql routes", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
   });
 

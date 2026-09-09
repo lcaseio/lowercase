@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { PrismaRunRepository } from "../../src/run-repository/prisma-run-repository.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -53,7 +53,7 @@ describe("PrismaRunRepository", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
 
     const createdAt = new Date("2026-07-02T10:00:00.000Z");

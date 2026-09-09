@@ -11,7 +11,7 @@ import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { EmitterFactory } from "@lcase/events";
 import type { RunQueryPort } from "@lcase/ports";
 import { SimService } from "@lcase/app-services";
@@ -67,7 +67,7 @@ describe("sim sql routes", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
   });
 

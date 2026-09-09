@@ -7,13 +7,23 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./sqlite": {
+      "types": "./dist/sqlite.d.ts",
+      "import": "./dist/sqlite.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres.d.ts",
+      "import": "./dist/postgres.js"
     }
   },
   "scripts": {
-    "generate": "prisma generate",
+    "schema": "node scripts/build-schemas.mjs",
+    "generate": "pnpm run schema && prisma generate --config prisma.sqlite.config.ts && prisma generate --config prisma.postgres.config.ts",
     "build": "pnpm run generate && tsc --incremental false",
     "typecheck": "pnpm run generate && tsc --noEmit --incremental false",
-    "migrate": "mkdir -p ../../lcase-db/sqlite && prisma migrate deploy",
+    "migrate": "mkdir -p ../../lcase-db/sqlite && pnpm run schema && prisma migrate deploy --config prisma.sqlite.config.ts",
+    "migrate:postgres": "pnpm run schema && prisma migrate deploy --config prisma.postgres.config.ts",
     "test": "echo test",
     "lint": "echo lint"
   },
