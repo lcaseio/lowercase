@@ -223,4 +223,112 @@ describe("PrismaRunRepository", () => {
       }),
     });
   });
+
+  // Params are written through a nested write on the run, and RunRecord does
+  // not carry them, so these read the rows back directly. The three-way
+  // distinction is the point: absent leaves them alone, present replaces them
+  // wholesale, and an empty object clears them.
+  describe("run params", () => {
+    async function paramsFor(runId: string) {
+      const rows = await prisma.runParam.findMany({
+        where: { runId },
+        orderBy: [{ name: "asc" }],
+      });
+      return rows.map((row) => ({
+        name: row.name,
+        artifactHash: row.artifactHash,
+      }));
+    }
+
+    const base = {
+      id: "run-params",
+      traceId: "trace-params",
+      status: "requested" as const,
+      source: "lowercase://test",
+      flowId: "flow-1",
+      flowVersionId: "flow-version-1",
+      flowDefHash: "a".repeat(64),
+    };
+
+    it("writes params supplied on create", async () => {
+      const result = await repository.createRun({
+        ...base,
+        params: { prompt: "c".repeat(64), seed: "d".repeat(64) },
+      });
+
+      expect(result.ok).toBe(true);
+      await expect(paramsFor("run-params")).resolves.toEqual([
+        { name: "prompt", artifactHash: "c".repeat(64) },
+        { name: "seed", artifactHash: "d".repeat(64) },
+      ]);
+    });
+
+    it("replaces params wholesale when the run is upserted again", async () => {
+      await repository.createRun({
+        ...base,
+        params: { prompt: "c".repeat(64), seed: "d".repeat(64) },
+      });
+
+      await repository.createRun({
+        ...base,
+        status: "started",
+        params: { prompt: "e".repeat(64) },
+      });
+
+      // "seed" is gone rather than merged, and "prompt" points at the new hash.
+      await expect(paramsFor("run-params")).resolves.toEqual([
+        { name: "prompt", artifactHash: "e".repeat(64) },
+      ]);
+    });
+
+    it("clears params when given an empty object", async () => {
+      await repository.createRun({
+        ...base,
+        params: { prompt: "c".repeat(64) },
+      });
+
+      await repository.createRun({ ...base, status: "started", params: {} });
+
+      await expect(paramsFor("run-params")).resolves.toEqual([]);
+    });
+
+    // The nested deleteMany carries no runId -- it relies on the parent to
+    // scope it. If that scoping were wrong it would clear every run's params,
+    // which is the one failure here that would be silent and catastrophic.
+    it("replacing one run's params leaves another run's alone", async () => {
+      await repository.createRun({
+        ...base,
+        params: { prompt: "c".repeat(64) },
+      });
+      await repository.createRun({
+        ...base,
+        id: "run-params-other",
+        params: { prompt: "f".repeat(64), extra: "0".repeat(64) },
+      });
+
+      await repository.createRun({
+        ...base,
+        status: "started",
+        params: { prompt: "e".repeat(64) },
+      });
+
+      await expect(paramsFor("run-params-other")).resolves.toEqual([
+        { name: "extra", artifactHash: "0".repeat(64) },
+        { name: "prompt", artifactHash: "f".repeat(64) },
+      ]);
+    });
+
+    it("leaves existing params untouched when params is omitted", async () => {
+      await repository.createRun({
+        ...base,
+        params: { prompt: "c".repeat(64) },
+      });
+
+      await repository.createRun({ ...base, status: "started" });
+
+      await expect(paramsFor("run-params")).resolves.toEqual([
+        { name: "prompt", artifactHash: "c".repeat(64) },
+      ]);
+    });
+  });
 });
