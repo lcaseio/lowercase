@@ -10,7 +10,7 @@ import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { ArtifactService } from "@lcase/app-services";
 import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
 import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
@@ -68,7 +68,7 @@ describe("artifact sql routes", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
   });
 

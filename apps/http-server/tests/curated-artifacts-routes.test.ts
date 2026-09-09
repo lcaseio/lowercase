@@ -9,7 +9,7 @@ import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { ArtifactService } from "@lcase/app-services";
 import type { FlowDefinition, JsonValue } from "@lcase/types";
 import { getCuratedArtifactsForParamRoute } from "../src/routes/flows/curated-artifacts.js";
@@ -68,7 +68,7 @@ describe("GET .../curated-artifacts", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
   });
 

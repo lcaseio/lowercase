@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "@lcase/db-prisma";
+import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { PrismaArtifactRepository } from "../../src/artifact-repository/prisma-artifact-repository.js";
 import { PrismaRunQuery } from "../../src/run-query/prisma-run-query.js";
 
@@ -54,7 +54,7 @@ describe("PrismaRunQuery", () => {
 
     await applyMigrations(
       prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/migrations"),
+      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
     );
 
     query = new PrismaRunQuery(prisma, new PrismaArtifactRepository(prisma));

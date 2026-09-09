@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@lcase/db-prisma";
+import type { SqlClient } from "@lcase/db-prisma";
 import type {
   CreateRunRecordInput,
   Result,
@@ -8,7 +8,13 @@ import type {
 } from "@lcase/types";
 import type { RunRepositoryPort } from "@lcase/ports";
 
-type PrismaRunRepositoryDb = Pick<PrismaClient, "run">;
+// Narrowed to the methods actually called, not the whole `run` delegate: a
+// delegate carries provider-specific signatures (`groupBy`, `aggregate`) that
+// no repository uses but that would make this seam reject the Postgres client.
+// Exported so tests/prisma-provider-parity.ts can assert both clients satisfy it.
+export type PrismaRunRepositoryDb = {
+  run: Pick<SqlClient["run"], "findUnique" | "findMany" | "update" | "upsert">;
+};
 
 function toRunStatus(status: string): RunStatus {
   switch (status) {

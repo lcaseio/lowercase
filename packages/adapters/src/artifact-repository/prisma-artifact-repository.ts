@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@lcase/db-prisma";
+import type { SqlClient } from "@lcase/db-prisma";
 import type {
   ArtifactIndex,
   ArtifactListFilter,
@@ -10,10 +10,13 @@ import type {
 } from "@lcase/types";
 import type { ArtifactRepositoryPort } from "@lcase/ports";
 
-type PrismaArtifactRepositoryDb = Pick<
-  PrismaClient,
-  "artifact" | "artifactParamCuration"
->;
+export type PrismaArtifactRepositoryDb = {
+  artifact: Pick<
+    SqlClient["artifact"],
+    "findUnique" | "findMany" | "update" | "upsert"
+  >;
+  artifactParamCuration: Pick<SqlClient["artifactParamCuration"], "findMany">;
+};
 
 function definedFields<T extends Record<string, unknown>>(
   input: T,
