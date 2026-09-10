@@ -24,6 +24,23 @@ jobs:
         image: redis:7-alpine
         ports:
           - 6379:6379
+      # The SQL contract suites create and drop a database per vitest worker on
+      # this server, so it needs a superuser -- the image's default one is that.
+      # Unlike docker-compose.yml this maps 5432 directly: a CI runner has no
+      # native Postgres to collide with.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lcase
+          POSTGRES_PASSWORD: lcase
+          POSTGRES_DB: lcase
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lcase -d lcase"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       S3_TEST_ENDPOINT: http://localhost:9000
@@ -31,6 +48,7 @@ jobs:
       S3_TEST_ACCESS_KEY_ID: minioadmin
       S3_TEST_SECRET_ACCESS_KEY: minioadmin
       REDIS_TEST_URL: redis://localhost:6379
+      POSTGRES_TEST_URL: postgresql://lcase:lcase@localhost:5432/lcase
 
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +73,15 @@ jobs:
 
       - name: Wait for Redis
         run: until (exec 3<>/dev/tcp/localhost/6379) 2>/dev/null; do sleep 1; done
+
+      # Postgres needs no wait step: its service declares a health check, which
+      # the runner gates on before any step runs.
+
+      # Both providers' committed migration histories still produce their
+      # schemas. Postgres is the half that needs a server, which is why this
+      # sits after the services rather than beside typecheck.
+      - name: Check migration histories
+        run: pnpm -F @lcase/db-prisma run check:migrations
 
       - run: pnpm turbo run test
       - run: pnpm turbo run test:integration

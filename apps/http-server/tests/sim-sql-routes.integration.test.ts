@@ -2,16 +2,26 @@ import Fastify from "fastify";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
+import {
+  createSqliteTestDb,
+  type TestDb,
+  type TestSqlClient,
+} from "@lcase/test-support";
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
-import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { EmitterFactory } from "@lcase/events";
 import type { RunQueryPort } from "@lcase/ports";
 import { SimService } from "@lcase/app-services";
@@ -19,60 +29,29 @@ import { getSimSpecRoute } from "../src/routes/sims/get-sim-spec.js";
 import { simsListRoute } from "../src/routes/sims/list.js";
 import { postSimsRoute } from "../src/routes/sims/post.js";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(currentDir, "../../..");
-
-async function applySqlFile(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  filePath: string,
-) {
-  const sql = await fs.readFile(filePath, "utf8");
-  const statements = sql
-    .split(";")
-    .map((statement) => statement.trim())
-    .filter((statement) => statement.length > 0);
-
-  for (const statement of statements) {
-    await prisma.$executeRawUnsafe(statement);
-  }
-}
-
-async function applyMigrations(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  migrationsDir: string,
-) {
-  const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
-  const migrationFiles = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(migrationsDir, entry.name, "migration.sql"))
-    .sort();
-
-  for (const filePath of migrationFiles) {
-    await applySqlFile(prisma, filePath);
-  }
-}
-
 describe("sim sql routes", () => {
+  let db: TestDb;
   let tmpDir: string;
   let artifactDir: string;
-  let prisma: PrismaClient;
+  let prisma: TestSqlClient;
+
+  beforeAll(async () => {
+    db = await createSqliteTestDb();
+    prisma = db.client;
+  });
+
+  afterAll(async () => {
+    await db.dispose();
+  });
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-sim-sql-route-"));
     artifactDir = path.join(tmpDir, "artifacts");
 
-    const dbPath = path.join(tmpDir, "sim-route.sqlite");
-    const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-    prisma = new PrismaClient({ adapter });
-
-    await applyMigrations(
-      prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
-    );
+    await db.reset();
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 

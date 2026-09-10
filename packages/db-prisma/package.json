@@ -20,6 +20,7 @@
   "scripts": {
     "schema": "node scripts/build-schemas.mjs",
     "generate": "pnpm run schema && prisma generate --config prisma.sqlite.config.ts && prisma generate --config prisma.postgres.config.ts",
+    "check:migrations": "pnpm run schema && node scripts/check-migrations.mjs",
     "build": "pnpm run generate && tsc --incremental false",
     "typecheck": "pnpm run generate && tsc --noEmit --incremental false",
     "migrate": "mkdir -p ../../lcase-db/sqlite && pnpm run schema && prisma migrate deploy --config prisma.sqlite.config.ts",

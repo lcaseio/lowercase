@@ -24,5 +24,13 @@ export default defineConfig({
     url:
       process.env["POSTGRES_DATABASE_URL"] ??
       "postgresql://lcase:lcase@localhost:5434/lcase",
+    // Required by `migrate diff --from-migrations`, which is how `check:migrations`
+    // verifies the committed history still produces the current models. Prisma
+    // creates and drops this database itself, so it must not name a real one.
+    // SQLite needs no equivalent -- it is the only provider that can diff a
+    // migrations directory offline.
+    shadowDatabaseUrl:
+      process.env["POSTGRES_SHADOW_DATABASE_URL"] ??
+      "postgresql://lcase:lcase@localhost:5434/lcase_shadow",
   },
 });

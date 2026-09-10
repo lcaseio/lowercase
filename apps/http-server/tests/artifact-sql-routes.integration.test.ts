@@ -3,14 +3,24 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { fileURLToPath } from "node:url";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
+import {
+  createSqliteTestDb,
+  type TestDb,
+  type TestSqlClient,
+} from "@lcase/test-support";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { FsArtifactStore } from "@lcase/adapters/artifact-store";
 import { createArtifactReadWritePort } from "@lcase/artifacts";
-import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { ArtifactService } from "@lcase/app-services";
 import { getArtifactRoute } from "../src/routes/artifacts/get-artifact.js";
 import { listArtifactsRoute } from "../src/routes/artifacts/list-artifacts.js";
@@ -18,43 +28,20 @@ import { postArtifactRoute } from "../src/routes/artifacts/post-artifact.js";
 import { patchArtifactRoute } from "../src/routes/artifacts/patch-artifact.js";
 import type { FlowDefinition, JsonValue } from "@lcase/types";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(currentDir, "../../..");
-
-async function applySqlFile(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  filePath: string,
-) {
-  const sql = await fs.readFile(filePath, "utf8");
-  const statements = sql
-    .split(";")
-    .map((statement) => statement.trim())
-    .filter((statement) => statement.length > 0);
-
-  for (const statement of statements) {
-    await prisma.$executeRawUnsafe(statement);
-  }
-}
-
-async function applyMigrations(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  migrationsDir: string,
-) {
-  const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
-  const migrationFiles = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(migrationsDir, entry.name, "migration.sql"))
-    .sort();
-
-  for (const filePath of migrationFiles) {
-    await applySqlFile(prisma, filePath);
-  }
-}
-
 describe("artifact sql routes", () => {
+  let db: TestDb;
   let tmpDir: string;
   let artifactDir: string;
-  let prisma: PrismaClient;
+  let prisma: TestSqlClient;
+
+  beforeAll(async () => {
+    db = await createSqliteTestDb();
+    prisma = db.client;
+  });
+
+  afterAll(async () => {
+    await db.dispose();
+  });
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(
@@ -62,18 +49,10 @@ describe("artifact sql routes", () => {
     );
     artifactDir = path.join(tmpDir, "artifacts");
 
-    const dbPath = path.join(tmpDir, "artifact-route.sqlite");
-    const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-    prisma = new PrismaClient({ adapter });
-
-    await applyMigrations(
-      prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
-    );
+    await db.reset();
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
     await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
