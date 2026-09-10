@@ -1,15 +1,14 @@
 import Fastify from "fastify";
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  createSqliteTestDb,
+  type TestDb,
+  type TestSqlClient,
+} from "@lcase/test-support";
 import { InMemoryEventBus } from "@lcase/adapters/event-bus";
 import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
-import { PrismaClient } from "@lcase/db-prisma/sqlite";
 import { EmitterFactory } from "@lcase/events";
 import type { ArtifactReaderPort, ReplayServicePort } from "@lcase/ports";
 import { RunService } from "@lcase/app-services";
@@ -19,58 +18,21 @@ import { getRunParamsRoute } from "../src/routes/runs/get-run-params.js";
 import { getRunsEventsListRoute } from "../src/routes/runs/events/events.js";
 import { listRunsRoute } from "../src/routes/runs/list.js";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(currentDir, "../../..");
-
-async function applySqlFile(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  filePath: string,
-) {
-  const sql = await fs.readFile(filePath, "utf8");
-  const statements = sql
-    .split(";")
-    .map((statement) => statement.trim())
-    .filter((statement) => statement.length > 0);
-
-  for (const statement of statements) {
-    await prisma.$executeRawUnsafe(statement);
-  }
-}
-
-async function applyMigrations(
-  prisma: { $executeRawUnsafe: (sql: string) => Promise<unknown> },
-  migrationsDir: string,
-) {
-  const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
-  const migrationFiles = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(migrationsDir, entry.name, "migration.sql"))
-    .sort();
-
-  for (const filePath of migrationFiles) {
-    await applySqlFile(prisma, filePath);
-  }
-}
-
 describe("run sql routes", () => {
-  let tmpDir: string;
-  let prisma: PrismaClient;
+  let db: TestDb;
+  let prisma: TestSqlClient;
 
-  beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "lcase-run-sql-route-"));
-    const dbPath = path.join(tmpDir, "run-route.sqlite");
-    const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-    prisma = new PrismaClient({ adapter });
-
-    await applyMigrations(
-      prisma,
-      path.join(repoRoot, "packages/db-prisma/prisma/sqlite/migrations"),
-    );
+  beforeAll(async () => {
+    db = await createSqliteTestDb();
+    prisma = db.client;
   });
 
-  afterEach(async () => {
-    await prisma.$disconnect();
-    await fs.rm(tmpDir, { recursive: true, force: true });
+  afterAll(async () => {
+    await db.dispose();
+  });
+
+  beforeEach(async () => {
+    await db.reset();
   });
 
   it("serves run list, run detail, run params, and replay events with SQL-backed reads", async () => {

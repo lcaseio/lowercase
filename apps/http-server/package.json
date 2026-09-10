@@ -9,7 +9,8 @@
     "test": "vitest",
     "lint": "echo lint",
     "start": "node ./dist/main.js",
-    "dev": "npx tsx ./src/main.ts"
+    "dev": "npx tsx ./src/main.ts",
+    "test:integration": "vitest run -c vitest.integration.config.ts"
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
@@ -20,13 +21,14 @@
   },
   "devDependencies": {
     "@lcase/adapters": "workspace:*",
+    "@lcase/app-services": "workspace:*",
     "@lcase/artifacts": "workspace:*",
     "@lcase/db-prisma": "workspace:*",
     "@lcase/events": "workspace:*",
     "@lcase/ports": "workspace:*",
-    "@lcase/app-services": "workspace:*",
-    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@lcase/test-support": "workspace:*",
     "@lcase/types": "workspace:*",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@types/ws": "^8.18.1",
     "vitest": "^3.2.4"
   }
