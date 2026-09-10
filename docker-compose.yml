@@ -34,13 +34,17 @@ services:
   # database on the same server, which the default superuser can do.
   postgres:
     image: postgres:16-alpine
-    # Not 5432, and not 5433 either: a machine with native Postgres installs
-    # can easily have both (an EnterpriseDB 15 and 16 side by side claim
-    # exactly those two), and the failure reads as a Docker fault rather than a
-    # port conflict. Override POSTGRES_HOST_PORT if 5434 is taken too, and set
-    # POSTGRES_DATABASE_URL to match.
+    # POSTGRES_HOST_PORT is the single knob for this: it moves the binding here
+    # and every client-side default with it, since the Prisma configs and the
+    # test harness derive their URLs from the same variable. Compose reads it
+    # from the repo-root .env, which is where to put it.
+    #
+    # Set it on a machine already running native Postgres. An EnterpriseDB 15
+    # and 16 side by side claim 5432 and 5433, and Docker reports the collision
+    # as `ports are not available ... address already in use`, which reads as a
+    # Docker fault rather than a port conflict.
     ports:
-      - "${POSTGRES_HOST_PORT:-5434}:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: lcase
       POSTGRES_PASSWORD: lcase

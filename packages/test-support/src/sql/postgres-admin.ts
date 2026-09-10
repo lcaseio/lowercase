@@ -15,21 +15,24 @@ export const POSTGRES_READY_ENV = "LCASE_POSTGRES_READY";
 /**
  * The Postgres server the suites run against.
  *
- * Defaults to the docker-compose service, the same way
- * `prisma.postgres.config.ts` does, so nothing has to be set for the normal
- * case. `POSTGRES_TEST_URL` is purely an override, for a different host or port
- * -- and it is what CI sets, since a runner maps 5432 rather than 5434. It has
- * to stay listed in `turbo.json`'s `test:integration` `env` array or Turborepo
- * strips it and the override silently does nothing.
+ * Defaults to the docker-compose service on the standard Postgres port, the
+ * same way `prisma.postgres.config.ts` does, so nothing has to be set for the
+ * normal case and CI sets nothing either. A machine already running native
+ * Postgres sets `POSTGRES_HOST_PORT`, which moves the compose binding and this
+ * default together -- one knob rather than two that must be kept in agreement.
+ * `POSTGRES_TEST_URL` overrides the whole URL, for a different host entirely.
+ * Both have to stay listed in `turbo.json`'s `test:integration` `env` array or
+ * Turborepo strips them and the override silently does nothing.
  *
  * Deliberately not `POSTGRES_DATABASE_URL`: that one names the developer's own
  * database, and these suites create and drop databases beside the one named
  * here.
  */
 export function postgresTestUrl(): string {
+  const port = process.env["POSTGRES_HOST_PORT"] ?? "5432";
   return (
     process.env["POSTGRES_TEST_URL"] ??
-    "postgresql://lcase:lcase@localhost:5434/lcase"
+    `postgresql://lcase:lcase@localhost:${port}/lcase`
   );
 }
 

@@ -72,8 +72,15 @@ async function setUpPostgresTemplate(url: string) {
     // Worker databases from an earlier run may still exist if it crashed. They
     // are dropped at the start rather than at teardown, so a run always begins
     // clean even after one that never got to clean up.
+    //
+    // `starts_with` rather than `LIKE`, because the prefix contains underscores
+    // and `LIKE` reads those as single-character wildcards -- so the pattern
+    // would also have matched, and dropped, an unrelated database whose name
+    // merely resembled the prefix. This only ever touches names beginning
+    // `lcase_test_w`; nothing else on the server is dropped, including the
+    // database the connection URL names.
     const stale = await client.$queryRawUnsafe<{ datname: string }[]>(
-      `SELECT datname FROM pg_database WHERE datname LIKE '${WORKER_DB_PREFIX}%'`,
+      `SELECT datname FROM pg_database WHERE starts_with(datname, '${WORKER_DB_PREFIX}')`,
     );
     for (const { datname } of stale) {
       await client.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${datname}"`);
@@ -96,6 +103,23 @@ async function setUpPostgresTemplate(url: string) {
 type Teardown = () => Promise<void>;
 
 /**
+ * Whether nothing is listening at the address, as opposed to the server being
+ * there and rejecting us.
+ *
+ * The distinction is the point: an unreachable server means "no Postgres here,
+ * skip", while a rejection means something is genuinely wrong and the run should
+ * fail. Prisma surfaces the driver's own errno for the first (`ECONNREFUSED`)
+ * and its own `P2010` wrapper for the second, so the two are cleanly separable.
+ */
+function isUnreachable(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return (
+    typeof code === "string" &&
+    ["ECONNREFUSED", "ENOTFOUND", "EHOSTUNREACH", "ETIMEDOUT"].includes(code)
+  );
+}
+
+/**
  * Vitest `globalSetup` for a package whose integration suites use both
  * providers. Runs once per test run, in the main process, before any worker
  * starts -- which is the whole point: `prisma migrate deploy` is a subprocess,
@@ -110,16 +134,21 @@ export default async function setup(): Promise<Teardown> {
   // Availability is probed, not declared. Reaching the server is the only thing
   // that enables the Postgres half, so a skip always means there is no server
   // rather than that someone forgot to set a variable on a machine where one is
-  // running. A connection failure is the expected path for anyone who has not
-  // started the container, so it reports rather than throws.
+  // running. Not having started the container is the expected path, so that one
+  // reports and continues.
   const url = postgresTestUrl();
   try {
     await setUpPostgresTemplate(url);
     process.env[POSTGRES_READY_ENV] = "1";
   } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
+    // Anything that is not a connection failure -- wrong credentials, a missing
+    // database, a broken migration -- is a real fault and must not masquerade as
+    // an absent server. Swallowing those would silently drop every Postgres test
+    // while the run still reported success, which is the failure this whole
+    // probe exists to prevent.
+    if (!isUnreachable(error)) throw error;
     console.warn(
-      `Postgres suites skipped: ${url} is unreachable.\nStart it with \`docker compose up -d postgres\`, or set POSTGRES_TEST_URL to a different server.\n${reason}`,
+      `Postgres suites skipped: nothing is listening at ${url}.\nStart it with \`docker compose up -d postgres\`, or set POSTGRES_HOST_PORT if it runs on another port.`,
     );
   }
 
