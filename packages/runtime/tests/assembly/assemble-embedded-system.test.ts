@@ -36,6 +36,7 @@ function testInput(
   overrides: Partial<EmbeddedSystemAssemblyInput> = {},
 ): EmbeddedSystemAssemblyInput {
   return {
+    sql: overrides.sql ?? testResource("sql", callOrder),
     bus: overrides.bus ?? testResource("bus", callOrder),
     sinks: [testResource("sink1", callOrder), testResource("sink2", callOrder)],
     tap: overrides.tap ?? testResource("tap", callOrder),
@@ -46,13 +47,16 @@ function testInput(
 }
 
 describe("assembleEmbeddedSystem", () => {
-  it("starts resources in fixed order: bus, sinks, tap, engine, limiter, router", async () => {
+  it("starts resources in fixed order: sql, bus, sinks, tap, engine, limiter, router", async () => {
     const callOrder: string[] = [];
     const runtime = assembleEmbeddedSystem(testInput(callOrder));
 
     await runtime.start();
 
     expect(callOrder).toEqual([
+      // SQL first, so the projection sinks never start against a client that
+      // has not connected.
+      "start:sql",
       "start:bus",
       "start:sink1",
       "start:sink2",
@@ -83,6 +87,7 @@ describe("assembleEmbeddedSystem", () => {
       "stop:sink2",
       "stop:sink1",
       "stop:bus",
+      "stop:sql",
     ]);
   });
 
@@ -101,6 +106,7 @@ describe("assembleEmbeddedSystem", () => {
     // Everything started before `engine` gets rolled back; `limiter` and
     // `router` never start.
     expect(callOrder).toEqual([
+      "start:sql",
       "start:bus",
       "start:sink1",
       "start:sink2",
@@ -109,6 +115,7 @@ describe("assembleEmbeddedSystem", () => {
       "stop:sink2",
       "stop:sink1",
       "stop:bus",
+      "stop:sql",
     ]);
   });
 

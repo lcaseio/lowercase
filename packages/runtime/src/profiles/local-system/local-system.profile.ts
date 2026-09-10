@@ -11,6 +11,7 @@ import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
 import { PrismaRunRepository } from "@lcase/adapters/run-repository";
 import { PrismaRunQuery } from "@lcase/adapters/run-query";
 import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
+import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
 import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
 import {
   ArtifactService,
@@ -42,8 +43,8 @@ import { buildWorker } from "../../worker/build-worker.js";
 import { buildArtifactStore } from "./build-artifact-store.js";
 import { buildObservability } from "./build-observability.js";
 import { buildEngine } from "./build-engine.js";
+import { buildSqlClient } from "./build-sql-client.js";
 import type { LocalSystemConfig } from "../../config/local-system.config.js";
-import { prisma } from "../../../../db-prisma/dist/client.js";
 
 export type LocalSystem = {
   services: ServicesPort;
@@ -63,12 +64,22 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
 
   const jobParser = new JobParser(eventSchemaRegistry);
 
-  const artifactRepository = new PrismaArtifactRepository(prisma);
-  const flowRepository = new PrismaFlowRepository(prisma);
-  const runRepository = new PrismaRunRepository(prisma);
-  const runQuery = new PrismaRunQuery(prisma, artifactRepository);
-  const simRepository = new PrismaSimRepository(prisma);
-  const evalResultRepository = new PrismaEvalResultRepository(prisma);
+  // One client for the process, selected by config. Every repository below
+  // shares it, including the two the projection sinks write through -- which is
+  // the property that used to be impossible, because a module-global client
+  // built from an environment variable at import time was the only one there
+  // was.
+  const { client: sql, hooks: sqlHooks } = buildSqlClient(config.sql);
+
+  const artifactRepository = new PrismaArtifactRepository(sql);
+  const flowRepository = new PrismaFlowRepository(sql);
+  const runRepository = new PrismaRunRepository(sql);
+  const runQuery = new PrismaRunQuery(sql, artifactRepository);
+  const simRepository = new PrismaSimRepository(sql);
+  const runStepProjectionRepository = new PrismaRunStepProjectionRepository(
+    sql,
+  );
+  const evalResultRepository = new PrismaEvalResultRepository(sql);
 
   const artifactStore = buildArtifactStore(config.artifacts);
   const artifacts = createArtifactReadWritePort(
@@ -116,6 +127,11 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     bus,
     artifacts,
     runQuery,
+    {
+      runs: runRepository,
+      steps: runStepProjectionRepository,
+      evalResults: evalResultRepository,
+    },
   );
 
   router.bind({
@@ -159,6 +175,10 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   );
 
   const runtime = assembleEmbeddedSystem({
+    // First to start and last to stop: the projection sinks write through this
+    // client, so disconnecting it before they stop would drop their final
+    // writes.
+    sql: managedResource("sql", sql, sqlHooks),
     bus: managedResource("bus", bus, {
       stop: async (b) => {
         await b.close();
