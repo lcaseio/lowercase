@@ -10,6 +10,7 @@ import type {
   LimiterPort,
   ObservabilityTapPort,
 } from "@lcase/ports";
+import type { PortableSqlClient } from "@lcase/db-prisma";
 import type { MessageRouter } from "../messaging/message-router.js";
 
 // Generalizes WorkflowRuntime's hardcoded router->sinks->tap->engine->limiter
@@ -28,6 +29,7 @@ import type { MessageRouter } from "../messaging/message-router.js";
 // now that the related change has a real caller to confirm this doesn't force awkward
 // casting.
 export type EmbeddedSystemAssemblyInput = {
+  sql: ManagedResource<PortableSqlClient>;
   bus: ManagedResource<EventBusPort>;
   sinks: readonly ManagedResource<EventSink>[];
   tap: ManagedResource<ObservabilityTapPort>;
@@ -43,7 +45,12 @@ export function assembleEmbeddedSystem(
   // is delivered until every component that handles a Message is running, and
   // reverse-stop order means intake ends before any of them stops. A carrier
   // that starts early would deliver into a component that has not started.
+  //
+  // SQL sits ahead of the bus for the same reason in the other direction: the
+  // projection sinks write through that client, and reverse-stop order is what
+  // keeps it connected until after they have stopped.
   const resources: ManagedResource<unknown>[] = [
+    input.sql,
     input.bus,
     ...input.sinks,
     input.tap,

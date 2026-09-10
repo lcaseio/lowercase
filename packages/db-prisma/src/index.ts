@@ -12,3 +12,11 @@
  * deliberately -- imports `@lcase/db-prisma/sqlite` or `@lcase/db-prisma/postgres`.
  */
 export type { PrismaClient as SqlClient } from "./generated/sqlite/client.js";
+
+/**
+ * The provider-neutral client. Where `SqlClient` is what a repository narrows to
+ * state what it needs, this is what composition hands it -- one value satisfying
+ * every repository seam at once, and the type a constructed client is assigned
+ * to in order to prove it is portable.
+ */
+export type { PortableSqlClient } from "./portable-client.js";

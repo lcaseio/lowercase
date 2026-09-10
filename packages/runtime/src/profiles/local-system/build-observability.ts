@@ -1,8 +1,11 @@
 import path from "path";
 import type {
   ArtifactReaderPort,
+  EvalResultRepositoryPort,
   EventBusPort,
   RunQueryPort,
+  RunRepositoryPort,
+  RunStepProjectionRepositoryPort,
 } from "@lcase/ports";
 import {
   ConsoleSink,
@@ -12,17 +15,27 @@ import {
   EvalResultProjectionSink,
   WebSocketServerSink,
 } from "@lcase/observability";
-import { PrismaRunRepository } from "@lcase/adapters/run-repository";
-import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
-import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
 import { JsonlEventLog } from "@lcase/adapters/event-store";
-import { prisma } from "../../../../db-prisma/dist/client.js";
 import type { ObservabilityConfig } from "../../config/observability.config.js";
 
 export type SinkMap = {
   "console-log-sink"?: ConsoleSink;
   "websocket-sink"?: WebSocketServerSink;
   "replay-jsonl-sink"?: ReplaySink;
+};
+
+/**
+ * The repositories the projection sinks write through.
+ *
+ * Passed in rather than constructed here, because they have to be the same
+ * instances the services use: one selected client is shared by every repository
+ * in the process, and this function used to be the one place that quietly
+ * reached for a different one.
+ */
+export type ObservabilityRepositories = {
+  runs: RunRepositoryPort;
+  steps: RunStepProjectionRepositoryPort;
+  evalResults: EvalResultRepositoryPort;
 };
 
 // Relocated from packages/runtime/src/runtime.ts unchanged -- this function
@@ -33,21 +46,15 @@ export function buildObservability(
   bus: EventBusPort,
   artifacts: ArtifactReaderPort,
   runQuery: RunQueryPort,
+  repositories: ObservabilityRepositories,
 ): { tap: ObservabilityTap; sinks: SinkMap } {
   const tap = new ObservabilityTap(bus);
   const sinks: SinkMap = {};
   tap.attachSink(
-    new SqlRunProjectionSink(
-      new PrismaRunRepository(prisma),
-      new PrismaRunStepProjectionRepository(prisma),
-    ),
+    new SqlRunProjectionSink(repositories.runs, repositories.steps),
   );
   tap.attachSink(
-    new EvalResultProjectionSink(
-      new PrismaEvalResultRepository(prisma),
-      artifacts,
-      runQuery,
-    ),
+    new EvalResultProjectionSink(repositories.evalResults, artifacts, runQuery),
   );
   if (config.sinks) {
     for (const sink of config.sinks) {

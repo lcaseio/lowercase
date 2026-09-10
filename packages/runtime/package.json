@@ -31,6 +31,8 @@
     "@lcase/limiter": "workspace:*",
     "@lcase/artifacts": "workspace:*",
     "@lcase/db-prisma": "workspace:*",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "redis": "^6.2.1"
   },
   "devDependencies": {
