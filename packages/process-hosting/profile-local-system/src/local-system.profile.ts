@@ -1,0 +1,246 @@
+import { InMemoryEventBus } from "@lcase/adapters/event-bus";
+import { EmitterFactory, eventSchemaRegistry } from "@lcase/events";
+import { JobParser } from "@lcase/events/parsers";
+import { createArtifactReadWritePort } from "@lcase/artifacts";
+import { ConcurrencyLimiter, Limiter } from "@lcase/limiter";
+import { ReplayEngine } from "@lcase/replay";
+import { JsonlEventLog } from "@lcase/adapters/event-store";
+import path from "path";
+import { PrismaArtifactRepository } from "@lcase/adapters/artifact-repository";
+import { PrismaFlowRepository } from "@lcase/adapters/flow-repository";
+import { PrismaRunRepository } from "@lcase/adapters/run-repository";
+import { PrismaRunQuery } from "@lcase/adapters/run-query";
+import { PrismaSimRepository } from "@lcase/adapters/sim-repository";
+import { PrismaRunStepProjectionRepository } from "@lcase/adapters/run-step-projection-repository";
+import { PrismaEvalResultRepository } from "@lcase/adapters/eval-result-repository";
+import {
+  ArtifactService,
+  EvalService,
+  FlowService,
+  ReplayService,
+  RunService,
+  SimService,
+} from "@lcase/app-services";
+import type { ServicesPort } from "@lcase/ports";
+import type { ObservabilityTapPort } from "@lcase/ports";
+import { managedResource, type ManagedRuntime } from "@lcase/assembly";
+import { assembleEmbeddedSystem } from "./assemble-embedded-system.js";
+import {
+  engineHttpJobTerminalSubscription,
+  httpJobCommandPublication,
+  httpJobPublications,
+  httpJobSubscriptions,
+  httpJobTerminalPublication,
+  observabilityHttpJobCommandSubscription,
+  observabilityHttpJobTerminalSubscription,
+  workerHttpJobCommandSubscription,
+} from "./http-job.topology.js";
+import { buildMessageRouter } from "./build-message-router.js";
+import { buildWorker } from "./build-worker.js";
+import { buildArtifactStore } from "./build-artifact-store.js";
+import { buildObservability } from "./build-observability.js";
+import { buildEngine } from "./build-engine.js";
+import { buildSqlClient } from "./build-sql-client.js";
+import type { LocalSystemConfig } from "./config/local-system.config.js";
+
+export type LocalSystem = {
+  services: ServicesPort;
+  runtime: ManagedRuntime;
+  tap: ObservabilityTapPort;
+};
+
+// A clean rewrite of composition, not a retrofit of createServices()/
+// createRuntime() -- see docs/initiatives/swappable-infrastructure/arcs/
+// cas-adapter.md's the related change discussion. packages/app-services stays untouched;
+// this just constructs those same classes against freshly-assembled
+// instances instead of reusing any of the old wiring functions, factories,
+// or registries.
+export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
+  const bus = new InMemoryEventBus();
+  const ef = new EmitterFactory(bus);
+
+  const jobParser = new JobParser(eventSchemaRegistry);
+
+  // One client for the process, selected by config. Every repository below
+  // shares it, including the two the projection sinks write through -- which is
+  // the property that used to be impossible, because a module-global client
+  // built from an environment variable at import time was the only one there
+  // was.
+  const { client: sql, hooks: sqlHooks } = buildSqlClient(config.sql);
+
+  const artifactRepository = new PrismaArtifactRepository(sql);
+  const flowRepository = new PrismaFlowRepository(sql);
+  const runRepository = new PrismaRunRepository(sql);
+  const runQuery = new PrismaRunQuery(sql, artifactRepository);
+  const simRepository = new PrismaSimRepository(sql);
+  const runStepProjectionRepository = new PrismaRunStepProjectionRepository(
+    sql,
+  );
+  const evalResultRepository = new PrismaEvalResultRepository(sql);
+
+  const artifactStore = buildArtifactStore(config.artifacts);
+  const artifacts = createArtifactReadWritePort(
+    artifactStore,
+    artifactRepository,
+  );
+
+  // Declare, resolve, build, bind, seal -- in that order, because the graph is
+  // cyclic: worker's handler needs the terminal publisher the router hands
+  // out, while the router needs worker's handler to route to. The router
+  // enforces this itself (publishing before seal, binding after it, binding
+  // something the topology never declared, and a declared subscription nobody
+  // bound all throw), which is why the sequence is written here in the
+  // composition root rather than hidden behind a helper.
+  //
+  // Which carrier moves the Messages is config's business and appears nowhere
+  // below: the declarations, the bindings, and the components are identical
+  // either way.
+  const { router, hooks: routerHooks } = buildMessageRouter(config.messaging, {
+    publications: httpJobPublications,
+    subscriptions: httpJobSubscriptions,
+  });
+  const httpJobCommands = router.publisher(httpJobCommandPublication);
+  const httpJobTerminals = router.publisher(httpJobTerminalPublication);
+
+  // Retained as the worker, not as a capability it happens to satisfy: nothing
+  // holds a reference to it in order to call it. It is here so its handler can
+  // be bound, and so it stays alive.
+  const worker = buildWorker(
+    { artifacts, terminal: httpJobTerminals },
+    config.worker,
+  );
+
+  const engine = buildEngine(
+    bus,
+    ef,
+    jobParser,
+    runQuery,
+    artifacts,
+    httpJobCommands,
+  );
+
+  const { tap, sinks } = buildObservability(
+    config.observability,
+    bus,
+    artifacts,
+    runQuery,
+    {
+      runs: runRepository,
+      steps: runStepProjectionRepository,
+      evalResults: evalResultRepository,
+    },
+  );
+
+  router.bind({
+    subscription: workerHttpJobCommandSubscription,
+    handler: worker.handleHttpJsonSubmitted,
+    // Worker's own capacity bound still applies underneath this. The two are
+    // not redundant: this bounds what one mailbox presents, and worker's bounds
+    // the component however work arrives.
+    maxInFlight: config.worker.maxConcurrentJobs,
+  });
+  router.bind({
+    subscription: observabilityHttpJobCommandSubscription,
+    // A closure only to keep `ingest` bound to its tap -- it owns no policy,
+    // state, or translation of its own.
+    handler: (message) => tap.ingest(message),
+  });
+  router.bind({
+    subscription: engineHttpJobTerminalSubscription,
+    handler: engine.handleHttpJobTerminal,
+  });
+  router.bind({
+    subscription: observabilityHttpJobTerminalSubscription,
+    handler: (message) => tap.ingest(message),
+  });
+
+  // Nothing can add a route after this point, and nothing published before it
+  // would have been delivered.
+  router.seal();
+
+  const cl = new ConcurrencyLimiter(bus, ef);
+  const limiter = new Limiter(config.limiter.id, config.limiter.scope, {
+    bus,
+    ef,
+    cl,
+  });
+
+  const replay = new ReplayEngine(
+    new JsonlEventLog(path.resolve(process.cwd(), "lcase-db/replay")),
+    bus,
+    ef,
+  );
+
+  const runtime = assembleEmbeddedSystem({
+    // First to start and last to stop: the projection sinks write through this
+    // client, so disconnecting it before they stop would drop their final
+    // writes.
+    sql: managedResource("sql", sql, sqlHooks),
+    bus: managedResource("bus", bus, {
+      stop: async (b) => {
+        await b.close();
+      },
+    }),
+    sinks: Object.entries(sinks).map(([id, sink]) =>
+      managedResource(id, sink, {
+        start: (s) => s.start(),
+        stop: (s) => s.stop(),
+      }),
+    ),
+    tap: managedResource("tap", tap, {
+      start: (t) => t.start(),
+      stop: (t) => t.stop(),
+    }),
+    engine: managedResource("engine", engine, {
+      start: (e) => e.start(),
+      stop: (e) => e.stop(),
+    }),
+    limiter: managedResource("limiter", limiter, {
+      start: (l) => l.start(),
+      stop: (l) => l.stop(),
+    }),
+    // Hooks come from the carrier: none for in-process, read loops and
+    // connections for a log-backed one.
+    router: managedResource("router", router, routerHooks),
+  });
+
+  const flow = new FlowService(artifacts, flowRepository);
+  const replayService = new ReplayService(replay);
+  const sim = new SimService(
+    artifacts,
+    ef,
+    runQuery,
+    simRepository,
+    flowRepository,
+  );
+  const run = new RunService({
+    artifactRepository,
+    artifacts,
+    ef,
+    runRepository,
+    runQuery,
+  });
+  const artifact = new ArtifactService(
+    artifacts,
+    artifactRepository,
+    flowRepository,
+  );
+  const evalService = new EvalService({
+    runService: run,
+    runQuery,
+    runRepository,
+    artifacts,
+    evalResults: evalResultRepository,
+  });
+
+  const services: ServicesPort = {
+    flow,
+    replay: replayService,
+    sim,
+    run,
+    artifact,
+    eval: evalService,
+  };
+
+  return { services, runtime, tap };
+}

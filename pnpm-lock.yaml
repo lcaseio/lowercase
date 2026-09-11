@@ -29,9 +29,9 @@ importers:
       '@lcase/observability':
         specifier: workspace:*
         version: link:../../packages/components/observability
-      '@lcase/runtime':
+      '@lcase/profile-local-system':
         specifier: workspace:*
-        version: link:../../packages/runtime
+        version: link:../../packages/process-hosting/profile-local-system
       '@lcase/specs':
         specifier: workspace:*
         version: link:../../packages/specs
@@ -148,9 +148,9 @@ importers:
       '@fastify/multipart':
         specifier: ^9.4.0
         version: 9.4.0
-      '@lcase/runtime':
+      '@lcase/profile-local-system':
         specifier: workspace:*
-        version: link:../../packages/runtime
+        version: link:../../packages/process-hosting/profile-local-system
       fastify:
         specifier: ^5.7.2
         version: 5.7.2
@@ -704,53 +704,86 @@ importers:
         specifier: ^8.46.4
         version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
 
-  packages/replay:
+  packages/process-hosting/assembly:
     devDependencies:
-      '@lcase/ports':
-        specifier: workspace:*
-        version: link:../ports
-      '@lcase/types':
-        specifier: workspace:*
-        version: link:../types
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript-eslint:
+        specifier: ^8.46.4
+        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
 
-  packages/runtime:
+  packages/process-hosting/message-router:
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
+      '@lcase/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../../types
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript-eslint:
+        specifier: ^8.46.4
+        version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/process-hosting/profile-local-system:
     dependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.1121.0
         version: 3.1121.0
       '@lcase/adapters':
         specifier: workspace:*
-        version: link:../adapters
+        version: link:../../adapters
       '@lcase/app-services':
         specifier: workspace:*
-        version: link:../app-services
+        version: link:../../app-services
       '@lcase/artifacts':
         specifier: workspace:*
-        version: link:../artifacts
+        version: link:../../artifacts
+      '@lcase/assembly':
+        specifier: workspace:*
+        version: link:../assembly
       '@lcase/db-prisma':
         specifier: workspace:*
-        version: link:../db-prisma
+        version: link:../../db-prisma
       '@lcase/engine':
         specifier: workspace:*
-        version: link:../components/engine
+        version: link:../../components/engine
       '@lcase/events':
         specifier: workspace:*
-        version: link:../events
+        version: link:../../events
       '@lcase/limiter':
         specifier: workspace:*
-        version: link:../components/limiter
+        version: link:../../components/limiter
+      '@lcase/message-router':
+        specifier: workspace:*
+        version: link:../message-router
       '@lcase/observability':
         specifier: workspace:*
-        version: link:../components/observability
+        version: link:../../components/observability
       '@lcase/replay':
         specifier: workspace:*
-        version: link:../replay
+        version: link:../../replay
       '@lcase/worker':
         specifier: workspace:*
-        version: link:../components/worker
+        version: link:../../components/worker
       '@prisma/adapter-better-sqlite3':
         specifier: ^7.8.0
         version: 7.8.0
@@ -766,10 +799,10 @@ importers:
         version: 9.39.1
       '@lcase/ports':
         specifier: workspace:*
-        version: link:../ports
+        version: link:../../ports
       '@lcase/types':
         specifier: workspace:*
-        version: link:../types
+        version: link:../../types
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -779,6 +812,18 @@ importers:
       typescript-eslint:
         specifier: ^8.46.4
         version: 8.54.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)
+
+  packages/replay:
+    devDependencies:
+      '@lcase/ports':
+        specifier: workspace:*
+        version: link:../ports
+      '@lcase/types':
+        specifier: workspace:*
+        version: link:../types
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@25.9.3)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.9(@types/node@25.9.3)(typescript@5.9.3))(tsx@4.20.6)

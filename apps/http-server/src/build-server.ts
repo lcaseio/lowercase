@@ -2,7 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import { config } from "./runtime.config.js";
-import { createLocalSystem } from "@lcase/runtime";
+import { createLocalSystem } from "@lcase/profile-local-system";
 import { routes } from "./routes/routes.js";
 import { eventsRoute } from "./routes/events-route.js";
 
