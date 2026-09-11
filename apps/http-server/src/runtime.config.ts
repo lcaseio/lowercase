@@ -1,4 +1,4 @@
-import type { LocalSystemConfig } from "@lcase/runtime";
+import type { LocalSystemConfig } from "@lcase/profile-local-system";
 import path from "node:path";
 
 export const config = {

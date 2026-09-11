@@ -16,7 +16,7 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^9.4.0",
-    "@lcase/runtime": "workspace:*",
+    "@lcase/profile-local-system": "workspace:*",
     "fastify": "^5.7.2"
   },
   "devDependencies": {

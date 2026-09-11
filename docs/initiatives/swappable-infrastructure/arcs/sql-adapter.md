@@ -1,6 +1,6 @@
 # Prove Swappable Infrastructure Initiative — Arc: SQL Adapter (Changes C15–C18)
 
-**Previous:** [`work-tracking-migration.md`](./work-tracking-migration.md) (Change C6) · **Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C14), [`package-tooling.md`](./package-tooling.md) (Change C10)
+**Previous:** [`work-tracking-migration.md`](./work-tracking-migration.md) (Change C6) · **Next:** [`remote-worker.md`](./remote-worker.md) (Changes C19–C22) · **Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C14), [`package-tooling.md`](./package-tooling.md) (Change C10)
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Adds Postgres via Prisma **alongside** SQLite, and wires the choice into `packages/runtime`'s config selection.
 
@@ -112,7 +112,7 @@ All seven repository suites run their existing assertions against both real data
 - **`packages/test-support` has real ESLint rather than the `echo lint` stub** most packages still carry, taken as the moment to do it since the package is new.
 - **Verification.** Workspace `build` 26/26, `typecheck` 25/25, `lint` 25/25, unit `test` 24/24, integration green across all three packages, both migration histories reported clean, prettier clean. Pointing `POSTGRES_TEST_URL` at a dead port reports the server as unreachable, names the command that starts it, and leaves the Postgres halves reported as skipped rather than silently absent.
 
-## Change C18 - Extend the `local-system` profile with the `postgres` SQL branch - in review
+## Change C18 - Extend the `local-system` profile with the `postgres` SQL branch - merged (PR #377)
 
 ### Discussion
 

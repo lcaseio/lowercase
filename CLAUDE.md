@@ -38,11 +38,11 @@ This is an event-driven workflow engine (package scope `@lcase`) built around he
 - `packages/specs` — the flow-definition JSON schema/parser.
 - `packages/ports` — interfaces only (bus, queue, router, artifact store/repo, run repo/query, flow/sim repo, worker, limiter, services). No implementations.
 - `packages/functional-core/*` — zero ports, zero I/O, safe for anything to import directly: `flow-analysis` (dependency graph, toposort), `json-ref-binder` (ref resolution).
-- `packages/app-services` — application-facing business logic (`RunService`, `FlowService`, etc.), called directly by an app or `runtime`. Depends only on ports, never on Prisma directly.
+- `packages/app-services` — application-facing business logic (`RunService`, `FlowService`, etc.), called directly by an app or a process profile. Depends only on ports, never on Prisma directly.
 - **Operations** — a convention, not a dedicated folder: small, single-port building blocks called by whichever tier above already holds the port (`runFlow()` in `packages/use-cases/run-flow` is the one clean example today). Speculative — no substantial example beyond that one yet, see ADR-0005.
 - `packages/components/*` — long-lived, self-driven by subscribing to the event bus rather than being called: `engine`, `worker`, `limiter`, `router`, `observability`.
 - `packages/adapters` — concrete implementations of every port, including all Prisma-backed repositories (`prisma-run-repository.ts`, `prisma-artifact-repository.ts`, etc.) and non-SQL adapters (`InMemoryQueue`, `FsArtifactStore`).
-- `packages/runtime` — composition root(s) wiring ports to adapters. This is intended to be config-driven runtime creation, but that's only partially true today: **two separate/incomplete wiring paths currently exist** — `createServices()` (used by `apps/http-server`, `apps/cli`) wires the full service set; `createRuntime()`/`WorkflowRuntime` (used by `apps/desktop`) wires a narrower subset. This is planned to consolidate into a single, unified config-driven creation system — expect this area to keep changing.
+- `packages/process-hosting/*` — everything involved in composing and running one OS process, split by what each piece is allowed to depend on. `assembly` owns generic managed-resource lifecycle (ordered start, reverse stop, rollback, health) and `message-router` owns the two Message carriers and their mailbox machinery; **both have zero production dependencies on purpose**, so a process that hosts one component can install them without installing the whole system. `profile-local-system` is the composition root for the complete embedded graph — the one place allowed to import concrete components and adapters — and is shared by `apps/http-server` and `apps/cli` via `createLocalSystem(config)`. It selects a backend per config axis (`artifacts`, `sql`, `messaging`), statically, when the process is composed. Expect more packages here as separate process roles appear; a Worker host is the next one, and it gets its own profile rather than a flag on this one. See ADR-0008.
 - `apps/*` — HTTP server (Fastify), CLI, Electron desktop, and a React frontend (`workbench`).
 
 `packages/use-cases/*` (`run-flow`, `run-history`) still mixes shapes predating this taxonomy and doesn't map cleanly onto one tier — `run-history` is actually `functional core` (zero port imports), `run-flow` bundles a pure function, a clean Operation (`runFlow()` itself), and a two-port function (`create-fork-spec.ts`'s `startForkedSim()`) that needs further decomposition before it qualifies as one. Don't treat its current package boundary as settled. The old idea of reorganizing this layer as "domains" (`docs/todo.md`) is superseded by the taxonomy above, not a live alternative.
@@ -51,7 +51,7 @@ This is an event-driven workflow engine (package scope `@lcase`) built around he
 
 - Keep `packages/types` Prisma-free.
 - Keep `packages/app-services`/`packages/use-cases` storage-agnostic — inject ports, never import Prisma or adapters directly.
-- New Prisma repositories belong in `packages/adapters`, wired up in `packages/runtime`.
+- New Prisma repositories belong in `packages/adapters`, wired up in a process profile under `packages/process-hosting/*`.
 - Keep engine changes incremental unless a larger rewrite is explicitly intended.
 
 **Run execution flow** (HTTP request to completion):
