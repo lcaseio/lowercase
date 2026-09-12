@@ -66,6 +66,12 @@ The deployment definition is upstream of every process profile. It describes
 the whole supported system but constructs no component objects. Each running
 process receives its identity and projects only its assigned portion.
 
+The future **placement host plan** in this sketch is broader than C21's
+messaging-only `ProcessHostPlan`. It would contain or project that Message host
+assignment while adding component units, provider requirements, and lifecycle
+constraints; it must not silently expand `@lcase/message-topology` into a
+whole-system composition package.
+
 A conceptual input might resemble:
 
 ```ts
@@ -173,7 +179,7 @@ explicit dependency metadata from closed first-party construction fragments or
 profile-supplied ordering constraints. The first few role-specific assemblers
 should provide evidence before choosing either representation.
 
-Worker lifecycle in Change C21 is useful evidence here: it will show whether
+Worker lifecycle in Change C23 is useful evidence here: it will show whether
 ordered start/reverse stop remains sufficient or whether independently
 quiesced ingress and an explicit drain phase are required. That decision is
 needed for the first remote Worker even if configurable placement is never
@@ -185,13 +191,17 @@ The current plan can evolve incrementally:
 
 1. Keep C19's generic assembly and messaging packages independent of the
    `local-system` graph.
-2. Let C20 introduce deployment manifests and process host plans for the two
+2. Let C20 give multi-publication logical subscriptions one shared delivery
+   lane before their catalog shape is promoted.
+3. Let C21 introduce deployment manifests and process host plans for the two
    concrete deployments without a general placement language.
-3. Let C21 establish truthful Worker and ingress lifecycle using those plans.
-4. Let C22 prove the explicit Engine/API and Worker profiles as one supported
-   distributed preset.
-5. Add another explicit deployment when a real use case appears.
-6. Only after repetition is visible, extract the common placement projection
+4. Let C22 give the migrated Messages one ordered Redis observation route using
+   those manifests rather than special-case router knowledge.
+5. Let C23 establish truthful Worker and ingress lifecycle using those plans.
+6. Let C24 prove the explicit companion non-Worker and Worker profiles as one
+   supported distributed preset.
+7. Add another explicit deployment when a real use case appears.
+8. Only after repetition is visible, extract the common placement projection
    from those manifests and treat existing profiles as presets or constrained
    host-plan consumers.
 

@@ -27,12 +27,11 @@ import { managedResource, type ManagedRuntime } from "@lcase/assembly";
 import { assembleEmbeddedSystem } from "./assemble-embedded-system.js";
 import {
   engineHttpJobTerminalSubscription,
-  httpJobCommandPublication,
-  httpJobPublications,
+  httpJobCommandTopic,
+  httpJobTopics,
   httpJobSubscriptions,
-  httpJobTerminalPublication,
-  observabilityHttpJobCommandSubscription,
-  observabilityHttpJobTerminalSubscription,
+  httpJobTerminalTopic,
+  observabilityHttpJobSubscription,
   workerHttpJobCommandSubscription,
 } from "./http-job.topology.js";
 import { buildMessageRouter } from "./build-message-router.js";
@@ -96,11 +95,11 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   // below: the declarations, the bindings, and the components are identical
   // either way.
   const { router, hooks: routerHooks } = buildMessageRouter(config.messaging, {
-    publications: httpJobPublications,
+    topics: httpJobTopics,
     subscriptions: httpJobSubscriptions,
   });
-  const httpJobCommands = router.publisher(httpJobCommandPublication);
-  const httpJobTerminals = router.publisher(httpJobTerminalPublication);
+  const httpJobCommands = router.publisher(httpJobCommandTopic);
+  const httpJobTerminals = router.publisher(httpJobTerminalTopic);
 
   // Retained as the worker, not as a capability it happens to satisfy: nothing
   // holds a reference to it in order to call it. It is here so its handler can
@@ -140,17 +139,15 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     maxInFlight: config.worker.maxConcurrentJobs,
   });
   router.bind({
-    subscription: observabilityHttpJobCommandSubscription,
-    // A closure only to keep `ingest` bound to its tap -- it owns no policy,
-    // state, or translation of its own.
-    handler: (message) => tap.ingest(message),
-  });
-  router.bind({
     subscription: engineHttpJobTerminalSubscription,
     handler: engine.handleHttpJobTerminal,
   });
   router.bind({
-    subscription: observabilityHttpJobTerminalSubscription,
+    subscription: observabilityHttpJobSubscription,
+    // One binding across both topics, so the command and the terminal it
+    // produced reach the tap through one lane in the order they arrived rather
+    // than racing in two. A closure only to keep `ingest` bound to its tap --
+    // it owns no policy, state, or translation of its own.
     handler: (message) => tap.ingest(message),
   });
 

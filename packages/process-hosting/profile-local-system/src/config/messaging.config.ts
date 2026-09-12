@@ -2,7 +2,7 @@
 // nothing to provision, and no delivery survives the process.
 export type InProcessMessagingConfig = { kind: "in-process" };
 
-// Messages travel through Redis Streams: one stream per publication, one
+// Messages travel through Redis Streams: one stream per topic, one
 // consumer group per logical subscription. Fields cover what's needed to
 // construct a client, matching how S3ArtifactStoreConfig carries endpoint and
 // credentials rather than a pre-built client.

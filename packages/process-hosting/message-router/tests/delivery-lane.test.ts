@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import { buildEvent } from "@lcase/events";
 import type { AnyEvent } from "@lcase/types";
 import {
-  SubscriptionMailbox,
+  DeliveryLane,
   type DeliveredMessage,
   type DeliveryFailure,
-  type SubscriptionMailboxDeps,
-} from "../src/in-process/subscription-mailbox.js";
+  type DeliveryLaneDeps,
+} from "../src/delivery-lane.js";
 
 function completedEvent(output: string): AnyEvent<"job.httpjson.completed"> {
   return buildEvent(
@@ -36,11 +36,11 @@ function deferred<T = void>(): {
   return { promise, resolve };
 }
 
-function makeMailbox(overrides: Partial<SubscriptionMailboxDeps> = {}): {
-  mailbox: SubscriptionMailbox;
-  deps: SubscriptionMailboxDeps;
+function makeLane(overrides: Partial<DeliveryLaneDeps> = {}): {
+  lane: DeliveryLane;
+  deps: DeliveryLaneDeps;
 } {
-  const deps: SubscriptionMailboxDeps = {
+  const deps: DeliveryLaneDeps = {
     subscriptionId: "test.subscription.v1",
     invoke: async () => {},
     maxInFlight: 1,
@@ -48,15 +48,15 @@ function makeMailbox(overrides: Partial<SubscriptionMailboxDeps> = {}): {
     onSettled: () => {},
     ...overrides,
   };
-  return { mailbox: new SubscriptionMailbox(deps), deps };
+  return { lane: new DeliveryLane(deps), deps };
 }
 
-describe("SubscriptionMailbox", () => {
+describe("DeliveryLane", () => {
   it("never invokes its handler inside the enqueue call stack", () => {
     const invoke = vi.fn(async () => {});
-    const { mailbox } = makeMailbox({ invoke });
+    const { lane } = makeLane({ invoke });
 
-    mailbox.enqueue(completedEvent("a"));
+    void lane.enqueue({ message: completedEvent("a") });
 
     expect(invoke).not.toHaveBeenCalled();
   });
@@ -68,14 +68,14 @@ describe("SubscriptionMailbox", () => {
       started.push(message.id);
       await gate.promise;
     });
-    const { mailbox } = makeMailbox({ invoke, maxInFlight: 1 });
+    const { lane } = makeLane({ invoke, maxInFlight: 1 });
 
     const first = completedEvent("a");
     const second = completedEvent("b");
     const third = completedEvent("c");
-    mailbox.enqueue(first);
-    mailbox.enqueue(second);
-    mailbox.enqueue(third);
+    void lane.enqueue({ message: first });
+    void lane.enqueue({ message: second });
+    void lane.enqueue({ message: third });
 
     await vi.waitFor(() => expect(started).toHaveLength(1));
     expect(started).toEqual([first.id]);
@@ -95,10 +95,10 @@ describe("SubscriptionMailbox", () => {
       await gate.promise;
       active -= 1;
     });
-    const { mailbox } = makeMailbox({ invoke, maxInFlight: 3 });
+    const { lane } = makeLane({ invoke, maxInFlight: 3 });
 
     for (const id of ["a", "b", "c", "d", "e"]) {
-      mailbox.enqueue(completedEvent(id));
+      void lane.enqueue({ message: completedEvent(id) });
     }
 
     await vi.waitFor(() => expect(active).toBe(3));
@@ -115,14 +115,14 @@ describe("SubscriptionMailbox", () => {
     const invoke = vi.fn(async (message: DeliveredMessage) => {
       if (message.id === failing.id) throw new Error("handler exploded");
     });
-    const { mailbox } = makeMailbox({
+    const { lane } = makeLane({
       invoke,
       reportFailure: (failure) => failures.push(failure),
     });
 
-    mailbox.enqueue(failing);
+    void lane.enqueue({ message: failing });
     const next = completedEvent("b");
-    mailbox.enqueue(next);
+    void lane.enqueue({ message: next });
 
     await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(2));
 
@@ -144,9 +144,9 @@ describe("SubscriptionMailbox", () => {
     const invoke = vi.fn(async () => {
       throw new Error("always fails");
     });
-    const { mailbox } = makeMailbox({ invoke });
+    const { lane } = makeLane({ invoke });
 
-    mailbox.enqueue(completedEvent("a"));
+    void lane.enqueue({ message: completedEvent("a") });
 
     await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(1));
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -158,15 +158,15 @@ describe("SubscriptionMailbox", () => {
     const invoke = vi.fn(async (message: DeliveredMessage) => {
       if (message.id === failing.id) throw new Error("handler exploded");
     });
-    const { mailbox } = makeMailbox({
+    const { lane } = makeLane({
       invoke,
       reportFailure: () => {
         throw new Error("reporter exploded");
       },
     });
 
-    mailbox.enqueue(failing);
-    mailbox.enqueue(completedEvent("b"));
+    void lane.enqueue({ message: failing });
+    void lane.enqueue({ message: completedEvent("b") });
 
     await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(2));
   });
@@ -177,11 +177,85 @@ describe("SubscriptionMailbox", () => {
     const invoke = vi.fn(async (message: DeliveredMessage) => {
       if (message.id === failing.id) throw new Error("handler exploded");
     });
-    const { mailbox } = makeMailbox({ invoke, onSettled });
+    const { lane } = makeLane({ invoke, onSettled });
 
-    mailbox.enqueue(failing);
-    mailbox.enqueue(completedEvent("b"));
+    void lane.enqueue({ message: failing });
+    void lane.enqueue({ message: completedEvent("b") });
 
     await vi.waitFor(() => expect(onSettled).toHaveBeenCalledTimes(2));
+  });
+
+  // The retire hook is what a log-backed carrier settles its source with. The
+  // ordering below is the contract: a carrier that acknowledged before its
+  // handler finished would be claiming work it had not done.
+  it("retires a delivery after its handler settles, and holds the slot until it does", async () => {
+    const order: string[] = [];
+    const retiring = deferred();
+    const invoke = vi.fn(async () => {
+      order.push("handled");
+    });
+    const { lane } = makeLane({ invoke, maxInFlight: 1 });
+
+    void lane.enqueue({
+      message: completedEvent("a"),
+      retire: async () => {
+        order.push("retire-started");
+        await retiring.promise;
+        order.push("retire-finished");
+      },
+    });
+    void lane.enqueue({ message: completedEvent("b") });
+
+    await vi.waitFor(() =>
+      expect(order).toEqual(["handled", "retire-started"]),
+    );
+    // The second delivery cannot start while the first is still retiring.
+    expect(invoke).toHaveBeenCalledTimes(1);
+
+    retiring.resolve();
+    await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(2));
+    expect(order).toEqual([
+      "handled",
+      "retire-started",
+      "retire-finished",
+      "handled",
+    ]);
+  });
+
+  it("retires a delivery whose handler failed, and reports a retire that itself fails", async () => {
+    const reportFailure = vi.fn();
+    const retire = vi.fn(async () => {
+      throw new Error("ack exploded");
+    });
+    const invoke = vi.fn(async () => {
+      throw new Error("handler exploded");
+    });
+    const { lane } = makeLane({ invoke, reportFailure });
+
+    void lane.enqueue({ message: completedEvent("a"), retire });
+
+    await vi.waitFor(() => expect(reportFailure).toHaveBeenCalledTimes(2));
+    expect(retire).toHaveBeenCalledTimes(1);
+    expect(
+      reportFailure.mock.calls.map(([failure]) => String(failure.error)),
+    ).toEqual(["Error: handler exploded", "Error: ack exploded"]);
+  });
+
+  it("resolves enqueue on settlement and never rejects, so a carrier can use it for backpressure", async () => {
+    const invoke = vi.fn(async () => {
+      throw new Error("handler exploded");
+    });
+    const { lane } = makeLane({ invoke, reportFailure: () => {} });
+
+    // A failing handler and a failing retire both still resolve: the promise
+    // reports that the lane is done with this delivery, not that it succeeded.
+    await expect(
+      lane.enqueue({
+        message: completedEvent("a"),
+        retire: async () => {
+          throw new Error("ack exploded");
+        },
+      }),
+    ).resolves.toBeUndefined();
   });
 });

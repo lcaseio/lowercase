@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { buildMessageRouter } from "../src/build-message-router.js";
 import {
-  httpJobPublications,
+  httpJobTopics,
   httpJobSubscriptions,
 } from "../src/http-job.topology.js";
 
 const topology = {
-  publications: httpJobPublications,
+  topics: httpJobTopics,
   subscriptions: httpJobSubscriptions,
 };
 

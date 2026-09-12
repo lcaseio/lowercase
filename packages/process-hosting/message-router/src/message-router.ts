@@ -1,23 +1,24 @@
 import type { EventType } from "@lcase/types";
 import type {
-  LogicalSubscription,
+  Subscription,
   MessageBinding,
   MessagePublisher,
-  Publication,
+  Topic,
+  SelectedTopics,
 } from "@lcase/ports";
 
 /**
- * The deployment-wide topology a router enforces: every publication anything
+ * The deployment-wide topology a router enforces: every topic anything
  * may publish onto, and every logical subscription expected to consume one.
  *
  * Subscriptions are declared here rather than existing only by being bound,
  * which is what lets `seal()` catch an expected consumer that nobody wired.
- * A publication-level check cannot: one bound sibling satisfies it, so a
+ * A topic-level check cannot: one bound sibling satisfies it, so a
  * missing engine terminal binding would seal cleanly and stall every run.
  */
 export type MessageRouterTopology = {
-  publications: readonly Publication[];
-  subscriptions: readonly LogicalSubscription[];
+  topics: readonly Topic[];
+  subscriptions: readonly Subscription[];
 };
 
 /**
@@ -41,50 +42,100 @@ export interface MessageRouter {
    * up when it publishes, not when it is created.
    */
   publisher<Types extends readonly EventType[]>(
-    publication: Publication<Types>,
+    topic: Topic<Types>,
   ): MessagePublisher<Types[number]>;
-  bind<const Types extends readonly EventType[]>(
-    binding: MessageBinding<Types>,
+  bind<const Topics extends SelectedTopics>(
+    binding: MessageBinding<Topics>,
   ): void;
   seal(): void;
 }
 
-export function assertDistinctPublications(
-  publications: readonly Publication[],
-): void {
+export function assertDistinctTopics(topics: readonly Topic[]): void {
   const seen = new Set<string>();
-  for (const publication of publications) {
-    if (seen.has(publication.id)) {
-      throw new Error(
-        `[message-router] duplicate publication id '${publication.id}'`,
-      );
+  for (const topic of topics) {
+    if (seen.has(topic.id)) {
+      throw new Error(`[message-router] duplicate topic id '${topic.id}'`);
     }
-    seen.add(publication.id);
+    seen.add(topic.id);
   }
 }
 
 /**
- * Every subscription must name a declared publication, so the two lists
+ * Every subscription must select declared topics, so the two lists
  * describe one graph rather than two that happen to overlap.
+ *
+ * The empty and duplicate checks are here as well as in the type, because the
+ * declaration reaches a carrier through the erased `readonly
+ * Subscription[]` form where the non-empty tuple no longer constrains
+ * it. Selecting the same topic twice would otherwise register one lane
+ * twice and deliver every Message to it twice.
  */
 export function assertDeclaredSubscriptions(
   topology: MessageRouterTopology,
 ): void {
-  const publicationIds = new Set(topology.publications.map((p) => p.id));
-  const seen = new Set<string>();
+  const topicIds = new Set(topology.topics.map((p) => p.id));
+  const seenSubs = new Set<string>();
   for (const subscription of topology.subscriptions) {
-    if (seen.has(subscription.id)) {
+    if (seenSubs.has(subscription.id)) {
       throw new Error(
         `[message-router] duplicate subscription id '${subscription.id}'`,
       );
     }
-    seen.add(subscription.id);
-    if (!publicationIds.has(subscription.publication.id)) {
+    seenSubs.add(subscription.id);
+
+    if (subscription.topics.length === 0) {
       throw new Error(
-        `[message-router] subscription '${subscription.id}' references undeclared publication '${subscription.publication.id}'`,
+        `[message-router] subscription '${subscription.id}' selects no topics`,
       );
     }
+
+    const selectedTopics = new Set<string>();
+    for (const topic of subscription.topics) {
+      if (selectedTopics.has(topic.id)) {
+        throw new Error(
+          `[message-router] subscription '${subscription.id}' selects topic '${topic.id}' more than once`,
+        );
+      }
+      selectedTopics.add(topic.id);
+      if (!topicIds.has(topic.id)) {
+        throw new Error(
+          `[message-router] subscription '${subscription.id}' references undeclared topic '${topic.id}'`,
+        );
+      }
+    }
   }
+}
+
+/**
+ * Resolves the binding's subscription to the topology's own declaration.
+ *
+ * Both carriers used to authorize a binding by id and then read its routing off
+ * the object the caller handed in, so a same-id object selecting somewhere else
+ * routed somewhere else. The topology is the authority on what an id means, so
+ * routing comes from the declaration and a disagreeing copy is refused rather
+ * than quietly honoured. This matters more once an id is what a deployment
+ * assigns to a process role.
+ */
+export function canonicalSubscriptionFor(
+  declaredById: ReadonlyMap<string, Subscription>,
+  subscription: Subscription,
+): Subscription {
+  const declared = declaredById.get(subscription.id);
+  if (!declared) {
+    throw new Error(
+      `[message-router] subscription '${subscription.id}' was not declared in this topology`,
+    );
+  }
+
+  const asked = subscription.topics.map((p) => p.id).join(", ");
+  const known = declared.topics.map((p) => p.id).join(", ");
+  if (asked !== known) {
+    throw new Error(
+      `[message-router] subscription '${subscription.id}' selects [${asked}], but this topology declares it as [${known}]`,
+    );
+  }
+
+  return declared;
 }
 
 /**
@@ -104,13 +155,13 @@ export function assertTopologySealable(
     }
   }
 
-  const subscribedPublicationIds = new Set(
-    topology.subscriptions.map((s) => s.publication.id),
+  const subscribedTopicIds = new Set(
+    topology.subscriptions.flatMap((s) => s.topics.map((p) => p.id)),
   );
-  for (const publication of topology.publications) {
-    if (!subscribedPublicationIds.has(publication.id)) {
+  for (const topic of topology.topics) {
+    if (!subscribedTopicIds.has(topic.id)) {
       throw new Error(
-        `[message-router] publication '${publication.id}' has no logical subscriptions`,
+        `[message-router] topic '${topic.id}' has no logical subscriptions`,
       );
     }
   }

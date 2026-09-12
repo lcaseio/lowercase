@@ -15,18 +15,18 @@ The ports/adapters boundary is meant to let other infrastructure backends get sw
 
 Adapter surface, now scoped into individual Changes (see Change index below). "Swappable" throughout means **selected by configuration when a process is composed**, with every implementation retained and none deleted — not hot-swapped while running, and not one backend replacing another. Each bullet below is an axis with more than one live option:
 
-- **Queue + messaging** — asynchronous Messages (the existing CloudEvent-shaped `AnyEvent`) as the protocol between components, carried locally by an in-process mailbox router and remotely by Redis Streams under the same component boundary. Components publish through a declaration-bound publisher and receive through a handler. Shared protocol and deployment declarations own stable routing identity; each process profile selects its carrier and binds the handlers it hosts. Still no separate pub/sub technology, and still independent subscriptions per concern (Engine and Observability each hold their own logical subscription rather than one being a special case of the other) — but the local case is deliberately _not_ Streams-shaped, and `EventBusPort` survives for every event family not yet migrated. See [`docs/component-architecture/in-process-messaging/`](../../component-architecture/in-process-messaging/README.md). The current Worker side is defined separately by [Worker Component Architecture](../../component-architecture/worker/README.md): a process profile retains one real Worker and binds its handler rather than adding another adapter-shaped wrapper.
+- **Queue + messaging** — asynchronous Messages (the existing CloudEvent-shaped `AnyEvent`) as the protocol between components, carried locally by an in-process mailbox router and remotely by Redis Streams under the same component boundary. Components publish through a declaration-bound publisher and receive through a handler. Shared protocol and deployment declarations own stable routing identity and select one carrier realization for the deployment; each process profile consumes that choice, constructs its local carrier resources, and binds the handlers it hosts. Still no separate pub/sub technology, and still independent subscriptions per concern (Engine and Observability each hold their own logical subscription rather than one being a special case of the other) — but the local case is deliberately _not_ Streams-shaped, and `EventBusPort` survives for every event family not yet migrated. See [`docs/component-architecture/in-process-messaging/`](../../component-architecture/in-process-messaging/README.md). The current Worker side is defined separately by [Worker Component Architecture](../../component-architecture/worker/README.md): a process profile retains one real Worker and binds its handler rather than adding another adapter-shaped wrapper.
 - **CAS/blob storage** — S3/MinIO alongside `FsArtifactStore`, both live on the `artifacts` config axis (Changes C1 and C3). The filesystem store stays the local default.
 - **SQL** — Postgres via Prisma alongside SQLite. SQLite is the lightweight install option for this application and stays a supported profile branch; the goal is that `sql` becomes a real config axis with two live backends, the same as `artifacts` and `messaging`. The schema is already Prisma-based so no model rewrite is needed, but Prisma binds a generated client to one `datasource.provider` — a driver adapter changes how a client reaches a database, not which provider it was generated for. Two backends therefore means two schema roots, two generated clients, two driver adapters, and two migration histories, with model parity guaranteed by repository-owned derivation rather than by anything Prisma provides. Both histories collapse freely while the schema is in flux — zero users, no data to preserve — and start being kept for real once it stabilizes. See [`research/prisma-sql-backend-strategy.md`](./research/prisma-sql-backend-strategy.md).
 
-New adapters alone are not the whole goal. The current `packages/runtime`
+New adapters alone were not the whole goal. The former `packages/runtime`
 proved config-selected composition for one complete embedded profile, but it
-now conflates reusable lifecycle, generic messaging, product protocol topology,
-and that profile's entire concrete dependency graph. The Worker process is the
-evidence for splitting those responsibilities: shared mechanism moves to
-dependency-clean assembly and messaging packages, profile-specific assembly
-stays with its profile, and `runtime` loses its privileged meaning rather than
-becoming another name for the whole system.
+conflated reusable lifecycle, generic messaging, product protocol topology, and
+that profile's entire concrete dependency graph. C19 split generic lifecycle,
+active messaging, and the complete local-system profile into honest owners and
+removed `runtime`. The Worker process now supplies the evidence for the next
+seam: promoting product topology without turning another package into a new
+name for the whole system.
 
 Reordered ahead of `json-schema-migration`/`rate-limiting`/`engine-hardening`/`runtime-storage-consolidation` (see `docs/initiatives/README.md`) — originally scaffolded to run last, once other boundaries had stabilized, but now the intended next initiative after `worker-tools-artifacts`.
 
@@ -43,9 +43,11 @@ No natural single starting point among the three candidate adapters (queue/messa
 **The remote Worker is now scoped because C18 closed the final infrastructure
 prerequisite.** The package seam and the process seam are separate. First move
 generic lifecycle, generic messaging, and the shared `local-system` profile to
-honest owners; then split shared deployment topology from process-local handler
-bindings; give Worker and its ingress truthful lifecycle; only then add and
-prove a Worker-host app. The current four-Change cut is recorded in the
+honest owners; then give multi-topic subscriptions one delivery lane;
+split shared deployment topology from process-local handler bindings; give
+Observability one ordered Redis route; give Worker and its ingress truthful
+lifecycle; only then add and prove a Worker-host app. The current six-Change cut
+is recorded in the
 [Remote Worker Arc](./arcs/remote-worker.md) and remains splittable when
 implementation inventory shows a review is too large.
 
@@ -73,20 +75,24 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C16    | Two provider schema roots, generated clients, narrowed seams (inert)           | merged (PR #375) | [4]   |          |
 | C17    | Shared repository contract suites against real SQLite and Postgres             | merged (PR #376) | [4]   |          |
 | C18    | Extend `local-system` profile with `postgres` SQL branch                       | merged (PR #377) | [4]   |          |
-| C19    | Split runtime package responsibilities                                         | in review        | [6]   |          |
-| C20    | Separate deployment topology from host bindings                                | not started      | [6]   |          |
-| C21    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
-| C22    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
+| C19    | Split runtime package responsibilities                                         | merged (PR #378) | [6]   |          |
+| C20    | Multi-topic logical subscriptions through one delivery lane                    | in review        | [6]   |          |
+| C21    | Separate deployment topology from process host bindings                        | not started      | [6]   |          |
+| C22    | Add one ordered Redis route for Observability                                  | not started      | [6]   |          |
+| C23    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
+| C24    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
 
 ## Next up
 
-1. **C19:** make the current package boundaries honest without changing the
-   embedded system's behavior.
-2. **C20:** give one deployment shared topology while letting each process bind
-   only the handlers it hosts.
-3. **C21:** make Worker a truthful managed resource and coordinate command
+1. **C20:** give one logical subscription an exact multi-topic Message
+   union and one shared delivery lane across both carriers.
+2. **C21:** give one deployment shared topology while letting each process bind
+   exactly the handlers it hosts.
+3. **C22:** route the selected HTTP-job Messages into one ordered Redis
+   Observability stream while preserving their independent work routes.
+4. **C23:** make Worker a truthful managed resource and coordinate command
    intake with active-work settlement.
-4. **C22:** add the Worker-host and companion API/Engine process profiles and
+5. **C24:** add the Worker-host and companion non-Worker process profiles and
    prove the real two-process path over Redis, S3/MinIO, and Postgres.
 
 These are planned review seams, not fixed size targets. An unstarted Change
@@ -101,7 +107,7 @@ surface is too large for one review.
   configurable co-location appears, a deployment definition could assign
   components to named host roles and project a process-local host plan instead
   of adding a profile name for every permutation. This is deliberately distant
-  work rather than part of C19–C22; the constraints, migration path, and open
+  work rather than part of C19–C24; the constraints, migration path, and open
   questions are sketched in
   [`research/configurable-component-placement.md`](./research/configurable-component-placement.md).
 - **The engine's own step/run self-loop (subscribing to events it publishes itself, purely to advance its own internal state)** — a real, precedented, low-risk fix (mirroring how `ExecuteHttpJsonJobFx` already avoids this), but decoupled from every Change in this initiative: nothing here depends on it, and it doesn't ease anything here either, since the self-loop never touches `MessageLogPort`/Redis at all. Deferred to whenever the engine gets its real core/inbound-outbound refactor. See `arcs/queue-adapter.md`'s Changes C5, C7–C9, and C11–C14 discussion for the full reasoning.

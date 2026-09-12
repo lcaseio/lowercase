@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildHttpJobGraph } from "./helpers/http-job-graph.js";
 import { createInProcessMessageRouter } from "@lcase/message-router";
 import {
-  httpJobPublications,
+  httpJobTopics,
   httpJobSubscriptions,
 } from "../src/http-job.topology.js";
 
@@ -13,7 +13,7 @@ import {
 // no log-backed carrier can answer, so it is not on the shared interface.
 function inProcessRouter() {
   return createInProcessMessageRouter({
-    publications: httpJobPublications,
+    topics: httpJobTopics,
     subscriptions: httpJobSubscriptions,
   });
 }
@@ -73,11 +73,15 @@ describe("HTTP JSON job vertical slice", () => {
     });
     expect(graph.enqueued[0]!.event).toEqual(terminals[0]);
 
-    // Observability holds its own subscription on each publication, so it sees
-    // the command and the terminal independently rather than tapping a topic.
-    expect(graph.observed.map((e) => e.type).sort()).toEqual([
-      "job.httpjson.completed",
+    // Observability holds one subscription across both topics, so it sees the
+    // command and the terminal as a peer subscriber rather than by receiving a
+    // privileged wildcard copy -- and through one lane, so it sees them in the
+    // order they happened. Asserted in order rather than sorted: two
+    // independent lanes could deliver the terminal first, which is the defect
+    // one subscription exists to remove.
+    expect(graph.observed.map((e) => e.type)).toEqual([
       "job.httpjson.submitted",
+      "job.httpjson.completed",
     ]);
 
     // Not a single one of the three migrated types touched the bus.

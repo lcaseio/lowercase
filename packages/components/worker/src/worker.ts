@@ -31,7 +31,7 @@ export type WorkerDeps = {
   lifecycle: WorkerLifecycleEventSink;
   protocol: ProtocolExecutor;
   artifacts: ArtifactReadWritePort;
-  // Bound to one publication by runtime, so Worker cannot route a Message
+  // Bound to one topic by runtime, so Worker cannot route a Message
   // anywhere else. It is the only messaging dependency Worker has -- no
   // router, no mailbox, no topology, no Engine callback.
   terminal: MessagePublisher<JobTerminalType>;
