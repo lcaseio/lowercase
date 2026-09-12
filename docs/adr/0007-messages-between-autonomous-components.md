@@ -29,7 +29,7 @@ components; it does not rename the schemas or yet divide them into command,
 fact, reply, and telemetry taxonomies.
 
 The first live Engine -> Worker -> Engine conversation now uses this model for
-HTTP JSON jobs. The same publications and handlers run over either an
+HTTP JSON jobs. The same topics and handlers run over either an
 in-process mailbox carrier or a Redis-backed carrier, while all components are
 still cohosted by the `local-system` profile. That is evidence for the protocol
 boundary, not yet evidence for separate process hosts or a mature deployment
@@ -57,10 +57,10 @@ call-scoped.
 ### Component-facing contracts
 
 - A producer receives a `MessagePublisher<T>` already bound to one declared
-  publication.
+  topic.
 - A consumer implements a `MessageHandler<T>` through a method on the actual
   component.
-- Shared protocol and deployment declarations own stable publication,
+- Shared protocol and deployment declarations own stable topic,
   subscription, and physical-route identity. A process profile selects its
   carrier, resolves publishers, binds the handlers it hosts, and validates its
   local host plan.
@@ -78,16 +78,16 @@ shared Message contracts and a component method already express the boundary.
 
 ### Topology and fanout
 
-A publication is a stable delivery conversation with an exact set of Message
-types. It is not mechanically one publication, mailbox, Redis stream, or topic
-per event type. The initial publication names are narrowly HTTP-JSON-shaped
+A topic is a stable delivery conversation with an exact set of Message
+types. It is not mechanically one topic, mailbox, or Redis stream per event
+type. The initial topic names are narrowly HTTP-JSON-shaped
 because that is the first migrated slice; the durable concept is a Worker job
 conversation containing its command and terminal outcomes. Another job
 protocol such as MCP may join that conversation when its real semantics are
 known, without requiring one physical route per lifecycle event.
 
 A logical subscription is one independent delivery purpose and may select one
-or more explicit publications. One published Message is independently admitted
+or more explicit topics. One published Message is independently admitted
 to every matching logical subscription. Engine, Observability, and Limiter
 therefore receive their own deliveries when each has a real reaction; none is
 wired as a side effect of another recipient. If several running consumers later
@@ -96,7 +96,7 @@ rather than receiving a new fanout copy each.
 
 Topology has three static layers:
 
-- the **protocol catalog** defines stable publication and logical-subscription
+- the **protocol catalog** defines stable topic and logical-subscription
   identities and their Message types;
 - a **deployment manifest** enables declarations and maps them to physical
   carrier routes shared by every process in that deployment; and
@@ -110,7 +110,7 @@ validation can prove that every enabled subscription is assigned to a process
 role. Neither static check proves that a remote process is alive.
 
 There are no wildcard or ambient subscriptions. Observability is one explicit
-logical subscription selecting the publications it records, and a host presents
+logical subscription selecting the topics it records, and a host presents
 those deliveries to one serial ingestion lane so its sink observes one settled
 sequence rather than independent per-event mailboxes.
 
@@ -140,8 +140,8 @@ succeeded.
 A handler's returned Promise is the truth boundary for one delivery. It resolves
 after the component-owned work it claims to perform has finished and its
 immediate authoritative resulting Messages have reached admission. It does not
-wait for downstream recipients to process those Messages. Authoritative
-publication must be awaited or owned by an explicitly supervised task; a bare
+wait for downstream recipients to process those Messages. An authoritative
+publish must be awaited or owned by an explicitly supervised task; a bare
 unobserved Promise is not an asynchronous architecture.
 
 Carrier `maxInFlight` bounds how many deliveries one subscription presents
@@ -156,7 +156,7 @@ policy.
 - Internal translation is justified when meaning changes, not merely to rename
   envelope fields.
 - Each logical occurrence has exactly one authoritative producer and
-  publication path.
+  publishing path.
 - A migration moves one complete conversation together. A running profile must
   not both invoke a component directly and publish the same actionable Message,
   or advance from both a returned result and a terminal Message.
@@ -205,7 +205,7 @@ part of this ADR's decision.
 - Observability and other concerns receive independent fanout without
   component-pair integration objects.
 - Deployment definitions and process-profile tests must describe explicit
-  publications, subscriptions, host assignments, bindings, and concurrency.
+  topics, subscriptions, host assignments, bindings, and concurrency.
 - Local interaction has additional scheduling and queue machinery compared with
   a direct call, and state changes become intentionally asynchronous.
 - Message construction, correlation, failure policy, and single-authority rules

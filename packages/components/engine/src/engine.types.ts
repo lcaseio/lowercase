@@ -203,7 +203,7 @@ export type EmitStepFailedFx = {
 };
 // "Publish", not "Emit": everywhere else in this package Emit means putting an
 // event on the bus through an EmitterFactory emitter. This builds one canonical
-// Message and hands it to a publication, which is a different act with a
+// Message and hands it to a topic, which is a different act with a
 // different failure mode -- admission can be refused.
 //
 // One effect, not a pair. The submitted Message is both the observability

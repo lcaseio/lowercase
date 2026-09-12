@@ -24,12 +24,11 @@ import {
 } from "@lcase/message-router";
 import {
   engineHttpJobTerminalSubscription,
-  httpJobCommandPublication,
-  httpJobPublications,
+  httpJobCommandTopic,
+  httpJobTopics,
   httpJobSubscriptions,
-  httpJobTerminalPublication,
-  observabilityHttpJobCommandSubscription,
-  observabilityHttpJobTerminalSubscription,
+  httpJobTerminalTopic,
+  observabilityHttpJobSubscription,
   workerHttpJobCommandSubscription,
 } from "../../src/http-job.topology.js";
 
@@ -131,11 +130,11 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
   const router =
     options.router ??
     createInProcessMessageRouter({
-      publications: httpJobPublications,
+      topics: httpJobTopics,
       subscriptions: httpJobSubscriptions,
     });
-  const httpJobCommands = router.publisher(httpJobCommandPublication);
-  const httpJobTerminals = router.publisher(httpJobTerminalPublication);
+  const httpJobCommands = router.publisher(httpJobCommandTopic);
+  const httpJobTerminals = router.publisher(httpJobTerminalTopic);
 
   const fetchSpy = vi.fn(
     async () =>
@@ -204,15 +203,11 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
     maxInFlight: options.maxConcurrentJobs ?? 4,
   });
   router.bind({
-    subscription: observabilityHttpJobCommandSubscription,
-    handler: (message) => tap.ingest(message),
-  });
-  router.bind({
     subscription: engineHttpJobTerminalSubscription,
     handler: engine.handleHttpJobTerminal,
   });
   router.bind({
-    subscription: observabilityHttpJobTerminalSubscription,
+    subscription: observabilityHttpJobSubscription,
     handler: (message) => tap.ingest(message),
   });
   router.seal();

@@ -13,8 +13,8 @@ export type MessageOf<T extends EventType> = {
 
 /**
  * The only messaging dependency a producer receives. Bound to exactly one
- * declared publication, so a component cannot route to an arbitrary
- * destination -- runtime decides where a publication goes, not its publisher.
+ * declared topic, so a component cannot route to an arbitrary
+ * destination -- runtime decides where a topic goes, not its publisher.
  *
  * `publish()` resolves on *admission*: every destination accepted its own copy.
  * It does not mean a handler started, finished, or succeeded. A sender may

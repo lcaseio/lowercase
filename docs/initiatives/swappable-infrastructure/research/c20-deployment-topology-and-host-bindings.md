@@ -6,6 +6,10 @@
   that leaves a separately deployed Worker host buildable. This note does not
   specify delivery hardening, Worker lifecycle, application entry points, or a
   general placement compiler.
+- **Vocabulary:** kept as written. C20 renamed `Publication` to `Topic` and
+  `LogicalSubscription` to `Subscription` in the code; read "publication" below
+  as "topic" throughout. This note is left in the words it was written in rather
+  than restated in vocabulary that did not exist yet.
 
 ## Recommendation in brief
 
@@ -20,9 +24,10 @@ The former combined C20 is split at a responsibility boundary:
    deployment-wide partition, narrow `seal()` to the local plan, and reject a
    partial in-process topology.
 
-The Arc numbers these as C20 and C21; Worker lifecycle and the remote-host proof
-follow as C22 and C23. The split is warranted even if the line
-counts land at the low end, because the two reviews ask different questions:
+The Arc numbers these as C20 and C21. A later sequencing decision inserts one
+ordered Redis observation route as C22 before Worker lifecycle in C23 and the
+remote-host proof in C24. The original split remains warranted even if the line
+counts land at the low end, because its two reviews ask different questions:
 delivery semantics in the first and topology completeness in the second.
 
 For Q1, use a **hybrid with carrier-neutral delivery-route IDs assigned to
@@ -504,7 +509,7 @@ smaller truthful realization.
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | In-process, one lane                     | FIFO handler starts and settlements across local enqueue order when `maxInFlight` is one             |
 | Redis, separate streams feeding one lane | Handler invocations are serialized in local lane-enqueue order; no order is promised between streams |
-| Future single observation stream         | One Redis stream-entry order, after multi-route admission and recovery policy are designed           |
+| C22 single observation stream            | One Redis stream-entry order for the migrated Messages on the transaction-backed happy path          |
 
 The first row fixes the present local defect: Observability currently has two
 independent mailboxes, so a terminal handler can overtake a blocked submitted
@@ -609,8 +614,10 @@ runtime adoption inside the static-data Change.
    while the current single-host topology ownership remains temporarily intact.
 2. Promote that now-final catalog shape and introduce deployment/host
    projection, exact local sealing, route identities, and in-process honesty.
-3. Continue with Worker lifecycle/controlled ingress.
-4. Build and prove the two-process Worker deployment.
+3. Map the migrated observation edges to one Redis route and add
+   transaction-style multi-route admission.
+4. Continue with Worker lifecycle/controlled ingress.
+5. Build and prove the two-process Worker deployment.
 
 This is sequencing by responsibility, not an implementation plan. Doing the
 subscription change first avoids introducing a single-publication manifest and
@@ -618,29 +625,30 @@ immediately rewriting it.
 
 ## Explicit cut list
 
-These items are excluded from both recommended Changes.
+These items are excluded from both recommended Changes, even where later Arc
+sequencing now names their owner.
 
-| Deferred item                                                                                   | Why it is cut now                                                         | Evidence that would justify it                                                                                   |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| External manifest file format, schema, loader, or version negotiation                           | Typed in-repo data and loud assertions are enough for a solo alpha        | A launcher or operator must supply manifests independently of the built artifact, or hosts upgrade independently |
-| General component-placement compiler                                                            | Host plans already express N roles without constructing graphs            | A third supported placement duplicates substantial profile wiring or operators need arbitrary co-hosting         |
-| Dynamic role/component registry or plugin surface                                               | All roles and protocols are first-party and statically linked             | A real third-party extension ecosystem appears                                                                   |
-| Carrier-shaped route records or per-route override tables                                       | No current carrier needs non-derivable route policy beyond an ID          | A carrier needs fixed external names, partitions, retention, exchange bindings, or mixed carriers                |
-| One physical Redis observation stream                                                           | The receiver-side local lane fixes today's local ordering issue           | A separately deployed Observer requires durable total observation order                                          |
-| Multi-route Redis publication                                                                   | The current Worker proof keeps all edges of each publication on one route | Work and observation edges are actually assigned to different streams                                            |
-| Atomic multi-route admission, outbox, or reconciliation                                         | No current manifest performs the dual write                               | Multi-route publication must become a supported deployment guarantee                                             |
-| Cross-stream total ordering, sequence numbers, clocks, or watermarks                            | Serial receiver processing cannot establish source order                  | Product behavior depends on a durable order across physical routes                                               |
-| Ordering legacy `EventBusPort` ingress with Message ingress                                     | Most lifecycle families still use the bus                                 | Those families migrate and one Observer must settle all of them together                                         |
-| Multi-stream `MessageLogPort` API                                                               | It adds transport shape without solving group scope or total order        | Another carrier operation genuinely needs one atomic multi-route read                                            |
-| Retry, pending reclaim, retained failures, dead letters, idempotency, duplicate terminal policy | Explicitly outside the alpha guarantee floor                              | The remote proof is promoted from at-most-once boundary evidence to recoverable service behavior                 |
-| Remote liveness, heartbeat, federation, or health protocol                                      | Static assignment is not evidence that a process is running               | Operational readiness requires replica/lag health across roles                                                   |
-| Replica-count or distributed-singleton enforcement for in-process realization                   | Role data cannot count live OS processes; the embedded preset assumes one | A supported in-process deployment may run more than one instance                                                 |
-| Cancellation across the boundary                                                                | It is a component protocol and Worker policy, not topology metadata       | Remote callers require cancellation semantics                                                                    |
-| Worker lifecycle and independently controlled ingress                                           | Already has its own responsibility boundary                               | The following lifecycle Change                                                                                   |
-| Per-route mixed carriers and disconnected local conversations across hosts                      | The first manifests select one carrier shape                              | A supported deployment needs both local and remote routes simultaneously                                         |
-| Publisher-before-group startup policy and Redis group provisioning                              | The manifest exposes enough information, but this is startup behavior     | Before the remote-host proof exposes external publishing                                                         |
-| MCP, run/step, Limiter, Replay, and remaining lifecycle migrations                              | The current catalog has no evidence for their final conversations         | Each conversation is migrated as an atomic protocol slice                                                        |
-| Splitting the broad adapters package                                                            | Neither C20 nor C21 supplies deployable-closure evidence                  | The remote Worker artifact shows material unrelated production dependencies                                      |
+| Item excluded from C20–C21                                                                      | Why it is cut now                                                          | Next trigger or owner                                                                                            |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| External manifest file format, schema, loader, or version negotiation                           | Typed in-repo data and loud assertions are enough for a solo alpha         | A launcher or operator must supply manifests independently of the built artifact, or hosts upgrade independently |
+| General component-placement compiler                                                            | Host plans already express N roles without constructing graphs             | A third supported placement duplicates substantial profile wiring or operators need arbitrary co-hosting         |
+| Dynamic role/component registry or plugin surface                                               | All roles and protocols are first-party and statically linked              | A real third-party extension ecosystem appears                                                                   |
+| Carrier-shaped route records or per-route override tables                                       | No current carrier needs non-derivable route policy beyond an ID           | A carrier needs fixed external names, partitions, retention, exchange bindings, or mixed carriers                |
+| One physical Redis observation stream                                                           | Excluded from C20–C21 to keep their reviews on delivery lanes and topology | Scheduled as C22 before the separately deployed Worker proof                                                     |
+| Multi-route Redis publication                                                                   | C21 represents and rejects it as unsupported active carrier behavior       | C22 assigns work and observation edges to different routes                                                       |
+| Atomic multi-route admission, outbox, or reconciliation                                         | C20–C21 perform no dual write                                              | C22 adds transaction-style happy-path admission; reconciliation remains deferred                                 |
+| Cross-stream total ordering, sequence numbers, clocks, or watermarks                            | Serial receiver processing cannot establish source order                   | Product behavior depends on a durable order across physical routes                                               |
+| Ordering legacy `EventBusPort` ingress with Message ingress                                     | Most lifecycle families still use the bus                                  | Those families migrate and one Observer must settle all of them together                                         |
+| Multi-stream `MessageLogPort` API                                                               | It adds transport shape without solving group scope or total order         | Another carrier operation genuinely needs one atomic multi-route read                                            |
+| Retry, pending reclaim, retained failures, dead letters, idempotency, duplicate terminal policy | Explicitly outside the alpha guarantee floor                               | The remote proof is promoted from at-most-once boundary evidence to recoverable service behavior                 |
+| Remote liveness, heartbeat, federation, or health protocol                                      | Static assignment is not evidence that a process is running                | Operational readiness requires replica/lag health across roles                                                   |
+| Replica-count or distributed-singleton enforcement for in-process realization                   | Role data cannot count live OS processes; the embedded preset assumes one  | A supported in-process deployment may run more than one instance                                                 |
+| Cancellation across the boundary                                                                | It is a component protocol and Worker policy, not topology metadata        | Remote callers require cancellation semantics                                                                    |
+| Worker lifecycle and independently controlled ingress                                           | Already has its own responsibility boundary                                | The following lifecycle Change                                                                                   |
+| Per-route mixed carriers and disconnected local conversations across hosts                      | The first manifests select one carrier shape                               | A supported deployment needs both local and remote routes simultaneously                                         |
+| Publisher-before-group startup policy and Redis group provisioning                              | The manifest exposes enough information, but this is startup behavior      | Before the remote-host proof exposes external publishing                                                         |
+| MCP, run/step, Limiter, Replay, and remaining lifecycle migrations                              | The current catalog has no evidence for their final conversations          | Each conversation is migrated as an atomic protocol slice                                                        |
+| Splitting the broad adapters package                                                            | Neither C20 nor C21 supplies deployable-closure evidence                   | The remote Worker artifact shows material unrelated production dependencies                                      |
 
 ## Review of the settled assumptions
 
@@ -695,7 +703,7 @@ should remain in its own later Change.
 ## Sources
 
 - [Remote Worker Arc](../arcs/remote-worker.md), especially its target shape and
-  C20–C23 discussion.
+  C20–C24 discussion.
 - [ADR-0007: Messages between autonomous components](../../../adr/0007-messages-between-autonomous-components.md),
   especially topology, fanout, admission, and the unresolved physical
   observation route.

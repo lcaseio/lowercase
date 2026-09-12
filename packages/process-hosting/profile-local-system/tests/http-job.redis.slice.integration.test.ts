@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildHttpJobGraph } from "./helpers/http-job-graph.js";
 import { createRedisMessageRouter } from "@lcase/message-router";
 import {
-  httpJobPublications,
+  httpJobTopics,
   httpJobSubscriptions,
 } from "../src/http-job.topology.js";
 
@@ -57,7 +57,7 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
   function redisRouter() {
     const keyPrefix = `lcase-test:${Date.now()}-${Math.random().toString(36).slice(2)}:`;
     const router = createRedisMessageRouter({
-      publications: httpJobPublications,
+      topics: httpJobTopics,
       subscriptions: httpJobSubscriptions,
       createLog: async () => {
         const client: RedisClientType = createClient({ url });
@@ -99,9 +99,14 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
       },
     });
 
-    // Observability holds its own consumer group on each stream, so it sees
-    // the command and the terminal independently -- the same shape the
-    // in-process carrier produces from two independent mailboxes.
+    // One subscription across both topics, so this group name exists on
+    // both streams and both readers feed one local lane.
+    //
+    // Sorted rather than in order, unlike the in-process slice. Each stream has
+    // its own group instance and its own cursor, and Redis provides no order
+    // across separate streams, so asserting one here would be asserting a
+    // guarantee this carrier does not make. What the lane provides remotely is
+    // that these two never run at once, not that they arrive in this order.
     await vi.waitFor(() => expect(graph.observed).toHaveLength(2), {
       timeout: 5_000,
     });

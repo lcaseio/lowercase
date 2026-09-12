@@ -43,10 +43,11 @@ No natural single starting point among the three candidate adapters (queue/messa
 **The remote Worker is now scoped because C18 closed the final infrastructure
 prerequisite.** The package seam and the process seam are separate. First move
 generic lifecycle, generic messaging, and the shared `local-system` profile to
-honest owners; then give multi-publication subscriptions one delivery lane;
+honest owners; then give multi-topic subscriptions one delivery lane;
 split shared deployment topology from process-local handler bindings; give
-Worker and its ingress truthful lifecycle; only then add and prove a Worker-host
-app. The current five-Change cut is recorded in the
+Observability one ordered Redis route; give Worker and its ingress truthful
+lifecycle; only then add and prove a Worker-host app. The current six-Change cut
+is recorded in the
 [Remote Worker Arc](./arcs/remote-worker.md) and remains splittable when
 implementation inventory shows a review is too large.
 
@@ -75,20 +76,23 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C17    | Shared repository contract suites against real SQLite and Postgres             | merged (PR #376) | [4]   |          |
 | C18    | Extend `local-system` profile with `postgres` SQL branch                       | merged (PR #377) | [4]   |          |
 | C19    | Split runtime package responsibilities                                         | merged (PR #378) | [6]   |          |
-| C20    | Multi-publication logical subscriptions through one delivery lane              | not started      | [6]   |          |
+| C20    | Multi-topic logical subscriptions through one delivery lane                    | in review        | [6]   |          |
 | C21    | Separate deployment topology from process host bindings                        | not started      | [6]   |          |
-| C22    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
-| C23    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
+| C22    | Add one ordered Redis route for Observability                                  | not started      | [6]   |          |
+| C23    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
+| C24    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
 
 ## Next up
 
-1. **C20:** give one logical subscription an exact multi-publication Message
+1. **C20:** give one logical subscription an exact multi-topic Message
    union and one shared delivery lane across both carriers.
 2. **C21:** give one deployment shared topology while letting each process bind
    exactly the handlers it hosts.
-3. **C22:** make Worker a truthful managed resource and coordinate command
+3. **C22:** route the selected HTTP-job Messages into one ordered Redis
+   Observability stream while preserving their independent work routes.
+4. **C23:** make Worker a truthful managed resource and coordinate command
    intake with active-work settlement.
-4. **C23:** add the Worker-host and companion non-Worker process profiles and
+5. **C24:** add the Worker-host and companion non-Worker process profiles and
    prove the real two-process path over Redis, S3/MinIO, and Postgres.
 
 These are planned review seams, not fixed size targets. An unstarted Change
@@ -103,7 +107,7 @@ surface is too large for one review.
   configurable co-location appears, a deployment definition could assign
   components to named host roles and project a process-local host plan instead
   of adding a profile name for every permutation. This is deliberately distant
-  work rather than part of C19–C23; the constraints, migration path, and open
+  work rather than part of C19–C24; the constraints, migration path, and open
   questions are sketched in
   [`research/configurable-component-placement.md`](./research/configurable-component-placement.md).
 - **The engine's own step/run self-loop (subscribing to events it publishes itself, purely to advance its own internal state)** — a real, precedented, low-risk fix (mirroring how `ExecuteHttpJsonJobFx` already avoids this), but decoupled from every Change in this initiative: nothing here depends on it, and it doesn't ease anything here either, since the self-loop never touches `MessageLogPort`/Redis at all. Deferred to whenever the engine gets its real core/inbound-outbound refactor. See `arcs/queue-adapter.md`'s Changes C5, C7–C9, and C11–C14 discussion for the full reasoning.

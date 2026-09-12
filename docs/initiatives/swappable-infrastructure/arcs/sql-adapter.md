@@ -1,6 +1,6 @@
 # Prove Swappable Infrastructure Initiative — Arc: SQL Adapter (Changes C15–C18)
 
-**Previous:** [`work-tracking-migration.md`](./work-tracking-migration.md) (Change C6) · **Next:** [`remote-worker.md`](./remote-worker.md) (Changes C19–C23) · **Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C14), [`package-tooling.md`](./package-tooling.md) (Change C10)
+**Previous:** [`work-tracking-migration.md`](./work-tracking-migration.md) (Change C6) · **Next:** [`remote-worker.md`](./remote-worker.md) (Changes C19–C24) · **Related:** [`queue-adapter.md`](./queue-adapter.md) (Changes C4–C5, C7–C9, C11–C14), [`package-tooling.md`](./package-tooling.md) (Change C10)
 
 Part of the [`INITIATIVE.md`](../INITIATIVE.md) Change log, split out to keep that doc scannable. Adds Postgres via Prisma **alongside** SQLite, and wires the choice into `packages/runtime`'s config selection.
 

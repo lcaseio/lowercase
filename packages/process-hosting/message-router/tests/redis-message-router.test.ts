@@ -1,30 +1,42 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildEvent } from "@lcase/events";
 import type { AnyEvent } from "@lcase/types";
-import type { LogicalSubscription } from "@lcase/ports";
-import { definePublicationFor } from "../src/define-publication.js";
+import type { Subscription } from "@lcase/ports";
+import { defineTopicFor, defineSubscription } from "../src/define-topic.js";
 import { createRedisMessageRouter } from "../src/redis/redis-message-router.js";
 import type { DeliveryFailure } from "../src/delivery.types.js";
 import { createFakeMessageLogStore } from "./helpers/fake-message-log.js";
 
 type TerminalType = "job.httpjson.completed" | "job.httpjson.failed";
 
-const terminal = definePublicationFor<TerminalType>()({
+const terminal = defineTopicFor<TerminalType>()({
   id: "http-job-terminal.v1",
   types: ["job.httpjson.completed", "job.httpjson.failed"],
 });
 
-const engineTerminal: LogicalSubscription<typeof terminal.types> = {
-  id: "engine.http-job-terminal.v1",
-  publication: terminal,
-};
+const command = defineTopicFor<"job.httpjson.submitted">()({
+  id: "http-job-command.v1",
+  types: ["job.httpjson.submitted"],
+});
 
-const obsTerminal: LogicalSubscription<typeof terminal.types> = {
+const engineTerminal = defineSubscription({
+  id: "engine.http-job-terminal.v1",
+  topics: [terminal],
+});
+
+const obsTerminal = defineSubscription({
   id: "observability.http-job-terminal.v1",
-  publication: terminal,
-};
+  topics: [terminal],
+});
+
+/** One subscription across both topics, so it reads two streams. */
+const obsHttpJob = defineSubscription({
+  id: "observability.http-job.v1",
+  topics: [command, terminal],
+});
 
 const STREAM = "test:http-job-terminal.v1";
+const COMMAND_STREAM = "test:http-job-command.v1";
 
 function completedEvent(jobid = "job-1"): AnyEvent<"job.httpjson.completed"> {
   return buildEvent(
@@ -46,7 +58,8 @@ function completedEvent(jobid = "job-1"): AnyEvent<"job.httpjson.completed"> {
 type Options = {
   handler?: (message: AnyEvent) => Promise<void>;
   maxInFlight?: number;
-  subscriptions?: readonly LogicalSubscription[];
+  readCount?: number;
+  subscriptions?: readonly Subscription[];
 };
 
 function setup(options: Options = {}) {
@@ -55,11 +68,14 @@ function setup(options: Options = {}) {
   const seen: AnyEvent[] = [];
 
   const router = createRedisMessageRouter({
-    publications: [terminal],
+    topics: [terminal],
     subscriptions: options.subscriptions ?? [engineTerminal],
     createLog: store.createLog,
     keyPrefix: "test:",
     blockMs: 5,
+    ...(options.readCount !== undefined
+      ? { readCount: options.readCount }
+      : {}),
     reportFailure: (failure) => failures.push(failure),
   });
 
@@ -102,7 +118,7 @@ describe("createRedisMessageRouter — topology", () => {
     );
   });
 
-  it("names the stream from the publication id and the group from the subscription id", async () => {
+  it("names the stream from the topic id and the group from the subscription id", async () => {
     const { store, router } = await sealedAndStarted();
 
     expect(store.provisionedStreams).toEqual([STREAM]);
@@ -127,7 +143,7 @@ describe("createRedisMessageRouter — topology", () => {
 
     expect(() =>
       router.bind({
-        subscription: { id: "undeclared.v1", publication: terminal },
+        subscription: { id: "undeclared.v1", topics: [terminal] },
         handler: noop,
       }),
     ).toThrow(/subscription 'undeclared.v1' was not declared in this topology/);
@@ -162,7 +178,7 @@ describe("createRedisMessageRouter — topology", () => {
     );
   });
 
-  it("refuses a Message type its publication does not declare", async () => {
+  it("refuses a Message type its topic does not declare", async () => {
     const { router } = await sealedAndStarted();
     const publisher = router.publisher(terminal) as unknown as {
       publish(m: AnyEvent): Promise<void>;
@@ -218,7 +234,7 @@ describe("createRedisMessageRouter — delivery", () => {
   // Nothing validated the envelope on the way in, so the reader has to
   // re-establish what publish() guarantees locally -- otherwise the cast onto
   // the handler's parameter type is unfounded.
-  it("reports and acknowledges an entry whose type the publication does not declare, without invoking the handler", async () => {
+  it("reports and acknowledges an entry whose type the topic does not declare, without invoking the handler", async () => {
     const { router, store, failures, seen } = await sealedAndStarted();
 
     store.inject(STREAM, { ...completedEvent(), type: "run.completed" });
@@ -295,5 +311,208 @@ describe("createRedisMessageRouter — delivery", () => {
     await expect(
       router.publisher(terminal).publish(completedEvent()),
     ).rejects.toThrow(/before start\(\)/);
+  });
+});
+
+describe("createRedisMessageRouter — multi-topic subscriptions", () => {
+  function submittedEvent(jobid = "job-1"): AnyEvent<"job.httpjson.submitted"> {
+    return buildEvent(
+      "job.httpjson.submitted",
+      { url: "https://example.test/jobs", method: "POST", refs: [] },
+      {
+        flowid: "flow-1",
+        flowversionid: "flowversion-1",
+        runid: "run-1",
+        stepid: "step-1",
+        jobid,
+        capid: "httpjson",
+        toolid: "tool-1",
+        source: "lowercase://engine/test",
+      },
+    );
+  }
+
+  /**
+   * One subscription over both topics, so it reads two streams into one
+   * lane. `block` gates every handler, which is how the concurrency bound below
+   * is observed without depending on which stream is read first.
+   */
+  async function multiTopic(
+    options: { maxInFlight?: number; block?: Promise<void> } = {},
+  ) {
+    const store = createFakeMessageLogStore();
+    const failures: DeliveryFailure[] = [];
+    const started: AnyEvent[] = [];
+
+    const router = createRedisMessageRouter({
+      topics: [command, terminal],
+      subscriptions: [obsHttpJob],
+      createLog: store.createLog,
+      keyPrefix: "test:",
+      blockMs: 5,
+      reportFailure: (failure) => failures.push(failure),
+    });
+
+    router.bind({
+      subscription: obsHttpJob,
+      handler: async (message) => {
+        started.push(message);
+        await options.block;
+      },
+      ...(options.maxInFlight !== undefined
+        ? { maxInFlight: options.maxInFlight }
+        : {}),
+    });
+    router.seal();
+    await router.start();
+
+    return { store, router, failures, started };
+  }
+
+  it("provisions its group on every selected stream and opens one connection per reader", async () => {
+    const { store, router } = await multiTopic();
+
+    expect(store.provisionedStreams).toEqual([COMMAND_STREAM, STREAM]);
+    // One group *name* on two streams. A Redis consumer group belongs to one
+    // stream, so these are two independent group instances with their own
+    // cursors, not one checkpoint spanning both.
+    expect(store.provisionedGroups).toEqual([
+      `${COMMAND_STREAM}|observability.http-job.v1`,
+      `${STREAM}|observability.http-job.v1`,
+    ]);
+    // One publisher connection plus one per reader, because a blocking read
+    // occupies its connection for the whole block window.
+    expect(store.logCount).toBe(3);
+
+    await router.stop();
+    expect(store.closed).toHaveLength(3);
+  });
+
+  it("feeds both streams into one handler and acknowledges each on its own stream", async () => {
+    const { store, router, started } = await multiTopic();
+
+    await router.publisher(command).publish(submittedEvent("job-1"));
+    await router.publisher(terminal).publish(completedEvent("job-2"));
+
+    await vi.waitFor(() => expect(started).toHaveLength(2));
+    expect(started.map((m) => m.type).sort()).toEqual([
+      "job.httpjson.completed",
+      "job.httpjson.submitted",
+    ]);
+
+    await vi.waitFor(() => expect(store.acked).toHaveLength(2));
+    expect(
+      store.acked.map((entry) => entry.split("|").slice(0, 2).join("|")).sort(),
+    ).toEqual([
+      `${COMMAND_STREAM}|observability.http-job.v1`,
+      `${STREAM}|observability.http-job.v1`,
+    ]);
+    expect(
+      store.pendingFor(COMMAND_STREAM, "observability.http-job.v1"),
+    ).toEqual([]);
+    expect(store.pendingFor(STREAM, "observability.http-job.v1")).toEqual([]);
+
+    await router.stop();
+  });
+
+  // The point of one lane: maxInFlight bounds the subscription, not each
+  // reader. Which stream is read first is deliberately not asserted -- Redis
+  // provides no order across separate streams and neither does this.
+  it("shares one concurrency limit across its readers", async () => {
+    let release!: () => void;
+    const block = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { router, store, started } = await multiTopic({
+      maxInFlight: 1,
+      block,
+    });
+
+    await router.publisher(command).publish(submittedEvent("job-1"));
+    await router.publisher(terminal).publish(completedEvent("job-2"));
+
+    // One handler running, and it stays that way while blocked even though the
+    // two entries came from different readers.
+    await vi.waitFor(() => expect(started).toHaveLength(1));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(started).toHaveLength(1);
+    // The other entry is read but unacknowledged, so it is still recoverable.
+    expect(store.acked).toHaveLength(0);
+
+    release();
+    await vi.waitFor(() => expect(started).toHaveLength(2));
+    expect(new Set(started.map((m) => m.type))).toEqual(
+      new Set(["job.httpjson.submitted", "job.httpjson.completed"]),
+    );
+
+    await router.stop();
+  });
+});
+
+// readCount and maxInFlight answer different questions: one is how many entries
+// this consumer claims responsibility for, the other how many handlers run at
+// once. They default to the same number, which is exactly why it is worth
+// proving they can differ.
+describe("createRedisMessageRouter — read count", () => {
+  it("claims up to readCount while the lane still runs maxInFlight at a time", async () => {
+    let release!: () => void;
+    const block = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const started: AnyEvent[] = [];
+    const { router, store } = await sealedAndStarted({
+      maxInFlight: 1,
+      readCount: 3,
+      handler: async (message) => {
+        started.push(message);
+        await block;
+      },
+    });
+
+    const publisher = router.publisher(terminal);
+    await publisher.publish(completedEvent("job-1"));
+    await publisher.publish(completedEvent("job-2"));
+    await publisher.publish(completedEvent("job-3"));
+
+    // All three claimed into this consumer's pending list, one handler running.
+    await vi.waitFor(() =>
+      expect(store.pendingFor(STREAM, engineTerminal.id)).toHaveLength(3),
+    );
+    expect(started).toHaveLength(1);
+    expect(store.acked).toHaveLength(0);
+
+    release();
+    await vi.waitFor(() => expect(started).toHaveLength(3));
+    await vi.waitFor(() =>
+      expect(store.pendingFor(STREAM, engineTerminal.id)).toEqual([]),
+    );
+
+    await router.stop();
+  });
+
+  it("defaults readCount to maxInFlight, so nothing is claimed beyond the bound", async () => {
+    let release!: () => void;
+    const block = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { router, store } = await sealedAndStarted({
+      maxInFlight: 1,
+      handler: async () => {
+        await block;
+      },
+    });
+
+    const publisher = router.publisher(terminal);
+    await publisher.publish(completedEvent("job-1"));
+    await publisher.publish(completedEvent("job-2"));
+
+    await vi.waitFor(() =>
+      expect(store.pendingFor(STREAM, engineTerminal.id)).toHaveLength(1),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(store.pendingFor(STREAM, engineTerminal.id)).toHaveLength(1);
+
+    release();
+    await router.stop();
   });
 });

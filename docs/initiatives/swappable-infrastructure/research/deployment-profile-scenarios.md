@@ -388,5 +388,5 @@ In particular, they do not require:
 C21 creates production manifests only for the embedded and transitional
 remote-Worker shapes. Its synthetic validation fixtures can prove that the data
 model supports more than two roles without turning the later distributed or CLI
-scenarios into supported presets. C23 then exercises the transitional
+scenarios into supported presets. C24 then exercises the transitional
 two-process deployment while preserving the complete embedded profile.

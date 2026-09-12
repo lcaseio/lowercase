@@ -12,7 +12,7 @@ import { flowAnalysisB } from "../fixtures/flow-analysis.state.js";
 // The shared step-planned.state.ts fixture puts step "b" in runPlan.reuse,
 // which takes stepPlannedPlanner's early-return EmitStepReused branch -- this
 // fixture instead reaches the real httpjson dispatch branch, which is the only
-// place the submitted publication effect is built.
+// place the submitted topic effect is built.
 function makeNewState(): EngineState {
   return {
     runs: {

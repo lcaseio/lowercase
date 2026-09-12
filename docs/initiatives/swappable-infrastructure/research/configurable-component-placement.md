@@ -179,7 +179,7 @@ explicit dependency metadata from closed first-party construction fragments or
 profile-supplied ordering constraints. The first few role-specific assemblers
 should provide evidence before choosing either representation.
 
-Worker lifecycle in Change C22 is useful evidence here: it will show whether
+Worker lifecycle in Change C23 is useful evidence here: it will show whether
 ordered start/reverse stop remains sufficient or whether independently
 quiesced ingress and an explicit drain phase are required. That decision is
 needed for the first remote Worker even if configurable placement is never
@@ -195,11 +195,13 @@ The current plan can evolve incrementally:
    lane before their catalog shape is promoted.
 3. Let C21 introduce deployment manifests and process host plans for the two
    concrete deployments without a general placement language.
-4. Let C22 establish truthful Worker and ingress lifecycle using those plans.
-5. Let C23 prove the explicit companion non-Worker and Worker profiles as one
+4. Let C22 give the migrated Messages one ordered Redis observation route using
+   those manifests rather than special-case router knowledge.
+5. Let C23 establish truthful Worker and ingress lifecycle using those plans.
+6. Let C24 prove the explicit companion non-Worker and Worker profiles as one
    supported distributed preset.
-6. Add another explicit deployment when a real use case appears.
-7. Only after repetition is visible, extract the common placement projection
+7. Add another explicit deployment when a real use case appears.
+8. Only after repetition is visible, extract the common placement projection
    from those manifests and treat existing profiles as presets or constrained
    host-plan consumers.
 
