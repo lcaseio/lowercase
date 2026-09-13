@@ -549,6 +549,31 @@ production dependency instead of the planned devDependency; its closure is
 still effectively empty, because the package it now depends on has none of its
 own.
 
+Review settled the vocabulary, which took more argument than the shapes did. A
+role holds `publishesTo` and `consumesFrom`, because in the Topic and
+Subscription model you publish to a topic and consume from a subscription. The
+verbs are symmetric while what they hold is not, and that is the point: a
+publisher names a topic and never a consumer list, which is what lets two ends
+of one conversation live in different processes. The host plan keeps both verbs
+rather than renaming them for its richer entries, so a role and its plan read
+side by side without translation.
+
+A manifest holds `topicIds` and `subscriptionIds`. The bare plurals belong to
+`MessageCatalog`, where they hold declarations rather than references, and
+`assertManifest` is the function with both in scope at once. That is where
+identical names holding `Topic` objects on one side and strings on the other
+would have bitten.
+
+`PlannedSubscription.topicRoutes` names a new `TopicRoute`, the recurring pair
+of a topic and the route carrying it. The Redis router's `BoundReader` already
+mirrors it at runtime by pairing a topic ID with a stream key, which is what
+suggested the pair was the real unit. Its counterpart stays bare `routeIds`,
+since a publisher entry is already scoped to one topic.
+
+`PlannedPublisher` is the one name left unsettled. There is no static publisher
+anywhere for it to correspond to, and the record is closer to a publish
+permission than to a publisher.
+
 Catalogs and deployments are siblings rather than the presets nesting under the
 job conversation. A deployment is of the whole system: `local-system` enables
 only job identities today purely because that is the only migrated
