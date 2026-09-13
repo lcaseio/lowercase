@@ -31,7 +31,7 @@ function makeDeps(publish = vi.fn().mockResolvedValue(undefined)) {
   const deps = {
     bus,
     source: ENGINE_SOURCE,
-    httpJobCommands: { publish },
+    jobCommands: { publish },
   } as unknown as EffectHandlerDeps;
   return { deps, publish, bus };
 }

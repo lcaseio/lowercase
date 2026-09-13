@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { buildMessageRouter } from "../src/build-message-router.js";
-import {
-  httpJobTopics,
-  httpJobSubscriptions,
-} from "../src/http-job.topology.js";
+import { jobTopics, jobSubscriptions } from "@lcase/message-topology/catalogs";
 
 const topology = {
-  topics: httpJobTopics,
-  subscriptions: httpJobSubscriptions,
+  topics: jobTopics,
+  subscriptions: jobSubscriptions,
 };
 
 describe("buildMessageRouter", () => {

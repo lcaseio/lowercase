@@ -7,7 +7,7 @@ import type {
   SelectedTopics,
   SelectedTypes,
 } from "@lcase/ports";
-import { defineTopic, defineTopicFor } from "../src/define-topic.js";
+import { defineTopic, defineTopicFor } from "@lcase/message-topology";
 import {
   createInProcessMessageRouter,
   type InProcessMessageRouter,
@@ -24,16 +24,16 @@ type Bind = {
 
 // The authoritative-union shape C10 uses: the union is named once and shared
 // by the topic and every handler/publisher signature.
-type HttpJobTerminalType = "job.httpjson.completed" | "job.httpjson.failed";
+type JobTerminalType = "job.httpjson.completed" | "job.httpjson.failed";
 
-const terminal = defineTopicFor<HttpJobTerminalType>()({
-  id: "http-job-terminal.v1",
+const terminal = defineTopicFor<JobTerminalType>()({
+  id: "job-terminal.v1",
   types: ["job.httpjson.completed", "job.httpjson.failed"],
 });
 
 // The derive-from-list shape, where the declaration owns its own contract.
 const completedOnly = defineTopic({
-  id: "http-job-completed-only.v1",
+  id: "job-completed-only.v1",
   types: ["job.httpjson.completed"],
 });
 
@@ -127,7 +127,7 @@ describe("createInProcessMessageRouter — topology validation", () => {
         topics: [terminal, { ...terminal }],
         subscriptions: [engineTerminal],
       }),
-    ).toThrow(/duplicate topic id 'http-job-terminal.v1'/);
+    ).toThrow(/duplicate topic id 'job-terminal.v1'/);
   });
 
   it("rejects a declared subscription referencing an undeclared topic, at construction", () => {
@@ -136,7 +136,7 @@ describe("createInProcessMessageRouter — topology validation", () => {
         topics: [terminal],
         subscriptions: [subscription("obs.command.v1", [completedOnly])],
       }),
-    ).toThrow(/references undeclared topic 'http-job-completed-only.v1'/);
+    ).toThrow(/references undeclared topic 'job-completed-only.v1'/);
   });
 
   it("rejects a duplicate subscription id at bind", () => {
@@ -190,7 +190,7 @@ describe("createInProcessMessageRouter — topology validation", () => {
     binding("engine.terminal.v1", [terminal], noop).apply(router);
 
     expect(() => router.seal()).toThrow(
-      /topic 'http-job-completed-only.v1' has no logical subscriptions/,
+      /topic 'job-completed-only.v1' has no logical subscriptions/,
     );
   });
 
@@ -201,7 +201,7 @@ describe("createInProcessMessageRouter — topology validation", () => {
     });
 
     expect(() => router.publisher(completedOnly)).toThrow(
-      /undeclared topic 'http-job-completed-only.v1'/,
+      /undeclared topic 'job-completed-only.v1'/,
     );
   });
 });
@@ -239,9 +239,7 @@ describe("createInProcessMessageRouter — sealing", () => {
 
     await expect(
       router.publisher(terminal).publish(completedEvent()),
-    ).rejects.toThrow(
-      /cannot publish to 'http-job-terminal.v1' before seal\(\)/,
-    );
+    ).rejects.toThrow(/cannot publish to 'job-terminal.v1' before seal\(\)/);
   });
 
   it("resolves a publisher before its destinations are bound", async () => {
@@ -511,7 +509,7 @@ describe("createInProcessMessageRouter — multi-topic subscriptions", () => {
     const router = sealedRouter({
       topics: [terminal, completedOnly],
       bindings: [
-        binding("obs.http-job.v1", [terminal, completedOnly], async (m) => {
+        binding("obs.job.v1", [terminal, completedOnly], async (m) => {
           seen.push(`${m.type}:${m.id}`);
         }),
       ],
@@ -539,7 +537,7 @@ describe("createInProcessMessageRouter — multi-topic subscriptions", () => {
       topics: [terminal, completedOnly],
       bindings: [
         binding(
-          "obs.http-job.v1",
+          "obs.job.v1",
           [terminal, completedOnly],
           async (m) => {
             started.push(m.type);
@@ -580,7 +578,7 @@ describe("createInProcessMessageRouter — multi-topic subscriptions", () => {
         subscriptions: [subscription("obs.dup.v1", [terminal, terminal])],
       }),
     ).toThrow(
-      /subscription 'obs.dup.v1' selects topic 'http-job-terminal.v1' more than once/,
+      /subscription 'obs.dup.v1' selects topic 'job-terminal.v1' more than once/,
     );
   });
 
@@ -591,13 +589,13 @@ describe("createInProcessMessageRouter — multi-topic subscriptions", () => {
   it("rejects a binding whose selection disagrees with the declaration of that id", () => {
     const router = createInProcessMessageRouter({
       topics: [terminal, completedOnly],
-      subscriptions: [subscription("obs.http-job.v1", [terminal])],
+      subscriptions: [subscription("obs.job.v1", [terminal])],
     });
 
     expect(() =>
-      binding("obs.http-job.v1", [terminal, completedOnly], noop).apply(router),
+      binding("obs.job.v1", [terminal, completedOnly], noop).apply(router),
     ).toThrow(
-      /subscription 'obs.http-job.v1' selects \[http-job-terminal.v1, http-job-completed-only.v1\], but this topology declares it as \[http-job-terminal.v1\]/,
+      /subscription 'obs.job.v1' selects \[job-terminal.v1, job-completed-only.v1\], but this topology declares it as \[job-terminal.v1\]/,
     );
   });
 
@@ -605,16 +603,14 @@ describe("createInProcessMessageRouter — multi-topic subscriptions", () => {
     const seen: string[] = [];
     const router = createInProcessMessageRouter({
       topics: [terminal, completedOnly],
-      subscriptions: [
-        subscription("obs.http-job.v1", [terminal, completedOnly]),
-      ],
+      subscriptions: [subscription("obs.job.v1", [terminal, completedOnly])],
     });
 
     // Same id, same selection, but a distinct object graph: routing must come
     // from the declared topics, not from these copies.
     router.bind({
       subscription: {
-        id: "obs.http-job.v1",
+        id: "obs.job.v1",
         topics: [{ ...terminal }, { ...completedOnly }],
       },
       handler: async (m) => {

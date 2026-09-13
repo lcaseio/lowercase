@@ -6,6 +6,10 @@
   that leaves a separately deployed Worker host buildable. This note does not
   specify delivery hardening, Worker lifecycle, application entry points, or a
   general placement compiler.
+- **Numbering:** kept as written, and now off by one past C21. The Arc later
+  split this note's C21 into C21 (static topology data) and C22 (router,
+  carrier, and profile adoption), shifting everything after it. Read C22 through
+  C24 below as C23 through C25. The Arc is the authority on numbering.
 - **Vocabulary:** kept as written. C20 renamed `Publication` to `Topic` and
   `LogicalSubscription` to `Subscription` in the code; read "publication" below
   as "topic" throughout. This note is left in the words it was written in rather

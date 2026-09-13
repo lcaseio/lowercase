@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { buildEvent } from "@lcase/events";
 import type { AnyEvent } from "@lcase/types";
 import type { Subscription } from "@lcase/ports";
-import { defineTopicFor, defineSubscription } from "../src/define-topic.js";
+import { defineTopicFor, defineSubscription } from "@lcase/message-topology";
 import { createRedisMessageRouter } from "../src/redis/redis-message-router.js";
 import type { DeliveryFailure } from "../src/delivery.types.js";
 import { createFakeMessageLogStore } from "./helpers/fake-message-log.js";
@@ -10,33 +10,33 @@ import { createFakeMessageLogStore } from "./helpers/fake-message-log.js";
 type TerminalType = "job.httpjson.completed" | "job.httpjson.failed";
 
 const terminal = defineTopicFor<TerminalType>()({
-  id: "http-job-terminal.v1",
+  id: "job-terminal.v1",
   types: ["job.httpjson.completed", "job.httpjson.failed"],
 });
 
 const command = defineTopicFor<"job.httpjson.submitted">()({
-  id: "http-job-command.v1",
+  id: "job-command.v1",
   types: ["job.httpjson.submitted"],
 });
 
 const engineTerminal = defineSubscription({
-  id: "engine.http-job-terminal.v1",
+  id: "engine.job-terminal.v1",
   topics: [terminal],
 });
 
 const obsTerminal = defineSubscription({
-  id: "observability.http-job-terminal.v1",
+  id: "observability.job-terminal.v1",
   topics: [terminal],
 });
 
 /** One subscription across both topics, so it reads two streams. */
-const obsHttpJob = defineSubscription({
-  id: "observability.http-job.v1",
+const obsJob = defineSubscription({
+  id: "observability.job.v1",
   topics: [command, terminal],
 });
 
-const STREAM = "test:http-job-terminal.v1";
-const COMMAND_STREAM = "test:http-job-command.v1";
+const STREAM = "test:job-terminal.v1";
+const COMMAND_STREAM = "test:job-command.v1";
 
 function completedEvent(jobid = "job-1"): AnyEvent<"job.httpjson.completed"> {
   return buildEvent(
@@ -114,7 +114,7 @@ describe("createRedisMessageRouter — topology", () => {
 
     expect(ctx).toBeInstanceOf(Error);
     expect((ctx as Error).message).toMatch(
-      /subscription 'observability.http-job-terminal.v1' was declared but never bound/,
+      /subscription 'observability.job-terminal.v1' was declared but never bound/,
     );
   });
 
@@ -123,7 +123,7 @@ describe("createRedisMessageRouter — topology", () => {
 
     expect(store.provisionedStreams).toEqual([STREAM]);
     expect(store.provisionedGroups).toEqual([
-      `${STREAM}|engine.http-job-terminal.v1`,
+      `${STREAM}|engine.job-terminal.v1`,
     ]);
 
     await router.stop();
@@ -156,7 +156,7 @@ describe("createRedisMessageRouter — topology", () => {
 
     expect(() =>
       router.bind({ subscription: engineTerminal, handler: noop }),
-    ).toThrow(/cannot bind 'engine.http-job-terminal.v1' after seal\(\)/);
+    ).toThrow(/cannot bind 'engine.job-terminal.v1' after seal\(\)/);
     expect(() => router.seal()).toThrow(/already sealed/);
   });
 
@@ -346,7 +346,7 @@ describe("createRedisMessageRouter — multi-topic subscriptions", () => {
 
     const router = createRedisMessageRouter({
       topics: [command, terminal],
-      subscriptions: [obsHttpJob],
+      subscriptions: [obsJob],
       createLog: store.createLog,
       keyPrefix: "test:",
       blockMs: 5,
@@ -354,7 +354,7 @@ describe("createRedisMessageRouter — multi-topic subscriptions", () => {
     });
 
     router.bind({
-      subscription: obsHttpJob,
+      subscription: obsJob,
       handler: async (message) => {
         started.push(message);
         await options.block;
@@ -377,8 +377,8 @@ describe("createRedisMessageRouter — multi-topic subscriptions", () => {
     // stream, so these are two independent group instances with their own
     // cursors, not one checkpoint spanning both.
     expect(store.provisionedGroups).toEqual([
-      `${COMMAND_STREAM}|observability.http-job.v1`,
-      `${STREAM}|observability.http-job.v1`,
+      `${COMMAND_STREAM}|observability.job.v1`,
+      `${STREAM}|observability.job.v1`,
     ]);
     // One publisher connection plus one per reader, because a blocking read
     // occupies its connection for the whole block window.
@@ -404,13 +404,13 @@ describe("createRedisMessageRouter — multi-topic subscriptions", () => {
     expect(
       store.acked.map((entry) => entry.split("|").slice(0, 2).join("|")).sort(),
     ).toEqual([
-      `${COMMAND_STREAM}|observability.http-job.v1`,
-      `${STREAM}|observability.http-job.v1`,
+      `${COMMAND_STREAM}|observability.job.v1`,
+      `${STREAM}|observability.job.v1`,
     ]);
-    expect(
-      store.pendingFor(COMMAND_STREAM, "observability.http-job.v1"),
-    ).toEqual([]);
-    expect(store.pendingFor(STREAM, "observability.http-job.v1")).toEqual([]);
+    expect(store.pendingFor(COMMAND_STREAM, "observability.job.v1")).toEqual(
+      [],
+    );
+    expect(store.pendingFor(STREAM, "observability.job.v1")).toEqual([]);
 
     await router.stop();
   });

@@ -6,7 +6,7 @@ import {
   Worker,
 } from "@lcase/worker";
 import type { WorkerConfig } from "./config/worker.config.js";
-import type { HttpJobTerminalType } from "./http-job.topology.js";
+import type { JobTerminalType } from "@lcase/message-topology/catalogs";
 
 // Component identity is composition's to decide, not the component's, so the
 // source worker stamps on its outbound Messages is supplied from here.
@@ -14,7 +14,7 @@ const WORKER_SOURCE = "lowercase://worker";
 
 export type BuildWorkerDeps = {
   artifacts: ArtifactReadWritePort;
-  terminal: MessagePublisher<HttpJobTerminalType>;
+  terminal: MessagePublisher<JobTerminalType>;
 };
 
 // Composition only: build the collaborators worker needs from the outside --

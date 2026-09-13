@@ -30,6 +30,7 @@
     "@lcase/events": "workspace:*",
     "@lcase/limiter": "workspace:*",
     "@lcase/message-router": "workspace:*",
+    "@lcase/message-topology": "workspace:*",
     "@lcase/observability": "workspace:*",
     "@lcase/replay": "workspace:*",
     "@lcase/worker": "workspace:*",

@@ -16,5 +16,5 @@ export type EngineDeps = {
   // submitted Message and hears the outcome back on its own subscription. A
   // publisher bound to one topic, not a capability it calls -- the
   // engine has no way to name, reach, or await whoever executes the job.
-  httpJobCommands: MessagePublisher<"job.httpjson.submitted">;
+  jobCommands: MessagePublisher<"job.httpjson.submitted">;
 };

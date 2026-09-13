@@ -18,6 +18,8 @@ import { DeliveryLane } from "../delivery-lane.js";
 import {
   assertDeclaredSubscriptions,
   assertDistinctTopics,
+} from "@lcase/message-topology";
+import {
   assertTopologySealable,
   canonicalSubscriptionFor,
   type MessageRouter,
