@@ -321,6 +321,6 @@ export type EffectHandlerDeps = {
   enqueue: (message: EngineMessage) => void;
   processAll: () => void;
   artifacts: ArtifactReaderPort;
-  httpJobCommands: MessagePublisher<"job.httpjson.submitted">;
+  jobCommands: MessagePublisher<"job.httpjson.submitted">;
   source: string;
 };

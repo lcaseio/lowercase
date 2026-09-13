@@ -7,12 +7,12 @@
  * because two executables build this same graph -- the HTTP server and the CLI.
  * See ADR-0008.
  *
- * The HTTP-job protocol declarations live here for now because this profile is
- * still their only honest owner. A second process host is what supplies the
- * evidence to promote them into a shared protocol catalog.
+ * The job protocol declarations used to live here, because this profile was
+ * their only honest owner. They are now `@lcase/message-topology/catalogs`, and
+ * this barrel deliberately does not re-export them: a second process host
+ * consumes that package directly rather than through the embedded profile.
  */
 export * from "./config/index.js";
 export * from "./assemble-embedded-system.js";
-export * from "./http-job.topology.js";
 export * from "./local-system.profile.js";
 export * from "./build-artifact-store.js";

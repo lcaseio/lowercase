@@ -17,7 +17,7 @@ function makeEngine() {
     jobParser: {} as never,
     runQuery: {} as never,
     artifacts: {} as never,
-    httpJobCommands: { publish: vi.fn() },
+    jobCommands: { publish: vi.fn() },
   });
   // Side effects off: advancing this step would otherwise fan out into effects
   // that need collaborators this test deliberately does not supply.
@@ -58,11 +58,11 @@ function terminal(status: "completed" | "failed") {
       );
 }
 
-describe("Engine.handleHttpJobTerminal", () => {
+describe("Engine.handleJobTerminal", () => {
   it("advances the run from a delivered completed Message", async () => {
     const engine = makeEngine();
 
-    await engine.handleHttpJobTerminal(terminal("completed"));
+    await engine.handleJobTerminal(terminal("completed"));
 
     const step = engine.getState().runs["test-runid"]!.steps["parallel"]!;
     expect(step.status).toBe("completed");
@@ -72,7 +72,7 @@ describe("Engine.handleHttpJobTerminal", () => {
   it("advances the run from a delivered failed Message", async () => {
     const engine = makeEngine();
 
-    await engine.handleHttpJobTerminal(terminal("failed"));
+    await engine.handleJobTerminal(terminal("failed"));
 
     expect(
       engine.getState().runs["test-runid"]!.steps["parallel"]!.status,
@@ -87,7 +87,7 @@ describe("Engine.handleHttpJobTerminal", () => {
     const enqueue = vi.spyOn(engine, "enqueue");
     const message = terminal("completed");
 
-    await engine.handleHttpJobTerminal(message);
+    await engine.handleJobTerminal(message);
 
     expect(enqueue).toHaveBeenCalledTimes(1);
     expect(enqueue.mock.calls[0]![0]).toEqual({
@@ -104,7 +104,7 @@ describe("Engine.handleHttpJobTerminal", () => {
   it("has already advanced state when it resolves", async () => {
     const engine = makeEngine();
 
-    const pending = engine.handleHttpJobTerminal(terminal("completed"));
+    const pending = engine.handleJobTerminal(terminal("completed"));
     await pending;
 
     expect(

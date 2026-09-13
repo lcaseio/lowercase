@@ -26,14 +26,14 @@ import type { ObservabilityTapPort } from "@lcase/ports";
 import { managedResource, type ManagedRuntime } from "@lcase/assembly";
 import { assembleEmbeddedSystem } from "./assemble-embedded-system.js";
 import {
-  engineHttpJobTerminalSubscription,
-  httpJobCommandTopic,
-  httpJobTopics,
-  httpJobSubscriptions,
-  httpJobTerminalTopic,
-  observabilityHttpJobSubscription,
-  workerHttpJobCommandSubscription,
-} from "./http-job.topology.js";
+  engineJobTerminalSubscription,
+  jobCommandTopic,
+  jobTopics,
+  jobSubscriptions,
+  jobTerminalTopic,
+  observabilityJobSubscription,
+  workerJobCommandSubscription,
+} from "@lcase/message-topology/catalogs";
 import { buildMessageRouter } from "./build-message-router.js";
 import { buildWorker } from "./build-worker.js";
 import { buildArtifactStore } from "./build-artifact-store.js";
@@ -95,17 +95,17 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   // below: the declarations, the bindings, and the components are identical
   // either way.
   const { router, hooks: routerHooks } = buildMessageRouter(config.messaging, {
-    topics: httpJobTopics,
-    subscriptions: httpJobSubscriptions,
+    topics: jobTopics,
+    subscriptions: jobSubscriptions,
   });
-  const httpJobCommands = router.publisher(httpJobCommandTopic);
-  const httpJobTerminals = router.publisher(httpJobTerminalTopic);
+  const jobCommands = router.publisher(jobCommandTopic);
+  const jobTerminals = router.publisher(jobTerminalTopic);
 
   // Retained as the worker, not as a capability it happens to satisfy: nothing
   // holds a reference to it in order to call it. It is here so its handler can
   // be bound, and so it stays alive.
   const worker = buildWorker(
-    { artifacts, terminal: httpJobTerminals },
+    { artifacts, terminal: jobTerminals },
     config.worker,
   );
 
@@ -115,7 +115,7 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     jobParser,
     runQuery,
     artifacts,
-    httpJobCommands,
+    jobCommands,
   );
 
   const { tap, sinks } = buildObservability(
@@ -131,7 +131,7 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
   );
 
   router.bind({
-    subscription: workerHttpJobCommandSubscription,
+    subscription: workerJobCommandSubscription,
     handler: worker.handleHttpJsonSubmitted,
     // Worker's own capacity bound still applies underneath this. The two are
     // not redundant: this bounds what one mailbox presents, and worker's bounds
@@ -139,11 +139,11 @@ export function createLocalSystem(config: LocalSystemConfig): LocalSystem {
     maxInFlight: config.worker.maxConcurrentJobs,
   });
   router.bind({
-    subscription: engineHttpJobTerminalSubscription,
-    handler: engine.handleHttpJobTerminal,
+    subscription: engineJobTerminalSubscription,
+    handler: engine.handleJobTerminal,
   });
   router.bind({
-    subscription: observabilityHttpJobSubscription,
+    subscription: observabilityJobSubscription,
     // One binding across both topics, so the command and the terminal it
     // produced reach the tap through one lane in the order they arrived rather
     // than racing in two. A closure only to keep `ingest` bound to its tap --

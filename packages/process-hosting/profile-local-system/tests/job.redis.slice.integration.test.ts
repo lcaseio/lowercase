@@ -5,10 +5,7 @@ import { createClient, type RedisClientType } from "redis";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildHttpJobGraph } from "./helpers/http-job-graph.js";
 import { createRedisMessageRouter } from "@lcase/message-router";
-import {
-  httpJobTopics,
-  httpJobSubscriptions,
-} from "../src/http-job.topology.js";
+import { jobTopics, jobSubscriptions } from "@lcase/message-topology/catalogs";
 
 // Real integration test against a live Redis instance -- gated on
 // REDIS_TEST_URL, since the claim being made here is that consumer-group
@@ -20,7 +17,7 @@ import {
 //
 // The point of the test is what it does *not* change: it hands
 // buildHttpJobGraph a different carrier and asserts the same things
-// http-job.slice.test.ts asserts in-process. Engine, Worker and Observability
+// job.slice.test.ts asserts in-process. Engine, Worker and Observability
 // are constructed identically and know nothing about either.
 const url = process.env.REDIS_TEST_URL;
 
@@ -57,8 +54,8 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
   function redisRouter() {
     const keyPrefix = `lcase-test:${Date.now()}-${Math.random().toString(36).slice(2)}:`;
     const router = createRedisMessageRouter({
-      topics: httpJobTopics,
-      subscriptions: httpJobSubscriptions,
+      topics: jobTopics,
+      subscriptions: jobSubscriptions,
       createLog: async () => {
         const client: RedisClientType = createClient({ url });
         await client.connect();
@@ -73,14 +70,14 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
 
   it("carries a completion through Redis Streams: worker executes once, engine advances from the terminal", async () => {
     const { router } = redisRouter();
-    // buildHttpJobGraph binds all four subscriptions and seals; start() is
+    // buildHttpJobGraph binds all three subscriptions and seals; start() is
     // the only step the log-backed carrier adds.
     const graph = buildHttpJobGraph({ router });
     await router.start();
     started.push(router);
 
     const command = submitted();
-    await graph.httpJobCommands.publish(command);
+    await graph.jobCommands.publish(command);
 
     await vi.waitFor(() => expect(graph.enqueued).toHaveLength(1), {
       timeout: 5_000,
@@ -128,7 +125,7 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
     await router.start();
     started.push(router);
 
-    await graph.httpJobCommands.publish(submitted());
+    await graph.jobCommands.publish(submitted());
 
     await vi.waitFor(() => expect(graph.enqueued).toHaveLength(1), {
       timeout: 5_000,
@@ -147,8 +144,8 @@ describe.skipIf(!url)("HTTP JSON job vertical slice (real Redis)", () => {
     await vi.waitFor(
       async () => {
         for (const [stream, group] of [
-          [`${keyPrefix}http-job-command.v1`, "worker.http-job-command.v1"],
-          [`${keyPrefix}http-job-terminal.v1`, "engine.http-job-terminal.v1"],
+          [`${keyPrefix}job-command.v1`, "worker.job-command.v1"],
+          [`${keyPrefix}job-terminal.v1`, "engine.job-terminal.v1"],
         ]) {
           const pending = await client.xPending(stream, group);
           expect(pending.pending).toBe(0);

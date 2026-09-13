@@ -6,6 +6,14 @@
 - **Scope:** These trees illustrate architectural shapes. They do not commit
   every scenario to the current Arc, prescribe final package names, or introduce
   a placement compiler.
+- **Role names:** the trees below call the transitional non-Worker role
+  `companion-non-worker-host`. The Arc later settled that a role is named for
+  what it hosts rather than for being the remainder, making that role
+  `api-engine-observer-host`. Read it that way.
+- **Numbering:** kept as written, and now off by one past C21. The Arc later
+  split this note's C21 into C21 (static topology data) and C22 (router,
+  carrier, and profile adoption), shifting everything after it. The Arc is the
+  authority on numbering.
 
 See
 [C20–C21 seams: delivery lanes, deployment topology, and host bindings](./c20-deployment-topology-and-host-bindings.md)

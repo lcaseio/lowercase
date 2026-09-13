@@ -3,18 +3,15 @@ import type { AnyEvent } from "@lcase/types";
 import { describe, expect, it } from "vitest";
 import { buildHttpJobGraph } from "./helpers/http-job-graph.js";
 import { createInProcessMessageRouter } from "@lcase/message-router";
-import {
-  httpJobTopics,
-  httpJobSubscriptions,
-} from "../src/http-job.topology.js";
+import { jobTopics, jobSubscriptions } from "@lcase/message-topology/catalogs";
 
 // Constructed here rather than inside the helper so this test keeps the
 // in-process router's concrete type -- whenIdle() is a local diagnostic that
 // no log-backed carrier can answer, so it is not on the shared interface.
 function inProcessRouter() {
   return createInProcessMessageRouter({
-    topics: httpJobTopics,
-    subscriptions: httpJobSubscriptions,
+    topics: jobTopics,
+    subscriptions: jobSubscriptions,
   });
 }
 
@@ -45,7 +42,7 @@ describe("HTTP JSON job vertical slice", () => {
     const graph = buildHttpJobGraph({ router });
     const command = submitted();
 
-    await graph.httpJobCommands.publish(command);
+    await graph.jobCommands.publish(command);
     await router.whenIdle();
 
     expect(graph.fetchSpy).toHaveBeenCalledTimes(1);
@@ -95,7 +92,7 @@ describe("HTTP JSON job vertical slice", () => {
       respond: () => new Response("nope", { status: 500 }),
     });
 
-    await graph.httpJobCommands.publish(submitted());
+    await graph.jobCommands.publish(submitted());
     await router.whenIdle();
 
     const terminals = graph.observed.filter(

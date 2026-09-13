@@ -26,7 +26,7 @@ export const publishJobHttpJsonSubmittedFx: EffectHandler<
   });
 
   try {
-    await deps.httpJobCommands.publish(message);
+    await deps.jobCommands.publish(message);
   } catch (err) {
     // Effects are invoked fire-and-forget, so an unhandled admission rejection
     // would surface as an unhandled Promise rejection rather than anything

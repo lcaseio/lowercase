@@ -1,4 +1,4 @@
-# Prove Swappable Infrastructure Initiative — Arc: Remote Worker (Changes C19–C24)
+# Prove Swappable Infrastructure Initiative — Arc: Remote Worker (Changes C19–C25)
 
 **Previous:** [SQL Adapter](./sql-adapter.md) (Changes C15–C18)
 
@@ -19,11 +19,12 @@ from process-local bindings, gives Observability one ordered Redis route, gives
 Worker truthful lifecycle and ingress control, and finally runs the two roles
 apart.
 
-The six Changes below are the current best review seams, not a quota. Before
+The seven Changes below are the current best review seams, not a quota. Before
 each Change starts, its expected moved and changed lines should be inventoried.
 If one is too large to review comfortably, split it at the named responsibility
-boundary and renumber the unstarted work. Do not preserve a six-Change plan by
-combining unrelated behavior or by hiding a large mechanical move inside a
+boundary and renumber the unstarted work. C21 and C22 are one such split,
+taken at the seam the original Change named. Do not preserve the current count
+by combining unrelated behavior or by hiding a large mechanical move inside a
 semantic Change.
 
 ## Target shape
@@ -47,7 +48,7 @@ The [deployment and process-profile scenario guide](../research/deployment-profi
 shows the embedded, transitional remote-Worker, later gateway, and possible CLI
 shapes without committing all of them to this Arc.
 
-C21 builds only the messaging-topology slice of that broader deployment
+C21 and C22 build only the messaging-topology slice of that broader deployment
 definition: catalog selections, delivery routes, Message host assignments, and
 one shared carrier realization. SQL, object-storage, secrets, process-launch,
 and other infrastructure configuration remain with application and deployment
@@ -71,9 +72,10 @@ The target package ownership is equally narrow:
   `assembleEmbeddedSystem()`. It exists because HTTP server and CLI both use
   that graph.
 - `apps/worker-host` owns its initial Worker-host profile because only that app
-  uses it. The companion non-Worker profile for the first remote proof likewise
-  remains local to its executable; initially it retains application services,
-  Engine, Observability, Limiter, Replay, and other behavior not yet split out.
+  uses it. The `api-engine-observer-host` profile for the first remote proof
+  likewise remains local to its executable; initially it retains application
+  services, Engine, Observability, Limiter, Replay, and other behavior not yet
+  split out.
   Preserve `@lcase/profile-local-system` as the complete embedded graph; do not
   add a local/remote Worker placement switch to it. Promote either app-local
   profile only when a second real executable needs the same composition policy.
@@ -108,7 +110,7 @@ stream per lifecycle event.
 Observability is one logical subscription over the explicit topics it
 records. Locally, its selected Messages should enter one serial ingestion lane
 so their observed order can settle consistently instead of being divided among
-per-event mailboxes. C22 gives the migrated HTTP-job Messages one ordered
+per-event mailboxes. C23 gives the migrated HTTP-job Messages one ordered
 physical Redis observation route rather than accepting a nondeterministic merge
 from their work streams. Components still publish once; router admission fans
 the same occurrence out to its work and observation routes. The first version
@@ -153,7 +155,7 @@ while still preventing generic router code from depending on the whole profile.
 
 Do not split `@lcase/adapters` pre-emptively in this Change. A Worker host is
 expected to need its Redis Streams, S3, and Postgres implementations, so the
-present grouping may not inflate that artifact materially. C24 must inspect the
+present grouping may not inflate that artifact materially. C25 must inspect the
 actual deployable dependency closure; only observed unrelated dependencies are
 evidence for a further package split.
 
@@ -209,7 +211,7 @@ claim this Change existed to make, and it is checkable rather than asserted.
 
 The folder is organizational, the same way `packages/components/` is: it gives
 the packages involved in composing and running one process a home, and it is
-where a Worker-host profile lands in C24 rather than sitting beside unrelated
+where a Worker-host profile lands in C25 rather than sitting beside unrelated
 domain packages.
 
 | Package                       | Lines | Production dependencies |
@@ -246,7 +248,7 @@ domain packages.
   `apps/http-server` on the default branches, and the Redis vertical slice still
   passes, which covers the other carrier.
 
-## Change C20 - Support multi-topic logical subscriptions through one delivery lane - in review
+## Change C20 - Support multi-topic logical subscriptions through one delivery lane - merged (PR #379)
 
 ### Discussion
 
@@ -288,7 +290,7 @@ changing subscription cardinality. Also exclude a multi-stream
 `MessageLogPort`, one physical observation stream, multi-route publishing,
 atomic fanout or reconciliation, ordering against legacy `EventBusPort` ingress,
 and retry or recovery behavior. C21 first introduces neutral route mappings;
-C22 then owns the ordered Redis observation route and transaction-style fanout.
+C23 then owns the ordered Redis observation route and transaction-style fanout.
 Those guarantees do not belong in this Change.
 
 **Inventory, estimated from the
@@ -331,7 +333,7 @@ for this same relationship. Logical is the default here and a route is what
 wires it up, so neither name carries the qualifier. Prose may still say
 "logical subscription" where the distinction is the point.
 
-**The Redis delivery lane may be scaffolding, and whether C22 retires it needs
+**The Redis delivery lane may be scaffolding, and whether C23 retires it needs
 its own research rather than being assumed either way.** Its job there is to
 hold one concurrency bound across the several readers a multi-topic subscription
 needs, because Redis has no primitive for that: a consumer group distributes
@@ -340,7 +342,7 @@ is what raises the question. The microtask deferral that prevents re-entrancy
 in-process is inert off the wire, and the Redis binding passes a no-op for the
 lane's idle bookkeeping.
 
-The case for retiring it is that once C22 gives Observability a single ordered
+The case for retiring it is that once C23 gives Observability a single ordered
 observation route, every subscription reads exactly one stream and the
 cross-reader coordination has no users left.
 
@@ -353,7 +355,7 @@ points should be weighed before anything is removed:
   cannot hold alongside a `readCount` that is free to exceed `maxInFlight`.
   Keeping both would mean reintroducing a semaphore, which is a lane with fewer
   features.
-- **One reader per subscription is a property of C22's presets, not of the
+- **One reader per subscription is a property of C23's presets, not of the
   representation.** A subscription selecting topics that map to different routes
   brings the readers back, and that is precisely what Observability is today.
 - **The retire hook and its ordering would have to move.** Acknowledging only
@@ -366,7 +368,7 @@ both the `readCount` split and multi-topic subscriptions.
 
 The lane serializes Redis deliveries; it does not order them. Separate streams
 have separate group instances and cursors, so the in-process slice asserts
-observation order while the Redis slice deliberately does not. C22 is what makes
+observation order while the Redis slice deliberately does not. C23 is what makes
 that order real.
 
 `readCount` is named separately from `maxInFlight` even though it defaults to
@@ -375,7 +377,7 @@ second how many handlers run at once. Nothing reclaims a pending entry, so
 claiming more than the lane can work through only widens the window a crash
 loses.
 
-## Change C21 - Separate deployment topology from process host bindings - not started
+## Change C21 - Declare deployment topology as standalone static data - in review
 
 ### Discussion
 
@@ -385,6 +387,19 @@ describe a distributed deployment: either the Worker process would need Engine
 and Observability handlers it does not host, or a locally valid partial topology
 could silently disagree with its peers about logical identity and physical
 routing.
+
+ADR-0007 stays Proposed through C21 and C22 rather than being accepted first.
+It specifies the three-layer topology these Changes build, but it was written
+before any of it existed, and the intent is to let the implementation find the
+real seams and then revise the ADR against them. Treat this Arc as
+authoritative wherever the two disagree, and revisit 0007 once C22 lands.
+
+Fixing that is two Changes, split at the seam between describing a deployment
+and consuming one. C21 builds the static shapes, their validation, and the
+deployment presets. C22 makes the routers, carriers, and the local-system
+profile read them. The split is a review seam, not two independent goals: C21
+lands with nothing consuming a manifest, so the embedded profile still composes
+from `MessageRouterTopology` until C22 replaces that path.
 
 Use the dependency-clean `@lcase/message-topology` package to separate four
 static shapes:
@@ -399,7 +414,7 @@ static shapes:
    subscriptions it must serve.
 
 The edge-to-route mapping is important even though this Change retains one route
-per topic in the working presets. C22 uses it to send one topic to both its
+per topic in the working presets. C23 uses it to send one topic to both its
 work route and a shared observation route without changing the manifest
 shape. A component still receives a topic-bound publisher and does not see
 subscriptions, consumer identities, or process roles; the router derives its
@@ -413,25 +428,71 @@ partitions, retention, mixed-carrier routing, or other non-derivable policy.
 
 One deployment manifest contains the complete set of cooperating roles. A host
 plan is not coupled to a particular counterpart plan and does not construct a
-component graph. The first remote-Worker manifest may assign Worker
-responsibilities to a Worker role and the remaining supported Message
-responsibilities to a companion non-Worker role; a later gateway, Engine,
-Worker, and Observer deployment is a different manifest over the shared
-catalog, not a collection of `main-host` variants. Real deployment presets must
-name only roles and conversations they actually support.
+component graph. Real deployment presets must name only roles and conversations
+they actually support.
 
-Validate at the boundary where each claim can be known:
+Name a role for what it hosts, enumerated explicitly. A role is never named for
+being the remainder, so there is no `main-host` and no
+`companion-non-worker-host`. The transitional deployment's non-Worker role
+hosts the HTTP API, Engine, and Observability, so that is its name. A role that
+later loses Engine is then a different role in a different deployment rather
+than the same `main-host` quietly meaning less than it did:
+
+```
+deployments/
+├── local-system
+│   └── local-system            # hosts the complete embedded graph
+├── remote-worker               # transitional deployment
+│   ├── api-engine-observer-host
+│   └── worker-host
+└── distributed-system          # later deployment, not built here
+    ├── gateway-host            # HTTP routes and application services only
+    ├── engine-host
+    ├── worker-host
+    └── observer-host
+```
+
+C21 builds the first two deployments. The third is shown to fix the naming
+convention against a case where the remainder role no longer exists, not to
+commit the shapes to this Arc.
+
+Promoting the catalog is the point at which its identities are renamed, so do
+it once here. The conversation becomes `job` rather than `http-job`: it is the
+channel for Worker jobs, not a channel for one capability, and an `mcp` job
+belongs on the same topics rather than on a parallel set. Topic and
+subscription identities lose the `http-` prefix with it. The type unions stay
+the enforcement, so adding an `mcp` submitted type to `JobCommandType` without
+listing it on the topic still fails to compile. Subscription IDs are Redis
+consumer-group names, so a development instance keeps orphaned groups under the
+old IDs, exactly as C20's rename did. Event type strings do not move: the
+existing `job.httpjson.*` taxonomy names the capability and is matched against
+real schemas, and renaming a conversation is not a reason to disturb it.
+
+Name the manifest and host-plan types with a `Messaging` prefix. Both cover
+only the messaging slice, and the unqualified names belong to a real deployment
+layer if one ever arrives. The package name does not qualify them where they
+are read, which is inside a profile.
+
+`@lcase/message-topology` sits under `packages/process-hosting/` beside the
+router it feeds. Declaring topology and validating a deployment are part of the
+same general mechanism as hosting one, even though this package hosts nothing
+itself. `defineTopic`, `defineTopicFor`, and `defineSubscription` move into it
+from `@lcase/message-router`, along with the declaration-level assertions over
+unique identities and non-empty declared selections. No production code in the
+router calls those helpers today, only its tests and the profile, so the router
+keeps its empty production closure and gains a devDependency. It stops
+re-exporting them from its barrel. The process-local checks stay where they
+are: canonical binding resolution and sealing remain router concerns, and C22
+is what replaces sealing with exact equality against a host plan.
+
+Validate at the boundary where each claim can be known. C21 owns the two claims
+a deployment definition can settle on its own:
 
 - protocol declarations have unique identities, and subscriptions select
-  non-empty, declared topic sets;
+  non-empty, declared topic sets; and
 - deployment values contain only enabled identities, bind every enabled logical
   delivery edge exactly once, invent no edge, assign every enabled subscription
-  to exactly one role, and contain unique role and route identities;
-- a selected process may resolve only publishers allowed by its host plan and
-  bind only canonical subscriptions assigned to it; and
-- process sealing requires exact equality between planned and locally bound
-  subscription IDs. Missing and extra bindings both fail, while subscriptions
-  assigned to other roles are irrelevant to that process.
+  to exactly one role, and contain unique role and route identities.
 
 The complete catalog-to-manifest assertion belongs at the deployment-definition
 boundary or in its tests and preflight. A running process consumes the shared
@@ -439,78 +500,209 @@ ID-based manifest and imports only the conversation declarations it publishes
 or handles. The manifest module must not runtime-import the aggregate catalog
 and thereby pull unrelated protocol modules into every host.
 
-Preserve the embedded deployment as one complete host plan. Under the current
-one-carrier-per-profile model, reject an in-process realization unless every
-enabled Message publisher permission and subscription assignment belongs to the
-selected host, and every enabled topic has a local publisher permission.
-That prevents a split manifest from sealing an object-only graph that silently
-drops remote destinations. The embedded preset also remains a singleton process
-assumption; topology data cannot prove how many OS processes an operator
-launched.
-
-The Redis carrier must likewise reject a topic whose delivery edges
-resolve to several routes until C22 adds multi-route admission. It must reject
-route layouts a grouped log cannot realize without filtering. These are
-carrier-capability failures, not restrictions in the neutral topology
-representation.
-
 This Change does not add external manifest loading, a placement compiler,
 dynamic role registries, mixed carriers, remote liveness, replica enforcement,
-Worker lifecycle, application entry points, or delivery hardening. Although the
-manifest makes every Redis route/group pair derivable, provisioning and the
-publisher-before-group startup race remain remote-host startup work and must be
-settled in C24 before that host accepts external intake.
+Worker lifecycle, application entry points, or delivery hardening. It also
+changes no router, carrier, or profile behavior; that is C22. Do not shrink the
+validation matrix or pull router adoption forward to make this Change feel
+complete on its own.
 
 **Inventory, estimated from the
 [C20–C21 seams research](../research/c20-deployment-topology-and-host-bindings.md)
-before implementation.** Expect 615–995 semantic changed or new lines plus
-100–140 rename-aware moved lines. The upper range reflects the negative
-validation matrix and carrier-adoption tests, not a target to fill.
+before implementation.** Expect 390–615 semantic changed or new lines plus
+100–140 rename-aware moved lines, before the `job` rename, which moves further
+files without changing their contents. The upper range reflects the negative
+validation matrix, not a target to fill.
 
-| Responsibility                                                              | Expected changed/new lines | Expected moved lines |
-| --------------------------------------------------------------------------- | -------------------------: | -------------------: |
-| Static data shapes, deployment assertion, host selection, and focused tests |                    300–455 |                    — |
-| Shared Worker-job catalog/package scaffolding                               |                      20–40 |              100–140 |
-| Embedded and remote-Worker manifest values and tests                        |                     70–120 |                    — |
-| Exact router binding/publisher checks and carrier-plan adaptation           |                    130–210 |                    — |
-| In-process compatibility and Redis route-capability checks and tests        |                      50–90 |                    — |
-| Local-system profile and slice adaptation                                   |                      45–80 |                    — |
-| **Total**                                                                   |                **615–995** |          **100–140** |
-
-If the pre-implementation inventory lands near the upper bound and is not
-comfortable as one review, split at this named seam and renumber the remaining
-work:
-
-1. static catalog promotion, manifest and host-plan types, edge-route
-   representation, deployment presets, and deployment-level validation; then
-2. router, carrier, and profile adoption, including exact local sealing,
-   publisher authority, and the in-process compatibility check.
-
-Do not shrink the validation matrix or hide active-router adoption inside a
-nominally static-data Change merely to retain the current numbering.
+| Responsibility                                                               | Expected changed/new lines | Expected moved lines |
+| ---------------------------------------------------------------------------- | -------------------------: | -------------------: |
+| Static data shapes, deployment assertion, host derivation, and focused tests |                    300–455 |                    — |
+| Shared job catalog and package scaffolding                                   |                      20–40 |              100–140 |
+| Embedded and remote-Worker manifest values and tests                         |                     70–120 |                    — |
+| **Total**                                                                    |                **390–615** |          **100–140** |
 
 **Completion evidence.**
 
 - `@lcase/message-topology` imports no components, profiles, adapters, router
   implementations, or executable graphs.
-- Embedded and remote-Worker manifests use one shared Worker-job catalog and
-  derive their host plans rather than copying identities between processes.
+- Embedded and remote-Worker manifests use one shared job catalog and derive
+  their host plans rather than copying identities between processes.
 - A synthetic four- or five-role fixture proves that the representation is not
   limited to one companion/Worker pair, including a role with no Message
   subscriptions.
 - Deployment validation rejects missing, duplicate, invented, and unassigned
-  edges or subscriptions; process validation rejects missing, extra, or
-  counterfeit local bindings and unauthorized publisher resolution.
+  edges or subscriptions.
+- The `http-job` conversation is renamed in one sweep, and the existing
+  in-process and Redis slices still pass unchanged in behavior.
+
+### What actually landed
+
+`@lcase/message-topology` exists under `packages/process-hosting/` with three
+entry points rather than one. That split was not planned and is the one
+structural surprise. The declaration assertions are called by both carriers at
+runtime, so moving them makes the router depend on this package for real. With
+a single barrel that dependency would have pulled the job topics into the
+generic router, which is the coupling the package exists to prevent. So the
+root is the generic layer, `/catalogs` holds the conversations, and
+`/deployments` holds the presets. `@lcase/message-router` therefore gained one
+production dependency instead of the planned devDependency; its closure is
+still effectively empty, because the package it now depends on has none of its
+own.
+
+Review settled the vocabulary, which took more argument than the shapes did. A
+role holds `publishesTo` and `consumesFrom`, because in the Topic and
+Subscription model you publish to a topic and consume from a subscription. The
+verbs are symmetric while what they hold is not, and that is the point: a
+publisher names a topic and never a consumer list, which is what lets two ends
+of one conversation live in different processes. The host plan keeps both verbs
+rather than renaming them for its richer entries, so a role and its plan read
+side by side without translation.
+
+A manifest holds `topicIds` and `subscriptionIds`. The bare plurals belong to
+`MessageCatalog`, where they hold declarations rather than references, and
+`assertManifest` is the function with both in scope at once. That is where
+identical names holding `Topic` objects on one side and strings on the other
+would have bitten.
+
+`PlannedSubscription.topicRoutes` names a new `TopicRoute`, the recurring pair
+of a topic and the route carrying it. The Redis router's `BoundReader` already
+mirrors it at runtime by pairing a topic ID with a stream key, which is what
+suggested the pair was the real unit. Its counterpart stays bare `routeIds`,
+since a publisher entry is already scoped to one topic.
+
+`PlannedPublisher` is the one name left unsettled. There is no static publisher
+anywhere for it to correspond to, and the record is closer to a publish
+permission than to a publisher.
+
+Catalogs and deployments are siblings rather than the presets nesting under the
+job conversation. A deployment is of the whole system: `local-system` enables
+only job identities today purely because that is the only migrated
+conversation, and it gains run and step identities without moving file.
+Catalogs are organized by protocol family, mirroring
+`packages/types/src/events/`, so adding an event type touches one folder on
+each side. Grouping commands, lifecycle, and telemetry onto shared physical
+streams stays a routing question, answered by route IDs in a manifest rather
+than by how these modules are arranged.
+
+`canonicalSubscriptionFor` and `assertTopologySealable` stayed in the router as
+planned, so what moved is exactly the declaration-level half.
+
+The embedded deployment ships as two manifests, `local-system-in-process` and
+`local-system-redis`, built from one shared role and route base. Carrier family
+belongs to the deployment while endpoints stay process configuration, so the
+existing `messaging.kind` config axis becomes a manifest selector in C22 rather
+than a separate switch. A test asserts the two differ in exactly one field.
+
+Route IDs equal topic IDs in every shipped preset, which is what will let C22
+adopt routes without changing a Redis stream key or stranding a consumer group.
+A test pins that equality, and names C23 as the Change that deliberately breaks
+it.
+
+The rename reached further than the topology. Engine's `httpJobCommands` and
+`handleHttpJobTerminal` and the `EnginePort` declaration were renamed too,
+because Worker already called its own union `JobTerminalType` and Engine was
+the inconsistent side. The httpjson-specific test fixture kept its name: the
+conversation generalizes and that fixture does not. Event type strings were not
+touched.
+
+Two things were deliberately left open. The rename made it visible that
+`JobTerminalType` is now declared identically in Worker and in the catalog with
+nothing proving the two agree; Worker cannot import the catalog, so this is
+recorded in `docs/todo.md` rather than patched. And nothing yet consumes a
+manifest, which is the point: the profile still composes from
+`MessageRouterTopology`, and the unchanged slice tests are the evidence that
+C21 changed no delivery behavior.
+
+## Change C22 - Bind each process to its host plan rather than the full topology - not started
+
+### Discussion
+
+C21 leaves a deployment description that nothing reads. This Change makes the
+routers, both carriers, and the local-system profile consume it, and is what
+actually removes a process's need to know the whole graph.
+
+The two remaining validation claims are the ones only a running process can
+settle:
+
+- a selected process may resolve only publishers allowed by its host plan and
+  bind only canonical subscriptions assigned to it; and
+- process sealing requires exact equality between planned and locally bound
+  subscription IDs. Missing and extra bindings both fail, while subscriptions
+  assigned to other roles are irrelevant to that process.
+
+Preserve the embedded deployment as one complete host plan. Reject an
+in-process realization unless every enabled Message publisher permission and
+subscription assignment belongs to the selected host, and every enabled topic
+has a local publisher permission. That prevents a split manifest from sealing an
+object-only graph that silently drops remote destinations.
+
+That rejection is a deliberate restriction of the current deployment model, not
+a limit of the representation, and it should say so where it fails. A
+deployment picks one carrier for everything, and the manifest encodes that by
+selecting one shared carrier realization. Nothing in the shapes forbids a
+finer choice: routes are already keyed per delivery edge, so a per-conversation
+carrier would live there. Supporting that is not planned. The embedded preset
+also remains a singleton process assumption; topology data cannot prove how
+many OS processes an operator launched.
+
+The Redis carrier must likewise reject a topic whose delivery edges
+resolve to several routes until C23 adds multi-route admission. It must reject
+route layouts a grouped log cannot realize without filtering. These are
+carrier-capability failures, not restrictions in the neutral topology
+representation.
+
+**Those two checks are also where the `message-router` and `message-topology`
+split gets tested, so decide during this Change whether it still pays.** C21
+left the two packages with a real production dependency in one direction, and
+the protection originally claimed for the boundary is actually supplied by
+`message-topology`'s separate entry points: a merged package with the same
+`/catalogs` subpath would keep product topics out of a generic router just as
+well, and would have the same empty production closure. What the split does buy
+is a compiler-enforced direction, since a static declaration cannot import a
+carrier. That is worth something while this Arc's whole subject is boundaries
+that hold, and it costs five config files.
+
+Carrier-capability checks are the strain. They read manifest and host-plan
+shapes and judge them against what a grouped log can do, so they sit on the
+seam. If they end up wanting to live in both packages, or needing a round trip
+between them, the boundary has stopped paying and merging is the answer. Note
+also that `MessagingCarrierKind` already leaks the wrong way: the static layer
+enumerates the carrier families, so a third carrier means editing topology. It
+is not an import, so the direction holds, but it is the weakest point in the
+current split and worth re-reading before deciding.
+
+This Change does not add Worker lifecycle, application entry points, remote
+liveness, or delivery hardening. Although the manifest makes every Redis
+route/group pair derivable, provisioning and the publisher-before-group startup
+race remain remote-host startup work and must be settled in C25 before that
+host accepts external intake.
+
+**Inventory, estimated from the
+[C20–C21 seams research](../research/c20-deployment-topology-and-host-bindings.md)
+before implementation.** Expect 225–380 semantic changed or new lines.
+
+| Responsibility                                                       | Expected changed/new lines | Expected moved lines |
+| -------------------------------------------------------------------- | -------------------------: | -------------------: |
+| Exact router binding/publisher checks and carrier-plan adaptation    |                    130–210 |                    — |
+| In-process compatibility and Redis route-capability checks and tests |                      50–90 |                    — |
+| Local-system profile and slice adaptation                            |                      45–80 |                    — |
+| **Total**                                                            |                **225–380** |                    — |
+
+**Completion evidence.**
+
+- Process validation rejects missing, extra, or counterfeit local bindings and
+  unauthorized publisher resolution.
 - The embedded host plan still binds and routes the complete graph over both
   carriers, while a split host plan seals without importing or binding remote
   component handlers.
 - A split deployment paired with the in-process carrier fails at startup rather
-  than silently producing disconnected mailboxes.
+  than silently producing disconnected mailboxes, with an error naming the
+  one-carrier-per-deployment model as the reason.
 - Every process derives compatible route identity from the same deployment
   definition, while no component imports topology, carrier, Redis, mailbox,
   consumer-group, or deployment-manifest mechanics.
 
-## Change C22 - Add one ordered Redis route for Observability - not started
+## Change C23 - Add one ordered Redis route for Observability - not started
 
 ### Discussion
 
@@ -521,7 +713,8 @@ preserving the causal order that already existed when the Messages were
 published. Treat that as an intermediate carrier shape, not the final remote
 Observability contract.
 
-After C21 makes delivery edges and physical routes explicit, map both migrated
+After C21 makes delivery edges and physical routes explicit and C22 makes the
+carriers honor them, map both migrated
 HTTP-job observation edges to one Redis observation route while preserving the
 independent routes that drive Worker and Engine:
 
@@ -579,7 +772,7 @@ work.
   not claim reconciliation, retry, or exactly-once behavior.
 - The in-process carrier and complete embedded profile retain C20's behavior.
 
-## Change C23 - Give Worker truthful managed lifecycle and controlled ingress - not started
+## Change C24 - Give Worker truthful managed lifecycle and controlled ingress - not started
 
 ### Discussion
 
@@ -609,14 +802,14 @@ methods to the class:
 
 The current managed runtime provides ordered start and reverse-order stop, but
 the current router groups topic and several subscription loops into one
-resource. C21's host-binding split supplies the right point to decide whether a
+resource. C22's host-binding split supplies the right point to decide whether a
 Worker subscription becomes an independently controlled managed ingress or
 whether shared lifecycle needs an explicit quiesce/drain phase. Do not claim a
 graceful drain while an embedded terminal consumer can stop before a draining
 Worker publishes its result.
 
 Redis entries not yet presented may remain in Redis for a later process; an
-in-process carrier has no durable equivalent. C23 must state and test the
+in-process carrier has no durable equivalent. C24 must state and test the
 minimum common stop guarantee and each carrier's stronger behavior rather than
 making the local carrier imitate Redis recovery. A delivery refused because
 Worker is no longer accepting must not be silently acknowledged as successful.
@@ -628,7 +821,7 @@ Worker instances exist is deployment health, not a fake remote
 
 Keep this Change independent of the new app and deployment proof. It should be
 exercised through the existing embedded profile over both carriers first, then
-the Worker-host profile in C24 can consume an already truthful lifecycle.
+the Worker-host profile in C25 can consume an already truthful lifecycle.
 
 **Completion evidence.**
 
@@ -645,7 +838,7 @@ the Worker-host profile in C24 can consume an already truthful lifecycle.
 - Worker remains free of carrier, topology, deployment, and process-supervisor
   dependencies.
 
-## Change C24 - Run and prove a separately deployed Worker host - not started
+## Change C25 - Run and prove a separately deployed Worker host - not started
 
 ### Discussion
 
@@ -663,7 +856,7 @@ Initially it retains application services, Engine, Observability, Limiter,
 Replay, and the other behavior not yet given an independent process boundary.
 For the first proof, keep that profile local to its executable. Its explicit
 entrypoint may live in the existing HTTP-server app package; a separate thin
-companion app package is required only if C24 deliberately includes that
+companion app package is required only if C25 deliberately includes that
 deployable-closure proof. Preserve `@lcase/profile-local-system` as the complete
 embedded graph; do not add a local/remote Worker placement switch to it,
 construct a hidden Worker, or add a local fallback. Promote the companion
@@ -674,12 +867,12 @@ open. The existing HTTP server and CLI continue to be supported through the
 unchanged shared `local-system` profile.
 
 Both process entry points own configuration parsing, lifecycle start and
-rollback, signals, application of C23's stop contract, process identity, and
+rollback, signals, application of C24's stop contract, process identity, and
 truthful readiness for the resources they require. Deployment configuration
 makes shared protocol and physical-route values one source of truth rather than
 parallel environment-variable conventions.
 
-C24 must also close the publisher-before-group startup race deferred by C21.
+C25 must also close the publisher-before-group startup race deferred by C22.
 Before the companion process reports ready and accepts external intake, the
 selected provisioning or startup policy must ensure every required Redis
 route/group pair exists. The acceptance test submits work immediately after
@@ -735,7 +928,7 @@ truthful without one of them.
 - Production Redis delivery hardening: retries, reclaim, retention, poison
   handling, idempotency, and duplicate terminal policy.
 - Reconciliation, retry, or recovery for a multi-route admission whose outcome
-  is ambiguous beyond C22's transaction-backed happy path.
+  is ambiguous beyond C23's transaction-backed happy path.
 - Dynamic provider plugins and per-job backend selection.
 - A general startup-time component-placement compiler. The explicit profiles
   in this Arc remain compatible presets, but the broader configuration and

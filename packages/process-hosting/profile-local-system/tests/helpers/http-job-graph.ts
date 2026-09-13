@@ -23,14 +23,14 @@ import {
   type MessageRouter,
 } from "@lcase/message-router";
 import {
-  engineHttpJobTerminalSubscription,
-  httpJobCommandTopic,
-  httpJobTopics,
-  httpJobSubscriptions,
-  httpJobTerminalTopic,
-  observabilityHttpJobSubscription,
-  workerHttpJobCommandSubscription,
-} from "../../src/http-job.topology.js";
+  engineJobTerminalSubscription,
+  jobCommandTopic,
+  jobTopics,
+  jobSubscriptions,
+  jobTerminalTopic,
+  observabilityJobSubscription,
+  workerJobCommandSubscription,
+} from "@lcase/message-topology/catalogs";
 
 // Enough of an ArtifactReadWritePort for a job with no refs and no exports:
 // one save of the response payload. Kept here rather than imported from
@@ -130,11 +130,11 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
   const router =
     options.router ??
     createInProcessMessageRouter({
-      topics: httpJobTopics,
-      subscriptions: httpJobSubscriptions,
+      topics: jobTopics,
+      subscriptions: jobSubscriptions,
     });
-  const httpJobCommands = router.publisher(httpJobCommandTopic);
-  const httpJobTerminals = router.publisher(httpJobTerminalTopic);
+  const jobCommands = router.publisher(jobCommandTopic);
+  const jobTerminals = router.publisher(jobTerminalTopic);
 
   const fetchSpy = vi.fn(
     async () =>
@@ -155,7 +155,7 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
         fetch: fetchSpy as unknown as typeof fetch,
       }),
       artifacts,
-      terminal: httpJobTerminals,
+      terminal: jobTerminals,
     },
     {
       maxConcurrentJobs: options.maxConcurrentJobs ?? 4,
@@ -175,7 +175,7 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
     jobParser: {} as never,
     runQuery: {} as never,
     artifacts,
-    httpJobCommands,
+    jobCommands,
   });
   // The terminal reaches the engine and enters its message queue either way;
   // the run state it would fan out into is engine's own concern, tested there.
@@ -198,16 +198,16 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
   tap.attachSink(observed.sink);
 
   router.bind({
-    subscription: workerHttpJobCommandSubscription,
+    subscription: workerJobCommandSubscription,
     handler: worker.handleHttpJsonSubmitted,
     maxInFlight: options.maxConcurrentJobs ?? 4,
   });
   router.bind({
-    subscription: engineHttpJobTerminalSubscription,
-    handler: engine.handleHttpJobTerminal,
+    subscription: engineJobTerminalSubscription,
+    handler: engine.handleJobTerminal,
   });
   router.bind({
-    subscription: observabilityHttpJobSubscription,
+    subscription: observabilityJobSubscription,
     handler: (message) => tap.ingest(message),
   });
   router.seal();
@@ -218,7 +218,7 @@ export function buildHttpJobGraph(options: HttpJobGraphOptions = {}) {
     engine,
     tap,
     bus,
-    httpJobCommands,
+    jobCommands,
     enqueued,
     fetchSpy,
     saved,

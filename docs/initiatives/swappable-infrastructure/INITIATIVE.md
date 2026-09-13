@@ -76,23 +76,24 @@ Reordered from the original scaffold after runtime-composition research (see `ar
 | C17    | Shared repository contract suites against real SQLite and Postgres             | merged (PR #376) | [4]   |          |
 | C18    | Extend `local-system` profile with `postgres` SQL branch                       | merged (PR #377) | [4]   |          |
 | C19    | Split runtime package responsibilities                                         | merged (PR #378) | [6]   |          |
-| C20    | Multi-topic logical subscriptions through one delivery lane                    | in review        | [6]   |          |
-| C21    | Separate deployment topology from process host bindings                        | not started      | [6]   |          |
-| C22    | Add one ordered Redis route for Observability                                  | not started      | [6]   |          |
-| C23    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
-| C24    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
+| C20    | Multi-topic logical subscriptions through one delivery lane                    | merged (PR #379) | [6]   |          |
+| C21    | Declare deployment topology as standalone static data                          | in review        | [6]   |          |
+| C22    | Bind each process to its host plan rather than the full topology               | not started      | [6]   |          |
+| C23    | Add one ordered Redis route for Observability                                  | not started      | [6]   |          |
+| C24    | Give Worker truthful lifecycle and controlled ingress                          | not started      | [6]   |          |
+| C25    | Prove a separately deployed Worker host                                        | not started      | [6]   |          |
 
 ## Next up
 
-1. **C20:** give one logical subscription an exact multi-topic Message
-   union and one shared delivery lane across both carriers.
-2. **C21:** give one deployment shared topology while letting each process bind
-   exactly the handlers it hosts.
-3. **C22:** route the selected HTTP-job Messages into one ordered Redis
+1. **C21:** promote the job catalog and describe one deployment as a manifest,
+   delivery routes, and per-role host plans.
+2. **C22:** make the routers, carriers, and profile read that manifest, so each
+   process binds exactly the handlers it hosts.
+3. **C23:** route the selected job Messages into one ordered Redis
    Observability stream while preserving their independent work routes.
-4. **C23:** make Worker a truthful managed resource and coordinate command
+4. **C24:** make Worker a truthful managed resource and coordinate command
    intake with active-work settlement.
-5. **C24:** add the Worker-host and companion non-Worker process profiles and
+5. **C25:** add the Worker-host and companion non-Worker process profiles and
    prove the real two-process path over Redis, S3/MinIO, and Postgres.
 
 These are planned review seams, not fixed size targets. An unstarted Change

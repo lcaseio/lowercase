@@ -62,7 +62,7 @@ export class Engine {
       enqueue: this.enqueue.bind(this),
       processAll: this.processAll.bind(this),
       artifacts: deps.artifacts,
-      httpJobCommands: deps.httpJobCommands,
+      jobCommands: deps.jobCommands,
       source: `lowercase://engine/${this.id}`,
     });
   }
@@ -70,7 +70,7 @@ export class Engine {
   subscribeToTopics(): void {
     // Narrowed to mcp rather than a job.*.completed/.failed wildcard: httpjson
     // terminals arrive on the engine's own Message subscription (see
-    // handleHttpJobTerminal) and are never published to the bus, so a wildcard
+    // handleJobTerminal) and are never published to the bus, so a wildcard
     // here would only be waiting for something that no longer exists. mcp is
     // still a bus conversation and still relies on these.
     this.bus.subscribe("job.mcp.completed", async (e: AnyEvent) => {
@@ -220,7 +220,7 @@ export class Engine {
    * `handleJobFinished` -> `enqueue` -> `processAll()` is fully synchronous, so
    * this resolving means run state has already advanced.
    */
-  handleHttpJobTerminal = async (
+  handleJobTerminal = async (
     message:
       AnyEvent<"job.httpjson.completed"> | AnyEvent<"job.httpjson.failed">,
   ): Promise<void> => {

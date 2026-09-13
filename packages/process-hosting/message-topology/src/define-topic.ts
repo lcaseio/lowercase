@@ -14,9 +14,10 @@ import type {
  * publishers, handler signatures -- derives its union from that one value.
  * Nothing can drift, because there is no second declaration to drift from.
  *
- * Lives in runtime rather than `packages/ports` because ports is types-only,
- * and outside `in-process/` because declaring topology is carrier-agnostic:
- * a log-backed carrier consumes the same declarations.
+ * Lives here rather than in `packages/ports` because ports is types-only, and
+ * outside `@lcase/message-router` because declaring topology is not hosting
+ * it: every carrier consumes these same declarations, and a deployment
+ * describes them without running one.
  */
 export function defineTopic<const Types extends readonly EventType[]>(
   topic: Topic<Types>,
