@@ -651,6 +651,26 @@ route layouts a grouped log cannot realize without filtering. These are
 carrier-capability failures, not restrictions in the neutral topology
 representation.
 
+**Those two checks are also where the `message-router` and `message-topology`
+split gets tested, so decide during this Change whether it still pays.** C21
+left the two packages with a real production dependency in one direction, and
+the protection originally claimed for the boundary is actually supplied by
+`message-topology`'s separate entry points: a merged package with the same
+`/catalogs` subpath would keep product topics out of a generic router just as
+well, and would have the same empty production closure. What the split does buy
+is a compiler-enforced direction, since a static declaration cannot import a
+carrier. That is worth something while this Arc's whole subject is boundaries
+that hold, and it costs five config files.
+
+Carrier-capability checks are the strain. They read manifest and host-plan
+shapes and judge them against what a grouped log can do, so they sit on the
+seam. If they end up wanting to live in both packages, or needing a round trip
+between them, the boundary has stopped paying and merging is the answer. Note
+also that `MessagingCarrierKind` already leaks the wrong way: the static layer
+enumerates the carrier families, so a third carrier means editing topology. It
+is not an import, so the direction holds, but it is the weakest point in the
+current split and worth re-reading before deciding.
+
 This Change does not add Worker lifecycle, application entry points, remote
 liveness, or delivery hardening. Although the manifest makes every Redis
 route/group pair derivable, provisioning and the publisher-before-group startup
